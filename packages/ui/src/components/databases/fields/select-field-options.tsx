@@ -42,7 +42,7 @@ export const SelectFieldOptions = ({
   const selectOptions = Object.values(field.options ?? {});
 
   const [inputValue, setInputValue] = useState('');
-  const [color, setColor] = useState(getRandomSelectOptionColor());
+  const [color, setColor] = useState(getRandomSelectOptionColor);
   const showNewOption =
     database.canEdit &&
     allowAdd &&

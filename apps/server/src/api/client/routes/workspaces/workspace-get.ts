@@ -33,11 +33,19 @@ export const workspaceGetRoute: FastifyPluginCallbackZod = (
     handler: async (request, reply) => {
       const workspaceId = request.params.workspaceId;
 
-      const workspace = await database
-        .selectFrom('workspaces')
-        .selectAll()
-        .where('id', '=', workspaceId)
-        .executeTakeFirst();
+      const [workspace, user] = await Promise.all([
+        database
+          .selectFrom('workspaces')
+          .selectAll()
+          .where('id', '=', workspaceId)
+          .executeTakeFirst(),
+        database
+          .selectFrom('users')
+          .selectAll()
+          .where('workspace_id', '=', workspaceId)
+          .where('account_id', '=', request.account.id)
+          .executeTakeFirst(),
+      ]);
 
       if (!workspace) {
         return reply.code(400).send({
@@ -45,13 +53,6 @@ export const workspaceGetRoute: FastifyPluginCallbackZod = (
           message: 'Workspace not found.',
         });
       }
-
-      const user = await database
-        .selectFrom('users')
-        .selectAll()
-        .where('workspace_id', '=', workspaceId)
-        .where('account_id', '=', request.account.id)
-        .executeTakeFirst();
 
       if (!user || user.status !== UserStatus.Active || user.role === 'none') {
         return reply.code(403).send({

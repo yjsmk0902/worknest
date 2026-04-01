@@ -47,13 +47,14 @@ export const emailRegisterRoute: FastifyPluginCallbackZod = (
         });
       }
 
-      const existingAccount = await database
-        .selectFrom('accounts')
-        .selectAll()
-        .where('email', '=', email)
-        .executeTakeFirst();
-
-      const password = await generatePasswordHash(input.password);
+      const [existingAccount, password] = await Promise.all([
+        database
+          .selectFrom('accounts')
+          .selectAll()
+          .where('email', '=', email)
+          .executeTakeFirst(),
+        generatePasswordHash(input.password),
+      ]);
 
       let account: SelectAccount | null | undefined = null;
 

@@ -15,12 +15,32 @@ export const errorHandlerCallback: FastifyPluginCallback = (
   fastify.setErrorHandler(async (error, _, reply) => {
     logger.error(error, `Error processing request`);
 
-    // TODO: return detailed validation errors
     if (hasZodFastifySchemaValidationErrors(error)) {
+      const fields: Record<string, string[]> = {};
+
+      for (const validationError of error.validation) {
+        const issue = validationError.params?.issue;
+        if (!issue) {
+          continue;
+        }
+
+        const fieldName =
+          Array.isArray(issue.path) && issue.path.length > 0
+            ? issue.path.join('.')
+            : '_root';
+
+        if (!fields[fieldName]) {
+          fields[fieldName] = [];
+        }
+
+        fields[fieldName].push(issue.message ?? 'Invalid value');
+      }
+
       return reply.code(400).send({
         code: ApiErrorCode.ValidationError,
         message:
           'One or more fields are invalid. Please check your request and try again.',
+        fields,
       });
     }
 

@@ -16,7 +16,7 @@ export const sortSpaceChildren = (
     indexes[child.id] = customIndex ?? lastIndex;
   }
 
-  return sortedById.sort((a, b) => {
+  return sortedById.toSorted((a, b) => {
     const aIndex = indexes[a.id];
     const bIndex = indexes[b.id];
     return compareString(aIndex, bIndex);

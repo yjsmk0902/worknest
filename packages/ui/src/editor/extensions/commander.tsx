@@ -106,11 +106,11 @@ const CommandList = ({
       if (navigationKeys.includes(e.key)) {
         e.preventDefault();
         if (e.key === 'ArrowUp') {
-          setSelectedIndex((selectedIndex + items.length - 1) % items.length);
+          setSelectedIndex((prev) => (prev + items.length - 1) % items.length);
           return true;
         }
         if (e.key === 'ArrowDown') {
-          setSelectedIndex((selectedIndex + 1) % items.length);
+          setSelectedIndex((prev) => (prev + 1) % items.length);
           return true;
         }
         if (e.key === 'Enter') {

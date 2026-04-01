@@ -65,6 +65,7 @@ export enum ApiErrorCode {
 export const apiErrorOutputSchema = z.object({
   message: z.string(),
   code: z.enum(ApiErrorCode),
+  fields: z.record(z.string(), z.array(z.string())).optional(),
 });
 
 export type ApiErrorOutput = z.infer<typeof apiErrorOutputSchema>;

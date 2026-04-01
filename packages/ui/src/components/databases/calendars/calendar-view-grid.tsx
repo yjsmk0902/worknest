@@ -37,7 +37,7 @@ export const CalendarViewGrid = ({ field }: CalendarViewGridProps) => {
 
   const defaultClassNames = getDefaultClassNames();
 
-  const [month, setMonth] = useState(new Date());
+  const [month, setMonth] = useState(() => new Date());
   const { first, last } = useMemo(() => getDisplayedDates(month), [month]);
 
   const filters: DatabaseViewFilterAttributes[] = useMemo(

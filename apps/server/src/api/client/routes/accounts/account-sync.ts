@@ -36,11 +36,31 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
       },
     },
     handler: async (request, reply) => {
-      const account = await database
-        .selectFrom('accounts')
-        .where('id', '=', request.account.id)
-        .selectAll()
-        .executeTakeFirst();
+      const [account, device, users] = await Promise.all([
+        database
+          .selectFrom('accounts')
+          .where('id', '=', request.account.id)
+          .selectAll()
+          .executeTakeFirst(),
+        database
+          .updateTable('devices')
+          .returningAll()
+          .set({
+            synced_at: new Date(),
+            ip: request.client.ip,
+            platform: request.client.platform,
+            version: request.client.version,
+          })
+          .where('id', '=', request.account.deviceId)
+          .executeTakeFirst(),
+        database
+          .selectFrom('users')
+          .where('account_id', '=', request.account.id)
+          .where('status', '=', UserStatus.Active)
+          .where('role', '!=', 'none')
+          .selectAll()
+          .execute(),
+      ]);
 
       if (!account) {
         return reply.code(404).send({
@@ -48,18 +68,6 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
           message: 'Account not found. Check your token.',
         });
       }
-
-      const device = await database
-        .updateTable('devices')
-        .returningAll()
-        .set({
-          synced_at: new Date(),
-          ip: request.client.ip,
-          platform: request.client.platform,
-          version: request.client.version,
-        })
-        .where('id', '=', request.account.deviceId)
-        .executeTakeFirst();
 
       if (!device) {
         return reply.code(404).send({
@@ -69,13 +77,6 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
       }
 
       const workspaceOutputs: WorkspaceOutput[] = [];
-      const users = await database
-        .selectFrom('users')
-        .where('account_id', '=', account.id)
-        .where('status', '=', UserStatus.Active)
-        .where('role', '!=', 'none')
-        .selectAll()
-        .execute();
 
       if (users.length > 0) {
         const workspaceIds = users.map((u) => u.workspace_id);

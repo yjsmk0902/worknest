@@ -133,12 +133,16 @@ export const selectOptionColors: SelectOptionColor[] = [
   },
 ];
 
+const selectOptionColorMap = new Map(
+  selectOptionColors.map((c) => [c.value, c])
+);
+
 export const getSelectOptionColorClass = (color: string): string => {
-  return selectOptionColors.find((c) => c.value === color)?.class || '';
+  return selectOptionColorMap.get(color)?.class ?? '';
 };
 
 export const getSelectOptionLightColorClass = (color: string): string => {
-  return selectOptionColors.find((c) => c.value === color)?.lightClass || '';
+  return selectOptionColorMap.get(color)?.lightClass ?? '';
 };
 
 export const getRandomSelectOptionColor = (): string => {
@@ -889,11 +893,13 @@ const recordMatchesMultiSelectFilter = (
     return true;
   }
 
+  const selectSet = new Set(selectValues);
+
   switch (filter.operator) {
     case 'is_in':
-      return filter.value.some((value) => selectValues.includes(value));
+      return filter.value.some((value) => selectSet.has(value));
     case 'is_not_in':
-      return !filter.value.some((value) => selectValues.includes(value));
+      return !filter.value.some((value) => selectSet.has(value));
   }
 
   return false;
@@ -1106,9 +1112,8 @@ const recordMatchesUrlFilter = (
   return false;
 };
 
-export const isFilterableField = (_: FieldAttributes) => {
-  // TODO: Implement this
-  return true;
+export const isFilterableField = (field: FieldAttributes) => {
+  return field.type !== 'file' && field.type !== 'rollup';
 };
 
 export const isSortableField = (field: FieldAttributes) => {
@@ -1187,9 +1192,10 @@ export const generateViewFieldIndex = (
 
   let newIndex = generateFractionalIndex(previousIndex, nextIndex);
 
-  const maxDatabaseIndex = mergedIndexes
-    .map((f) => f.databaseIndex)
-    .sort((a, b) => -compareString(a, b))[0]!;
+  const maxDatabaseIndex = mergedIndexes.reduce(
+    (max, f) => (compareString(f.databaseIndex, max) > 0 ? f.databaseIndex : max),
+    mergedIndexes[0]!.databaseIndex
+  );
 
   const newPotentialFieldIndex = generateFractionalIndex(
     maxDatabaseIndex,

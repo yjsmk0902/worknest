@@ -44,6 +44,9 @@ export const BoardViewColumnsSelect = ({
   const selectOptionCount = selectOptionCountQuery.data?.values ?? [];
   const noValueCount = selectOptionCountQuery.data?.noValueCount ?? 0;
 
+  const countMap = new Map(
+    selectOptionCount.map((c) => [c.value, c.count])
+  );
   const noValueDraggingClass = getSelectOptionLightColorClass('gray');
 
   return (
@@ -61,9 +64,7 @@ export const BoardViewColumnsSelect = ({
           option.color ?? 'gray'
         );
 
-        const count =
-          selectOptionCount.find((count) => count.value === option.id)?.count ??
-          0;
+        const count = countMap.get(option.id) ?? 0;
 
         return (
           <BoardViewContext.Provider

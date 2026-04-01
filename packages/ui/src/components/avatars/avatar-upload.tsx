@@ -17,9 +17,53 @@ export const AvatarUpload = ({ onUpload }: AvatarUploadProps) => {
   const { mutate, isPending } = useMutation();
 
   const [url, setUrl] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (_: string) => {
-    // TODO
+  const handleSubmit = async (imageUrl: string) => {
+    if (isPending || isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        toast.error('Failed to fetch image from URL');
+        return;
+      }
+
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!contentType.startsWith('image/')) {
+        toast.error('URL does not point to a valid image');
+        return;
+      }
+
+      const blob = await response.blob();
+      const extension = contentType.split('/')[1]?.split(';')[0] ?? 'png';
+      const file = new File([blob], `avatar.${extension}`, {
+        type: contentType,
+      });
+
+      const tempFile = await window.colanode.saveTempFile(file);
+      mutate({
+        input: {
+          type: 'avatar.upload',
+          accountId: workspace.accountId,
+          file: tempFile,
+        },
+        onSuccess(output) {
+          onUpload(output.id);
+        },
+        onError(error) {
+          toast.error(error.message);
+        },
+      });
+    } catch {
+      toast.error('Failed to load image from URL');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,7 +89,7 @@ export const AvatarUpload = ({ onUpload }: AvatarUploadProps) => {
         <Button
           type="submit"
           className="h-auto px-3 py-0 text-sm"
-          disabled={!url}
+          disabled={!url || isPending || isLoading}
         >
           Submit
         </Button>
