@@ -72,7 +72,10 @@ export const accountUpdateRoute: FastifyPluginCallbackZod = (
             .executeTakeFirst();
 
           if (!updatedAccount) {
-            throw new Error('Account not found or has been deleted.');
+            // Return null instead of throwing to allow the handler to return
+            // a typed 404 response. The commit is safe here because no rows
+            // were modified when executeTakeFirst() returns undefined.
+            return { updatedAccount: null, updatedUsers: [] };
           }
 
           const updatedUsers = await tx

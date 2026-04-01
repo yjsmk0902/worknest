@@ -47,6 +47,10 @@ export class EmailVerifyMutationHandler
 
       return response;
     } catch (error) {
+      if (error instanceof MutationError) {
+        throw error;
+      }
+
       const apiError = await parseApiError(error);
       throw new MutationError(MutationErrorCode.ApiError, apiError.message);
     }

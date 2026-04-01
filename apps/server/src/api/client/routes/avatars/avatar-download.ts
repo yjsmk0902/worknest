@@ -1,7 +1,7 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 import { z } from 'zod/v4';
 
-import { ApiErrorCode } from '@worknest/core';
+import { ApiErrorCode, apiErrorOutputSchema } from '@worknest/core';
 import { storage } from '@worknest/server/lib/storage';
 
 export const avatarDownloadRoute: FastifyPluginCallbackZod = (
@@ -17,6 +17,9 @@ export const avatarDownloadRoute: FastifyPluginCallbackZod = (
       params: z.object({
         avatarId: z.string(),
       }),
+      response: {
+        500: apiErrorOutputSchema,
+      },
     },
     handler: async (request, reply) => {
       try {

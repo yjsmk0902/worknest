@@ -4,6 +4,7 @@ import { z } from 'zod/v4';
 import {
   hasNodeRole,
   ApiErrorCode,
+  apiErrorOutputSchema,
   extractNodeRole,
   FileStatus,
 } from '@worknest/core';
@@ -25,6 +26,12 @@ export const fileDownloadRoute: FastifyPluginCallbackZod = (
         fileId: z.string(),
         workspaceId: z.string(),
       }),
+      response: {
+        400: apiErrorOutputSchema,
+        403: apiErrorOutputSchema,
+        404: apiErrorOutputSchema,
+        500: apiErrorOutputSchema,
+      },
     },
     handler: async (request, reply) => {
       const fileId = request.params.fileId;

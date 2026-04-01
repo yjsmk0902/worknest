@@ -46,8 +46,11 @@ Worknest 프로젝트의 당면 과제와 실행 계획을 정리합니다.
 
 ### 6. Error Handling 일관성
 
-- [ ] **에러 코드 체계 정리** — `ApiErrorCode` enum 검토 및 클라이언트 측 에러 핸들링 통합
-- [ ] **클라이언트 에러 바운더리** — Desktop/Mobile 앱에 React Error Boundary 추가
+- [x] **React Error Boundary 추가** — `AppErrorBoundary` 컴포넌트 생성, App 루트에 적용. 렌더 에러 시 앱 전체 크래시(백화) 대신 에러 메시지 + Reload 버튼 표시.
+- [x] **email-verify 에러 삼킴 버그 수정** — `MutationError`가 outer catch에 잡혀 `parseApiError`를 거치면서 원래 에러 코드가 사라지던 버그 수정. `MutationError`는 재throw.
+- [x] **avatar-upload parseApiError 누락 수정** — `instanceof Error` 대신 `parseApiError` 사용하도록 변경. 서버 에러 메시지를 올바르게 추출.
+- [x] **account-update 트랜잭션 내 throw 수정** — `throw new Error()` → 정상 반환으로 변경. 500 Unknown 대신 404 AccountNotFound 반환.
+- [x] **누락 response schema 추가** — avatar-download, file-download 라우트에 에러 응답 스키마 추가.
 
 ---
 

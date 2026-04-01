@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 
 import { AppType } from '@worknest/client/types';
+import { AppErrorBoundary } from '@worknest/ui/components/app/app-error-boundary';
 import { AppProvider } from '@worknest/ui/components/app/app-provider';
 import { Toaster } from '@worknest/ui/components/ui/sonner';
 import { TooltipProvider } from '@worknest/ui/components/ui/tooltip';
@@ -17,13 +18,15 @@ export const App = ({ type }: AppProps) => {
   const queryClientRef = useRef<QueryClient>(buildQueryClient());
 
   return (
-    <QueryClientProvider client={queryClientRef.current}>
-      <DndProvider backend={HTML5Backend}>
-        <TooltipProvider>
-          <AppProvider type={type} />
-        </TooltipProvider>
-        <Toaster />
-      </DndProvider>
-    </QueryClientProvider>
+    <AppErrorBoundary>
+      <QueryClientProvider client={queryClientRef.current}>
+        <DndProvider backend={HTML5Backend}>
+          <TooltipProvider>
+            <AppProvider type={type} />
+          </TooltipProvider>
+          <Toaster />
+        </DndProvider>
+      </QueryClientProvider>
+    </AppErrorBoundary>
   );
 };

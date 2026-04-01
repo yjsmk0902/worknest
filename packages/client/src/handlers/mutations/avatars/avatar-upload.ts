@@ -1,3 +1,4 @@
+import { parseApiError } from '@worknest/client/lib/ky';
 import { MutationHandler } from '@worknest/client/lib/types';
 import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
@@ -60,14 +61,12 @@ export class AvatarUploadMutationHandler
         id: response.id,
       };
     } catch (error) {
-      if (error instanceof Error) {
-        throw new MutationError(MutationErrorCode.ApiError, error.message);
+      if (error instanceof MutationError) {
+        throw error;
       }
 
-      throw new MutationError(
-        MutationErrorCode.ApiError,
-        'Unknown error occurred'
-      );
+      const apiError = await parseApiError(error);
+      throw new MutationError(MutationErrorCode.ApiError, apiError.message);
     } finally {
       try {
         await this.app.fs.delete(input.file.path);
