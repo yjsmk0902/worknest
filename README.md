@@ -96,6 +96,10 @@ cd apps/web && npm run test
 
 **Fit-A-Team** — [github.com/Fit-A-Team](https://github.com/Fit-A-Team)
 
+## 참고
+
+이 프로젝트는 [Colanode](https://github.com/colanode/colanode) 오픈소스 프로젝트를 기반으로 개발되었습니다. 로컬 퍼스트 아키텍처, CRDT 기반 실시간 협업 등 핵심 설계를 참고하였으며, Worknest 팀의 요구사항에 맞게 확장 및 커스터마이징하고 있습니다.
+
 ## 라이선스
 
 [Apache 2.0 License](LICENSE)
