@@ -42,9 +42,7 @@ Worknest 프로젝트의 당면 과제와 실행 계획을 정리합니다.
 
 ### 5. 동기화 프로토콜 문서화
 
-- [ ] **Sync Protocol 문서** 작성 — Mutation → Server → WebSocket → Synchronizer 전체 흐름을 시퀀스 다이어그램으로 정리
-  - 커서 기반 동기화, 재연결 로직, 에러 핸들링 포함
-  - 새 기여자가 가장 이해하기 어려운 부분
+- [x] **Sync Protocol 문서** 작성 — `docs/SYNC_PROTOCOL.md` 생성. Client→Server mutation 흐름, Server→Client synchronizer 프로토콜, WebSocket 연결, CRDT 상태 관리, 재연결/오프라인 처리를 시퀀스 다이어그램과 함께 문서화.
 
 ### 6. Error Handling 일관성
 
