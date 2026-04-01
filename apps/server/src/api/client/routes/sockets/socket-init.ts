@@ -19,6 +19,7 @@ export const socketInitHandler: FastifyPluginCallback = (instance, _, done) => {
     method: 'POST',
     url: '/',
     schema: {
+        tags: ["Sockets"],
       response: {
         200: socketInitOutputSchema,
         400: apiErrorOutputSchema,

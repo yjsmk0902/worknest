@@ -9,6 +9,7 @@ export const logoutRoute: FastifyPluginCallbackZod = (instance, _, done) => {
     method: 'DELETE',
     url: '/logout',
     schema: {
+        tags: ["Auth"],
       response: {
         200: z.object({}),
       },

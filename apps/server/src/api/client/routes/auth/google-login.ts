@@ -129,6 +129,7 @@ export const googleLoginRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/google/login',
     schema: {
+        tags: ["Auth"],
       body: googleLoginInputSchema,
       response: {
         200: loginOutputSchema,

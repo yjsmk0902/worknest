@@ -28,6 +28,7 @@ export const usersCreateRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/',
     schema: {
+        tags: ["Users"],
       params: z.object({
         workspaceId: z.string(),
       }),

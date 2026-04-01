@@ -39,6 +39,7 @@ export const fileUploadTusRoute: FastifyPluginCallbackZod = (
     method: ['HEAD', 'POST', 'PATCH', 'DELETE'],
     url: '/:fileId/tus',
     schema: {
+        tags: ["Files"],
       params: z.object({
         workspaceId: z.string(),
         fileId: z.string(),

@@ -22,6 +22,7 @@ export const emailVerifyRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/email/verify',
     schema: {
+        tags: ["Auth"],
       body: emailVerifyInputSchema,
       response: {
         200: loginOutputSchema,

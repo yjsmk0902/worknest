@@ -9,6 +9,7 @@ import { apiRoutes } from '@worknest/server/api';
 import { clientDecorator } from '@worknest/server/api/client/plugins/client';
 import { corsPlugin } from '@worknest/server/api/client/plugins/cors';
 import { errorHandler } from '@worknest/server/api/client/plugins/error-handler';
+import { swaggerPlugin } from '@worknest/server/api/client/plugins/swagger';
 import { config } from '@worknest/server/lib/config';
 import { createLogger } from '@worknest/server/lib/logger';
 
@@ -25,6 +26,7 @@ export const initApp = () => {
   server.setSerializerCompiler(serializerCompiler);
   server.setValidatorCompiler(validatorCompiler);
 
+  server.register(swaggerPlugin);
   server.register(corsPlugin);
   server.register(fastifyWebsocket);
   server.register(clientDecorator);
