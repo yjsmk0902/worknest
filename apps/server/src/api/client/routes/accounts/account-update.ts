@@ -19,7 +19,7 @@ export const accountUpdateRoute: FastifyPluginCallbackZod = (
     method: 'PATCH',
     url: '/me',
     schema: {
-        tags: ["Accounts"],
+      tags: ["Accounts"],
       body: accountUpdateInputSchema,
       response: {
         200: accountUpdateOutputSchema,

@@ -38,7 +38,7 @@ export const avatarUploadRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/',
     schema: {
-        tags: ["Avatars"],
+      tags: ["Avatars"],
       response: {
         200: avatarUploadOutputSchema,
         400: apiErrorOutputSchema,

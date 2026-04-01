@@ -38,9 +38,7 @@ Worknest 프로젝트의 당면 과제와 실행 계획을 정리합니다.
 
 ### 4. Server API 문서화
 
-- [ ] **OpenAPI/Swagger 스펙 생성** — Fastify + Zod 조합이므로 `fastify-swagger`와 `fastify-swagger-ui` 플러그인으로 자동 생성 가능
-  - 외부 기여자와 프론트엔드 개발 시 API 인터페이스 명세가 없으면 비효율적
-  - 현재는 코드를 직접 읽어야 API 스펙을 알 수 있음
+- [x] **OpenAPI/Swagger 스펙 생성** — `@fastify/swagger` + `@fastify/swagger-ui` 설정 완료. Zod 스키마에서 OpenAPI 스펙 자동 생성. 22개 라우트에 태그 추가. 서버 실행 후 `/docs`에서 Swagger UI 접근 가능.
 
 ### 5. 동기화 프로토콜 문서화
 

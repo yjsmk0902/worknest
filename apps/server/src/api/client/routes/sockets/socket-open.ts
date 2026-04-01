@@ -13,7 +13,7 @@ export const socketOpenHandler: FastifyPluginCallbackZod = (
     method: 'GET',
     url: '/:socketId',
     schema: {
-        tags: ["Sockets"],
+      tags: ["Sockets"],
       params: z.object({
         socketId: z.string(),
       }),

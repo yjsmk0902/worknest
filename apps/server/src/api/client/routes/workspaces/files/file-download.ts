@@ -20,7 +20,7 @@ export const fileDownloadRoute: FastifyPluginCallbackZod = (
     method: 'GET',
     url: '/:fileId',
     schema: {
-        tags: ["Files"],
+      tags: ["Files"],
       params: z.object({
         fileId: z.string(),
         workspaceId: z.string(),

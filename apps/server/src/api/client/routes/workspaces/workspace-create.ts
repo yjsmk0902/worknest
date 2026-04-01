@@ -18,7 +18,7 @@ export const workspaceCreateRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/',
     schema: {
-        tags: ["Workspaces"],
+      tags: ["Workspaces"],
       body: workspaceCreateInputSchema,
       response: {
         200: workspaceOutputSchema,

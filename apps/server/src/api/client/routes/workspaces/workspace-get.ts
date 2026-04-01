@@ -20,7 +20,7 @@ export const workspaceGetRoute: FastifyPluginCallbackZod = (
     method: 'GET',
     url: '/',
     schema: {
-        tags: ["Workspaces"],
+      tags: ["Workspaces"],
       params: z.object({
         workspaceId: z.string(),
       }),

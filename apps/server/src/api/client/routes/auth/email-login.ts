@@ -25,7 +25,7 @@ export const emailLoginRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/email/login',
     schema: {
-        tags: ["Auth"],
+      tags: ["Auth"],
       body: emailLoginInputSchema,
       response: {
         200: loginOutputSchema,

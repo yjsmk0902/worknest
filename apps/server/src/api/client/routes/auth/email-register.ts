@@ -28,7 +28,7 @@ export const emailRegisterRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/email/register',
     schema: {
-        tags: ["Auth"],
+      tags: ["Auth"],
       body: emailRegisterInputSchema,
       response: {
         200: loginOutputSchema,

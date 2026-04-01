@@ -33,7 +33,7 @@ export const mutationsSyncRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/',
     schema: {
-        tags: ["Mutations"],
+      tags: ["Mutations"],
       body: syncMutationsInputSchema,
     },
     handler: async (request, reply) => {

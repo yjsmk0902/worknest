@@ -21,7 +21,7 @@ export const userRoleUpdateRoute: FastifyPluginCallbackZod = (
     method: 'PATCH',
     url: '/:userId/role',
     schema: {
-        tags: ["Users"],
+      tags: ["Users"],
       params: z.object({
         userId: z.string(),
       }),

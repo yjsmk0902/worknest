@@ -28,7 +28,7 @@ export const accountSyncRoute: FastifyPluginCallbackZod = (
     method: 'POST',
     url: '/sync',
     schema: {
-        tags: ["Accounts"],
+      tags: ["Accounts"],
       response: {
         200: accountSyncOutputSchema,
         400: apiErrorOutputSchema,

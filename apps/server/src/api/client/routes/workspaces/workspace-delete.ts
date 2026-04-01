@@ -19,7 +19,7 @@ export const workspaceDeleteRoute: FastifyPluginCallbackZod = (
     method: 'DELETE',
     url: '/',
     schema: {
-        tags: ["Workspaces"],
+      tags: ["Workspaces"],
       params: z.object({
         workspaceId: z.string(),
       }),
