@@ -1,4 +1,4 @@
-import { LocalRecordNode } from '@colanode/client/types/nodes';
+import { LocalRecordNode } from '@worknest/client/types/nodes';
 
 export type RecordSearchQueryInput = {
   type: 'record.search';
@@ -8,7 +8,7 @@ export type RecordSearchQueryInput = {
   exclude?: string[];
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'record.search': {
       input: RecordSearchQueryInput;

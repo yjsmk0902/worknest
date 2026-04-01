@@ -1,16 +1,16 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 import { toast } from 'sonner';
 
-import { collections } from '@colanode/ui/collections';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { WorkspaceCloud } from '@colanode/ui/components/workspaces/workspace-cloud';
-import { WorkspaceDelete } from '@colanode/ui/components/workspaces/workspace-delete';
-import { WorkspaceForm } from '@colanode/ui/components/workspaces/workspace-form';
-import { WorkspaceNotFound } from '@colanode/ui/components/workspaces/workspace-not-found';
-import { WorkspaceSettingsBreadcrumb } from '@colanode/ui/components/workspaces/workspace-settings-breadcrumb';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { collections } from '@worknest/ui/collections';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { WorkspaceCloud } from '@worknest/ui/components/workspaces/workspace-cloud';
+import { WorkspaceDelete } from '@worknest/ui/components/workspaces/workspace-delete';
+import { WorkspaceForm } from '@worknest/ui/components/workspaces/workspace-form';
+import { WorkspaceNotFound } from '@worknest/ui/components/workspaces/workspace-not-found';
+import { WorkspaceSettingsBreadcrumb } from '@worknest/ui/components/workspaces/workspace-settings-breadcrumb';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 export const WorkspaceSettingsContainer = () => {
   const workspace = useWorkspace();

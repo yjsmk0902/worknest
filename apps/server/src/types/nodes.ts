@@ -1,4 +1,4 @@
-import { NodeAttributes } from '@colanode/core';
+import { NodeAttributes } from '@worknest/core';
 
 export type NodeCollaborator = {
   nodeId: string;

@@ -18,7 +18,7 @@ import {
 } from '@tanstack/react-db';
 import { useMemo } from 'react';
 
-import { LocalRecordNode } from '@colanode/client/types';
+import { LocalRecordNode } from '@worknest/client/types';
 import {
   DatabaseViewFieldFilterAttributes,
   DatabaseViewFilterAttributes,
@@ -26,9 +26,9 @@ import {
   FieldAttributes,
   SpecialId,
   isStringArray,
-} from '@colanode/core';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/core';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const RECORDS_PER_PAGE = 100;
 

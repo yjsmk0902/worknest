@@ -9,8 +9,8 @@ import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 
-import { WebFileSystem } from '@colanode/web/services/file-system';
-import { WebPathService } from '@colanode/web/services/path-service';
+import { WebFileSystem } from '@worknest/web/services/file-system';
+import { WebPathService } from '@worknest/web/services/path-service';
 
 const path = new WebPathService();
 const fs = new WebFileSystem();

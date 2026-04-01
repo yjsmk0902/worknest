@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
-import { Node } from '@colanode/core';
-import { useRadar } from '@colanode/ui/contexts/radar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { Node } from '@worknest/core';
+import { useRadar } from '@worknest/ui/contexts/radar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const useNodeRadar = (node: Node | null | undefined) => {
   const workspace = useWorkspace();

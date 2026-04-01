@@ -5,14 +5,14 @@ import { View, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
-import { eventBus } from '@colanode/client/lib';
-import { AppMeta, AppService } from '@colanode/client/services';
-import { generateId, IdType } from '@colanode/core';
-import { copyAssets, indexHtmlAsset } from '@colanode/mobile/lib/assets';
-import { Message } from '@colanode/mobile/lib/types';
-import { MobileFileSystem } from '@colanode/mobile/services/file-system';
-import { MobileKyselyService } from '@colanode/mobile/services/kysely-service';
-import { MobilePathService } from '@colanode/mobile/services/path-service';
+import { eventBus } from '@worknest/client/lib';
+import { AppMeta, AppService } from '@worknest/client/services';
+import { generateId, IdType } from '@worknest/core';
+import { copyAssets, indexHtmlAsset } from '@worknest/mobile/lib/assets';
+import { Message } from '@worknest/mobile/lib/types';
+import { MobileFileSystem } from '@worknest/mobile/services/file-system';
+import { MobileKyselyService } from '@worknest/mobile/services/kysely-service';
+import { MobilePathService } from '@worknest/mobile/services/path-service';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a', padding: 0, margin: 0 },

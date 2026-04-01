@@ -3,12 +3,12 @@ import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { LocalFileNode } from '@colanode/client/types';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useApp } from '@colanode/ui/contexts/app';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { LocalFileNode } from '@worknest/client/types';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useApp } from '@worknest/ui/contexts/app';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface FileSaveButtonProps {
   file: LocalFileNode;
@@ -22,7 +22,7 @@ export const FileSaveButton = ({ file }: FileSaveButtonProps) => {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleDownloadDesktop = async () => {
-    const path = await window.colanode.showFileSaveDialog({
+    const path = await window.worknest.showFileSaveDialog({
       name: file.name,
     });
 
@@ -52,7 +52,7 @@ export const FileSaveButton = ({ file }: FileSaveButtonProps) => {
     setIsSaving(true);
 
     try {
-      const localFile = await window.colanode.executeQuery({
+      const localFile = await window.worknest.executeQuery({
         type: 'local.file.get',
         fileId: file.id,
         userId: workspace.userId,
@@ -71,7 +71,7 @@ export const FileSaveButton = ({ file }: FileSaveButtonProps) => {
       }
 
       // the file is not downloaded locally, so we need to download it
-      const request = await window.colanode.executeQuery({
+      const request = await window.worknest.executeQuery({
         type: 'file.download.request.get',
         id: file.id,
         userId: workspace.userId,

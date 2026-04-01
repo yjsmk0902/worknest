@@ -4,14 +4,14 @@ import {
   JobHandler,
   JobOutput,
   JobConcurrencyConfig,
-} from '@colanode/client/jobs';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/jobs';
+import { AppService } from '@worknest/client/services/app-service';
 
 export type TempFilesCleanInput = {
   type: 'temp.files.clean';
 };
 
-declare module '@colanode/client/jobs' {
+declare module '@worknest/client/jobs' {
   interface JobMap {
     'temp.files.clean': {
       input: TempFilesCleanInput;

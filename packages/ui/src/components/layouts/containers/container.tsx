@@ -1,19 +1,19 @@
 import { Fullscreen } from 'lucide-react';
 import { useRef } from 'react';
 
-import { SidebarMobile } from '@colanode/ui/components/layouts/sidebars/sidebar-mobile';
+import { SidebarMobile } from '@worknest/ui/components/layouts/sidebars/sidebar-mobile';
 import {
   ScrollArea,
   ScrollBar,
   ScrollViewport,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useApp } from '@colanode/ui/contexts/app';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useApp } from '@worknest/ui/contexts/app';
 import {
   ContainerContext,
   ContainerType,
-} from '@colanode/ui/contexts/container';
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/contexts/container';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ContainerProps {
   type: ContainerType;

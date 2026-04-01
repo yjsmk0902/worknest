@@ -1,10 +1,10 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalChatNode } from '@colanode/client/types';
-import { ChatCreatePopover } from '@colanode/ui/components/chats/chat-create-popover';
-import { ChatSidebarItem } from '@colanode/ui/components/chats/chat-sidebar-item';
-import { SidebarHeader } from '@colanode/ui/components/layouts/sidebars/sidebar-header';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalChatNode } from '@worknest/client/types';
+import { ChatCreatePopover } from '@worknest/ui/components/chats/chat-create-popover';
+import { ChatSidebarItem } from '@worknest/ui/components/chats/chat-sidebar-item';
+import { SidebarHeader } from '@worknest/ui/components/layouts/sidebars/sidebar-header';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const SidebarChats = () => {
   const workspace = useWorkspace();

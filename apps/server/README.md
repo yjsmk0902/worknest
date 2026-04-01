@@ -1,6 +1,6 @@
-# Colanode Server (apps/server)
+# Worknest Server (apps/server)
 
-Colanode server is the authoritative sync, auth, and realtime layer for the local-first collaboration stack. Clients keep a local SQLite cache and sync mutation batches to this server; the server validates, persists, and broadcasts changes over WebSocket.
+Worknest server is the authoritative sync, auth, and realtime layer for the local-first collaboration stack. Clients keep a local SQLite cache and sync mutation batches to this server; the server validates, persists, and broadcasts changes over WebSocket.
 
 ## Architecture overview
 

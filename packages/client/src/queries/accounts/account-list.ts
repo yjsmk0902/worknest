@@ -1,10 +1,10 @@
-import { Account } from '@colanode/client/types/accounts';
+import { Account } from '@worknest/client/types/accounts';
 
 export type AccountListQueryInput = {
   type: 'account.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'account.list': {
       input: AccountListQueryInput;

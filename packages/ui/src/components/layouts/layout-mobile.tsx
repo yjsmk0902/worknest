@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
-import { routeTree } from '@colanode/ui/routes';
+import { routeTree } from '@worknest/ui/routes';
 
 export const LayoutMobile = () => {
   const router = useMemo(() => {

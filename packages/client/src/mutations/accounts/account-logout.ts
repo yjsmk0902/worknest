@@ -7,7 +7,7 @@ export type AccountLogoutMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'account.logout': {
       input: AccountLogoutMutationInput;

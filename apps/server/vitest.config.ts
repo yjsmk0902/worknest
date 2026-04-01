@@ -11,9 +11,9 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   resolve: {
     alias: {
-      '@colanode/server': path.resolve(rootDir, 'src'),
-      '@colanode/core': path.resolve(rootDir, '../../packages/core/src'),
-      '@colanode/crdt': path.resolve(rootDir, '../../packages/crdt/src'),
+      '@worknest/server': path.resolve(rootDir, 'src'),
+      '@worknest/core': path.resolve(rootDir, '../../packages/core/src'),
+      '@worknest/crdt': path.resolve(rootDir, '../../packages/crdt/src'),
     },
   },
   test: {

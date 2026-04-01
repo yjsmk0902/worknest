@@ -1,17 +1,17 @@
 import { Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { FieldAttributes } from '@colanode/core';
-import { FieldDeleteDialog } from '@colanode/ui/components/databases/fields/field-delete-dialog';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { FieldRenameInput } from '@colanode/ui/components/databases/fields/field-rename-input';
+import { FieldAttributes } from '@worknest/core';
+import { FieldDeleteDialog } from '@worknest/ui/components/databases/fields/field-delete-dialog';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { FieldRenameInput } from '@worknest/ui/components/databases/fields/field-rename-input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabase } from '@colanode/ui/contexts/database';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabase } from '@worknest/ui/contexts/database';
 
 interface RecordFieldProps {
   field: FieldAttributes;

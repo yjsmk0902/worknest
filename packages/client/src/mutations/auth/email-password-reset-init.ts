@@ -9,7 +9,7 @@ export type EmailPasswordResetInitMutationOutput = {
   expiresAt: string;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'email.password.reset.init': {
       input: EmailPasswordResetInitMutationInput;

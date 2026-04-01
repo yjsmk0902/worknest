@@ -1,7 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 
-import { SidebarDesktop } from '@colanode/ui/components/layouts/sidebars/sidebar-desktop';
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
+import { SidebarDesktop } from '@worknest/ui/components/layouts/sidebars/sidebar-desktop';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
 
 export const WorkspaceLayout = () => {
   const isMobile = useIsMobile();

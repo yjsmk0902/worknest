@@ -1,12 +1,12 @@
 import { debounceStrategy, usePacedMutations } from '@tanstack/react-db';
 
-import { LocalNode } from '@colanode/client/types';
-import { DatabaseViewLayout } from '@colanode/core';
-import { AvatarPopover } from '@colanode/ui/components/avatars/avatar-popover';
-import { ViewIcon } from '@colanode/ui/components/databases/view-icon';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
+import { LocalNode } from '@worknest/client/types';
+import { DatabaseViewLayout } from '@worknest/core';
+import { AvatarPopover } from '@worknest/ui/components/avatars/avatar-popover';
+import { ViewIcon } from '@worknest/ui/components/databases/view-icon';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
 
 interface ViewAvatarInputProps {
   id: string;

@@ -7,7 +7,7 @@ export type WorkspaceDeleteMutationOutput = {
   id: string;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'workspace.delete': {
       input: WorkspaceDeleteMutationInput;

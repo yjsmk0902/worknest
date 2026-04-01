@@ -1,6 +1,6 @@
 import AsyncLock from 'async-lock';
 
-import { SelectJob, SelectJobSchedule } from '@colanode/client/databases/app';
+import { SelectJob, SelectJobSchedule } from '@worknest/client/databases/app';
 import {
   Job,
   JobHandler,
@@ -10,21 +10,21 @@ import {
   JobScheduleOptions,
   JobScheduleStatus,
   JobStatus,
-} from '@colanode/client/jobs';
-import { AccountSyncJobHandler } from '@colanode/client/jobs/account-sync';
-import { AvatarDownloadJobHandler } from '@colanode/client/jobs/avatar-download';
-import { AvatarsCleanJobHandler } from '@colanode/client/jobs/avatars-clean';
-import { FileDownloadJobHandler } from '@colanode/client/jobs/file-download';
-import { FileUploadJobHandler } from '@colanode/client/jobs/file-upload';
-import { LocalFileDownloadJobHandler } from '@colanode/client/jobs/local-file-download';
-import { MutationsSyncJobHandler } from '@colanode/client/jobs/mutations-sync';
-import { ServerSyncJobHandler } from '@colanode/client/jobs/server-sync';
-import { TempFilesCleanJobHandler } from '@colanode/client/jobs/temp-files-clean';
-import { TokenDeleteJobHandler } from '@colanode/client/jobs/token-delete';
-import { WorkspaceFilesCleanJobHandler } from '@colanode/client/jobs/workspace-files-clean';
-import { SleepScheduler } from '@colanode/client/lib/sleep-scheduler';
-import { AppService } from '@colanode/client/services/app-service';
-import { generateId, IdType } from '@colanode/core';
+} from '@worknest/client/jobs';
+import { AccountSyncJobHandler } from '@worknest/client/jobs/account-sync';
+import { AvatarDownloadJobHandler } from '@worknest/client/jobs/avatar-download';
+import { AvatarsCleanJobHandler } from '@worknest/client/jobs/avatars-clean';
+import { FileDownloadJobHandler } from '@worknest/client/jobs/file-download';
+import { FileUploadJobHandler } from '@worknest/client/jobs/file-upload';
+import { LocalFileDownloadJobHandler } from '@worknest/client/jobs/local-file-download';
+import { MutationsSyncJobHandler } from '@worknest/client/jobs/mutations-sync';
+import { ServerSyncJobHandler } from '@worknest/client/jobs/server-sync';
+import { TempFilesCleanJobHandler } from '@worknest/client/jobs/temp-files-clean';
+import { TokenDeleteJobHandler } from '@worknest/client/jobs/token-delete';
+import { WorkspaceFilesCleanJobHandler } from '@worknest/client/jobs/workspace-files-clean';
+import { SleepScheduler } from '@worknest/client/lib/sleep-scheduler';
+import { AppService } from '@worknest/client/services/app-service';
+import { generateId, IdType } from '@worknest/core';
 
 const MAX_CONCURRENCY = 5;
 const JOBS_MAX_TIMEOUT = 30000;

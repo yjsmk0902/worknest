@@ -1,10 +1,10 @@
-import { EmojiPickerItem } from '@colanode/ui/components/emojis/emoji-picker-item';
+import { EmojiPickerItem } from '@worknest/ui/components/emojis/emoji-picker-item';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface EmojiSearchProps {
   query: string;

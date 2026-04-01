@@ -1,4 +1,4 @@
-import { FileIcon } from '@colanode/ui/components/files/file-icon';
+import { FileIcon } from '@worknest/ui/components/files/file-icon';
 
 interface FileNotUploadedProps {
   mimeType: string;

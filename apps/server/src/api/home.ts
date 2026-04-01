@@ -1,9 +1,9 @@
 import { FastifyPluginCallback } from 'fastify';
 
-import { build } from '@colanode/core';
-import { config } from '@colanode/server/lib/config';
-import { generateUrl } from '@colanode/server/lib/fastify';
-import { homeTemplate } from '@colanode/server/templates';
+import { build } from '@worknest/core';
+import { config } from '@worknest/server/lib/config';
+import { generateUrl } from '@worknest/server/lib/fastify';
+import { homeTemplate } from '@worknest/server/templates';
 
 export const homeRoute: FastifyPluginCallback = (instance, _, done) => {
   instance.route({

@@ -7,10 +7,10 @@
 //   DatabaseAttributes,
 //   getNodeModel,
 //   RecordAttributes,
-// } from '@colanode/core';
-// import { database } from '@colanode/server/data/database';
-// import { SelectNode } from '@colanode/server/data/schema';
-// import { retrieveDocuments } from '@colanode/server/lib/ai/document-retrievals';
+// } from '@worknest/core';
+// import { database } from '@worknest/server/data/database';
+// import { SelectNode } from '@worknest/server/data/schema';
+// import { retrieveDocuments } from '@worknest/server/lib/ai/document-retrievals';
 // import {
 //   rewriteQuery,
 //   assessUserIntent,
@@ -18,18 +18,18 @@
 //   rerankDocuments,
 //   generateFinalAnswer,
 //   generateDatabaseFilters,
-// } from '@colanode/server/lib/ai/llms';
-// import { fetchMetadataForContextItems } from '@colanode/server/lib/ai/metadata';
-// import { retrieveNodes } from '@colanode/server/lib/ai/node-retrievals';
+// } from '@worknest/server/lib/ai/llms';
+// import { fetchMetadataForContextItems } from '@worknest/server/lib/ai/metadata';
+// import { retrieveNodes } from '@worknest/server/lib/ai/node-retrievals';
 // import {
 //   formatChatHistory,
 //   formatContextDocuments,
 //   selectTopContext,
 //   formatMetadataForPrompt,
-// } from '@colanode/server/lib/ai/utils';
-// import { config } from '@colanode/server/lib/config';
-// import { fetchNode, fetchNodeDescendants } from '@colanode/server/lib/nodes';
-// import { retrieveByFilters } from '@colanode/server/lib/records';
+// } from '@worknest/server/lib/ai/utils';
+// import { config } from '@worknest/server/lib/config';
+// import { fetchNode, fetchNodeDescendants } from '@worknest/server/lib/nodes';
+// import { retrieveByFilters } from '@worknest/server/lib/records';
 // import {
 //   AssistantChainState,
 //   ResponseState,
@@ -37,7 +37,7 @@
 //   DatabaseContextItem,
 //   AssistantResponse,
 //   AssistantInput,
-// } from '@colanode/server/types/assistant';
+// } from '@worknest/server/types/assistant';
 
 // const generateRewrittenQuery = async (state: AssistantChainState) => {
 //   const rewrittenQuery = await rewriteQuery(state.userInput);
@@ -130,7 +130,7 @@
 //     .selectAll()
 //     .execute();
 //   const chatHistory = messages.map((message) => {
-//     const isAI = message.created_by === 'colanode_ai';
+//     const isAI = message.created_by === 'worknest_ai';
 //     const extracted = (message &&
 //       message.attributes &&
 //       getNodeModel(message.type)?.extractText(
@@ -145,7 +145,7 @@
 //         type: 'message',
 //         createdAt: message.created_at,
 //         author: message.created_by,
-//         authorName: isAI ? 'Colanode AI' : 'User',
+//         authorName: isAI ? 'Worknest AI' : 'User',
 //       },
 //     });
 //   });

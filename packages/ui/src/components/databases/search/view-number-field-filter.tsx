@@ -3,24 +3,24 @@ import { ChevronDown, Trash2 } from 'lucide-react';
 import {
   NumberFieldAttributes,
   DatabaseViewFieldFilterAttributes,
-} from '@colanode/core';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { Button } from '@colanode/ui/components/ui/button';
+} from '@worknest/core';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Input } from '@colanode/ui/components/ui/input';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Input } from '@worknest/ui/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useViewFilter } from '@colanode/ui/hooks/use-view-filter';
-import { numberFieldFilterOperators } from '@colanode/ui/lib/databases';
+} from '@worknest/ui/components/ui/popover';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useViewFilter } from '@worknest/ui/hooks/use-view-filter';
+import { numberFieldFilterOperators } from '@worknest/ui/lib/databases';
 
 interface ViewNumberFieldFilterProps {
   field: NumberFieldAttributes;

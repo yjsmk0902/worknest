@@ -1,10 +1,10 @@
-import { SelectAccount } from '@colanode/client/databases/app';
-import { mapAccount } from '@colanode/client/lib/mappers';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { AccountListQueryInput } from '@colanode/client/queries/accounts/account-list';
-import { AppService } from '@colanode/client/services/app-service';
-import { Account } from '@colanode/client/types/accounts';
-import { Event } from '@colanode/client/types/events';
+import { SelectAccount } from '@worknest/client/databases/app';
+import { mapAccount } from '@worknest/client/lib/mappers';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { AccountListQueryInput } from '@worknest/client/queries/accounts/account-list';
+import { AppService } from '@worknest/client/services/app-service';
+import { Account } from '@worknest/client/types/accounts';
+import { Event } from '@worknest/client/types/events';
 
 export class AccountListQueryHandler
   implements QueryHandler<AccountListQueryInput>

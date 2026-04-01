@@ -7,7 +7,7 @@ import ky from 'ky';
 import SvgSprite from 'svg-sprite';
 import { optimize } from 'svgo';
 
-import { generateId, IdType } from '@colanode/core';
+import { generateId, IdType } from '@worknest/core';
 
 type SimpleIconsItem = {
   title: string;

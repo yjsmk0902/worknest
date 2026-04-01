@@ -7,12 +7,12 @@ import {
   emailPasswordResetCompleteInputSchema,
   EmailPasswordResetCompleteOutput,
   emailPasswordResetCompleteOutputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 import {
   generatePasswordHash,
   verifyOtpCode,
-} from '@colanode/server/lib/accounts';
+} from '@worknest/server/lib/accounts';
 
 export const emailPasswordResetCompleteRoute: FastifyPluginCallbackZod = (
   instance,

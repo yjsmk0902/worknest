@@ -1,4 +1,4 @@
-import { NodeRole, WorkspaceRole } from '@colanode/core';
+import { NodeRole, WorkspaceRole } from '@worknest/core';
 
 export type UserInput = {
   userId: string;

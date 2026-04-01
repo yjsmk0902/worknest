@@ -1,8 +1,8 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalChatNode } from '@colanode/client/types';
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalChatNode } from '@worknest/client/types';
+import { BreadcrumbItem } from '@worknest/ui/components/layouts/containers/breadcrumb-item';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface ChatBreadcrumbItemProps {
   chat: LocalChatNode;

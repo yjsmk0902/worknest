@@ -7,7 +7,7 @@ export type ServerDeleteMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'server.delete': {
       input: ServerDeleteMutationInput;

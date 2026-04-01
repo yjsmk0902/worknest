@@ -1,16 +1,16 @@
 import { ChevronDown, Trash2, Type } from 'lucide-react';
 
-import { DatabaseViewSortAttributes } from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
+import { DatabaseViewSortAttributes } from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useViewSort } from '@colanode/ui/hooks/use-view-sort';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useViewSort } from '@worknest/ui/hooks/use-view-sort';
 
 interface ViewSortNameRowProps {
   sort: DatabaseViewSortAttributes;

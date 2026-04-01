@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { database } from '@colanode/server/data/database';
-import { CollaborationSynchronizer } from '@colanode/server/synchronizers/collaborations';
-import { generateId, IdType } from '@colanode/core';
+import { database } from '@worknest/server/data/database';
+import { CollaborationSynchronizer } from '@worknest/server/synchronizers/collaborations';
+import { generateId, IdType } from '@worknest/core';
 
 const createCollaborationRow = async (input: {
   workspaceId: string;

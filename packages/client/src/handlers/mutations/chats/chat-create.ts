@@ -1,12 +1,12 @@
 import { sql } from 'kysely';
 
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   ChatCreateMutationInput,
   ChatCreateMutationOutput,
-} from '@colanode/client/mutations/chats/chat-create';
-import { ChatAttributes, generateId, IdType } from '@colanode/core';
+} from '@worknest/client/mutations/chats/chat-create';
+import { ChatAttributes, generateId, IdType } from '@worknest/core';
 
 interface ChatRow {
   id: string;

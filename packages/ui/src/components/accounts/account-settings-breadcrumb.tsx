@@ -1,5 +1,5 @@
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
-import { defaultIcons } from '@colanode/ui/lib/assets';
+import { BreadcrumbItem } from '@worknest/ui/components/layouts/containers/breadcrumb-item';
+import { defaultIcons } from '@worknest/ui/lib/assets';
 
 export const AccountSettingsBreadcrumb = () => {
   return (

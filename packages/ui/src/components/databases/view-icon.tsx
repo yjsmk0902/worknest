@@ -1,6 +1,6 @@
 import { Calendar, Database, SquareKanban, Table } from 'lucide-react';
 
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
 
 interface ViewIconProps {
   id: string;

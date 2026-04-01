@@ -68,7 +68,7 @@ export const cleanupJobConfigSchema = z
 export const jobsQueueSchema = z
   .object({
     name: z.string().default('jobs').transform(resolveConfigReference),
-    prefix: z.string().default('colanode').transform(resolveConfigReference),
+    prefix: z.string().default('worknest').transform(resolveConfigReference),
   })
   .prefault({});
 

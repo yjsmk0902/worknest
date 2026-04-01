@@ -1,5 +1,5 @@
-import { CreatedAtFieldAttributes } from '@colanode/core';
-import { useRecord } from '@colanode/ui/contexts/record';
+import { CreatedAtFieldAttributes } from '@worknest/core';
+import { useRecord } from '@worknest/ui/contexts/record';
 
 interface RecordCreatedAtValueProps {
   field: CreatedAtFieldAttributes;

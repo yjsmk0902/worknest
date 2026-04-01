@@ -2,11 +2,11 @@ import { X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { isValidEmail } from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { isValidEmail } from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 export const WorkspaceUserInvite = () => {
   const workspace = useWorkspace();

@@ -1,6 +1,6 @@
-import { LocalPageNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { Document } from '@colanode/ui/components/documents/document';
+import { LocalPageNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { Document } from '@worknest/ui/components/documents/document';
 
 interface PageContainerProps {
   page: LocalPageNode;

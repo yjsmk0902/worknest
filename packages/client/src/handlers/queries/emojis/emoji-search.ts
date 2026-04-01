@@ -1,8 +1,8 @@
-import { mapEmoji } from '@colanode/client/lib/mappers';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { EmojiSearchQueryInput } from '@colanode/client/queries/emojis/emoji-search';
-import { AppService } from '@colanode/client/services/app-service';
-import { Emoji } from '@colanode/client/types/emojis';
+import { mapEmoji } from '@worknest/client/lib/mappers';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { EmojiSearchQueryInput } from '@worknest/client/queries/emojis/emoji-search';
+import { AppService } from '@worknest/client/services/app-service';
+import { Emoji } from '@worknest/client/types/emojis';
 
 export class EmojiSearchQueryHandler
   implements QueryHandler<EmojiSearchQueryInput>

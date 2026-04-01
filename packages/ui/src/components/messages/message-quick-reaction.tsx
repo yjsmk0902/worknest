@@ -1,5 +1,5 @@
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface MessageQuickReactionProps {
   emoji: string;

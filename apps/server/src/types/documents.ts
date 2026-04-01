@@ -1,5 +1,5 @@
-import { DocumentContent } from '@colanode/core';
-import { SelectDocument } from '@colanode/server/data/schema';
+import { DocumentContent } from '@worknest/core';
+import { SelectDocument } from '@worknest/server/data/schema';
 
 export type CreateDocumentInput = {
   nodeId: string;

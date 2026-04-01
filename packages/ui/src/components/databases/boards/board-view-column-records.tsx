@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 
-import { extractNodeRole } from '@colanode/core';
-import { BoardViewRecordCard } from '@colanode/ui/components/databases/boards/board-view-record-card';
-import { BoardViewRecordCreateCard } from '@colanode/ui/components/databases/boards/board-view-record-create-card';
-import { RecordProvider } from '@colanode/ui/components/records/record-provider';
-import { useBoardView } from '@colanode/ui/contexts/board-view';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useRecordsQuery } from '@colanode/ui/hooks/use-records-query';
+import { extractNodeRole } from '@worknest/core';
+import { BoardViewRecordCard } from '@worknest/ui/components/databases/boards/board-view-record-card';
+import { BoardViewRecordCreateCard } from '@worknest/ui/components/databases/boards/board-view-record-create-card';
+import { RecordProvider } from '@worknest/ui/components/records/record-provider';
+import { useBoardView } from '@worknest/ui/contexts/board-view';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useRecordsQuery } from '@worknest/ui/hooks/use-records-query';
 
 export const BoardViewColumnRecords = () => {
   const workspace = useWorkspace();

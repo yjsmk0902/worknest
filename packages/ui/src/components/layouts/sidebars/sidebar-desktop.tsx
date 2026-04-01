@@ -1,9 +1,9 @@
 import { Resizable } from 're-resizable';
 import { useCallback } from 'react';
 
-import { Sidebar } from '@colanode/ui/components/layouts/sidebars/sidebar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
+import { Sidebar } from '@worknest/ui/components/layouts/sidebars/sidebar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
 
 const DEFAULT_WIDTH = 300;
 

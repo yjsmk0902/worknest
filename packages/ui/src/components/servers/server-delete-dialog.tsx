@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-import { Server } from '@colanode/client/types';
+import { Server } from '@worknest/client/types';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -9,10 +9,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@colanode/ui/components/ui/alert-dialog';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+} from '@worknest/ui/components/ui/alert-dialog';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface ServerDeleteDialogProps {
   open: boolean;

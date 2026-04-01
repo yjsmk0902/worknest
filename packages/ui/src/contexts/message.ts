@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { LocalMessageNode } from '@colanode/client/types';
+import { LocalMessageNode } from '@worknest/client/types';
 
 interface MessageContext extends LocalMessageNode {
   canDelete: boolean;

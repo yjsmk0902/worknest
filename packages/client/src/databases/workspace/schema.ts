@@ -1,14 +1,14 @@
 import { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 
-import { DownloadStatus, UploadStatus } from '@colanode/client/types/files';
-import { NodeCounterType } from '@colanode/client/types/nodes';
+import { DownloadStatus, UploadStatus } from '@worknest/client/types/files';
+import { NodeCounterType } from '@worknest/client/types/nodes';
 import {
   MutationType,
   NodeType,
   WorkspaceRole,
   UserStatus,
   DocumentType,
-} from '@colanode/core';
+} from '@worknest/core';
 
 interface UserTable {
   id: ColumnType<string, string, never>;

@@ -1,21 +1,21 @@
 import * as Comlink from 'comlink';
 
-import { eventBus } from '@colanode/client/lib';
+import { eventBus } from '@worknest/client/lib';
 import {
   MutationInput,
   MutationResult,
   TempFileCreateMutationInput,
-} from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { AppMeta, AppService } from '@colanode/client/services';
-import { AppInitOutput } from '@colanode/client/types';
+} from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { AppMeta, AppService } from '@worknest/client/services';
+import { AppInitOutput } from '@worknest/client/types';
 import {
   build,
   extractFileSubtype,
   generateId,
   IdType,
-  isColanodeDomain,
-} from '@colanode/core';
+  isWorknestDomain,
+} from '@worknest/core';
 import {
   BroadcastInitMessage,
   BroadcastMessage,
@@ -23,13 +23,13 @@ import {
   BroadcastQueryAndSubscribeMessage,
   BroadcastQueryMessage,
   BroadcastQueryUnsubscribeMessage,
-  ColanodeWorkerApi,
+  WorknestWorkerApi,
   PendingPromise,
-} from '@colanode/web/lib/types';
-import { WebBootstrapService } from '@colanode/web/services/bootstrap';
-import { WebFileSystem } from '@colanode/web/services/file-system';
-import { WebKyselyService } from '@colanode/web/services/kysely-service';
-import { WebPathService } from '@colanode/web/services/path-service';
+} from '@worknest/web/lib/types';
+import { WebBootstrapService } from '@worknest/web/services/bootstrap';
+import { WebFileSystem } from '@worknest/web/services/file-system';
+import { WebKyselyService } from '@worknest/web/services/kysely-service';
+import { WebPathService } from '@worknest/web/services/path-service';
 
 const windowId = generateId(IdType.Window);
 const pendingPromises = new Map<string, PendingPromise>();
@@ -39,12 +39,12 @@ const path = new WebPathService();
 let app: AppService | null = null;
 let appInitOutput: AppInitOutput | null = null;
 
-const broadcast = new BroadcastChannel('colanode');
+const broadcast = new BroadcastChannel('worknest');
 broadcast.onmessage = (event) => {
   handleMessage(event.data);
 };
 
-navigator.locks.request('colanode', async () => {
+navigator.locks.request('worknest', async () => {
   const appMeta: AppMeta = {
     type: 'web',
     platform: navigator.userAgent,
@@ -79,9 +79,9 @@ navigator.locks.request('colanode', async () => {
   await app.metadata.set('app', 'platform', appMeta.platform);
 
   const domain = self.location.hostname;
-  if (isColanodeDomain(domain)) {
-    await app.createServer(new URL('https://eu.colanode.com/config'));
-    await app.createServer(new URL('https://us.colanode.com/config'));
+  if (isWorknestDomain(domain)) {
+    await app.createServer(new URL('https://eu.worknest.com/config'));
+    await app.createServer(new URL('https://us.worknest.com/config'));
   }
 
   appInitOutput = 'success';
@@ -242,7 +242,7 @@ const waitForInit = async () => {
   }
 };
 
-const api: ColanodeWorkerApi = {
+const api: WorknestWorkerApi = {
   async init() {
     if (appInitOutput) {
       return appInitOutput;

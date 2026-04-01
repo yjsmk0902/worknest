@@ -10,10 +10,10 @@ import type { ForgeConfig } from '@electron-forge/shared-types';
 
 const config: ForgeConfig = {
   packagerConfig: {
-    name: 'Colanode',
-    executableName: process.platform === 'linux' ? 'colanode' : 'Colanode',
-    icon: 'assets/colanode-logo',
-    appBundleId: 'com.colanode.desktop',
+    name: 'Worknest',
+    executableName: process.platform === 'linux' ? 'worknest' : 'Worknest',
+    icon: 'assets/worknest-logo',
+    appBundleId: 'com.worknest.desktop',
     ...(process.platform === 'win32' && {
       certificateFile: process.env.CERTIFICATE_PATH,
       certificatePassword: process.env.CERTIFICATE_PASSWORD,
@@ -70,15 +70,15 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      name: 'Colanode',
+      name: 'Worknest',
       ...(process.platform === 'win32' && {
         certificateFile: process.env.CERTIFICATE_PATH,
         certificatePassword: process.env.CERTIFICATE_PASSWORD,
       }),
     }),
     new MakerDMG({
-      icon: 'assets/colanode-logo.png',
-      title: 'Colanode',
+      icon: 'assets/worknest-logo.png',
+      title: 'Worknest',
     }),
     {
       name: '@electron-forge/maker-zip',
@@ -91,8 +91,8 @@ const config: ForgeConfig = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'colanode',
-          name: 'colanode',
+          owner: 'worknest',
+          name: 'worknest',
         },
         prerelease: false,
         draft: true,

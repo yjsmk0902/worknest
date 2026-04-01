@@ -1,4 +1,4 @@
-import { FileSubtype } from '@colanode/core';
+import { FileSubtype } from '@worknest/core';
 
 export type OpenFileDialogOptions = {
   accept?: string;

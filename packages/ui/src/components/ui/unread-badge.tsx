@@ -1,4 +1,4 @@
-import { cn } from '@colanode/ui/lib/utils';
+import { cn } from '@worknest/ui/lib/utils';
 
 export interface UnreadBadgeProps {
   count: number;

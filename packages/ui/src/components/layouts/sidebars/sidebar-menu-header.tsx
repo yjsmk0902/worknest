@@ -3,8 +3,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { Check, Plus } from 'lucide-react';
 import { useState } from 'react';
 
-import { collections } from '@colanode/ui/collections';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
+import { collections } from '@worknest/ui/collections';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +12,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { UnreadBadge } from '@colanode/ui/components/ui/unread-badge';
-import { useRadar } from '@colanode/ui/contexts/radar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { UnreadBadge } from '@worknest/ui/components/ui/unread-badge';
+import { useRadar } from '@worknest/ui/contexts/radar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const SidebarMenuHeader = () => {
   const workspace = useWorkspace();

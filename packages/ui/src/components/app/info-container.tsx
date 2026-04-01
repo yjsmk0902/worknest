@@ -1,9 +1,9 @@
-import { build, formatDate, timeAgo } from '@colanode/core';
-import { InfoBreadcrumb } from '@colanode/ui/components/app/info-breadcrumb';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { ServerAvatar } from '@colanode/ui/components/servers/server-avatar';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useServer } from '@colanode/ui/contexts/server';
+import { build, formatDate, timeAgo } from '@worknest/core';
+import { InfoBreadcrumb } from '@worknest/ui/components/app/info-breadcrumb';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { ServerAvatar } from '@worknest/ui/components/servers/server-avatar';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useServer } from '@worknest/ui/contexts/server';
 
 export const InfoContainer = () => {
   const server = useServer();

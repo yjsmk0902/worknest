@@ -9,7 +9,7 @@ export type AccountUpdateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'account.update': {
       input: AccountUpdateMutationInput;

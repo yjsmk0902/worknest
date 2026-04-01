@@ -2,17 +2,17 @@ import { eq, inArray, useLiveQuery } from '@tanstack/react-db';
 import { ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
-import { LocalNode, LocalPageNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { SidebarItem } from '@colanode/ui/components/layouts/sidebars/sidebar-item';
+import { LocalNode, LocalPageNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { SidebarItem } from '@worknest/ui/components/layouts/sidebars/sidebar-item';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@colanode/ui/components/ui/collapsible';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/collapsible';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface PageSidebarItemProps {
   page: LocalPageNode;

@@ -1,10 +1,10 @@
 import { Fragment } from 'react';
 
-import { Node, NodeRole, extractNodeName, hasNodeRole } from '@colanode/core';
-import { NodeCollaborator } from '@colanode/ui/components/collaborators/node-collaborator';
-import { NodeCollaboratorCreate } from '@colanode/ui/components/collaborators/node-collaborator-create';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { buildNodeCollaborators } from '@colanode/ui/lib/nodes';
+import { Node, NodeRole, extractNodeName, hasNodeRole } from '@worknest/core';
+import { NodeCollaborator } from '@worknest/ui/components/collaborators/node-collaborator';
+import { NodeCollaboratorCreate } from '@worknest/ui/components/collaborators/node-collaborator-create';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { buildNodeCollaborators } from '@worknest/ui/lib/nodes';
 
 interface NodeCollaboratorsProps {
   node: Node;

@@ -1,10 +1,10 @@
-import { IconPickerItem } from '@colanode/ui/components/icons/icon-picker-item';
+import { IconPickerItem } from '@worknest/ui/components/icons/icon-picker-item';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface IconSearchProps {
   query: string;

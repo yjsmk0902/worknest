@@ -1,10 +1,10 @@
 import { Copy, Settings, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalRecordNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { NodeCollaboratorAudit } from '@colanode/ui/components/collaborators/node-collaborator-audit';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { LocalRecordNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { NodeCollaboratorAudit } from '@worknest/ui/components/collaborators/node-collaborator-audit';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface RecordSettingsProps {
   record: LocalRecordNode;

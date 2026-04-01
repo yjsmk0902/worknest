@@ -2,12 +2,12 @@ import {
   SynchronizerOutputMessage,
   SyncCollaborationsInput,
   SyncCollaborationData,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { SelectCollaboration } from '@colanode/server/data/schema';
-import { createLogger } from '@colanode/server/lib/logger';
-import { BaseSynchronizer } from '@colanode/server/synchronizers/base';
-import { Event } from '@colanode/server/types/events';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { SelectCollaboration } from '@worknest/server/data/schema';
+import { createLogger } from '@worknest/server/lib/logger';
+import { BaseSynchronizer } from '@worknest/server/synchronizers/base';
+import { Event } from '@worknest/server/types/events';
 
 const logger = createLogger('collaboration-synchronizer');
 

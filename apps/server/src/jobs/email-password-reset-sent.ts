@@ -1,12 +1,12 @@
-import { JobHandler } from '@colanode/server/jobs';
-import { sendEmailPasswordResetEmail } from '@colanode/server/lib/accounts';
+import { JobHandler } from '@worknest/server/jobs';
+import { sendEmailPasswordResetEmail } from '@worknest/server/lib/accounts';
 
 export type EmailPasswordResetSendInput = {
   type: 'email.password.reset.send';
   otpId: string;
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     'email.password.reset.send': {
       input: EmailPasswordResetSendInput;

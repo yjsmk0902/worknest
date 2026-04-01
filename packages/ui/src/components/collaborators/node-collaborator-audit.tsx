@@ -1,8 +1,8 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { timeAgo } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { timeAgo } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface NodeCollaboratorAuditProps {
   collaboratorId: string;

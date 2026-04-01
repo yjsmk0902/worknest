@@ -1,4 +1,4 @@
-import { LocalFile } from '@colanode/client/types';
+import { LocalFile } from '@worknest/client/types';
 
 export type LocalFileGetQueryInput = {
   type: 'local.file.get';
@@ -7,7 +7,7 @@ export type LocalFileGetQueryInput = {
   autoDownload?: boolean;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'local.file.get': {
       input: LocalFileGetQueryInput;

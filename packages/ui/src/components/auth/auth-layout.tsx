@@ -1,11 +1,11 @@
 import { Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { Server } from '@colanode/client/types';
-import { AuthCancel } from '@colanode/ui/components/auth/auth-cancel';
-import { AuthServer } from '@colanode/ui/components/auth/auth-server';
-import { ColanodeLogo } from '@colanode/ui/components/ui/logo';
-import { AuthContext } from '@colanode/ui/contexts/auth';
+import { Server } from '@worknest/client/types';
+import { AuthCancel } from '@worknest/ui/components/auth/auth-cancel';
+import { AuthServer } from '@worknest/ui/components/auth/auth-server';
+import { WorknestLogo } from '@worknest/ui/components/ui/logo';
+import { AuthContext } from '@worknest/ui/contexts/auth';
 
 export const AuthLayout = () => {
   const [server, setServer] = useState<Server | null>(null);
@@ -17,7 +17,7 @@ export const AuthLayout = () => {
         <div className="flex flex-col items-center justify-center bg-background px-6 py-12">
           <div className="flex flex-row items-center">
             <div className="logo-draw-animation">
-              <ColanodeLogo className="size-16 lg:size-50" />
+              <WorknestLogo className="size-16 lg:size-50" />
             </div>
             <p className="font-satoshi text-3xl tracking-tight">
               Your all-in-one <br /> collaboration platform

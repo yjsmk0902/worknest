@@ -1,11 +1,11 @@
 import { WebSocket } from 'ws';
 
-import { generateId, IdType } from '@colanode/core';
-import { redis } from '@colanode/server/data/redis';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { SocketConnection } from '@colanode/server/services/socket-connection';
-import { ClientContext, AccountContext } from '@colanode/server/types/api';
-import { SocketContext } from '@colanode/server/types/sockets';
+import { generateId, IdType } from '@worknest/core';
+import { redis } from '@worknest/server/data/redis';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { SocketConnection } from '@worknest/server/services/socket-connection';
+import { ClientContext, AccountContext } from '@worknest/server/types/api';
+import { SocketContext } from '@worknest/server/types/sockets';
 
 class SocketService {
   private readonly connections: Map<string, SocketConnection> = new Map();

@@ -1,7 +1,7 @@
 import { z } from 'zod/v4';
 
-import { accountOutputSchema } from '@colanode/core/types/accounts';
-import { workspaceOutputSchema } from '@colanode/core/types/workspaces';
+import { accountOutputSchema } from '@worknest/core/types/accounts';
+import { workspaceOutputSchema } from '@worknest/core/types/workspaces';
 
 export const emailRegisterInputSchema = z.object({
   name: z.string({ error: 'Name is required' }),

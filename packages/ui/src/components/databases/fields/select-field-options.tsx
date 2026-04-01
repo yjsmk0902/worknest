@@ -8,9 +8,9 @@ import {
   IdType,
   MultiSelectFieldAttributes,
   SelectFieldAttributes,
-} from '@colanode/core';
-import { SelectOptionBadge } from '@colanode/ui/components/databases/fields/select-option-badge';
-import { SelectOptionSettingsPopover } from '@colanode/ui/components/databases/fields/select-option-settings-popover';
+} from '@worknest/core';
+import { SelectOptionBadge } from '@worknest/ui/components/databases/fields/select-option-badge';
+import { SelectOptionSettingsPopover } from '@worknest/ui/components/databases/fields/select-option-settings-popover';
 import {
   Command,
   CommandEmpty,
@@ -18,10 +18,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { getRandomSelectOptionColor } from '@colanode/ui/lib/databases';
+} from '@worknest/ui/components/ui/command';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { getRandomSelectOptionColor } from '@worknest/ui/lib/databases';
 
 interface SelectFieldOptionsProps {
   field: SelectFieldAttributes | MultiSelectFieldAttributes;

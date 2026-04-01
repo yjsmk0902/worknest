@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { ApiErrorCode } from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+import { ApiErrorCode } from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 import { buildTestApp } from '../helpers/app';
 import {
   createAccount,

@@ -1,5 +1,5 @@
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { Tab } from '@colanode/ui/components/layouts/tabs/tab';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { Tab } from '@worknest/ui/components/layouts/tabs/tab';
 
 interface DatabaseTabProps {
   database: LocalDatabaseNode;

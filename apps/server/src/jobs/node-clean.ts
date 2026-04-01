@@ -1,11 +1,11 @@
-import { getIdType, IdType } from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { CreateNodeTombstone } from '@colanode/server/data/schema';
-import { JobHandler } from '@colanode/server/jobs';
-import { updateDocument } from '@colanode/server/lib/documents';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { createLogger } from '@colanode/server/lib/logger';
-import { storage } from '@colanode/server/lib/storage';
+import { getIdType, IdType } from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { CreateNodeTombstone } from '@worknest/server/data/schema';
+import { JobHandler } from '@worknest/server/jobs';
+import { updateDocument } from '@worknest/server/lib/documents';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { createLogger } from '@worknest/server/lib/logger';
+import { storage } from '@worknest/server/lib/storage';
 
 const BATCH_SIZE = 100;
 const logger = createLogger('server:job:clean-node-data');
@@ -18,7 +18,7 @@ export type NodeCleanInput = {
   userId: string;
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     'node.clean': {
       input: NodeCleanInput;

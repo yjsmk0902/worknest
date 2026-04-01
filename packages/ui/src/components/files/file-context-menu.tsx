@@ -2,14 +2,14 @@ import { useNavigate } from '@tanstack/react-router';
 import { Folder, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuShortcut,
   ContextMenuTrigger,
-} from '@colanode/ui/components/ui/context-menu';
+} from '@worknest/ui/components/ui/context-menu';
 
 interface FileContextMenuProps {
   id: string;

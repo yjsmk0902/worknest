@@ -8,19 +8,19 @@ import {
   IdType,
   MutationStatus,
   UpdateDocumentMutationData,
-} from '@colanode/core';
-import { decodeState, YDoc } from '@colanode/crdt';
-import { database } from '@colanode/server/data/database';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { createLogger } from '@colanode/server/lib/logger';
-import { fetchNode, fetchNodeTree, mapNode } from '@colanode/server/lib/nodes';
-import { WorkspaceContext } from '@colanode/server/types/api';
+} from '@worknest/core';
+import { decodeState, YDoc } from '@worknest/crdt';
+import { database } from '@worknest/server/data/database';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { createLogger } from '@worknest/server/lib/logger';
+import { fetchNode, fetchNodeTree, mapNode } from '@worknest/server/lib/nodes';
+import { WorkspaceContext } from '@worknest/server/types/api';
 import {
   CreateDocumentInput,
   CreateDocumentOutput,
   UpdateDocumentInput,
-} from '@colanode/server/types/documents';
-import { ConcurrentUpdateResult } from '@colanode/server/types/nodes';
+} from '@worknest/server/types/documents';
+import { ConcurrentUpdateResult } from '@worknest/server/types/nodes';
 
 const logger = createLogger('server:lib:documents');
 

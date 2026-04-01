@@ -10,11 +10,11 @@ import {
 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalSpaceNode } from '@colanode/client/types';
-import { ChannelCreateDialog } from '@colanode/ui/components/channels/channel-create-dialog';
-import { DatabaseCreateDialog } from '@colanode/ui/components/databases/database-create-dialog';
-import { FolderCreateDialog } from '@colanode/ui/components/folders/folder-create-dialog';
-import { PageCreateDialog } from '@colanode/ui/components/pages/page-create-dialog';
+import { LocalSpaceNode } from '@worknest/client/types';
+import { ChannelCreateDialog } from '@worknest/ui/components/channels/channel-create-dialog';
+import { DatabaseCreateDialog } from '@worknest/ui/components/databases/database-create-dialog';
+import { FolderCreateDialog } from '@worknest/ui/components/folders/folder-create-dialog';
+import { PageCreateDialog } from '@worknest/ui/components/pages/page-create-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
+} from '@worknest/ui/components/ui/dropdown-menu';
 
 interface SpaceSidebarDropdownProps {
   space: LocalSpaceNode;

@@ -1,13 +1,13 @@
 import { count, eq, useLiveQuery } from '@tanstack/react-db';
 import { useCallback, useState } from 'react';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { MessageReactionCountTooltip } from '@colanode/ui/components/messages/message-reaction-count-tooltip';
-import { MessageReactionCountsDialog } from '@colanode/ui/components/messages/message-reaction-counts-dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { buildNodeReactionKey } from '@colanode/ui/lib/nodes';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalMessageNode } from '@worknest/client/types';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { MessageReactionCountTooltip } from '@worknest/ui/components/messages/message-reaction-count-tooltip';
+import { MessageReactionCountsDialog } from '@worknest/ui/components/messages/message-reaction-counts-dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { buildNodeReactionKey } from '@worknest/ui/lib/nodes';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MessageReactionCountsProps {
   message: LocalMessageNode;

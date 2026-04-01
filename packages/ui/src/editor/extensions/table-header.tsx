@@ -1,8 +1,8 @@
 import { TableHeader } from '@tiptap/extension-table/header';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
-import { TableHeaderNodeView } from '@colanode/ui/editor/views';
+import { defaultClasses } from '@worknest/ui/editor/classes';
+import { TableHeaderNodeView } from '@worknest/ui/editor/views';
 
 export const TableHeaderNode = TableHeader.extend({
   addNodeView() {

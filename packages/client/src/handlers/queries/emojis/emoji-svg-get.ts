@@ -1,7 +1,7 @@
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { EmojiSvgGetQueryInput } from '@colanode/client/queries/emojis/emoji-svg-get';
-import { AppService } from '@colanode/client/services/app-service';
-import { bytesToString } from '@colanode/core';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { EmojiSvgGetQueryInput } from '@worknest/client/queries/emojis/emoji-svg-get';
+import { AppService } from '@worknest/client/services/app-service';
+import { bytesToString } from '@worknest/core';
 
 export class EmojiSvgGetQueryHandler
   implements QueryHandler<EmojiSvgGetQueryInput>

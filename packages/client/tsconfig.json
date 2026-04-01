@@ -14,7 +14,7 @@
     "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "@colanode/client/*": ["src/*"]
+      "@worknest/client/*": ["src/*"]
     },
   }
 }

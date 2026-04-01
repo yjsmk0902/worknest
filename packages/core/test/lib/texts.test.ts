@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractBlockTexts, extractDocumentText } from '@colanode/core/lib/texts';
+import { extractBlockTexts, extractDocumentText } from '@worknest/core/lib/texts';
 
 describe('texts', () => {
   describe('extractBlockTexts', () => {

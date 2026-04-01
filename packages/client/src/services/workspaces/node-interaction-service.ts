@@ -1,7 +1,7 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapNodeInteraction } from '@colanode/client/lib/mappers';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { createDebugger, SyncNodeInteractionData } from '@colanode/core';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapNodeInteraction } from '@worknest/client/lib/mappers';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { createDebugger, SyncNodeInteractionData } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:node-interaction');
 

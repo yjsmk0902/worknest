@@ -2,20 +2,20 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { LocalPageNode } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core';
+import { LocalPageNode } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core';
 import {
   PageForm,
   PageFormValues,
-} from '@colanode/ui/components/pages/page-form';
+} from '@worknest/ui/components/pages/page-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface PageCreateDialogProps {
   spaceId: string;

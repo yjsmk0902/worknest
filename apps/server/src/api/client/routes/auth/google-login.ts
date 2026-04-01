@@ -10,16 +10,16 @@ import {
   apiErrorOutputSchema,
   loginOutputSchema,
   googleLoginInputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { UpdateAccount } from '@colanode/server/data/schema';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { UpdateAccount } from '@worknest/server/data/schema';
 import {
   buildLoginSuccessOutput,
   buildLoginVerifyOutput,
-} from '@colanode/server/lib/accounts';
-import { config } from '@colanode/server/lib/config';
-import { storage } from '@colanode/server/lib/storage';
-import { AccountAttributes } from '@colanode/server/types/accounts';
+} from '@worknest/server/lib/accounts';
+import { config } from '@worknest/server/lib/config';
+import { storage } from '@worknest/server/lib/storage';
+import { AccountAttributes } from '@worknest/server/types/accounts';
 
 const GoogleUserInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo';
 const GoogleTokenUrl = 'https://oauth2.googleapis.com/token';

@@ -1,15 +1,15 @@
 import { useState } from 'react';
 
-import { SelectFieldAttributes, StringFieldValue } from '@colanode/core';
-import { SelectFieldOptions } from '@colanode/ui/components/databases/fields/select-field-options';
-import { SelectOptionBadge } from '@colanode/ui/components/databases/fields/select-option-badge';
+import { SelectFieldAttributes, StringFieldValue } from '@worknest/core';
+import { SelectFieldOptions } from '@worknest/ui/components/databases/fields/select-field-options';
+import { SelectOptionBadge } from '@worknest/ui/components/databases/fields/select-option-badge';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+} from '@worknest/ui/components/ui/popover';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface RecordSelectValueProps {
   field: SelectFieldAttributes;

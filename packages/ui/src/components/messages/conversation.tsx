@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { InView } from 'react-intersection-observer';
 
-import { NodeRole, hasNodeRole } from '@colanode/core';
+import { NodeRole, hasNodeRole } from '@worknest/core';
 import {
   MessageCreate,
   MessageCreateRefProps,
-} from '@colanode/ui/components/messages/message-create';
-import { MessageList } from '@colanode/ui/components/messages/message-list';
-import { useContainer } from '@colanode/ui/contexts/container';
-import { ConversationContext } from '@colanode/ui/contexts/conversation';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/messages/message-create';
+import { MessageList } from '@worknest/ui/components/messages/message-list';
+import { useContainer } from '@worknest/ui/contexts/container';
+import { ConversationContext } from '@worknest/ui/contexts/conversation';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface ConversationProps {
   conversationId: string;

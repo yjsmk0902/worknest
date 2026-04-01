@@ -1,6 +1,6 @@
 import { Table } from 'lucide-react';
 
-import { EditorCommand } from '@colanode/client/types';
+import { EditorCommand } from '@worknest/client/types';
 
 export const TableCommand: EditorCommand = {
   key: 'table',

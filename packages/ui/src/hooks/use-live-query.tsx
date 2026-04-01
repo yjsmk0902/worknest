@@ -3,7 +3,7 @@ import {
   UseQueryOptions as TanstackUseQueryOptions,
 } from '@tanstack/react-query';
 
-import { QueryInput, QueryMap, buildQueryKey } from '@colanode/client/queries';
+import { QueryInput, QueryMap, buildQueryKey } from '@worknest/client/queries';
 
 type UseLiveQueryOptions<T extends QueryInput> = Omit<
   TanstackUseQueryOptions<QueryMap[T['type']]['output']>,
@@ -18,7 +18,7 @@ export const useLiveQuery = <T extends QueryInput>(
 
   const result = useTanstackQuery({
     queryKey: [key],
-    queryFn: () => window.colanode.executeQueryAndSubscribe(key, input),
+    queryFn: () => window.worknest.executeQueryAndSubscribe(key, input),
     ...options,
   });
 

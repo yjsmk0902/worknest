@@ -1,5 +1,5 @@
-import { LocalNode, LocalSpaceNode } from '@colanode/client/types';
-import { compareString, generateFractionalIndex } from '@colanode/core';
+import { LocalNode, LocalSpaceNode } from '@worknest/client/types';
+import { compareString, generateFractionalIndex } from '@worknest/core';
 
 export const sortSpaceChildren = (
   space: LocalSpaceNode,

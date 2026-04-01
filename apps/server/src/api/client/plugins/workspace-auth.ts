@@ -6,9 +6,9 @@ import {
   UserStatus,
   WorkspaceRole,
   WorkspaceStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { WorkspaceContext } from '@colanode/server/types/api';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { WorkspaceContext } from '@worknest/server/types/api';
 
 declare module 'fastify' {
   interface FastifyRequest {

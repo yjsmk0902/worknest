@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { ApiErrorCode, FileStatus } from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { updateNode } from '@colanode/server/lib/nodes';
+import { ApiErrorCode, FileStatus } from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { updateNode } from '@worknest/server/lib/nodes';
 import { buildTestApp } from '../helpers/app';
 import {
   buildAuthHeader,

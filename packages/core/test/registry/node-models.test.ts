@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { getNodeModel, NodeType } from '@colanode/core/registry/nodes';
-import { spaceModel } from '@colanode/core/registry/nodes/space';
-import { CanCreateNodeContext } from '@colanode/core/registry/nodes/core';
+import { getNodeModel, NodeType } from '@worknest/core/registry/nodes';
+import { spaceModel } from '@worknest/core/registry/nodes/space';
+import { CanCreateNodeContext } from '@worknest/core/registry/nodes/core';
 
 describe('node registry', () => {
   describe('getNodeModel', () => {

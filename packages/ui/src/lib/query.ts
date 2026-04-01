@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { Event } from '@colanode/client/types';
+import { Event } from '@worknest/client/types';
 
 export const buildQueryClient = () => {
   const queryClient = new QueryClient({
@@ -34,7 +34,7 @@ export const buildQueryClient = () => {
       event.query.queryKey &&
       event.query.queryKey.length > 0
     ) {
-      await window.colanode.unsubscribeQuery(event.query.queryKey[0]);
+      await window.worknest.unsubscribeQuery(event.query.queryKey[0]);
     }
   });
 

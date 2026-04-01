@@ -1,17 +1,17 @@
 import ky from 'ky';
 import ms from 'ms';
 
-import { SelectServer } from '@colanode/client/databases';
-import { FeatureKey, isFeatureSupported } from '@colanode/client/lib';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { isServerOutdated } from '@colanode/client/lib/servers';
-import { AppService } from '@colanode/client/services/app-service';
+import { SelectServer } from '@worknest/client/databases';
+import { FeatureKey, isFeatureSupported } from '@worknest/client/lib';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { isServerOutdated } from '@worknest/client/lib/servers';
+import { AppService } from '@worknest/client/services/app-service';
 import {
   Server,
   ServerAttributes,
   ServerState,
-} from '@colanode/client/types/servers';
-import { createDebugger, ServerConfig } from '@colanode/core';
+} from '@worknest/client/types/servers';
+import { createDebugger, ServerConfig } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:server');
 

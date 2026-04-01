@@ -9,7 +9,7 @@ export type FileDownloadMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'file.download': {
       input: FileDownloadMutationInput;

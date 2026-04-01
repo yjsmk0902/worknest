@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { ThemeMode } from '@colanode/client/types';
+import { ThemeMode } from '@worknest/client/types';
 
 export const useSystemTheme = (): ThemeMode => {
   if (typeof window === 'undefined' || !window.matchMedia) {

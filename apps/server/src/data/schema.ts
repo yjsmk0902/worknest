@@ -15,8 +15,8 @@ import {
   DocumentType,
   DocumentContent,
   UpdateMergeMetadata,
-} from '@colanode/core';
-import { AccountAttributes } from '@colanode/server/types/accounts';
+} from '@worknest/core';
+import { AccountAttributes } from '@worknest/server/types/accounts';
 
 interface AccountTable {
   id: ColumnType<string, string, never>;

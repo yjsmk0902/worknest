@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 
-import { FieldType } from '@colanode/core';
-import { FieldCreatePopover } from '@colanode/ui/components/databases/fields/field-create-popover';
-import { FieldSelect } from '@colanode/ui/components/databases/fields/field-select';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { FieldType } from '@worknest/core';
+import { FieldCreatePopover } from '@worknest/ui/components/databases/fields/field-create-popover';
+import { FieldSelect } from '@worknest/ui/components/databases/fields/field-select';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const boardGroupFields: FieldType[] = [
   'select',

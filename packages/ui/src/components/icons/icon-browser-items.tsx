@@ -1,6 +1,6 @@
-import { IconPickerItemsRow } from '@colanode/client/types';
-import { IconPickerItem } from '@colanode/ui/components/icons/icon-picker-item';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+import { IconPickerItemsRow } from '@worknest/client/types';
+import { IconPickerItem } from '@worknest/ui/components/icons/icon-picker-item';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface IconBrowserItemsProps {
   row: IconPickerItemsRow;

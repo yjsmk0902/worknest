@@ -1,7 +1,7 @@
 import { Filter } from 'lucide-react';
 
-import { ViewFilterAddPopover } from '@colanode/ui/components/databases/search/view-filter-add-popover';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
+import { ViewFilterAddPopover } from '@worknest/ui/components/databases/search/view-filter-add-popover';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
 
 export const ViewFilterButton = () => {
   const view = useDatabaseView();

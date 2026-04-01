@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
-import { Button } from '@colanode/ui/components/ui/button';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
+import { Button } from '@worknest/ui/components/ui/button';
 
 interface SpaceDeleteProps {
   spaceId: string;

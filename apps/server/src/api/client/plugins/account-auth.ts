@@ -1,10 +1,10 @@
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { ApiErrorCode } from '@colanode/core';
-import { isDeviceApiRateLimited } from '@colanode/server/lib/rate-limits';
-import { parseToken, verifyToken } from '@colanode/server/lib/tokens';
-import { AccountContext } from '@colanode/server/types/api';
+import { ApiErrorCode } from '@worknest/core';
+import { isDeviceApiRateLimited } from '@worknest/server/lib/rate-limits';
+import { parseToken, verifyToken } from '@worknest/server/lib/tokens';
+import { AccountContext } from '@worknest/server/types/api';
 
 declare module 'fastify' {
   interface FastifyRequest {

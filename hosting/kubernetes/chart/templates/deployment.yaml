@@ -1,62 +1,62 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "colanode.fullname" . }}
+  name: {{ include "worknest.fullname" . }}
   labels:
-    {{- include "colanode.labels" . | nindent 4 }}
+    {{- include "worknest.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.colanode.autoscaling.enabled }}
-  replicas: {{ .Values.colanode.replicaCount }}
+  {{- if not .Values.worknest.autoscaling.enabled }}
+  replicas: {{ .Values.worknest.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "colanode.selectorLabels" . | nindent 6 }}
+      {{- include "worknest.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.colanode.podAnnotations }}
+      {{- with .Values.worknest.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "colanode.selectorLabels" . | nindent 8 }}
-        {{- with .Values.colanode.podLabels }}
+        {{- include "worknest.selectorLabels" . | nindent 8 }}
+        {{- with .Values.worknest.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.colanode.imagePullSecrets }}
+      {{- with .Values.worknest.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "colanode.serviceAccountName" . }}
+      serviceAccountName: {{ include "worknest.serviceAccountName" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.colanode.image.repository }}:{{ .Values.colanode.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.colanode.image.pullPolicy }}
+          image: "{{ .Values.worknest.image.repository }}:{{ .Values.worknest.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.worknest.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.colanode.service.port }}
+              containerPort: {{ .Values.worknest.service.port }}
               protocol: TCP
           env:
-            {{- include "colanode.serverEnvVars" . | nindent 12 }}
-{{- $storageType := default "file" .Values.colanode.storage.type }}
+            {{- include "worknest.serverEnvVars" . | nindent 12 }}
+{{- $storageType := default "file" .Values.worknest.storage.type }}
 {{- $mountFileStorage := eq $storageType "file" }}
-{{- $gcsSecret := .Values.colanode.storage.gcs.credentialsSecret }}
+{{- $gcsSecret := .Values.worknest.storage.gcs.credentialsSecret }}
 {{- $mountGcsCredentials := and (eq $storageType "gcs") $gcsSecret.name }}
-{{- $configFile := .Values.colanode.configFile }}
+{{- $configFile := .Values.worknest.configFile }}
 {{- $mountConfigFile := or $configFile.enabled $configFile.existingConfigMap }}
-{{- $extraVolumeMounts := .Values.colanode.extraVolumeMounts | default (list) }}
-{{- $extraVolumes := .Values.colanode.extraVolumes | default (list) }}
+{{- $extraVolumeMounts := .Values.worknest.extraVolumeMounts | default (list) }}
+{{- $extraVolumes := .Values.worknest.extraVolumes | default (list) }}
 {{- $hasExtraVolumeMounts := gt (len $extraVolumeMounts) 0 }}
 {{- $hasExtraVolumes := gt (len $extraVolumes) 0 }}
 {{- if or $mountFileStorage $mountGcsCredentials $mountConfigFile $hasExtraVolumeMounts }}
           volumeMounts:
 {{- if $mountFileStorage }}
             - name: storage-data
-              mountPath: {{ required "colanode.storage.file.directory must be set when STORAGE_TYPE is file" .Values.colanode.storage.file.directory }}
+              mountPath: {{ required "worknest.storage.file.directory must be set when STORAGE_TYPE is file" .Values.worknest.storage.file.directory }}
 {{- end }}
 {{- if $mountGcsCredentials }}
             - name: gcs-credentials
-              mountPath: {{ required "colanode.storage.gcs.credentialsSecret.mountPath must be set when mounting GCS credentials" $gcsSecret.mountPath }}
+              mountPath: {{ required "worknest.storage.gcs.credentialsSecret.mountPath must be set when mounting GCS credentials" $gcsSecret.mountPath }}
               readOnly: true
 {{- end }}
 {{- if $mountConfigFile }}
@@ -66,23 +66,23 @@ spec:
               readOnly: true
 {{- end }}
 {{- if $hasExtraVolumeMounts }}
-            {{ include "colanode.renderExtraVolumeMounts" $extraVolumeMounts | nindent 12 }}
+            {{ include "worknest.renderExtraVolumeMounts" $extraVolumeMounts | nindent 12 }}
 {{- end }}
 {{- end }}
           resources:
-            {{- toYaml .Values.colanode.resources | nindent 12 }}
+            {{- toYaml .Values.worknest.resources | nindent 12 }}
 {{- if or $mountFileStorage $mountGcsCredentials $mountConfigFile $hasExtraVolumes }}
       volumes:
 {{- if $mountFileStorage }}
         - name: storage-data
-{{- $persistence := .Values.colanode.storage.file.persistence }}
+{{- $persistence := .Values.worknest.storage.file.persistence }}
 {{- if $persistence.enabled }}
 {{- if $persistence.existingClaim }}
           persistentVolumeClaim:
             claimName: {{ $persistence.existingClaim }}
 {{- else }}
           persistentVolumeClaim:
-            claimName: {{ include "colanode.storagePvcName" . }}
+            claimName: {{ include "worknest.storagePvcName" . }}
 {{- end }}
 {{- else }}
           emptyDir: {}
@@ -93,15 +93,15 @@ spec:
           secret:
             secretName: {{ $gcsSecret.name }}
             items:
-              - key: {{ required "colanode.storage.gcs.credentialsSecret.key must be set when providing a secret" $gcsSecret.key }}
-                path: {{ required "colanode.storage.gcs.credentialsSecret.fileName must be set when providing a secret" $gcsSecret.fileName }}
+              - key: {{ required "worknest.storage.gcs.credentialsSecret.key must be set when providing a secret" $gcsSecret.key }}
+                path: {{ required "worknest.storage.gcs.credentialsSecret.fileName must be set when providing a secret" $gcsSecret.fileName }}
 {{- end }}
 {{- if $mountConfigFile }}
         - name: config-json
           configMap:
-            name: {{ include "colanode.configJsonConfigMapName" . | trim | quote }}
+            name: {{ include "worknest.configJsonConfigMapName" . | trim | quote }}
 {{- end }}
 {{- if $hasExtraVolumes }}
-  {{ include "colanode.renderExtraVolumes" $extraVolumes | nindent 8 }}
+  {{ include "worknest.renderExtraVolumes" $extraVolumes | nindent 8 }}
 {{- end }}
 {{- end }}

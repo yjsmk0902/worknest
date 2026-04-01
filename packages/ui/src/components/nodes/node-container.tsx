@@ -1,21 +1,21 @@
 import { Outlet } from '@tanstack/react-router';
 
-import { ChannelContainer } from '@colanode/ui/components/channels/channel-container';
-import { ChatContainer } from '@colanode/ui/components/chats/chat-container';
-import { DatabaseContainer } from '@colanode/ui/components/databases/database-container';
-import { FileContainer } from '@colanode/ui/components/files/file-container';
-import { FolderContainer } from '@colanode/ui/components/folders/folder-container';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { MessageContainer } from '@colanode/ui/components/messages/message-container';
-import { NodeBreadcrumb } from '@colanode/ui/components/nodes/node-breadcrumb';
-import { NodeProvider } from '@colanode/ui/components/nodes/node-provider';
-import { NodeSettings } from '@colanode/ui/components/nodes/node-settings';
-import { PageContainer } from '@colanode/ui/components/pages/page-container';
-import { RecordContainer } from '@colanode/ui/components/records/record-container';
-import { SpaceContainer } from '@colanode/ui/components/spaces/space-container';
-import { ContainerType } from '@colanode/ui/contexts/container';
-import { useNode } from '@colanode/ui/contexts/node';
-import { useNodeRadar } from '@colanode/ui/hooks/use-node-radar';
+import { ChannelContainer } from '@worknest/ui/components/channels/channel-container';
+import { ChatContainer } from '@worknest/ui/components/chats/chat-container';
+import { DatabaseContainer } from '@worknest/ui/components/databases/database-container';
+import { FileContainer } from '@worknest/ui/components/files/file-container';
+import { FolderContainer } from '@worknest/ui/components/folders/folder-container';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { MessageContainer } from '@worknest/ui/components/messages/message-container';
+import { NodeBreadcrumb } from '@worknest/ui/components/nodes/node-breadcrumb';
+import { NodeProvider } from '@worknest/ui/components/nodes/node-provider';
+import { NodeSettings } from '@worknest/ui/components/nodes/node-settings';
+import { PageContainer } from '@worknest/ui/components/pages/page-container';
+import { RecordContainer } from '@worknest/ui/components/records/record-container';
+import { SpaceContainer } from '@worknest/ui/components/spaces/space-container';
+import { ContainerType } from '@worknest/ui/contexts/container';
+import { useNode } from '@worknest/ui/contexts/node';
+import { useNodeRadar } from '@worknest/ui/hooks/use-node-radar';
 
 interface NodeContainerProps {
   type: ContainerType;

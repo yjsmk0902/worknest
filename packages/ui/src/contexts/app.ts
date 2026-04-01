@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { AppType } from '@colanode/client/types';
+import { AppType } from '@worknest/client/types';
 
 interface AppContext {
   type: AppType;

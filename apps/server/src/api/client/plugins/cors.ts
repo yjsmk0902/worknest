@@ -2,7 +2,7 @@ import cors from '@fastify/cors';
 import { FastifyPluginCallback } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { config } from '@colanode/server/lib/config';
+import { config } from '@worknest/server/lib/config';
 
 const corsCallback: FastifyPluginCallback = (fastify, _, done) => {
   fastify.register(cors, {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractBlocksMentions } from '@colanode/core/lib/mentions';
+import { extractBlocksMentions } from '@worknest/core/lib/mentions';
 
 describe('mentions', () => {
   describe('extractBlocksMentions', () => {

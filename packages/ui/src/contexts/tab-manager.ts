@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { router } from '@colanode/ui/routes';
+import { router } from '@worknest/ui/routes';
 
 interface TabManagerContextProps {
   addTab: (location: string) => void;

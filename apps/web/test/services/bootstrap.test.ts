@@ -1,8 +1,8 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
-import { build } from '@colanode/core';
-import { WebBootstrapService } from '@colanode/web/services/bootstrap';
-import { WebPathService } from '@colanode/web/services/path-service';
+import { build } from '@worknest/core';
+import { WebBootstrapService } from '@worknest/web/services/bootstrap';
+import { WebPathService } from '@worknest/web/services/path-service';
 import { MockFileSystem } from '../helpers/mock-file-system';
 
 describe('services/bootstrap', () => {

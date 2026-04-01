@@ -1,10 +1,10 @@
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   ServerCreateMutationInput,
   ServerCreateMutationOutput,
-} from '@colanode/client/mutations/servers/server-create';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/servers/server-create';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class ServerCreateMutationHandler
   implements MutationHandler<ServerCreateMutationInput>

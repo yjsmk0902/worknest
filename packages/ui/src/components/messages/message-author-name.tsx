@@ -1,8 +1,8 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalMessageNode } from '@worknest/client/types';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MessageAuthorNameProps {
   message: LocalMessageNode;

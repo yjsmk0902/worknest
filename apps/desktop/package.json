@@ -1,14 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@colanode/desktop",
-  "productName": "Colanode",
+  "name": "@worknest/desktop",
+  "productName": "Worknest",
   "version": "1.0.0",
-  "author": "Colanode",
-  "description": "Colanode desktop application",
+  "author": "Worknest",
+  "description": "Worknest desktop application",
   "main": ".vite/build/main.js",
   "scripts": {
-    "dev": "DEBUG=colanode:* electron-forge start",
-    "dev:win": "set DEBUG=colanode:* & electron-forge start",
+    "dev": "DEBUG=worknest:* electron-forge start",
+    "dev:win": "set DEBUG=worknest:* & electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -35,9 +35,9 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
-    "@colanode/client": "*",
-    "@colanode/core": "*",
-    "@colanode/ui": "*",
+    "@worknest/client": "*",
+    "@worknest/core": "*",
+    "@worknest/ui": "*",
     "better-sqlite3": "^12.6.2",
     "bufferutil": "^4.1.0",
     "electron-squirrel-startup": "^1.0.1",

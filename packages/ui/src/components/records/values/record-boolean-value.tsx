@@ -1,7 +1,7 @@
-import { BooleanFieldAttributes, BooleanFieldValue } from '@colanode/core';
-import { Checkbox } from '@colanode/ui/components/ui/checkbox';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+import { BooleanFieldAttributes, BooleanFieldValue } from '@worknest/core';
+import { Checkbox } from '@worknest/ui/components/ui/checkbox';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface RecordBooleanValueProps {
   field: BooleanFieldAttributes;

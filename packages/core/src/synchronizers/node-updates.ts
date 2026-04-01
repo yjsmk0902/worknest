@@ -1,4 +1,4 @@
-import { UpdateMergeMetadata } from '@colanode/core';
+import { UpdateMergeMetadata } from '@worknest/core';
 
 export type SyncNodeUpdatesInput = {
   type: 'node.updates';
@@ -17,7 +17,7 @@ export type SyncNodeUpdateData = {
   mergedUpdates: UpdateMergeMetadata[] | null | undefined;
 };
 
-declare module '@colanode/core' {
+declare module '@worknest/core' {
   interface SynchronizerMap {
     'node.updates': {
       input: SyncNodeUpdatesInput;

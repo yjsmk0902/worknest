@@ -1,11 +1,11 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapMetadata } from '@colanode/client/lib/mappers';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapMetadata } from '@worknest/client/lib/mappers';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   MetadataUpdateMutationInput,
   MetadataUpdateMutationOutput,
-} from '@colanode/client/mutations/apps/metadata-update';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/apps/metadata-update';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class MetadataUpdateMutationHandler
   implements MutationHandler<MetadataUpdateMutationInput>

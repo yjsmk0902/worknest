@@ -1,8 +1,8 @@
 import { Plus } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { useTabManager } from '@colanode/ui/contexts/tab-manager';
-import { getDefaultWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { useTabManager } from '@worknest/ui/contexts/tab-manager';
+import { getDefaultWorkspaceUserId } from '@worknest/ui/routes/utils';
 
 export const TabAddButton = () => {
   const tabManager = useTabManager();

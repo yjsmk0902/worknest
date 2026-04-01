@@ -1,7 +1,7 @@
-import { LocalMessageNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { Message } from '@colanode/ui/components/messages/message';
-import { ConversationContext } from '@colanode/ui/contexts/conversation';
+import { LocalMessageNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { Message } from '@worknest/ui/components/messages/message';
+import { ConversationContext } from '@worknest/ui/contexts/conversation';
 
 interface MessageContainerProps {
   message: LocalMessageNode;

@@ -7,10 +7,10 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { UserSearch } from '@colanode/ui/components/users/user-search';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+} from '@worknest/ui/components/ui/popover';
+import { UserSearch } from '@worknest/ui/components/users/user-search';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 export const ChatCreatePopover = () => {
   const workspace = useWorkspace();

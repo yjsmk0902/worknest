@@ -1,8 +1,8 @@
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { AvatarPopover } from '@colanode/ui/components/avatars/avatar-popover';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { AvatarPopover } from '@worknest/ui/components/avatars/avatar-popover';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const RecordAvatar = () => {
   const workspace = useWorkspace();

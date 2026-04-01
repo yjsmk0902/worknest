@@ -1,32 +1,32 @@
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db';
 import { ChevronDown, Trash2, X } from 'lucide-react';
 
-import { LocalRecordNode } from '@colanode/client/types';
+import { LocalRecordNode } from '@worknest/client/types';
 import {
   DatabaseViewFieldFilterAttributes,
   RelationFieldAttributes,
-} from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { RecordSearch } from '@colanode/ui/components/records/record-search';
-import { Badge } from '@colanode/ui/components/ui/badge';
-import { Button } from '@colanode/ui/components/ui/button';
+} from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { RecordSearch } from '@worknest/ui/components/records/record-search';
+import { Badge } from '@worknest/ui/components/ui/badge';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
+} from '@worknest/ui/components/ui/dropdown-menu';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useViewFilter } from '@colanode/ui/hooks/use-view-filter';
-import { relationFieldFilterOperators } from '@colanode/ui/lib/databases';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useViewFilter } from '@worknest/ui/hooks/use-view-filter';
+import { relationFieldFilterOperators } from '@worknest/ui/lib/databases';
 
 interface ViewRelationFieldFilterProps {
   field: RelationFieldAttributes;

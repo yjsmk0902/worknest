@@ -1,5 +1,5 @@
-import { getColorForId } from '@colanode/ui/lib/avatars';
-import { cn } from '@colanode/ui/lib/utils';
+import { getColorForId } from '@worknest/ui/lib/avatars';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ServerAvatarProps {
   url: string | null;

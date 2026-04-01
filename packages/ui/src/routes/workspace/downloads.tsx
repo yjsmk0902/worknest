@@ -1,12 +1,12 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { WorkspaceDownloadsContainer } from '@colanode/ui/components/workspaces/downloads/workspace-downloads-container';
-import { WorkspaceDownloadsTab } from '@colanode/ui/components/workspaces/downloads/workspace-downloads-tab';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { WorkspaceDownloadsContainer } from '@worknest/ui/components/workspaces/downloads/workspace-downloads-container';
+import { WorkspaceDownloadsTab } from '@worknest/ui/components/workspaces/downloads/workspace-downloads-tab';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceRoute,
   workspaceMaskRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const workspaceDownloadsRoute = createRoute({
   getParentRoute: () => workspaceRoute,

@@ -3,27 +3,27 @@ import { isEqual } from 'lodash-es';
 import {
   buildMutationHandlerMap,
   MutationHandlerMap,
-} from '@colanode/client/handlers/mutations';
+} from '@worknest/client/handlers/mutations';
 import {
   buildQueryHandlerMap,
   QueryHandlerMap,
-} from '@colanode/client/handlers/queries';
-import { eventBus } from '@colanode/client/lib/event-bus';
+} from '@worknest/client/handlers/queries';
+import { eventBus } from '@worknest/client/lib/event-bus';
 import {
   MutationHandler,
   QueryHandler,
   SubscribedQuery,
-} from '@colanode/client/lib/types';
+} from '@worknest/client/lib/types';
 import {
   MutationError,
   MutationErrorCode,
   MutationInput,
   MutationResult,
-} from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { AppService } from '@colanode/client/services/app-service';
-import { Event } from '@colanode/client/types/events';
-import { createDebugger } from '@colanode/core';
+} from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { AppService } from '@worknest/client/services/app-service';
+import { Event } from '@worknest/client/types/events';
+import { createDebugger } from '@worknest/core';
 
 const debug = createDebugger('desktop:mediator');
 

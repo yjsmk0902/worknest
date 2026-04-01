@@ -23,13 +23,13 @@ import {
   useState,
 } from 'react';
 
-import { EditorCommand, EditorContext } from '@colanode/client/types';
+import { EditorCommand, EditorContext } from '@worknest/client/types';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { updateScrollView } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/scroll-area';
+import { updateScrollView } from '@worknest/ui/lib/utils';
 
 interface CommanderOptions {
   commands: EditorCommand[];

@@ -1,7 +1,7 @@
 import { ColumnType, Insertable, Selectable, Updateable } from 'kysely';
 
-import { JobScheduleStatus, JobStatus } from '@colanode/client/jobs';
-import { FileSubtype, WorkspaceRole, WorkspaceStatus } from '@colanode/core';
+import { JobScheduleStatus, JobStatus } from '@worknest/client/jobs';
+import { FileSubtype, WorkspaceRole, WorkspaceStatus } from '@worknest/core';
 
 interface ServerTable {
   domain: ColumnType<string, string, never>;

@@ -1,8 +1,8 @@
 import { RouterProvider } from '@tanstack/react-router';
 import { useRef } from 'react';
 
-import { useTabManager } from '@colanode/ui/contexts/tab-manager';
-import { cn } from '@colanode/ui/lib/utils';
+import { useTabManager } from '@worknest/ui/contexts/tab-manager';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface TabsContentItemProps {
   id: string;

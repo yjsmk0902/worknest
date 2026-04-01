@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 
-import { WebPathService } from '@colanode/web/services/path-service';
+import { WebPathService } from '@worknest/web/services/path-service';
 
 describe('services/path-service', () => {
   let pathService: WebPathService;

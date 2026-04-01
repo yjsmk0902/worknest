@@ -1,5 +1,5 @@
-import { GridFile } from '@colanode/ui/components/folders/grids/grid-file';
-import { useFolder } from '@colanode/ui/contexts/folder';
+import { GridFile } from '@worknest/ui/components/folders/grids/grid-file';
+import { useFolder } from '@worknest/ui/contexts/folder';
 
 export const GridLayout = () => {
   const folder = useFolder();

@@ -1,28 +1,28 @@
-import { Account } from '@colanode/client/types/accounts';
-import { Metadata, Tab } from '@colanode/client/types/apps';
-import { Avatar } from '@colanode/client/types/avatars';
+import { Account } from '@worknest/client/types/accounts';
+import { Metadata, Tab } from '@worknest/client/types/apps';
+import { Avatar } from '@worknest/client/types/avatars';
 import {
   Document,
   DocumentState,
   DocumentUpdate,
-} from '@colanode/client/types/documents';
+} from '@worknest/client/types/documents';
 import {
   LocalFile,
   Upload,
   Download,
   TempFile,
-} from '@colanode/client/types/files';
+} from '@worknest/client/types/files';
 import {
   LocalNode,
   NodeCounter,
   NodeInteraction,
   NodeReaction,
   NodeReference,
-} from '@colanode/client/types/nodes';
-import { Server } from '@colanode/client/types/servers';
-import { User } from '@colanode/client/types/users';
-import { Workspace } from '@colanode/client/types/workspaces';
-import { Message } from '@colanode/core';
+} from '@worknest/client/types/nodes';
+import { Server } from '@worknest/client/types/servers';
+import { User } from '@worknest/client/types/users';
+import { Workspace } from '@worknest/client/types/workspaces';
+import { Message } from '@worknest/core';
 
 export type WorkspaceEventData = {
   workspaceId: string;

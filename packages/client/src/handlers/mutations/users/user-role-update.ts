@@ -1,12 +1,12 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { parseApiError } from '@colanode/client/lib/ky';
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { parseApiError } from '@worknest/client/lib/ky';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   UserRoleUpdateMutationInput,
   UserRoleUpdateMutationOutput,
-} from '@colanode/client/mutations/users/user-role-update';
-import { UserOutput, UserRoleUpdateInput } from '@colanode/core';
+} from '@worknest/client/mutations/users/user-role-update';
+import { UserOutput, UserRoleUpdateInput } from '@worknest/core';
 
 export class UserRoleUpdateMutationHandler
   extends WorkspaceMutationHandlerBase

@@ -5,14 +5,14 @@ import { FC } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod/v4';
 
-import { LocalDatabaseViewNode } from '@colanode/client/types';
+import { LocalDatabaseViewNode } from '@worknest/client/types';
 import {
   compareString,
   generateFractionalIndex,
   generateId,
   IdType,
-} from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
+} from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -20,18 +20,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
+} from '@worknest/ui/components/ui/dialog';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 const formSchema = z.object({
   name: z.string(),

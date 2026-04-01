@@ -1,10 +1,10 @@
 import { FastifyPluginCallback } from 'fastify';
 
-import { accountRoutes } from '@colanode/server/api/client/routes/accounts';
-import { authRoutes } from '@colanode/server/api/client/routes/auth';
-import { avatarRoutes } from '@colanode/server/api/client/routes/avatars';
-import { socketRoutes } from '@colanode/server/api/client/routes/sockets';
-import { workspaceRoutes } from '@colanode/server/api/client/routes/workspaces';
+import { accountRoutes } from '@worknest/server/api/client/routes/accounts';
+import { authRoutes } from '@worknest/server/api/client/routes/auth';
+import { avatarRoutes } from '@worknest/server/api/client/routes/avatars';
+import { socketRoutes } from '@worknest/server/api/client/routes/sockets';
+import { workspaceRoutes } from '@worknest/server/api/client/routes/workspaces';
 
 export const clientRoutes: FastifyPluginCallback = (instance, _, done) => {
   instance.register(socketRoutes, { prefix: '/sockets' });

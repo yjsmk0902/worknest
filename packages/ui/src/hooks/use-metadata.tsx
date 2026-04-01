@@ -1,7 +1,7 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { collections } from '@colanode/ui/collections';
-import { buildMetadataKey } from '@colanode/ui/collections/metadata';
+import { collections } from '@worknest/ui/collections';
+import { buildMetadataKey } from '@worknest/ui/collections/metadata';
 
 export const useMetadata = <T = string,>(
   namespace: string,

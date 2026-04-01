@@ -1,7 +1,7 @@
-import { DateFieldAttributes, StringFieldValue } from '@colanode/core';
-import { DatePicker } from '@colanode/ui/components/ui/date-picker';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+import { DateFieldAttributes, StringFieldValue } from '@worknest/core';
+import { DatePicker } from '@worknest/ui/components/ui/date-picker';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface RecordDateValueProps {
   field: DateFieldAttributes;

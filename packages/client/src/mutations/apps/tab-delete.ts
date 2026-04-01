@@ -7,7 +7,7 @@ export type TabDeleteMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'tab.delete': {
       input: TabDeleteMutationInput;

@@ -1,5 +1,5 @@
-import { UpdatedAtFieldAttributes } from '@colanode/core';
-import { useRecord } from '@colanode/ui/contexts/record';
+import { UpdatedAtFieldAttributes } from '@worknest/core';
+import { useRecord } from '@worknest/ui/contexts/record';
 
 interface RecordUpdatedAtValueProps {
   field: UpdatedAtFieldAttributes;

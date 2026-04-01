@@ -1,13 +1,13 @@
-import { consolidateMutations } from '@colanode/client/lib/consolidate-mutations';
-import { mapMutation } from '@colanode/client/lib/mappers';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+import { consolidateMutations } from '@worknest/client/lib/consolidate-mutations';
+import { mapMutation } from '@worknest/client/lib/mappers';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 import {
   createDebugger,
   Mutation,
   MutationStatus,
   SyncMutationsInput,
   SyncMutationsOutput,
-} from '@colanode/core';
+} from '@worknest/core';
 
 const READ_SIZE = 500;
 const BATCH_SIZE = 50;

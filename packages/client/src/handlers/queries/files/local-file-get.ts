@@ -1,8 +1,8 @@
-import { WorkspaceQueryHandlerBase } from '@colanode/client/handlers/queries/workspace-query-handler-base';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { LocalFileGetQueryInput } from '@colanode/client/queries';
-import { LocalFile } from '@colanode/client/types';
-import { Event } from '@colanode/client/types/events';
+import { WorkspaceQueryHandlerBase } from '@worknest/client/handlers/queries/workspace-query-handler-base';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { LocalFileGetQueryInput } from '@worknest/client/queries';
+import { LocalFile } from '@worknest/client/types';
+import { Event } from '@worknest/client/types/events';
 
 export class LocalFileGetQueryHandler
   extends WorkspaceQueryHandlerBase

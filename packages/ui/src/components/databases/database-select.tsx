@@ -2,9 +2,9 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Button } from '@colanode/ui/components/ui/button';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,14 +12,14 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
+} from '@worknest/ui/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface DatabaseSelectProps {
   id: string | null | undefined;

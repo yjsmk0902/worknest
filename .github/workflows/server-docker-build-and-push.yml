@@ -45,7 +45,7 @@ jobs:
           };
           EOF
 
-      - name: Build and push Colanode server image
+      - name: Build and push Worknest server image
         uses: docker/build-push-action@v5
         with:
           context: .

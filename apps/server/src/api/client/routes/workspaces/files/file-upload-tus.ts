@@ -8,14 +8,14 @@ import {
   generateId,
   IdType,
   WorkspaceStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { redis } from '@colanode/server/data/redis';
-import { config } from '@colanode/server/lib/config';
-import { generateUrl } from '@colanode/server/lib/fastify';
-import { mapNode, updateNode } from '@colanode/server/lib/nodes';
-import { storage } from '@colanode/server/lib/storage';
-import { RedisLocker } from '@colanode/server/lib/storage/tus/redis-locker';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { redis } from '@worknest/server/data/redis';
+import { config } from '@worknest/server/lib/config';
+import { generateUrl } from '@worknest/server/lib/fastify';
+import { mapNode, updateNode } from '@worknest/server/lib/nodes';
+import { storage } from '@worknest/server/lib/storage';
+import { RedisLocker } from '@worknest/server/lib/storage/tus/redis-locker';
 
 const tryDeleteFile = async (path: string): Promise<void> => {
   try {

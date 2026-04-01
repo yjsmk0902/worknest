@@ -1,8 +1,8 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 import { z } from 'zod/v4';
 
-import { apiErrorOutputSchema } from '@colanode/core';
-import { socketService } from '@colanode/server/services/socket-service';
+import { apiErrorOutputSchema } from '@worknest/core';
+import { socketService } from '@worknest/server/services/socket-service';
 
 export const socketOpenHandler: FastifyPluginCallbackZod = (
   instance,

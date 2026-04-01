@@ -1,7 +1,7 @@
 import { JSONContent } from '@tiptap/core';
 import { Fragment } from 'react';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
+import { defaultClasses } from '@worknest/ui/editor/classes';
 
 interface MarkRendererProps {
   node: JSONContent;

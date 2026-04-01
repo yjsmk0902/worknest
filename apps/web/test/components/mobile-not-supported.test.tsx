@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MobileNotSupported } from '@colanode/web/components/mobile-not-supported';
+import { MobileNotSupported } from '@worknest/web/components/mobile-not-supported';
 import { customRender, screen } from '../test-utils';
 
 describe('components/MobileNotSupported', () => {

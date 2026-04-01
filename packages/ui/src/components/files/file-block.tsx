@@ -1,11 +1,11 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalFileNode } from '@colanode/client/types';
-import { FileIcon } from '@colanode/ui/components/files/file-icon';
-import { FilePreview } from '@colanode/ui/components/files/file-preview';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { canPreviewFile } from '@colanode/ui/lib/files';
+import { LocalFileNode } from '@worknest/client/types';
+import { FileIcon } from '@worknest/ui/components/files/file-icon';
+import { FilePreview } from '@worknest/ui/components/files/file-preview';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { canPreviewFile } from '@worknest/ui/lib/files';
 
 interface FileBlockProps {
   id: string;

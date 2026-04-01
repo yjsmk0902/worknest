@@ -9,7 +9,7 @@ export default defineConfig({
   root: rootDir,
   resolve: {
     alias: {
-      '@colanode/core': path.resolve(rootDir, 'src'),
+      '@worknest/core': path.resolve(rootDir, 'src'),
     },
   },
   test: {

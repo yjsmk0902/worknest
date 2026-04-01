@@ -1,9 +1,9 @@
 import { FastifyPluginCallback } from 'fastify';
 
-import { clientRoutes } from '@colanode/server/api/client/routes';
-import { configGetRoute } from '@colanode/server/api/config';
-import { homeRoute } from '@colanode/server/api/home';
-import { config } from '@colanode/server/lib/config';
+import { clientRoutes } from '@worknest/server/api/client/routes';
+import { configGetRoute } from '@worknest/server/api/config';
+import { homeRoute } from '@worknest/server/api/home';
+import { config } from '@worknest/server/lib/config';
 
 export const apiRoutes: FastifyPluginCallback = (instance, _, done) => {
   const prefix = config.pathPrefix ? `/${config.pathPrefix}` : '';

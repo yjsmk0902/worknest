@@ -6,9 +6,9 @@ import {
   accountUpdateOutputSchema,
   ApiErrorCode,
   apiErrorOutputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { eventBus } from '@colanode/server/lib/event-bus';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { eventBus } from '@worknest/server/lib/event-bus';
 
 export const accountUpdateRoute: FastifyPluginCallbackZod = (
   instance,

@@ -1,21 +1,21 @@
 import { Fragment } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { NodeBreadcrumbItem } from '@colanode/ui/components/nodes/node-breadcrumb-item';
+import { LocalNode } from '@worknest/client/types';
+import { NodeBreadcrumbItem } from '@worknest/ui/components/nodes/node-breadcrumb-item';
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from '@colanode/ui/components/ui/breadcrumb';
+} from '@worknest/ui/components/ui/breadcrumb';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Link } from '@colanode/ui/components/ui/link';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Link } from '@worknest/ui/components/ui/link';
 
 interface NodeBreadcrumbProps {
   nodes: LocalNode[];

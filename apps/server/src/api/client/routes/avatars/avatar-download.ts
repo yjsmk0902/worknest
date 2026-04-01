@@ -1,8 +1,8 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 import { z } from 'zod/v4';
 
-import { ApiErrorCode } from '@colanode/core';
-import { storage } from '@colanode/server/lib/storage';
+import { ApiErrorCode } from '@worknest/core';
+import { storage } from '@worknest/server/lib/storage';
 
 export const avatarDownloadRoute: FastifyPluginCallbackZod = (
   instance,

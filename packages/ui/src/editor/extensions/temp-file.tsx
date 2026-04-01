@@ -2,8 +2,8 @@ import { CommandProps, mergeAttributes, Node } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 
-import { TempFile } from '@colanode/client/types';
-import { TempFileNodeView } from '@colanode/ui/editor/views';
+import { TempFile } from '@worknest/client/types';
+import { TempFileNodeView } from '@worknest/ui/editor/views';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -69,7 +69,7 @@ export const TempFileNode = Node.create({
 
             (async () => {
               for (const file of files) {
-                const tempFile = await window.colanode.saveTempFile(file);
+                const tempFile = await window.worknest.saveTempFile(file);
                 editor.commands.addTempFile(tempFile);
               }
             })();
@@ -89,7 +89,7 @@ export const TempFileNode = Node.create({
 
             (async () => {
               for (const file of files) {
-                const tempFile = await window.colanode.saveTempFile(file);
+                const tempFile = await window.worknest.saveTempFile(file);
                 editor.commands.addTempFile(tempFile);
               }
             })();

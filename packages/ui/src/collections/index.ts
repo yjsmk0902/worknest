@@ -1,24 +1,24 @@
 import { Collection } from '@tanstack/react-db';
 
-import { eventBus } from '@colanode/client/lib';
+import { eventBus } from '@worknest/client/lib';
 import {
   Download,
   LocalNode,
   NodeReaction,
   Upload,
   User,
-} from '@colanode/client/types';
-import { createAccountsCollection } from '@colanode/ui/collections/accounts';
-import { createDownloadsCollection } from '@colanode/ui/collections/downloads';
-import { createMetadataCollection } from '@colanode/ui/collections/metadata';
-import { createNodeReactionsCollection } from '@colanode/ui/collections/node-reactions';
-import { createNodesCollection } from '@colanode/ui/collections/nodes';
-import { createServersCollection } from '@colanode/ui/collections/servers';
-import { createTabsCollection } from '@colanode/ui/collections/tabs';
-import { createTempFilesCollection } from '@colanode/ui/collections/temp-files';
-import { createUploadsCollection } from '@colanode/ui/collections/uploads';
-import { createUsersCollection } from '@colanode/ui/collections/users';
-import { createWorkspacesCollection } from '@colanode/ui/collections/workspaces';
+} from '@worknest/client/types';
+import { createAccountsCollection } from '@worknest/ui/collections/accounts';
+import { createDownloadsCollection } from '@worknest/ui/collections/downloads';
+import { createMetadataCollection } from '@worknest/ui/collections/metadata';
+import { createNodeReactionsCollection } from '@worknest/ui/collections/node-reactions';
+import { createNodesCollection } from '@worknest/ui/collections/nodes';
+import { createServersCollection } from '@worknest/ui/collections/servers';
+import { createTabsCollection } from '@worknest/ui/collections/tabs';
+import { createTempFilesCollection } from '@worknest/ui/collections/temp-files';
+import { createUploadsCollection } from '@worknest/ui/collections/uploads';
+import { createUsersCollection } from '@worknest/ui/collections/users';
+import { createWorkspacesCollection } from '@worknest/ui/collections/workspaces';
 
 export class WorkspaceCollections {
   private readonly userId: string;

@@ -1,8 +1,8 @@
-// import { MessageAttributes } from '@colanode/core';
-// import { redis } from '@colanode/server/data/redis';
-// import { SelectNode } from '@colanode/server/data/schema';
-// import { config } from '@colanode/server/lib/config';
-// import { jobService } from '@colanode/server/services/job-service';
+// import { MessageAttributes } from '@worknest/core';
+// import { redis } from '@worknest/server/data/redis';
+// import { SelectNode } from '@worknest/server/data/schema';
+// import { config } from '@worknest/server/lib/config';
+// import { jobService } from '@worknest/server/services/job-service';
 
 // export const fetchEmbeddingCursor = async (
 //   cursorId: string

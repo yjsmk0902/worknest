@@ -14,11 +14,11 @@ export default defineConfig({
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     alias: {
       '@assets': resolve(__dirname, './assets'),
-      '@colanode/mobile': resolve(__dirname, './src'),
-      '@colanode/core': resolve(__dirname, '../../packages/core/src'),
-      '@colanode/crdt': resolve(__dirname, '../../packages/crdt/src'),
-      '@colanode/client': resolve(__dirname, '../../packages/client/src'),
-      '@colanode/ui': resolve(__dirname, '../../packages/ui/src'),
+      '@worknest/mobile': resolve(__dirname, './src'),
+      '@worknest/core': resolve(__dirname, '../../packages/core/src'),
+      '@worknest/crdt': resolve(__dirname, '../../packages/crdt/src'),
+      '@worknest/client': resolve(__dirname, '../../packages/client/src'),
+      '@worknest/ui': resolve(__dirname, '../../packages/ui/src'),
     },
   },
   build: {

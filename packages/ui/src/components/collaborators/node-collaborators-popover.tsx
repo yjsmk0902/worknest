@@ -1,12 +1,12 @@
 import { UserRoundPlus } from 'lucide-react';
 
-import { Node, NodeRole } from '@colanode/core';
-import { NodeCollaborators } from '@colanode/ui/components/collaborators/node-collaborators';
+import { Node, NodeRole } from '@worknest/core';
+import { NodeCollaborators } from '@worknest/ui/components/collaborators/node-collaborators';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
+} from '@worknest/ui/components/ui/popover';
 
 interface NodeCollaboratorsPopoverProps {
   node: Node;

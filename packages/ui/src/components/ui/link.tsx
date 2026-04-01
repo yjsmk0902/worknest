@@ -1,8 +1,8 @@
 import { createLink, LinkComponent } from '@tanstack/react-router';
 import * as React from 'react';
 
-import { useApp } from '@colanode/ui/contexts/app';
-import { useLayout } from '@colanode/ui/contexts/layout';
+import { useApp } from '@worknest/ui/contexts/app';
+import { useLayout } from '@worknest/ui/contexts/layout';
 
 const isNewTabClick = (
   event: React.MouseEvent<HTMLAnchorElement>,

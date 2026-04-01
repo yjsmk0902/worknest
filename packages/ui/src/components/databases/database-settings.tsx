@@ -9,11 +9,11 @@ import {
 } from 'lucide-react';
 import { Fragment, useCallback, useState } from 'react';
 
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { NodeCollaboratorAudit } from '@colanode/ui/components/collaborators/node-collaborator-audit';
-import { DatabaseUpdateDialog } from '@colanode/ui/components/databases/database-update-dialog';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { NodeCollaboratorAudit } from '@worknest/ui/components/collaborators/node-collaborator-audit';
+import { DatabaseUpdateDialog } from '@worknest/ui/components/databases/database-update-dialog';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +21,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface DatabaseSettingsProps {
   database: LocalDatabaseNode;

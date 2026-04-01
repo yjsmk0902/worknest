@@ -10,32 +10,32 @@ import {
   generateId,
   LoginVerifyOutput,
   trimString,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { SelectAccount } from '@colanode/server/data/schema';
-import { config } from '@colanode/server/lib/config';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { SelectAccount } from '@worknest/server/data/schema';
+import { config } from '@worknest/server/lib/config';
 import {
   deleteOtp,
   fetchOtp,
   generateOtpCode,
   saveOtp,
-} from '@colanode/server/lib/otps';
-import { generateToken } from '@colanode/server/lib/tokens';
-import { createDefaultWorkspace } from '@colanode/server/lib/workspaces';
-import { emailService } from '@colanode/server/services/email-service';
-import { jobService } from '@colanode/server/services/job-service';
+} from '@worknest/server/lib/otps';
+import { generateToken } from '@worknest/server/lib/tokens';
+import { createDefaultWorkspace } from '@worknest/server/lib/workspaces';
+import { emailService } from '@worknest/server/services/email-service';
+import { jobService } from '@worknest/server/services/job-service';
 import {
   emailPasswordResetTemplate,
   emailVerifyTemplate,
   workspaceInvitationTemplate,
-} from '@colanode/server/templates';
-import { ClientContext } from '@colanode/server/types/api';
-import { DeviceType } from '@colanode/server/types/devices';
+} from '@worknest/server/templates';
+import { ClientContext } from '@worknest/server/types/api';
+import { DeviceType } from '@worknest/server/types/devices';
 import {
   Otp,
   AccountVerifyOtpAttributes,
   AccountPasswordResetOtpAttributes,
-} from '@colanode/server/types/otps';
+} from '@worknest/server/types/otps';
 
 export const generatePasswordHash = async (
   password: string
@@ -223,7 +223,7 @@ export const sendEmailVerifyEmail = async (otpId: string): Promise<void> => {
   });
 
   await emailService.sendEmail({
-    subject: 'Your Colanode email verification code',
+    subject: 'Your Worknest email verification code',
     to: email,
     html,
   });
@@ -257,7 +257,7 @@ export const sendEmailPasswordResetEmail = async (
   });
 
   await emailService.sendEmail({
-    subject: 'Your Colanode password reset code',
+    subject: 'Your Worknest password reset code',
     to: email,
     html,
   });
@@ -308,7 +308,7 @@ export const sendWorkspaceInvitationEmail = async (
   });
 
   await emailService.sendEmail({
-    subject: `${inviterAccount.name} invited you to ${workspace.name} on Colanode`,
+    subject: `${inviterAccount.name} invited you to ${workspace.name} on Worknest`,
     to: user.email,
     html,
   });

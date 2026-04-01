@@ -1,8 +1,8 @@
 import { TableCell } from '@tiptap/extension-table/cell';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
-import { TableCellNodeView } from '@colanode/ui/editor/views';
+import { defaultClasses } from '@worknest/ui/editor/classes';
+import { TableCellNodeView } from '@worknest/ui/editor/views';
 
 export const TableCellNode = TableCell.extend({
   addNodeView() {

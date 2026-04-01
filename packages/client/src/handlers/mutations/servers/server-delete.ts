@@ -1,11 +1,11 @@
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   ServerDeleteMutationInput,
   ServerDeleteMutationOutput,
-} from '@colanode/client/mutations/servers/server-delete';
-import { AppService } from '@colanode/client/services/app-service';
-import { isColanodeDomain } from '@colanode/core';
+} from '@worknest/client/mutations/servers/server-delete';
+import { AppService } from '@worknest/client/services/app-service';
+import { isWorknestDomain } from '@worknest/core';
 
 export class ServerDeleteMutationHandler
   implements MutationHandler<ServerDeleteMutationInput>
@@ -19,10 +19,10 @@ export class ServerDeleteMutationHandler
   async handleMutation(
     input: ServerDeleteMutationInput
   ): Promise<ServerDeleteMutationOutput> {
-    if (isColanodeDomain(input.domain)) {
+    if (isWorknestDomain(input.domain)) {
       throw new MutationError(
         MutationErrorCode.ServerDeleteForbidden,
-        'Cannot delete Colanode server'
+        'Cannot delete Worknest server'
       );
     }
 

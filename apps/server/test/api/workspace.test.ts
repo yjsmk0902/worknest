@@ -6,8 +6,8 @@ import {
   UserStatus,
   WorkspaceStatus,
   generateId,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 import { buildTestApp } from '../helpers/app';
 import {
   buildAuthHeader,

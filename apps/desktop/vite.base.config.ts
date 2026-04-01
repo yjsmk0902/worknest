@@ -32,14 +32,14 @@ export function getBuildConfig(env: ConfigEnv<'build'>): UserConfig {
     clearScreen: false,
     resolve: {
       alias: {
-        '@colanode/desktop': path.resolve(__dirname, './src'),
-        '@colanode/core': path.resolve(__dirname, '../../packages/core/src'),
-        '@colanode/crdt': path.resolve(__dirname, '../../packages/crdt/src'),
-        '@colanode/client': path.resolve(
+        '@worknest/desktop': path.resolve(__dirname, './src'),
+        '@worknest/core': path.resolve(__dirname, '../../packages/core/src'),
+        '@worknest/crdt': path.resolve(__dirname, '../../packages/crdt/src'),
+        '@worknest/client': path.resolve(
           __dirname,
           '../../packages/client/src'
         ),
-        '@colanode/ui': path.resolve(__dirname, '../../packages/ui/src'),
+        '@worknest/ui': path.resolve(__dirname, '../../packages/ui/src'),
       },
     },
   };

@@ -3,7 +3,7 @@ import {
   IdType,
   generateId,
   generateFractionalIndex,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export const generateWelcomePageBlocks = (
   pageId: string
@@ -13,10 +13,10 @@ export const generateWelcomePageBlocks = (
     type: 'heading1',
     parentId: pageId,
     index: generateFractionalIndex(),
-    content: [{ type: 'text', text: 'Welcome to the Colanode!' }],
+    content: [{ type: 'text', text: 'Welcome to the Worknest!' }],
   };
 
-  const colanodeParagraphBlock: Block = {
+  const worknestParagraphBlock: Block = {
     id: generateId(IdType.Block),
     type: 'paragraph',
     parentId: pageId,
@@ -24,7 +24,7 @@ export const generateWelcomePageBlocks = (
     content: [
       {
         type: 'text',
-        text: 'Colanode is an open-source and local-first collaboration workspace.',
+        text: 'Worknest is an open-source and local-first collaboration workspace.',
       },
     ],
   };
@@ -33,7 +33,7 @@ export const generateWelcomePageBlocks = (
     id: generateId(IdType.Block),
     type: 'paragraph',
     parentId: pageId,
-    index: generateFractionalIndex(colanodeParagraphBlock.index),
+    index: generateFractionalIndex(worknestParagraphBlock.index),
     content: [
       {
         type: 'text',
@@ -198,7 +198,7 @@ export const generateWelcomePageBlocks = (
     index: generateFractionalIndex(databaseHeadingBlock.index),
     content: [
       {
-        text: 'A database in Colanode is like a powerful spreadsheet that combines tables with rich content. You can use databases to organize and view your information in multiple ways - as tables, kanban boards, calendars, or galleries. Each row in the database is a full page that can contain any type of content, and columns act as properties that help you organize and filter your information.',
+        text: 'A database in Worknest is like a powerful spreadsheet that combines tables with rich content. You can use databases to organize and view your information in multiple ways - as tables, kanban boards, calendars, or galleries. Each row in the database is a full page that can contain any type of content, and columns act as properties that help you organize and filter your information.',
         type: 'text',
       },
     ],
@@ -263,7 +263,7 @@ export const generateWelcomePageBlocks = (
             type: 'link',
             attrs: {
               rel: 'noopener noreferrer nofollow',
-              href: 'https://x.com/colanode',
+              href: 'https://x.com/worknest',
               target: '_blank',
             },
           },
@@ -281,7 +281,7 @@ export const generateWelcomePageBlocks = (
             type: 'link',
             attrs: {
               rel: 'noopener noreferrer nofollow',
-              href: 'https://github.com/colanode/colanode',
+              href: 'https://github.com/worknest/worknest',
               target: '_blank',
             },
           },
@@ -296,7 +296,7 @@ export const generateWelcomePageBlocks = (
 
   const result: Record<string, Block> = {
     [headingBlock.id]: headingBlock,
-    [colanodeParagraphBlock.id]: colanodeParagraphBlock,
+    [worknestParagraphBlock.id]: worknestParagraphBlock,
     [startTypingParagraphBlock.id]: startTypingParagraphBlock,
     [taskListBlock.id]: taskListBlock,
     [task1Block.id]: task1Block,

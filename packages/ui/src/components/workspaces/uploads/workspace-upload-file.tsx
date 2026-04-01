@@ -1,12 +1,12 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 import { BadgeAlert } from 'lucide-react';
 
-import { Upload, LocalFileNode } from '@colanode/client/types';
-import { formatBytes, timeAgo } from '@colanode/core';
-import { FileThumbnail } from '@colanode/ui/components/files/file-thumbnail';
-import { Link } from '@colanode/ui/components/ui/link';
-import { WorkspaceUploadStatus } from '@colanode/ui/components/workspaces/uploads/workspace-upload-status';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { Upload, LocalFileNode } from '@worknest/client/types';
+import { formatBytes, timeAgo } from '@worknest/core';
+import { FileThumbnail } from '@worknest/ui/components/files/file-thumbnail';
+import { Link } from '@worknest/ui/components/ui/link';
+import { WorkspaceUploadStatus } from '@worknest/ui/components/workspaces/uploads/workspace-upload-status';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface WorkspaceUploadFileProps {
   upload: Upload;

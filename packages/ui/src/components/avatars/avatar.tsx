@@ -1,14 +1,14 @@
-import { getIdType, IdType } from '@colanode/core';
-import { AvatarFallback } from '@colanode/ui/components/avatars/avatar-fallback';
-import { AvatarImage } from '@colanode/ui/components/avatars/avatar-image';
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { IconElement } from '@colanode/ui/components/icons/icon-element';
+import { getIdType, IdType } from '@worknest/core';
+import { AvatarFallback } from '@worknest/ui/components/avatars/avatar-fallback';
+import { AvatarImage } from '@worknest/ui/components/avatars/avatar-image';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { IconElement } from '@worknest/ui/components/icons/icon-element';
 import {
   AvatarProps,
   getAvatarSizeClasses,
   getDefaultNodeAvatar,
-} from '@colanode/ui/lib/avatars';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/lib/avatars';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const Avatar = (props: AvatarProps) => {
   let avatar = props.avatar;

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { isOpfsSupported, isMobileDevice } from '@colanode/web/lib/utils';
+import { isOpfsSupported, isMobileDevice } from '@worknest/web/lib/utils';
 
 describe('lib/utils', () => {
   describe('isMobileDevice', () => {

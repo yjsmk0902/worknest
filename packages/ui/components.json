@@ -11,10 +11,10 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@colanode/ui/components",
-    "utils": "@colanode/ui/lib/utils",
-    "hooks": "@colanode/ui/hooks",
-    "lib": "@colanode/ui/lib"
+    "components": "@worknest/ui/components",
+    "utils": "@worknest/ui/lib/utils",
+    "hooks": "@worknest/ui/hooks",
+    "lib": "@worknest/ui/lib"
   },
   "iconLibrary": "lucide"
 }

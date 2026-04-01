@@ -1,7 +1,7 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { collections } from '@colanode/ui/collections';
-import { Tab } from '@colanode/ui/components/layouts/tabs/tab';
+import { collections } from '@worknest/ui/collections';
+import { Tab } from '@worknest/ui/components/layouts/tabs/tab';
 
 interface WorkspaceTabProps {
   userId: string;

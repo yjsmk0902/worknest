@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod/v4';
 
-import { ZOD_TEXT_DESCRIPTION } from '@colanode/core/lib/constants';
-import { YDoc, encodeState, decodeState, mergeUpdates } from '@colanode/crdt';
+import { ZOD_TEXT_DESCRIPTION } from '@worknest/core/lib/constants';
+import { YDoc, encodeState, decodeState, mergeUpdates } from '@worknest/crdt';
 
 const simpleSchema = z.object({
   name: z.string(),

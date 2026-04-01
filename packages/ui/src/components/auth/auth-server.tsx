@@ -2,10 +2,10 @@ import { useLiveQuery } from '@tanstack/react-db';
 import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import { Server } from '@colanode/client/types';
-import { collections } from '@colanode/ui/collections';
-import { ServerCard } from '@colanode/ui/components/servers/server-card';
-import { ServerCreateDialog } from '@colanode/ui/components/servers/server-create-dialog';
+import { Server } from '@worknest/client/types';
+import { collections } from '@worknest/ui/collections';
+import { ServerCard } from '@worknest/ui/components/servers/server-card';
+import { ServerCreateDialog } from '@worknest/ui/components/servers/server-create-dialog';
 
 interface AuthServerProps {
   onSelect: (server: Server) => void;

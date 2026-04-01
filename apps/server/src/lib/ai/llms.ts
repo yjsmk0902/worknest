@@ -3,7 +3,7 @@
 // import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 // import { ChatOpenAI } from '@langchain/openai';
 
-// import { NodeType, RecordNode } from '@colanode/core';
+// import { NodeType, RecordNode } from '@worknest/core';
 // import {
 //   queryRewritePrompt,
 //   summarizationPrompt,
@@ -13,8 +13,8 @@
 //   noContextPrompt,
 //   databaseFilterPrompt,
 //   chunkSummarizationPrompt,
-// } from '@colanode/server/lib/ai/prompts';
-// import { config } from '@colanode/server/lib/config';
+// } from '@worknest/server/lib/ai/prompts';
+// import { config } from '@worknest/server/lib/config';
 // import {
 //   rerankedDocumentsSchema,
 //   RerankedDocuments,
@@ -24,7 +24,7 @@
 //   DatabaseFilterResult,
 //   RewrittenQuery,
 //   rewrittenQuerySchema,
-// } from '@colanode/server/types/llm';
+// } from '@worknest/server/types/llm';
 
 // const getChatModel = (task: string): ChatOpenAI | ChatGoogleGenerativeAI => {
 //   if (!config.ai.enabled) {

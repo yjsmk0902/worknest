@@ -1,10 +1,10 @@
-import { Tab } from '@colanode/client/types/apps';
+import { Tab } from '@worknest/client/types/apps';
 
 export type TabsListQueryInput = {
   type: 'tabs.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'tabs.list': {
       input: TabsListQueryInput;

@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 
-import { AppInitOutput, ThemeColor, ThemeMode } from '@colanode/client/types';
-import { ThemeContext } from '@colanode/ui/contexts/theme';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
-import { useSystemTheme } from '@colanode/ui/hooks/use-system-theme';
-import { getThemeVariables } from '@colanode/ui/lib/themes';
+import { AppInitOutput, ThemeColor, ThemeMode } from '@worknest/client/types';
+import { ThemeContext } from '@worknest/ui/contexts/theme';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
+import { useSystemTheme } from '@worknest/ui/hooks/use-system-theme';
+import { getThemeVariables } from '@worknest/ui/lib/themes';
 
 const useApplyTheme = (mode: ThemeMode, color?: ThemeColor) => {
   useEffect(() => {

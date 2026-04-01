@@ -1,11 +1,11 @@
 import { Copy, Image, LetterText, Settings, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalChannelNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { ChannelUpdateDialog } from '@colanode/ui/components/channels/channel-update-dialog';
-import { NodeCollaboratorAudit } from '@colanode/ui/components/collaborators/node-collaborator-audit';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { LocalChannelNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { ChannelUpdateDialog } from '@worknest/ui/components/channels/channel-update-dialog';
+import { NodeCollaboratorAudit } from '@worknest/ui/components/collaborators/node-collaborator-audit';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
+} from '@worknest/ui/components/ui/dropdown-menu';
 
 interface ChannelSettingsProps {
   channel: LocalChannelNode;

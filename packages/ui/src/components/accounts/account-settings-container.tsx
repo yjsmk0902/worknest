@@ -1,8 +1,8 @@
-import { AccountDelete } from '@colanode/ui/components/accounts/account-delete';
-import { AccountSettingsBreadcrumb } from '@colanode/ui/components/accounts/account-settings-breadcrumb';
-import { AccountUpdate } from '@colanode/ui/components/accounts/account-update';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Separator } from '@colanode/ui/components/ui/separator';
+import { AccountDelete } from '@worknest/ui/components/accounts/account-delete';
+import { AccountSettingsBreadcrumb } from '@worknest/ui/components/accounts/account-settings-breadcrumb';
+import { AccountUpdate } from '@worknest/ui/components/accounts/account-update';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Separator } from '@worknest/ui/components/ui/separator';
 
 export const AccountSettingsContainer = () => {
   return (

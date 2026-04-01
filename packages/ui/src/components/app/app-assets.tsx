@@ -1,4 +1,4 @@
-import { useApp } from '@colanode/ui/contexts/app';
+import { useApp } from '@worknest/ui/contexts/app';
 
 export const AppAssets = () => {
   const app = useApp();

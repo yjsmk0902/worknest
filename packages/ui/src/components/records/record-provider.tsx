@@ -1,7 +1,7 @@
-import { LocalRecordNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { RecordContext } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalRecordNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { RecordContext } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const RecordProvider = ({
   record,

@@ -4,21 +4,21 @@ import {
   IdType,
   UserStatus,
   WorkspaceStatus,
-} from '@colanode/core';
-import { YDoc } from '@colanode/crdt';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { YDoc } from '@worknest/crdt';
+import { database } from '@worknest/server/data/database';
 import type {
   SelectAccount,
   SelectDevice,
   SelectUser,
   SelectWorkspace,
-} from '@colanode/server/data/schema';
-import { generatePasswordHash } from '@colanode/server/lib/accounts';
-import { createNode } from '@colanode/server/lib/nodes';
-import { generateToken } from '@colanode/server/lib/tokens';
-import { DeviceType } from '@colanode/server/types/devices';
-import { getNodeModel, NodeAttributes } from '@colanode/core';
-import { FileStatus } from '@colanode/core';
+} from '@worknest/server/data/schema';
+import { generatePasswordHash } from '@worknest/server/lib/accounts';
+import { createNode } from '@worknest/server/lib/nodes';
+import { generateToken } from '@worknest/server/lib/tokens';
+import { DeviceType } from '@worknest/server/types/devices';
+import { getNodeModel, NodeAttributes } from '@worknest/core';
+import { FileStatus } from '@worknest/core';
 
 export const createAccount = async (input?: {
   email?: string;

@@ -1,8 +1,8 @@
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { ServerListQueryInput } from '@colanode/client/queries/servers/server-list';
-import { AppService } from '@colanode/client/services/app-service';
-import { Server } from '@colanode/client/types';
-import { Event } from '@colanode/client/types/events';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { ServerListQueryInput } from '@worknest/client/queries/servers/server-list';
+import { AppService } from '@worknest/client/services/app-service';
+import { Server } from '@worknest/client/types';
+import { Event } from '@worknest/client/types/events';
 
 export class ServerListQueryHandler
   implements QueryHandler<ServerListQueryInput>

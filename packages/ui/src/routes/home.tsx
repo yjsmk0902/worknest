@@ -1,7 +1,7 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { rootRoute } from '@colanode/ui/routes/root';
-import { getDefaultWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { rootRoute } from '@worknest/ui/routes/root';
+import { getDefaultWorkspaceUserId } from '@worknest/ui/routes/utils';
 
 export const homeRoute = createRoute({
   getParentRoute: () => rootRoute,

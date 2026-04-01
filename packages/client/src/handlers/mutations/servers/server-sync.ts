@@ -1,12 +1,12 @@
 import ms from 'ms';
 
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   ServerSyncMutationInput,
   ServerSyncMutationOutput,
-} from '@colanode/client/mutations/servers/server-sync';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/servers/server-sync';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class ServerSyncMutationHandler
   implements MutationHandler<ServerSyncMutationInput>

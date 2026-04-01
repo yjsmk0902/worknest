@@ -1,16 +1,16 @@
-// import { assistantRespondHandler } from '@colanode/server/jobs/assistant-response';
-import { cleanupHandler } from '@colanode/server/jobs/cleanup';
-// import { documentEmbedHandler } from '@colanode/server/jobs/document-embed';
-// import { documentEmbedScanHandler } from '@colanode/server/jobs/document-embed-scan';
-import { documentUpdatesMergeHandler } from '@colanode/server/jobs/document-updates-merge';
-import { emailPasswordResetSendHandler } from '@colanode/server/jobs/email-password-reset-sent';
-import { emailVerifySendHandler } from '@colanode/server/jobs/email-verify-send';
-import { emailWorkspaceInvitationSendHandler } from '@colanode/server/jobs/email-workspace-invitation-send';
-import { nodeCleanHandler } from '@colanode/server/jobs/node-clean';
-// import { nodeEmbedHandler } from '@colanode/server/jobs/node-embed';
-// import { nodeEmbedScanHandler } from '@colanode/server/jobs/node-embed-scan';
-import { nodeUpdatesMergeHandler } from '@colanode/server/jobs/node-updates-merge';
-import { workspaceCleanHandler } from '@colanode/server/jobs/workspace-clean';
+// import { assistantRespondHandler } from '@worknest/server/jobs/assistant-response';
+import { cleanupHandler } from '@worknest/server/jobs/cleanup';
+// import { documentEmbedHandler } from '@worknest/server/jobs/document-embed';
+// import { documentEmbedScanHandler } from '@worknest/server/jobs/document-embed-scan';
+import { documentUpdatesMergeHandler } from '@worknest/server/jobs/document-updates-merge';
+import { emailPasswordResetSendHandler } from '@worknest/server/jobs/email-password-reset-sent';
+import { emailVerifySendHandler } from '@worknest/server/jobs/email-verify-send';
+import { emailWorkspaceInvitationSendHandler } from '@worknest/server/jobs/email-workspace-invitation-send';
+import { nodeCleanHandler } from '@worknest/server/jobs/node-clean';
+// import { nodeEmbedHandler } from '@worknest/server/jobs/node-embed';
+// import { nodeEmbedScanHandler } from '@worknest/server/jobs/node-embed-scan';
+import { nodeUpdatesMergeHandler } from '@worknest/server/jobs/node-updates-merge';
+import { workspaceCleanHandler } from '@worknest/server/jobs/workspace-clean';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface JobMap {}

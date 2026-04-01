@@ -1,55 +1,55 @@
 import { createRouter } from '@tanstack/react-router';
 
-import { authRoute } from '@colanode/ui/routes/auth';
-import { loginRoute } from '@colanode/ui/routes/auth/login';
-import { registerRoute } from '@colanode/ui/routes/auth/register';
-import { resetRoute } from '@colanode/ui/routes/auth/reset';
-import { workspaceCreateRoute } from '@colanode/ui/routes/create';
-import { homeRoute } from '@colanode/ui/routes/home';
-import { rootRoute } from '@colanode/ui/routes/root';
+import { authRoute } from '@worknest/ui/routes/auth';
+import { loginRoute } from '@worknest/ui/routes/auth/login';
+import { registerRoute } from '@worknest/ui/routes/auth/register';
+import { resetRoute } from '@worknest/ui/routes/auth/reset';
+import { workspaceCreateRoute } from '@worknest/ui/routes/create';
+import { homeRoute } from '@worknest/ui/routes/home';
+import { rootRoute } from '@worknest/ui/routes/root';
 import {
   workspaceRoute,
   workspaceMaskRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 import {
   accountSettingsMaskRoute,
   accountSettingsRoute,
-} from '@colanode/ui/routes/workspace/account';
+} from '@worknest/ui/routes/workspace/account';
 import {
   appAppearanceMaskRoute,
   appAppearanceRoute,
-} from '@colanode/ui/routes/workspace/appearance';
+} from '@worknest/ui/routes/workspace/appearance';
 import {
   workspaceDownloadsMaskRoute,
   workspaceDownloadsRoute,
-} from '@colanode/ui/routes/workspace/downloads';
+} from '@worknest/ui/routes/workspace/downloads';
 import {
   workspaceHomeMaskRoute,
   workspaceHomeRoute,
-} from '@colanode/ui/routes/workspace/home';
-import { infoMaskRoute, infoRoute } from '@colanode/ui/routes/workspace/info';
+} from '@worknest/ui/routes/workspace/home';
+import { infoMaskRoute, infoRoute } from '@worknest/ui/routes/workspace/info';
 import {
   logoutMaskRoute,
   logoutRoute,
-} from '@colanode/ui/routes/workspace/logout';
-import { modalNodeRoute } from '@colanode/ui/routes/workspace/modal';
-import { nodeMaskRoute, nodeRoute } from '@colanode/ui/routes/workspace/node';
+} from '@worknest/ui/routes/workspace/logout';
+import { modalNodeRoute } from '@worknest/ui/routes/workspace/modal';
+import { nodeMaskRoute, nodeRoute } from '@worknest/ui/routes/workspace/node';
 import {
   workspaceRedirectMaskRoute,
   workspaceRedirectRoute,
-} from '@colanode/ui/routes/workspace/redirect';
+} from '@worknest/ui/routes/workspace/redirect';
 import {
   workspaceSettingsMaskRoute,
   workspaceSettingsRoute,
-} from '@colanode/ui/routes/workspace/settings';
+} from '@worknest/ui/routes/workspace/settings';
 import {
   workspaceUploadsMaskRoute,
   workspaceUploadsRoute,
-} from '@colanode/ui/routes/workspace/uploads';
+} from '@worknest/ui/routes/workspace/uploads';
 import {
   workspaceUsersMaskRoute,
   workspaceUsersRoute,
-} from '@colanode/ui/routes/workspace/users';
+} from '@worknest/ui/routes/workspace/users';
 
 export const routeTree = rootRoute.addChildren([
   homeRoute,

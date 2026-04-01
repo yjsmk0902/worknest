@@ -3,8 +3,8 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import isHotkey from 'is-hotkey';
 import { forwardRef, Fragment, useImperativeHandle } from 'react';
 
-import { TempFile } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core/lib/id.js';
+import { TempFile } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core/lib/id.js';
 import {
   BoldMark,
   CodeBlockNode,
@@ -28,8 +28,8 @@ import {
   UnderlineMark,
   MentionExtension,
   HardBreakNode,
-} from '@colanode/ui/editor/extensions';
-import { ToolbarMenu } from '@colanode/ui/editor/menus';
+} from '@worknest/ui/editor/extensions';
+import { ToolbarMenu } from '@worknest/ui/editor/menus';
 
 interface MessageEditorProps {
   userId: string;

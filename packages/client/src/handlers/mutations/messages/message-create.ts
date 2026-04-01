@@ -1,18 +1,18 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib';
-import { mapContentsToBlocks } from '@colanode/client/lib/editor';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib';
+import { mapContentsToBlocks } from '@worknest/client/lib/editor';
 import {
   MessageCreateMutationInput,
   MessageCreateMutationOutput,
   MutationError,
   MutationErrorCode,
-} from '@colanode/client/mutations';
+} from '@worknest/client/mutations';
 import {
   EditorNodeTypes,
   generateId,
   IdType,
   MessageAttributes,
-} from '@colanode/core';
+} from '@worknest/core';
 
 interface MessageFile {
   id: string;

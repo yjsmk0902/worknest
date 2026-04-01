@@ -1,9 +1,9 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapAccount, mapWorkspace } from '@colanode/client/lib/mappers';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services/app-service';
-import { ServerService } from '@colanode/client/services/server-service';
-import { LoginSuccessOutput } from '@colanode/core';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapAccount, mapWorkspace } from '@worknest/client/lib/mappers';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services/app-service';
+import { ServerService } from '@worknest/client/services/server-service';
+import { LoginSuccessOutput } from '@worknest/core';
 
 export abstract class AuthMutationHandlerBase {
   protected readonly app: AppService;

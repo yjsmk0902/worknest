@@ -1,4 +1,4 @@
-import { Tab } from '@colanode/ui/components/layouts/tabs/tab';
+import { Tab } from '@worknest/ui/components/layouts/tabs/tab';
 
 export const WorkspaceCreateTab = () => {
   return (

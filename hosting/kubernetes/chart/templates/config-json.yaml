@@ -1,11 +1,11 @@
-{{- $configFile := .Values.colanode.configFile -}}
+{{- $configFile := .Values.worknest.configFile -}}
 {{- if and $configFile.enabled (not $configFile.existingConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "colanode.configJsonConfigMapName" . | trim | quote }}
+  name: {{ include "worknest.configJsonConfigMapName" . | trim | quote }}
   labels:
-    {{- include "colanode.labels" . | nindent 4 }}
+    {{- include "worknest.labels" . | nindent 4 }}
 data:
   {{ default "config.json" $configFile.key | quote }}: |
 {{ if $configFile.data }}

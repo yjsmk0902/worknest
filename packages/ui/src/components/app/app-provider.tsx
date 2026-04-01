@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
-import { AppInitOutput, AppType } from '@colanode/client/types';
-import { build } from '@colanode/core';
-import { collections } from '@colanode/ui/collections';
-import { AppAssets } from '@colanode/ui/components/app/app-assets';
-import { AppLayout } from '@colanode/ui/components/app/app-layout';
-import { AppLoading } from '@colanode/ui/components/app/app-loading';
-import { AppReset } from '@colanode/ui/components/app/app-reset';
-import { AppThemeProvider } from '@colanode/ui/components/app/app-theme-provider';
-import { RadarProvider } from '@colanode/ui/components/app/radar-provider';
-import { AppContext } from '@colanode/ui/contexts/app';
+import { AppInitOutput, AppType } from '@worknest/client/types';
+import { build } from '@worknest/core';
+import { collections } from '@worknest/ui/collections';
+import { AppAssets } from '@worknest/ui/components/app/app-assets';
+import { AppLayout } from '@worknest/ui/components/app/app-layout';
+import { AppLoading } from '@worknest/ui/components/app/app-loading';
+import { AppReset } from '@worknest/ui/components/app/app-reset';
+import { AppThemeProvider } from '@worknest/ui/components/app/app-theme-provider';
+import { RadarProvider } from '@worknest/ui/components/app/radar-provider';
+import { AppContext } from '@worknest/ui/contexts/app';
 
 interface AppProviderProps {
   type: AppType;
@@ -19,10 +19,10 @@ export const AppProvider = ({ type }: AppProviderProps) => {
   const [initOutput, setInitOutput] = useState<AppInitOutput | null>(null);
 
   useEffect(() => {
-    console.log(`Colanode | Version: ${build.version} | SHA: ${build.sha}`);
+    console.log(`Worknest | Version: ${build.version} | SHA: ${build.sha}`);
 
-    window.colanode.init().then((output) => {
-      console.log('Colanode | Initialized');
+    window.worknest.init().then((output) => {
+      console.log('Worknest | Initialized');
 
       if (output === 'success') {
         collections
@@ -32,7 +32,7 @@ export const AppProvider = ({ type }: AppProviderProps) => {
           })
           .catch((err) => {
             setInitOutput('error');
-            console.error('Colanode | Error preloading', err);
+            console.error('Worknest | Error preloading', err);
           });
       } else {
         setInitOutput(output);

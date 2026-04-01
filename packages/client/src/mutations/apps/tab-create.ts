@@ -9,7 +9,7 @@ export type TabCreateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'tab.create': {
       input: TabCreateMutationInput;

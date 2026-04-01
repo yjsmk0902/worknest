@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { ThemeColor, ThemeMode } from '@colanode/client/types';
+import { ThemeColor, ThemeMode } from '@worknest/client/types';
 
 interface ThemeContext {
   mode: ThemeMode;

@@ -1,9 +1,9 @@
 import { createRoute } from '@tanstack/react-router';
 import { z } from 'zod/v4';
 
-import { Reset } from '@colanode/ui/components/auth/reset';
-import { ResetTab } from '@colanode/ui/components/auth/reset-tab';
-import { authRoute } from '@colanode/ui/routes/auth';
+import { Reset } from '@worknest/ui/components/auth/reset';
+import { ResetTab } from '@worknest/ui/components/auth/reset-tab';
+import { authRoute } from '@worknest/ui/routes/auth';
 
 const resetSearchSchema = z.object({
   id: z.string().optional(),

@@ -1,6 +1,6 @@
-import { EmojiPickerItemsRow } from '@colanode/client/types';
-import { EmojiPickerItem } from '@colanode/ui/components/emojis/emoji-picker-item';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+import { EmojiPickerItemsRow } from '@worknest/client/types';
+import { EmojiPickerItem } from '@worknest/ui/components/emojis/emoji-picker-item';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface EmojiBrowserItemsProps {
   row: EmojiPickerItemsRow;

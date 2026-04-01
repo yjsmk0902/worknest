@@ -1,4 +1,4 @@
-import '@colanode/ui/styles/editor.css';
+import '@worknest/ui/styles/editor.css';
 
 import {
   EditorContent,
@@ -15,15 +15,15 @@ import {
   getRelativeSelection,
   mapContentsToBlocks,
   buildEditorContent,
-} from '@colanode/client/lib';
+} from '@worknest/client/lib';
 import {
   LocalNode,
   DocumentState,
   DocumentUpdate,
-} from '@colanode/client/types';
-import { RichTextContent, richTextContentSchema } from '@colanode/core';
-import { encodeState, YDoc } from '@colanode/crdt';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/client/types';
+import { RichTextContent, richTextContentSchema } from '@worknest/core';
+import { encodeState, YDoc } from '@worknest/crdt';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 import {
   BlockquoteCommand,
   BulletListCommand,
@@ -41,7 +41,7 @@ import {
   TodoCommand,
   DatabaseCommand,
   DatabaseInlineCommand,
-} from '@colanode/ui/editor/commands';
+} from '@worknest/ui/editor/commands';
 import {
   BlockquoteNode,
   BoldMark,
@@ -85,8 +85,8 @@ import {
   HardBreakNode,
   ParserExtension,
   Markdown,
-} from '@colanode/ui/editor/extensions';
-import { ToolbarMenu, ActionMenu } from '@colanode/ui/editor/menus';
+} from '@worknest/ui/editor/extensions';
+import { ToolbarMenu, ActionMenu } from '@worknest/ui/editor/menus';
 
 interface DocumentEditorProps {
   node: LocalNode;
@@ -136,7 +136,7 @@ const performUndo = async ({
   const editorContent = buildEditorContent(nodeId, afterContent);
   editor.chain().setContent(editorContent).run();
 
-  const result = await window.colanode.executeMutation({
+  const result = await window.worknest.executeMutation({
     type: 'document.update',
     userId,
     documentId: nodeId,
@@ -173,7 +173,7 @@ const performRedo = async ({
   const editorContent = buildEditorContent(nodeId, afterContent);
   editor.chain().setContent(editorContent).run();
 
-  const result = await window.colanode.executeMutation({
+  const result = await window.worknest.executeMutation({
     type: 'document.update',
     userId,
     documentId: nodeId,
@@ -233,7 +233,7 @@ export const DocumentEditor = ({
           return;
         }
 
-        const result = await window.colanode.executeMutation({
+        const result = await window.worknest.executeMutation({
           type: 'document.update',
           userId: workspace.userId,
           documentId: node.id,

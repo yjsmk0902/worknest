@@ -1,12 +1,12 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 import {
   Event,
   NodeCounterUpdatedEvent,
   NodeCounterDeletedEvent,
-} from '@colanode/client/types/events';
-import { NodeCounterType } from '@colanode/client/types/nodes';
-import { WorkspaceRadarData } from '@colanode/client/types/radars';
+} from '@worknest/client/types/events';
+import { NodeCounterType } from '@worknest/client/types/nodes';
+import { WorkspaceRadarData } from '@worknest/client/types/radars';
 
 export class RadarService {
   private readonly workspace: WorkspaceService;

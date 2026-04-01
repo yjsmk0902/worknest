@@ -1,13 +1,13 @@
 import { type NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Database } from '@colanode/ui/components/databases/database';
-import { DatabaseViews } from '@colanode/ui/components/databases/database-views';
-import { NodeProvider } from '@colanode/ui/components/nodes/node-provider';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useNode } from '@colanode/ui/contexts/node';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Database } from '@worknest/ui/components/databases/database';
+import { DatabaseViews } from '@worknest/ui/components/databases/database-views';
+import { NodeProvider } from '@worknest/ui/components/nodes/node-provider';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useNode } from '@worknest/ui/contexts/node';
 
 const DatabaseNodeViewContent = ({
   id,

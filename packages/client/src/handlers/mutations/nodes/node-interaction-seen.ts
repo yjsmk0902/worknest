@@ -1,19 +1,19 @@
 import ms from 'ms';
 
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapNodeInteraction } from '@colanode/client/lib/mappers';
-import { MutationHandler } from '@colanode/client/lib/types';
-import { fetchNode } from '@colanode/client/lib/utils';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapNodeInteraction } from '@worknest/client/lib/mappers';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { fetchNode } from '@worknest/client/lib/utils';
 import {
   NodeInteractionSeenMutationInput,
   NodeInteractionSeenMutationOutput,
-} from '@colanode/client/mutations/nodes/node-interaction-seen';
+} from '@worknest/client/mutations/nodes/node-interaction-seen';
 import {
   NodeInteractionSeenMutation,
   generateId,
   IdType,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export class NodeInteractionSeenMutationHandler
   extends WorkspaceMutationHandlerBase

@@ -1,15 +1,15 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useMemo, useRef } from 'react';
 
-import { IconPickerRowData } from '@colanode/client/types';
-import { IconBrowserCategory } from '@colanode/ui/components/icons/icon-browser-category';
-import { IconBrowserItems } from '@colanode/ui/components/icons/icon-browser-items';
+import { IconPickerRowData } from '@worknest/client/types';
+import { IconBrowserCategory } from '@worknest/ui/components/icons/icon-browser-category';
+import { IconBrowserItems } from '@worknest/ui/components/icons/icon-browser-items';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 const ICONS_PER_ROW = 10;
 

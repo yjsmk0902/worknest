@@ -5,24 +5,24 @@ import {
   SelectLocalFile,
   SelectUpload,
   UpdateUpload,
-} from '@colanode/client/databases';
+} from '@worknest/client/databases';
 import {
   JobHandler,
   JobOutput,
   JobConcurrencyConfig,
-} from '@colanode/client/jobs';
-import { eventBus, mapNode, mapUpload } from '@colanode/client/lib';
-import { isNodeSynced } from '@colanode/client/lib/nodes';
-import { AccountService } from '@colanode/client/services/accounts/account-service';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { LocalFileNode, UploadStatus } from '@colanode/client/types';
+} from '@worknest/client/jobs';
+import { eventBus, mapNode, mapUpload } from '@worknest/client/lib';
+import { isNodeSynced } from '@worknest/client/lib/nodes';
+import { AccountService } from '@worknest/client/services/accounts/account-service';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { LocalFileNode, UploadStatus } from '@worknest/client/types';
 import {
   ApiHeader,
   build,
   calculatePercentage,
   FILE_UPLOAD_PART_SIZE,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export type FileUploadInput = {
   type: 'file.upload';
@@ -30,7 +30,7 @@ export type FileUploadInput = {
   fileId: string;
 };
 
-declare module '@colanode/client/jobs' {
+declare module '@worknest/client/jobs' {
   interface JobMap {
     'file.upload': {
       input: FileUploadInput;

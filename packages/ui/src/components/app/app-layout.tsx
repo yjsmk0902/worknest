@@ -1,9 +1,9 @@
 import { match } from 'ts-pattern';
 
-import { AppType } from '@colanode/client/types';
-import { LayoutDesktop } from '@colanode/ui/components/layouts/layout-desktop';
-import { LayoutMobile } from '@colanode/ui/components/layouts/layout-mobile';
-import { LayoutWeb } from '@colanode/ui/components/layouts/layout-web';
+import { AppType } from '@worknest/client/types';
+import { LayoutDesktop } from '@worknest/ui/components/layouts/layout-desktop';
+import { LayoutMobile } from '@worknest/ui/components/layouts/layout-mobile';
+import { LayoutWeb } from '@worknest/ui/components/layouts/layout-web';
 
 interface AppLayoutProps {
   type: AppType;

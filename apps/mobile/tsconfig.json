@@ -12,11 +12,11 @@
     "resolveJsonModule": true,
     "paths": {
       "@assets": ["./assets"],
-      "@colanode/mobile/*": ["./src/*"],
-      "@colanode/core/*": ["../../packages/core/src/*"],
-      "@colanode/crdt/*": ["../../packages/crdt/src/*"],
-      "@colanode/client/*": ["../../packages/client/src/*"],
-      "@colanode/ui/*": ["../../packages/ui/src/*"]
+      "@worknest/mobile/*": ["./src/*"],
+      "@worknest/core/*": ["../../packages/core/src/*"],
+      "@worknest/crdt/*": ["../../packages/crdt/src/*"],
+      "@worknest/client/*": ["../../packages/client/src/*"],
+      "@worknest/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "exclude": ["node_modules"],

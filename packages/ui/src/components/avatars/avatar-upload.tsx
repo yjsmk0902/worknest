@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { Button } from '@colanode/ui/components/ui/button';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
-import { openFileDialog } from '@colanode/ui/lib/files';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
+import { openFileDialog } from '@worknest/ui/lib/files';
 
 interface AvatarUploadProps {
   onUpload: (id: string) => void;
@@ -45,7 +45,7 @@ export const AvatarUpload = ({ onUpload }: AvatarUploadProps) => {
         type: contentType,
       });
 
-      const tempFile = await window.colanode.saveTempFile(file);
+      const tempFile = await window.worknest.saveTempFile(file);
       mutate({
         input: {
           type: 'avatar.upload',

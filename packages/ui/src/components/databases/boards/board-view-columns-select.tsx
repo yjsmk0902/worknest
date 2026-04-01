@@ -4,15 +4,15 @@ import {
   DatabaseViewFilterAttributes,
   SelectFieldAttributes,
   SelectOptionAttributes,
-} from '@colanode/core';
-import { BoardViewColumn } from '@colanode/ui/components/databases/boards/board-view-column';
-import { SelectOptionBadge } from '@colanode/ui/components/databases/fields/select-option-badge';
-import { BoardViewContext } from '@colanode/ui/contexts/board-view';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
-import { getSelectOptionLightColorClass } from '@colanode/ui/lib/databases';
+} from '@worknest/core';
+import { BoardViewColumn } from '@worknest/ui/components/databases/boards/board-view-column';
+import { SelectOptionBadge } from '@worknest/ui/components/databases/fields/select-option-badge';
+import { BoardViewContext } from '@worknest/ui/contexts/board-view';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
+import { getSelectOptionLightColorClass } from '@worknest/ui/lib/databases';
 
 interface BoardViewColumnsSelectProps {
   field: SelectFieldAttributes;

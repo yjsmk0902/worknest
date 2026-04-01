@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { eventBus } from '@colanode/client/lib';
-import { MutationInput, MutationResult } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { generateId, IdType } from '@colanode/core/lib/id';
+import { eventBus } from '@worknest/client/lib';
+import { MutationInput, MutationResult } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { generateId, IdType } from '@worknest/core/lib/id';
 import {
   InitMessage,
   Message,
@@ -13,8 +13,8 @@ import {
   QueryAndSubscribeMessage,
   QueryMessage,
   QueryUnsubscribeMessage,
-} from '@colanode/mobile/lib/types';
-import { Root } from '@colanode/mobile/ui/root';
+} from '@worknest/mobile/lib/types';
+import { Root } from '@worknest/mobile/ui/root';
 
 const windowId = generateId(IdType.Window);
 const pendingPromises = new Map<string, PendingPromise>();
@@ -23,7 +23,7 @@ const postMessage = (message: Message) => {
   window.ReactNativeWebView?.postMessage(JSON.stringify(message));
 };
 
-window.colanode = {
+window.worknest = {
   init: async () => {
     const message: InitMessage = {
       type: 'init',

@@ -4,7 +4,7 @@ import {
   DatabaseNameFieldAttributes,
   FieldAttributes,
   NodeRole,
-} from '@colanode/core';
+} from '@worknest/core';
 
 interface DatabaseContext {
   id: string;

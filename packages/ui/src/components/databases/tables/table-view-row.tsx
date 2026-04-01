@@ -1,11 +1,11 @@
-import { LocalRecordNode } from '@colanode/client/types';
-import { extractNodeRole } from '@colanode/core';
-import { TableViewNameCell } from '@colanode/ui/components/databases/tables/table-view-name-cell';
-import { RecordFieldValue } from '@colanode/ui/components/records/record-field-value';
-import { RecordProvider } from '@colanode/ui/components/records/record-provider';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalRecordNode } from '@worknest/client/types';
+import { extractNodeRole } from '@worknest/core';
+import { TableViewNameCell } from '@worknest/ui/components/databases/tables/table-view-name-cell';
+import { RecordFieldValue } from '@worknest/ui/components/records/record-field-value';
+import { RecordProvider } from '@worknest/ui/components/records/record-provider';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface TableViewRowProps {
   index: number;

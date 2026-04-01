@@ -1,8 +1,8 @@
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { AvatarGetQueryInput } from '@colanode/client/queries/avatars/avatar-get';
-import { AppService } from '@colanode/client/services/app-service';
-import { Avatar } from '@colanode/client/types/avatars';
-import { Event } from '@colanode/client/types/events';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { AvatarGetQueryInput } from '@worknest/client/queries/avatars/avatar-get';
+import { AppService } from '@worknest/client/services/app-service';
+import { Avatar } from '@worknest/client/types/avatars';
+import { Event } from '@worknest/client/types/events';
 
 export class AvatarGetQueryHandler
   implements QueryHandler<AvatarGetQueryInput>

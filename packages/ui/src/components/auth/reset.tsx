@@ -3,12 +3,12 @@ import { CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { EmailPasswordResetInitOutput } from '@colanode/core';
-import { PasswordResetCompleteForm } from '@colanode/ui/components/auth/email-password-reset-complete-form';
-import { PasswordResetInitForm } from '@colanode/ui/components/auth/email-password-reset-init-form';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useAuth } from '@colanode/ui/contexts/auth';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { EmailPasswordResetInitOutput } from '@worknest/core';
+import { PasswordResetCompleteForm } from '@worknest/ui/components/auth/email-password-reset-complete-form';
+import { PasswordResetInitForm } from '@worknest/ui/components/auth/email-password-reset-init-form';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useAuth } from '@worknest/ui/contexts/auth';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 type ResetState =
   | {

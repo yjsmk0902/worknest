@@ -2,20 +2,20 @@ import { eq, inArray, useLiveQuery } from '@tanstack/react-db';
 import { X } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 
-import { LocalRecordNode } from '@colanode/client/types';
-import { RelationFieldAttributes, StringArrayFieldValue } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { RecordSearch } from '@colanode/ui/components/records/record-search';
-import { Badge } from '@colanode/ui/components/ui/badge';
+import { LocalRecordNode } from '@worknest/client/types';
+import { RelationFieldAttributes, StringArrayFieldValue } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { RecordSearch } from '@worknest/ui/components/records/record-search';
+import { Badge } from '@worknest/ui/components/ui/badge';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface RecordRelationValueProps {
   field: RelationFieldAttributes;

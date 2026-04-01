@@ -1,4 +1,4 @@
-import { DocumentUpdate } from '@colanode/client/types/documents';
+import { DocumentUpdate } from '@worknest/client/types/documents';
 
 export type DocumentUpdatesListQueryInput = {
   type: 'document.updates.list';
@@ -6,7 +6,7 @@ export type DocumentUpdatesListQueryInput = {
   userId: string;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'document.updates.list': {
       input: DocumentUpdatesListQueryInput;

@@ -1,7 +1,7 @@
-import { DownloadStatus, LocalFileNode } from '@colanode/client/types';
-import { FileIcon } from '@colanode/ui/components/files/file-icon';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
-import { cn } from '@colanode/ui/lib/utils';
+import { DownloadStatus, LocalFileNode } from '@worknest/client/types';
+import { FileIcon } from '@worknest/ui/components/files/file-icon';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface FileThumbnailProps {
   userId: string;

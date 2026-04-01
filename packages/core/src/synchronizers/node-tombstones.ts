@@ -12,7 +12,7 @@ export type SyncNodeTombstoneData = {
   revision: string;
 };
 
-declare module '@colanode/core' {
+declare module '@worknest/core' {
   interface SynchronizerMap {
     'node.tombstones': {
       input: SyncNodeTombstonesInput;

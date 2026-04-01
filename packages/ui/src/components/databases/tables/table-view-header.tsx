@@ -1,10 +1,10 @@
 import { Plus } from 'lucide-react';
 
-import { FieldCreatePopover } from '@colanode/ui/components/databases/fields/field-create-popover';
-import { TableViewFieldHeader } from '@colanode/ui/components/databases/tables/table-view-field-header';
-import { TableViewNameHeader } from '@colanode/ui/components/databases/tables/table-view-name-header';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
+import { FieldCreatePopover } from '@worknest/ui/components/databases/fields/field-create-popover';
+import { TableViewFieldHeader } from '@worknest/ui/components/databases/tables/table-view-field-header';
+import { TableViewNameHeader } from '@worknest/ui/components/databases/tables/table-view-name-header';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
 
 export const TableViewHeader = () => {
   const database = useDatabase();

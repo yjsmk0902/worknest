@@ -1,9 +1,9 @@
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db';
 
-import { NodeReactionCount, LocalMessageNode } from '@colanode/client/types';
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+import { NodeReactionCount, LocalMessageNode } from '@worknest/client/types';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface MessageReactionCountTooltipContentProps {
   message: LocalMessageNode;

@@ -1,19 +1,19 @@
-import { FieldAttributes } from '@colanode/core';
-import { RecordBooleanValue } from '@colanode/ui/components/records/values/record-boolean-value';
-import { RecordCollaboratorValue } from '@colanode/ui/components/records/values/record-collaborator-value';
-import { RecordCreatedAtValue } from '@colanode/ui/components/records/values/record-created-at-value';
-import { RecordCreatedByValue } from '@colanode/ui/components/records/values/record-created-by-value';
-import { RecordDateValue } from '@colanode/ui/components/records/values/record-date-value';
-import { RecordEmailValue } from '@colanode/ui/components/records/values/record-email-value';
-import { RecordMultiSelectValue } from '@colanode/ui/components/records/values/record-multi-select-value';
-import { RecordNumberValue } from '@colanode/ui/components/records/values/record-number-value';
-import { RecordPhoneValue } from '@colanode/ui/components/records/values/record-phone-value';
-import { RecordRelationValue } from '@colanode/ui/components/records/values/record-relation-value';
-import { RecordSelectValue } from '@colanode/ui/components/records/values/record-select-value';
-import { RecordTextValue } from '@colanode/ui/components/records/values/record-text-value';
-import { RecordUpdatedAtValue } from '@colanode/ui/components/records/values/record-updated-at-value';
-import { RecordUpdatedByValue } from '@colanode/ui/components/records/values/record-updated-by-value';
-import { RecordUrlValue } from '@colanode/ui/components/records/values/record-url-value';
+import { FieldAttributes } from '@worknest/core';
+import { RecordBooleanValue } from '@worknest/ui/components/records/values/record-boolean-value';
+import { RecordCollaboratorValue } from '@worknest/ui/components/records/values/record-collaborator-value';
+import { RecordCreatedAtValue } from '@worknest/ui/components/records/values/record-created-at-value';
+import { RecordCreatedByValue } from '@worknest/ui/components/records/values/record-created-by-value';
+import { RecordDateValue } from '@worknest/ui/components/records/values/record-date-value';
+import { RecordEmailValue } from '@worknest/ui/components/records/values/record-email-value';
+import { RecordMultiSelectValue } from '@worknest/ui/components/records/values/record-multi-select-value';
+import { RecordNumberValue } from '@worknest/ui/components/records/values/record-number-value';
+import { RecordPhoneValue } from '@worknest/ui/components/records/values/record-phone-value';
+import { RecordRelationValue } from '@worknest/ui/components/records/values/record-relation-value';
+import { RecordSelectValue } from '@worknest/ui/components/records/values/record-select-value';
+import { RecordTextValue } from '@worknest/ui/components/records/values/record-text-value';
+import { RecordUpdatedAtValue } from '@worknest/ui/components/records/values/record-updated-at-value';
+import { RecordUpdatedByValue } from '@worknest/ui/components/records/values/record-updated-by-value';
+import { RecordUrlValue } from '@worknest/ui/components/records/values/record-url-value';
 
 interface RecordFieldValueProps {
   field: FieldAttributes;

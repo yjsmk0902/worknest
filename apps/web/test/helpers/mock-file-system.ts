@@ -1,4 +1,4 @@
-import { FileSystem } from '@colanode/client/services';
+import { FileSystem } from '@worknest/client/services';
 
 /**
  * Mock implementation of the FileSystem interface for testing.

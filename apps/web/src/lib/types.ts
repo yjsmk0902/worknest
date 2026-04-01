@@ -1,10 +1,10 @@
-import { EventBus } from '@colanode/client/lib';
-import { MutationInput, MutationResult } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { AppInitOutput, Event, TempFile } from '@colanode/client/types';
-import { ColanodeWindowApi } from '@colanode/ui';
+import { EventBus } from '@worknest/client/lib';
+import { MutationInput, MutationResult } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { AppInitOutput, Event, TempFile } from '@worknest/client/types';
+import { WorknestWindowApi } from '@worknest/ui';
 
-export interface ColanodeWorkerApi {
+export interface WorknestWorkerApi {
   init: () => Promise<AppInitOutput>;
   reset: () => Promise<void>;
   executeMutation: <T extends MutationInput>(
@@ -26,7 +26,7 @@ export interface ColanodeWorkerApi {
 
 declare global {
   interface Window {
-    colanode: ColanodeWindowApi;
+    worknest: WorknestWindowApi;
     eventBus: EventBus;
   }
 }

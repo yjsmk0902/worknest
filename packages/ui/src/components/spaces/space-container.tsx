@@ -1,13 +1,13 @@
-import { LocalSpaceNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { NodeCollaborators } from '@colanode/ui/components/collaborators/node-collaborators';
-import { SpaceDelete } from '@colanode/ui/components/spaces/space-delete';
+import { LocalSpaceNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { NodeCollaborators } from '@worknest/ui/components/collaborators/node-collaborators';
+import { SpaceDelete } from '@worknest/ui/components/spaces/space-delete';
 import {
   SpaceForm,
   SpaceFormValues,
-} from '@colanode/ui/components/spaces/space-form';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/spaces/space-form';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface SpaceContainerProps {
   space: LocalSpaceNode;

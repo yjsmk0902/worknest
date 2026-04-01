@@ -13,7 +13,7 @@ import {
   generateFractionalIndex,
   IdType,
   RichTextContent,
-} from '@colanode/core';
+} from '@worknest/core';
 
 interface TableCellAttrs {
   colspan: number;

@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
+import { LocalNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
 
 export type NodeContextValue<T extends LocalNode = LocalNode> = {
   node: T;

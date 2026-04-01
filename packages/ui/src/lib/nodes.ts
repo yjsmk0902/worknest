@@ -1,13 +1,13 @@
 import { OperationType, TransactionWithMutations } from '@tanstack/react-db';
 import { cloneDeep } from 'lodash-es';
 
-import { mapNodeAttributes } from '@colanode/client/lib';
+import { mapNodeAttributes } from '@worknest/client/lib';
 import {
   LocalNode,
   NodeCollaborator,
   NodeReaction,
-} from '@colanode/client/types';
-import { extractNodeCollaborators, Node } from '@colanode/core';
+} from '@worknest/client/types';
+import { extractNodeCollaborators, Node } from '@worknest/core';
 
 export const buildNodeCollaborators = (nodes: Node[]): NodeCollaborator[] => {
   const collaborators: Record<string, NodeCollaborator> = {};
@@ -35,7 +35,7 @@ export const applyNodeTransaction = async (
     if (mutation.type === 'insert') {
       const node = mutation.modified;
       const attributes = mapNodeAttributes(node);
-      await window.colanode.executeMutation({
+      await window.worknest.executeMutation({
         type: 'node.create',
         userId,
         nodeId: node.id,
@@ -44,14 +44,14 @@ export const applyNodeTransaction = async (
     } else if (mutation.type === 'update') {
       const node = cloneDeep(mutation.modified);
       const attributes = mapNodeAttributes(node);
-      await window.colanode.executeMutation({
+      await window.worknest.executeMutation({
         type: 'node.update',
         userId,
         nodeId: mutation.key,
         attributes,
       });
     } else if (mutation.type === 'delete') {
-      await window.colanode.executeMutation({
+      await window.worknest.executeMutation({
         type: 'node.delete',
         userId,
         nodeId: mutation.key,
@@ -67,7 +67,7 @@ export const applyNodeReactionTransaction = async (
   for (const mutation of transaction.mutations) {
     if (mutation.type === 'insert') {
       const reaction = mutation.modified;
-      await window.colanode.executeMutation({
+      await window.worknest.executeMutation({
         type: 'node.reaction.create',
         userId,
         nodeId: reaction.nodeId,
@@ -76,7 +76,7 @@ export const applyNodeReactionTransaction = async (
       });
     } else if (mutation.type === 'delete') {
       const reaction = mutation.modified;
-      await window.colanode.executeMutation({
+      await window.worknest.executeMutation({
         type: 'node.reaction.delete',
         userId,
         nodeId: reaction.nodeId,

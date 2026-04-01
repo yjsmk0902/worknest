@@ -1,9 +1,9 @@
-import { WorkspaceQueryHandlerBase } from '@colanode/client/handlers/queries/workspace-query-handler-base';
-import { mapDownload } from '@colanode/client/lib';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { DownloadListQueryInput } from '@colanode/client/queries/files/download-list';
-import { Event } from '@colanode/client/types/events';
-import { Download } from '@colanode/client/types/files';
+import { WorkspaceQueryHandlerBase } from '@worknest/client/handlers/queries/workspace-query-handler-base';
+import { mapDownload } from '@worknest/client/lib';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { DownloadListQueryInput } from '@worknest/client/queries/files/download-list';
+import { Event } from '@worknest/client/types/events';
+import { Download } from '@worknest/client/types/files';
 
 export class DownloadListQueryHandler
   extends WorkspaceQueryHandlerBase

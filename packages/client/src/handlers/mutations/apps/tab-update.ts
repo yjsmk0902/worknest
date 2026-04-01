@@ -1,11 +1,11 @@
-import { mapTab } from '@colanode/client/lib';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { mapTab } from '@worknest/client/lib';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   TabUpdateMutationInput,
   TabUpdateMutationOutput,
-} from '@colanode/client/mutations/apps/tab-update';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/apps/tab-update';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class TabUpdateMutationHandler
   implements MutationHandler<TabUpdateMutationInput>

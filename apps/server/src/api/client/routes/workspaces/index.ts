@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from 'fastify';
 
-import { accountAuthenticator } from '@colanode/server/api/client/plugins/account-auth';
-import { workspaceAuthenticator } from '@colanode/server/api/client/plugins/workspace-auth';
+import { accountAuthenticator } from '@worknest/server/api/client/plugins/account-auth';
+import { workspaceAuthenticator } from '@worknest/server/api/client/plugins/workspace-auth';
 
 import { fileRoutes } from './files';
 import { mutationsRoutes } from './mutations';

@@ -1,4 +1,4 @@
-import { LoginSuccessOutput, Mutation } from '@colanode/core';
+import { LoginSuccessOutput, Mutation } from '@worknest/core';
 
 export type FakerAccount = {
   name: string;

@@ -5,17 +5,17 @@ import {
   SynchronizerInput,
   SynchronizerInputMessage,
   UserStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { createLogger } from '@colanode/server/lib/logger';
-import { BaseSynchronizer } from '@colanode/server/synchronizers/base';
-import { CollaborationSynchronizer } from '@colanode/server/synchronizers/collaborations';
-import { DocumentUpdateSynchronizer } from '@colanode/server/synchronizers/document-updates';
-import { NodeInteractionSynchronizer } from '@colanode/server/synchronizers/node-interactions';
-import { NodeReactionSynchronizer } from '@colanode/server/synchronizers/node-reactions';
-import { NodeTombstoneSynchronizer } from '@colanode/server/synchronizers/node-tombstones';
-import { NodeUpdatesSynchronizer } from '@colanode/server/synchronizers/node-updates';
-import { UserSynchronizer } from '@colanode/server/synchronizers/users';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { createLogger } from '@worknest/server/lib/logger';
+import { BaseSynchronizer } from '@worknest/server/synchronizers/base';
+import { CollaborationSynchronizer } from '@worknest/server/synchronizers/collaborations';
+import { DocumentUpdateSynchronizer } from '@worknest/server/synchronizers/document-updates';
+import { NodeInteractionSynchronizer } from '@worknest/server/synchronizers/node-interactions';
+import { NodeReactionSynchronizer } from '@worknest/server/synchronizers/node-reactions';
+import { NodeTombstoneSynchronizer } from '@worknest/server/synchronizers/node-tombstones';
+import { NodeUpdatesSynchronizer } from '@worknest/server/synchronizers/node-updates';
+import { UserSynchronizer } from '@worknest/server/synchronizers/users';
 import {
   AccountUpdatedEvent,
   CollaborationCreatedEvent,
@@ -25,9 +25,9 @@ import {
   UserUpdatedEvent,
   WorkspaceDeletedEvent,
   WorkspaceUpdatedEvent,
-} from '@colanode/server/types/events';
-import { SocketContext } from '@colanode/server/types/sockets';
-import { ConnectedUser } from '@colanode/server/types/users';
+} from '@worknest/server/types/events';
+import { SocketContext } from '@worknest/server/types/sockets';
+import { ConnectedUser } from '@worknest/server/types/users';
 
 type SocketUser = {
   user: ConnectedUser;

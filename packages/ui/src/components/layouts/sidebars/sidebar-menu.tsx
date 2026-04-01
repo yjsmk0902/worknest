@@ -1,12 +1,12 @@
 import { count, inArray, useLiveQuery } from '@tanstack/react-db';
 import { LayoutGrid, MessageCircle, Settings } from 'lucide-react';
 
-import { SidebarMenuType, UploadStatus } from '@colanode/client/types';
-import { SidebarMenuFooter } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-footer';
-import { SidebarMenuHeader } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-header';
-import { SidebarMenuIcon } from '@colanode/ui/components/layouts/sidebars/sidebar-menu-icon';
-import { useRadar } from '@colanode/ui/contexts/radar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { SidebarMenuType, UploadStatus } from '@worknest/client/types';
+import { SidebarMenuFooter } from '@worknest/ui/components/layouts/sidebars/sidebar-menu-footer';
+import { SidebarMenuHeader } from '@worknest/ui/components/layouts/sidebars/sidebar-menu-header';
+import { SidebarMenuIcon } from '@worknest/ui/components/layouts/sidebars/sidebar-menu-icon';
+import { useRadar } from '@worknest/ui/contexts/radar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface SidebarMenuProps {
   value: SidebarMenuType;

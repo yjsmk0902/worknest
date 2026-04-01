@@ -1,6 +1,6 @@
-import { MutationHandler } from '@colanode/client/lib';
-import { MutationMap } from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services';
+import { MutationHandler } from '@worknest/client/lib';
+import { MutationMap } from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services';
 
 import { AccountLogoutMutationHandler } from './accounts/account-logout';
 import { AccountUpdateMutationHandler } from './accounts/account-update';

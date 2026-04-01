@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { NumberFieldValue, type NumberFieldAttributes } from '@colanode/core';
-import { Input } from '@colanode/ui/components/ui/input';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+import { NumberFieldValue, type NumberFieldAttributes } from '@worknest/core';
+import { Input } from '@worknest/ui/components/ui/input';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface RecordNumberValueProps {
   field: NumberFieldAttributes;

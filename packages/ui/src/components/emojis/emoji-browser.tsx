@@ -1,15 +1,15 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useMemo, useRef } from 'react';
 
-import { EmojiPickerRowData } from '@colanode/client/types';
-import { EmojiBrowserCategory } from '@colanode/ui/components/emojis/emoji-browser-category';
-import { EmojiBrowserItems } from '@colanode/ui/components/emojis/emoji-browser-items';
+import { EmojiPickerRowData } from '@worknest/client/types';
+import { EmojiBrowserCategory } from '@worknest/ui/components/emojis/emoji-browser-category';
+import { EmojiBrowserItems } from '@worknest/ui/components/emojis/emoji-browser-items';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 const EMOJIS_PER_ROW = 10;
 

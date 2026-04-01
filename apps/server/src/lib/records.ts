@@ -17,8 +17,8 @@ import {
   DatabaseViewFilterAttributes,
   DatabaseViewSortAttributes,
   MultiSelectFieldAttributes,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 
 type FilterInput = {
   filters: DatabaseViewFilterAttributes[];

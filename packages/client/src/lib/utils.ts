@@ -1,8 +1,8 @@
 import { Kysely, Transaction } from 'kysely';
 
-import { WorkspaceDatabaseSchema } from '@colanode/client/databases/workspace';
-import { mapNode } from '@colanode/client/lib/mappers';
-import { LocalNode } from '@colanode/client/types/nodes';
+import { WorkspaceDatabaseSchema } from '@worknest/client/databases/workspace';
+import { mapNode } from '@worknest/client/lib/mappers';
+import { LocalNode } from '@worknest/client/types/nodes';
 
 export const fetchNodeTree = async (
   database:

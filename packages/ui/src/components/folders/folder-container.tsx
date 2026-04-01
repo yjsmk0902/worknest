@@ -1,6 +1,6 @@
-import { LocalFolderNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { FolderBody } from '@colanode/ui/components/folders/folder-body';
+import { LocalFolderNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { FolderBody } from '@worknest/ui/components/folders/folder-body';
 
 interface FolderContainerProps {
   folder: LocalFolderNode;

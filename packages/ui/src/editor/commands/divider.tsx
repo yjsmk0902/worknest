@@ -1,6 +1,6 @@
 import { SeparatorHorizontal } from 'lucide-react';
 
-import { EditorCommand } from '@colanode/client/types';
+import { EditorCommand } from '@worknest/client/types';
 
 export const DividerCommand: EditorCommand = {
   key: 'divider',

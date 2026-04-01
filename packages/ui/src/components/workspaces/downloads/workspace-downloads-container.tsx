@@ -1,11 +1,11 @@
 import { useLiveInfiniteQuery } from '@tanstack/react-db';
 import { InView } from 'react-intersection-observer';
 
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { WorkspaceDownloadFile } from '@colanode/ui/components/workspaces/downloads/workspace-download-file';
-import { WorkspaceDownloadsBreadcrumb } from '@colanode/ui/components/workspaces/downloads/workspace-downloads-breadcrumb';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { WorkspaceDownloadFile } from '@worknest/ui/components/workspaces/downloads/workspace-download-file';
+import { WorkspaceDownloadsBreadcrumb } from '@worknest/ui/components/workspaces/downloads/workspace-downloads-breadcrumb';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const DOWNLOADS_PER_PAGE = 100;
 

@@ -1,6 +1,6 @@
-import { LocalChatNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { NodeCollaboratorsPopover } from '@colanode/ui/components/collaborators/node-collaborators-popover';
+import { LocalChatNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { NodeCollaboratorsPopover } from '@worknest/ui/components/collaborators/node-collaborators-popover';
 
 interface ChatSettingsProps {
   chat: LocalChatNode;

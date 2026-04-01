@@ -1,14 +1,14 @@
 import { useLiveInfiniteQuery } from '@tanstack/react-db';
 import { InView } from 'react-intersection-observer';
 
-import { WorkspaceRole } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { WorkspaceUserInvite } from '@colanode/ui/components/workspaces/workspace-user-invite';
-import { WorkspaceUserRoleDropdown } from '@colanode/ui/components/workspaces/workspace-user-role-dropdown';
-import { WorkspaceUsersBreadcrumb } from '@colanode/ui/components/workspaces/workspace-users-breadcrumb';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { WorkspaceRole } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { WorkspaceUserInvite } from '@worknest/ui/components/workspaces/workspace-user-invite';
+import { WorkspaceUserRoleDropdown } from '@worknest/ui/components/workspaces/workspace-user-role-dropdown';
+import { WorkspaceUsersBreadcrumb } from '@worknest/ui/components/workspaces/workspace-users-breadcrumb';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const USERS_PER_PAGE = 50;
 

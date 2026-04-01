@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasNodeRole, hasWorkspaceRole } from '@colanode/core/lib/permissions';
+import { hasNodeRole, hasWorkspaceRole } from '@worknest/core/lib/permissions';
 
 describe('permissions', () => {
   describe('hasWorkspaceRole', () => {

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { BadgeAlert } from 'lucide-react';
 
-import { Button } from '@colanode/ui/components/ui/button';
+import { Button } from '@worknest/ui/components/ui/button';
 
 export const WorkspaceNotFound = () => {
   const navigate = useNavigate();

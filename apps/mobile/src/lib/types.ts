@@ -1,6 +1,6 @@
-import { MutationInput, MutationResult } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { Event } from '@colanode/client/types';
+import { MutationInput, MutationResult } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { Event } from '@worknest/client/types';
 
 declare global {
   interface Window {

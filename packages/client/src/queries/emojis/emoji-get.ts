@@ -1,11 +1,11 @@
-import { Emoji } from '@colanode/client/types/emojis';
+import { Emoji } from '@worknest/client/types/emojis';
 
 export type EmojiGetQueryInput = {
   type: 'emoji.get';
   id: string;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'emoji.get': {
       input: EmojiGetQueryInput;

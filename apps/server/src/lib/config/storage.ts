@@ -71,7 +71,7 @@ export const tusLockerSchema = z
       type: z.literal('redis'),
       prefix: z
         .string()
-        .default('colanode:tus:lock')
+        .default('worknest:tus:lock')
         .transform(resolveConfigReference),
     }),
     z.object({
@@ -89,7 +89,7 @@ export const tusCacheSchema = z
       type: z.literal('redis'),
       prefix: z
         .string()
-        .default('colanode:tus:kv')
+        .default('worknest:tus:kv')
         .transform(resolveConfigReference),
     }),
   ])

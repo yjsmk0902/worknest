@@ -1,17 +1,17 @@
-import { LocalChannelNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
+import { LocalChannelNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
 import {
   ChannelForm,
   ChannelFormValues,
-} from '@colanode/ui/components/channels/channel-form';
+} from '@worknest/ui/components/channels/channel-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface ChannelUpdateDialogProps {
   channel: LocalChannelNode;

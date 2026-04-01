@@ -5,7 +5,7 @@ import { isEqual } from 'lodash-es';
 import * as Y from 'yjs';
 import { z } from 'zod/v4';
 
-import { ZOD_TEXT_DESCRIPTION } from '@colanode/core';
+import { ZOD_TEXT_DESCRIPTION } from '@worknest/core';
 
 export const encodeState = (state: Uint8Array) => {
   return fromUint8Array(state);

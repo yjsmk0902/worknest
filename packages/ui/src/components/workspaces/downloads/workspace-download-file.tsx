@@ -2,17 +2,17 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { useNavigate } from '@tanstack/react-router';
 import { Folder } from 'lucide-react';
 
-import { LocalFileNode, Download } from '@colanode/client/types';
-import { formatBytes, timeAgo } from '@colanode/core';
-import { FileIcon } from '@colanode/ui/components/files/file-icon';
-import { FileThumbnail } from '@colanode/ui/components/files/file-thumbnail';
+import { LocalFileNode, Download } from '@worknest/client/types';
+import { formatBytes, timeAgo } from '@worknest/core';
+import { FileIcon } from '@worknest/ui/components/files/file-icon';
+import { FileThumbnail } from '@worknest/ui/components/files/file-thumbnail';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@colanode/ui/components/ui/tooltip';
-import { WorkspaceDownloadStatus } from '@colanode/ui/components/workspaces/downloads/workspace-download-status';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/tooltip';
+import { WorkspaceDownloadStatus } from '@worknest/ui/components/workspaces/downloads/workspace-download-status';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface WorkspaceDownloadFileProps {
   download: Download;
@@ -72,7 +72,7 @@ export const WorkspaceDownloadFile = ({
               className="text-xs text-muted-foreground flex items-center gap-2 cursor-pointer hover:text-foreground"
               onClick={(e) => {
                 e.stopPropagation();
-                window.colanode.showItemInFolder(download.path);
+                window.worknest.showItemInFolder(download.path);
               }}
             >
               <Folder className="size-4" />

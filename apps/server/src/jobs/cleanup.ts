@@ -1,10 +1,10 @@
 import { DeleteResult } from 'kysely';
 import ms from 'ms';
 
-import { database } from '@colanode/server/data/database';
-import { JobHandler } from '@colanode/server/jobs';
-import { createLogger } from '@colanode/server/lib/logger';
-import { storage } from '@colanode/server/lib/storage';
+import { database } from '@worknest/server/data/database';
+import { JobHandler } from '@worknest/server/jobs';
+import { createLogger } from '@worknest/server/lib/logger';
+import { storage } from '@worknest/server/lib/storage';
 
 const logger = createLogger('server:job:cleanup');
 
@@ -12,7 +12,7 @@ export type CleanupInput = {
   type: 'cleanup';
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     cleanup: {
       input: CleanupInput;

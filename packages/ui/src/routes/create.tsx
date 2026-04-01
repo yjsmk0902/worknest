@@ -1,10 +1,10 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { collections } from '@colanode/ui/collections';
-import { buildMetadataKey } from '@colanode/ui/collections/metadata';
-import { WorkspaceCreate } from '@colanode/ui/components/workspaces/workspace-create';
-import { WorkspaceCreateTab } from '@colanode/ui/components/workspaces/workspace-create-tab';
-import { rootRoute } from '@colanode/ui/routes/root';
+import { collections } from '@worknest/ui/collections';
+import { buildMetadataKey } from '@worknest/ui/collections/metadata';
+import { WorkspaceCreate } from '@worknest/ui/components/workspaces/workspace-create';
+import { WorkspaceCreateTab } from '@worknest/ui/components/workspaces/workspace-create-tab';
+import { rootRoute } from '@worknest/ui/routes/root';
 
 const Component = () => {
   const { accountId } = workspaceCreateRoute.useLoaderData();

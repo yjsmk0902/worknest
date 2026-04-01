@@ -1,16 +1,16 @@
 import ms from 'ms';
 
-import { SelectLocalFile, UpdateLocalFile } from '@colanode/client/databases';
+import { SelectLocalFile, UpdateLocalFile } from '@worknest/client/databases';
 import {
   JobHandler,
   JobOutput,
   JobConcurrencyConfig,
-} from '@colanode/client/jobs';
-import { eventBus, mapLocalFile, mapNode } from '@colanode/client/lib';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { DownloadStatus, LocalFileNode } from '@colanode/client/types';
-import { FileStatus } from '@colanode/core';
+} from '@worknest/client/jobs';
+import { eventBus, mapLocalFile, mapNode } from '@worknest/client/lib';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { DownloadStatus, LocalFileNode } from '@worknest/client/types';
+import { FileStatus } from '@worknest/core';
 
 export type LocalFileDownloadInput = {
   type: 'local.file.download';
@@ -18,7 +18,7 @@ export type LocalFileDownloadInput = {
   fileId: string;
 };
 
-declare module '@colanode/client/jobs' {
+declare module '@worknest/client/jobs' {
   interface JobMap {
     'local.file.download': {
       input: LocalFileDownloadInput;

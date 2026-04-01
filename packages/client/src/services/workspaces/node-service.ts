@@ -2,22 +2,22 @@ import {
   CreateNodeReference,
   SelectNode,
   SelectNodeReference,
-} from '@colanode/client/databases/workspace';
-import { eventBus } from '@colanode/client/lib/event-bus';
+} from '@worknest/client/databases/workspace';
+import { eventBus } from '@worknest/client/lib/event-bus';
 import {
   mapDownload,
   mapNode,
   mapNodeAttributes,
   mapNodeReference,
   mapUpload,
-} from '@colanode/client/lib/mappers';
+} from '@worknest/client/lib/mappers';
 import {
   applyMentionUpdates,
   checkMentionChanges,
-} from '@colanode/client/lib/mentions';
-import { deleteNodeRelations, fetchNodeTree } from '@colanode/client/lib/utils';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { DownloadStatus, LocalNode } from '@colanode/client/types';
+} from '@worknest/client/lib/mentions';
+import { deleteNodeRelations, fetchNodeTree } from '@worknest/client/lib/utils';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { DownloadStatus, LocalNode } from '@worknest/client/types';
 import {
   generateId,
   IdType,
@@ -32,8 +32,8 @@ import {
   CanCreateNodeContext,
   CanUpdateAttributesContext,
   CanDeleteNodeContext,
-} from '@colanode/core';
-import { decodeState, encodeState, YDoc } from '@colanode/crdt';
+} from '@worknest/core';
+import { decodeState, encodeState, YDoc } from '@worknest/crdt';
 
 const UPDATE_RETRIES_LIMIT = 20;
 

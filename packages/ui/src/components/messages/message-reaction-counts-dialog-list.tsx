@@ -7,9 +7,9 @@ import {
 } from '@tanstack/react-db';
 import { InView } from 'react-intersection-observer';
 
-import { NodeReactionCount, LocalMessageNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { NodeReactionCount, LocalMessageNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const REACTIONS_PER_PAGE = 50;
 

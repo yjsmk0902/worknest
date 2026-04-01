@@ -4,10 +4,10 @@ import ms from 'ms';
 import {
   EmojiDatabaseSchema,
   IconDatabaseSchema,
-} from '@colanode/client/databases';
-import { eventBus, mapAvatar } from '@colanode/client/lib';
-import { AppService } from '@colanode/client/services/app-service';
-import { Avatar } from '@colanode/client/types/avatars';
+} from '@worknest/client/databases';
+import { eventBus, mapAvatar } from '@worknest/client/lib';
+import { AppService } from '@worknest/client/services/app-service';
+import { Avatar } from '@worknest/client/types/avatars';
 
 export class AssetService {
   private readonly app: AppService;

@@ -1,10 +1,10 @@
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-import { Button } from '@colanode/ui/components/ui/button';
-import { GoogleIcon } from '@colanode/ui/components/ui/icons';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useApp } from '@colanode/ui/contexts/app';
-import { useAuth } from '@colanode/ui/contexts/auth';
+import { Button } from '@worknest/ui/components/ui/button';
+import { GoogleIcon } from '@worknest/ui/components/ui/icons';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useApp } from '@worknest/ui/contexts/app';
+import { useAuth } from '@worknest/ui/contexts/auth';
 
 interface GoogleLoginProps {
   context: 'login' | 'register';

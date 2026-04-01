@@ -4,26 +4,26 @@ import { Resizable } from 're-resizable';
 import { Fragment, useCallback, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 
-import { LocalNode, ViewField } from '@colanode/client/types';
-import { FieldDeleteDialog } from '@colanode/ui/components/databases/fields/field-delete-dialog';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { FieldRenameInput } from '@colanode/ui/components/databases/fields/field-rename-input';
+import { LocalNode, ViewField } from '@worknest/client/types';
+import { FieldDeleteDialog } from '@worknest/ui/components/databases/fields/field-delete-dialog';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { FieldRenameInput } from '@worknest/ui/components/databases/fields/field-rename-input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 import {
   generateViewFieldIndex,
   isFilterableField,
   isSortableField,
-} from '@colanode/ui/lib/databases';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/lib/databases';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface TableViewFieldHeaderProps {
   viewField: ViewField;

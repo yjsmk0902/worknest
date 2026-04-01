@@ -1,4 +1,4 @@
-import { DatabaseViewFilterAttributes } from '@colanode/core';
+import { DatabaseViewFilterAttributes } from '@worknest/core';
 
 export type RecordFieldValueCountQueryInput = {
   type: 'record.field.value.count';
@@ -18,7 +18,7 @@ export type RecordFieldValueCountQueryOutput = {
   noValueCount: number;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'record.field.value.count': {
       input: RecordFieldValueCountQueryInput;

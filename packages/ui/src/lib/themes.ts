@@ -1,4 +1,4 @@
-import { ThemeColor, ThemeMode } from '@colanode/client/types';
+import { ThemeColor, ThemeMode } from '@worknest/client/types';
 
 const baseVariables = {
   '--radius': '0.625rem',

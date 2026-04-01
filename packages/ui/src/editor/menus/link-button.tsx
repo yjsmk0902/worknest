@@ -2,15 +2,15 @@ import { Editor } from '@tiptap/core';
 import { useEditorState } from '@tiptap/react';
 import { Check, Link, Trash2 } from 'lucide-react';
 
-import { isValidUrl } from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Input } from '@colanode/ui/components/ui/input';
+import { isValidUrl } from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Input } from '@worknest/ui/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { cn } from '@worknest/ui/lib/utils';
 
 const getUrlFromString = (str: string): string | null => {
   if (isValidUrl(str)) return str;

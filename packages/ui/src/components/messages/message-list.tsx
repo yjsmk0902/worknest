@@ -2,11 +2,11 @@ import { eq, useLiveInfiniteQuery } from '@tanstack/react-db';
 import { Fragment, useEffect, useRef } from 'react';
 import { InView } from 'react-intersection-observer';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { compareString } from '@colanode/core';
-import { Message } from '@colanode/ui/components/messages/message';
-import { useConversation } from '@colanode/ui/contexts/conversation';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalMessageNode } from '@worknest/client/types';
+import { compareString } from '@worknest/core';
+import { Message } from '@worknest/ui/components/messages/message';
+import { useConversation } from '@worknest/ui/contexts/conversation';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const MESSAGES_PER_PAGE = 50;
 

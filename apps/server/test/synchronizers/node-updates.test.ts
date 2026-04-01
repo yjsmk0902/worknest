@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { database } from '@colanode/server/data/database';
-import { NodeUpdatesSynchronizer } from '@colanode/server/synchronizers/node-updates';
-import { generateId, IdType } from '@colanode/core';
-import { YDoc } from '@colanode/crdt';
+import { database } from '@worknest/server/data/database';
+import { NodeUpdatesSynchronizer } from '@worknest/server/synchronizers/node-updates';
+import { generateId, IdType } from '@worknest/core';
+import { YDoc } from '@worknest/crdt';
 
 const createNodeUpdate = async (input: {
   nodeId: string;

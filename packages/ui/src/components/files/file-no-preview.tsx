@@ -1,5 +1,5 @@
-import { formatMimeType } from '@colanode/core';
-import { FileIcon } from '@colanode/ui/components/files/file-icon';
+import { formatMimeType } from '@worknest/core';
+import { FileIcon } from '@worknest/ui/components/files/file-icon';
 
 interface FileNoPreviewProps {
   mimeType: string;

@@ -1,4 +1,4 @@
-import { Mutation } from '@colanode/core';
+import { Mutation } from '@worknest/core';
 
 export const consolidateMutations = (mutations: Mutation[]) => {
   const validMutations: Mutation[] = [];

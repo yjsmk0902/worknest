@@ -2,11 +2,11 @@ import { useForm, useStore } from '@tanstack/react-form';
 import { useEffect, useRef } from 'react';
 import { z } from 'zod/v4';
 
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { AvatarPopover } from '@colanode/ui/components/avatars/avatar-popover';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Field, FieldError } from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { AvatarPopover } from '@worknest/ui/components/avatars/avatar-popover';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Field, FieldError } from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long.'),

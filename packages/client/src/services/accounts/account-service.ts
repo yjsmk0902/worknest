@@ -1,25 +1,25 @@
 import { KyInstance } from 'ky';
 import ms from 'ms';
 
-import { SelectWorkspace } from '@colanode/client/databases';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { parseApiError } from '@colanode/client/lib/ky';
+import { SelectWorkspace } from '@worknest/client/databases';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { parseApiError } from '@worknest/client/lib/ky';
 import {
   mapAccount,
   mapMetadata,
   mapWorkspace,
-} from '@colanode/client/lib/mappers';
-import { AccountSocket } from '@colanode/client/services/accounts/account-socket';
-import { AppService } from '@colanode/client/services/app-service';
-import { ServerService } from '@colanode/client/services/server-service';
-import { Account } from '@colanode/client/types/accounts';
+} from '@worknest/client/lib/mappers';
+import { AccountSocket } from '@worknest/client/services/accounts/account-socket';
+import { AppService } from '@worknest/client/services/app-service';
+import { ServerService } from '@worknest/client/services/server-service';
+import { Account } from '@worknest/client/types/accounts';
 import {
   AccountSyncOutput,
   ApiErrorCode,
   ApiErrorOutput,
   createDebugger,
   Message,
-} from '@colanode/core';
+} from '@worknest/core';
 
 const debug = createDebugger('desktop:service:account');
 

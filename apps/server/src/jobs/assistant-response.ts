@@ -4,14 +4,14 @@
 //   generateFractionalIndex,
 //   getNodeModel,
 //   MessageAttributes,
-// } from '@colanode/core';
-// import { database } from '@colanode/server/data/database';
-// import { SelectNode } from '@colanode/server/data/schema';
-// import { JobHandler } from '@colanode/server/jobs';
-// import { runAssistantResponseChain } from '@colanode/server/lib/ai/assistants';
-// import { config } from '@colanode/server/lib/config';
-// import { fetchNode, createNode } from '@colanode/server/lib/nodes';
-// import { Citation } from '@colanode/server/types/assistant';
+// } from '@worknest/core';
+// import { database } from '@worknest/server/data/database';
+// import { SelectNode } from '@worknest/server/data/schema';
+// import { JobHandler } from '@worknest/server/jobs';
+// import { runAssistantResponseChain } from '@worknest/server/lib/ai/assistants';
+// import { config } from '@worknest/server/lib/config';
+// import { fetchNode, createNode } from '@worknest/server/lib/nodes';
+// import { Citation } from '@worknest/server/types/assistant';
 
 // export type AssistantRespondInput = {
 //   type: 'assistant.respond';
@@ -20,7 +20,7 @@
 //   selectedContextNodeIds?: string[];
 // };
 
-// declare module '@colanode/server/jobs' {
+// declare module '@worknest/server/jobs' {
 //   interface JobMap {
 //     'assistant.respond': {
 //       input: AssistantRespondInput;
@@ -153,7 +153,7 @@
 //   await createNode({
 //     nodeId: id,
 //     workspaceId,
-//     userId: 'colanode_ai',
+//     userId: 'worknest_ai',
 //     rootId: originalMessage.root_id,
 //     attributes: messageAttributes,
 //   });

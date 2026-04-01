@@ -1,10 +1,10 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 import { ReactNode } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { extractNodeRole } from '@colanode/core';
-import { NodeContext, NodeContextValue } from '@colanode/ui/contexts/node';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalNode } from '@worknest/client/types';
+import { extractNodeRole } from '@worknest/core';
+import { NodeContext, NodeContextValue } from '@worknest/ui/contexts/node';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const buildContextValue = (
   node: LocalNode,

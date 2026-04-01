@@ -1,6 +1,6 @@
 import { Kysely, Transaction } from 'kysely';
 
-import { DatabaseSchema } from '@colanode/server/data/schema';
+import { DatabaseSchema } from '@worknest/server/data/schema';
 
 export type CounterKey =
   | `node.updates.merge.cursor`

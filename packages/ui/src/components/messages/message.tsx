@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { InView } from 'react-intersection-observer';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { MessageActions } from '@colanode/ui/components/messages/message-actions';
-import { MessageAuthorAvatar } from '@colanode/ui/components/messages/message-author-avatar';
-import { MessageAuthorName } from '@colanode/ui/components/messages/message-author-name';
-import { MessageContent } from '@colanode/ui/components/messages/message-content';
-import { MessageMenuMobile } from '@colanode/ui/components/messages/message-menu-mobile';
-import { MessageReactionCounts } from '@colanode/ui/components/messages/message-reaction-counts';
-import { MessageReference } from '@colanode/ui/components/messages/message-reference';
-import { MessageTime } from '@colanode/ui/components/messages/message-time';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
-import { useConversation } from '@colanode/ui/contexts/conversation';
-import { MessageContext } from '@colanode/ui/contexts/message';
-import { useRadar } from '@colanode/ui/contexts/radar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
-import { useLongPress } from '@colanode/ui/hooks/use-long-press';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalMessageNode } from '@worknest/client/types';
+import { MessageActions } from '@worknest/ui/components/messages/message-actions';
+import { MessageAuthorAvatar } from '@worknest/ui/components/messages/message-author-avatar';
+import { MessageAuthorName } from '@worknest/ui/components/messages/message-author-name';
+import { MessageContent } from '@worknest/ui/components/messages/message-content';
+import { MessageMenuMobile } from '@worknest/ui/components/messages/message-menu-mobile';
+import { MessageReactionCounts } from '@worknest/ui/components/messages/message-reaction-counts';
+import { MessageReference } from '@worknest/ui/components/messages/message-reference';
+import { MessageTime } from '@worknest/ui/components/messages/message-time';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
+import { useConversation } from '@worknest/ui/contexts/conversation';
+import { MessageContext } from '@worknest/ui/contexts/message';
+import { useRadar } from '@worknest/ui/contexts/radar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
+import { useLongPress } from '@worknest/ui/hooks/use-long-press';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MessageProps {
   message: LocalMessageNode;

@@ -1,7 +1,7 @@
-import { ViewCreateButton } from '@colanode/ui/components/databases/view-create-button';
-import { ViewTab } from '@colanode/ui/components/databases/view-tab';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseViews } from '@colanode/ui/contexts/database-views';
+import { ViewCreateButton } from '@worknest/ui/components/databases/view-create-button';
+import { ViewTab } from '@worknest/ui/components/databases/view-tab';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseViews } from '@worknest/ui/contexts/database-views';
 
 export const ViewTabs = () => {
   const database = useDatabase();

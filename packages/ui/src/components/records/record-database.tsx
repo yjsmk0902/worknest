@@ -1,9 +1,9 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { Database } from '@colanode/ui/components/databases/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { Database } from '@worknest/ui/components/databases/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface RecordDatabaseProps {
   id: string;

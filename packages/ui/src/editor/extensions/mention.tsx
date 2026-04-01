@@ -23,16 +23,16 @@ import {
   useState,
 } from 'react';
 
-import { EditorContext, User } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
+import { EditorContext, User } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { MentionNodeView } from '@colanode/ui/editor/views';
-import { updateScrollView } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/scroll-area';
+import { MentionNodeView } from '@worknest/ui/editor/views';
+import { updateScrollView } from '@worknest/ui/lib/utils';
 
 declare module '@tiptap/core' {
   interface Storage {
@@ -324,7 +324,7 @@ export const MentionExtension = Node.create<MentionOptions>({
             }
 
             const { userId } = this.options.context;
-            window.colanode
+            window.worknest
               .executeQuery({
                 type: 'user.search',
                 userId,

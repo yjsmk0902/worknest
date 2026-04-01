@@ -1,11 +1,11 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalDatabaseViewNode } from '@colanode/client/types';
-import { View } from '@colanode/ui/components/databases/view';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { DatabaseViewsContext } from '@colanode/ui/contexts/database-views';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
+import { LocalDatabaseViewNode } from '@worknest/client/types';
+import { View } from '@worknest/ui/components/databases/view';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { DatabaseViewsContext } from '@worknest/ui/contexts/database-views';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
 
 interface DatabaseViewsProps {
   inline?: boolean;

@@ -1,9 +1,9 @@
-import { mapTempFile } from '@colanode/client/lib';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { TempFileListQueryInput } from '@colanode/client/queries';
-import { AppService } from '@colanode/client/services';
-import { Event } from '@colanode/client/types/events';
-import { TempFile } from '@colanode/client/types/files';
+import { mapTempFile } from '@worknest/client/lib';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { TempFileListQueryInput } from '@worknest/client/queries';
+import { AppService } from '@worknest/client/services';
+import { Event } from '@worknest/client/types/events';
+import { TempFile } from '@worknest/client/types/files';
 
 export class TempFileListQueryHandler
   implements QueryHandler<TempFileListQueryInput>

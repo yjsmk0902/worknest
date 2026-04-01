@@ -1,11 +1,11 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { collections } from '@colanode/ui/collections';
-import { ServerProvider } from '@colanode/ui/components/servers/server-provider';
-import { WorkspaceLayout } from '@colanode/ui/components/workspaces/workspace-layout';
-import { WorkspaceLocationTracker } from '@colanode/ui/components/workspaces/workspace-location-tracker';
-import { WorkspaceNotFound } from '@colanode/ui/components/workspaces/workspace-not-found';
-import { WorkspaceContext } from '@colanode/ui/contexts/workspace';
+import { collections } from '@worknest/ui/collections';
+import { ServerProvider } from '@worknest/ui/components/servers/server-provider';
+import { WorkspaceLayout } from '@worknest/ui/components/workspaces/workspace-layout';
+import { WorkspaceLocationTracker } from '@worknest/ui/components/workspaces/workspace-location-tracker';
+import { WorkspaceNotFound } from '@worknest/ui/components/workspaces/workspace-not-found';
+import { WorkspaceContext } from '@worknest/ui/contexts/workspace';
 
 interface WorkspaceProps {
   userId: string;

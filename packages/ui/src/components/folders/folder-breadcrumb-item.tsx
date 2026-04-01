@@ -1,5 +1,5 @@
-import { LocalFolderNode } from '@colanode/client/types';
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
+import { LocalFolderNode } from '@worknest/client/types';
+import { BreadcrumbItem } from '@worknest/ui/components/layouts/containers/breadcrumb-item';
 
 interface FolderBreadcrumbItemProps {
   folder: LocalFolderNode;

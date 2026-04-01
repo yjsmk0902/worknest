@@ -1,6 +1,6 @@
-import { LocalMessageNode } from '@colanode/client/types';
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
-import { defaultIcons } from '@colanode/ui/lib/assets';
+import { LocalMessageNode } from '@worknest/client/types';
+import { BreadcrumbItem } from '@worknest/ui/components/layouts/containers/breadcrumb-item';
+import { defaultIcons } from '@worknest/ui/lib/assets';
 
 interface MessageBreadcrumbItemProps {
   message: LocalMessageNode;

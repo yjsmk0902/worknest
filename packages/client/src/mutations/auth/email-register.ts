@@ -1,4 +1,4 @@
-import { LoginOutput } from '@colanode/core';
+import { LoginOutput } from '@worknest/core';
 
 export type EmailRegisterMutationInput = {
   type: 'email.register';
@@ -8,7 +8,7 @@ export type EmailRegisterMutationInput = {
   password: string;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'email.register': {
       input: EmailRegisterMutationInput;

@@ -1,12 +1,12 @@
-import { JobHandler } from '@colanode/server/jobs';
-import { sendWorkspaceInvitationEmail } from '@colanode/server/lib/accounts';
+import { JobHandler } from '@worknest/server/jobs';
+import { sendWorkspaceInvitationEmail } from '@worknest/server/lib/accounts';
 
 export type EmailWorkspaceInvitationSendInput = {
   type: 'email.workspace.invitation.send';
   userId: string;
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     'email.workspace.invitation.send': {
       input: EmailWorkspaceInvitationSendInput;

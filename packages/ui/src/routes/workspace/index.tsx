@@ -1,11 +1,11 @@
 import { createRoute, notFound } from '@tanstack/react-router';
 
-import { collections } from '@colanode/ui/collections';
-import { Workspace } from '@colanode/ui/components/workspaces/workspace';
-import { WorkspaceNotFound } from '@colanode/ui/components/workspaces/workspace-not-found';
-import { WorkspaceTab } from '@colanode/ui/components/workspaces/workspace-tab';
-import { rootRoute } from '@colanode/ui/routes/root';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { collections } from '@worknest/ui/collections';
+import { Workspace } from '@worknest/ui/components/workspaces/workspace';
+import { WorkspaceNotFound } from '@worknest/ui/components/workspaces/workspace-not-found';
+import { WorkspaceTab } from '@worknest/ui/components/workspaces/workspace-tab';
+import { rootRoute } from '@worknest/ui/routes/root';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 
 export const workspaceRoute = createRoute({
   getParentRoute: () => rootRoute,

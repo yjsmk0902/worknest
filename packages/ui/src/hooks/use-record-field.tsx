@@ -1,11 +1,11 @@
 import { debounceStrategy, usePacedMutations } from '@tanstack/react-db';
 import { useCallback, useMemo } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { FieldAttributes, FieldValue } from '@colanode/core';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
+import { LocalNode } from '@worknest/client/types';
+import { FieldAttributes, FieldValue } from '@worknest/core';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
 
 interface Options {
   field: FieldAttributes;

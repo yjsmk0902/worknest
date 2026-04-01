@@ -1,10 +1,10 @@
-import { IconCategory } from '@colanode/client/types/icons';
+import { IconCategory } from '@worknest/client/types/icons';
 
 export type IconCategoryListQueryInput = {
   type: 'icon.category.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'icon.category.list': {
       input: IconCategoryListQueryInput;

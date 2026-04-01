@@ -1,5 +1,5 @@
-import { TempFile } from '@colanode/client/types';
-import { FileSubtype } from '@colanode/core';
+import { TempFile } from '@worknest/client/types';
+import { FileSubtype } from '@worknest/core';
 
 export interface FileDialogOptions {
   accept?: string;
@@ -57,7 +57,7 @@ export const openFileDialog = (
       try {
         const files = Array.from(input.files);
         const fileNames = await Promise.all(
-          files.map((file) => window.colanode.saveTempFile(file))
+          files.map((file) => window.worknest.saveTempFile(file))
         );
         resolve({ type: 'success', files: fileNames });
       } catch (error) {

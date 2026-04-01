@@ -1,11 +1,11 @@
-import { LocalRecordNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { Document } from '@colanode/ui/components/documents/document';
-import { RecordAttributes } from '@colanode/ui/components/records/record-attributes';
-import { RecordDatabase } from '@colanode/ui/components/records/record-database';
-import { RecordProvider } from '@colanode/ui/components/records/record-provider';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalRecordNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { Document } from '@worknest/ui/components/documents/document';
+import { RecordAttributes } from '@worknest/ui/components/records/record-attributes';
+import { RecordDatabase } from '@worknest/ui/components/records/record-database';
+import { RecordProvider } from '@worknest/ui/components/records/record-provider';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface RecordContainerProps {
   record: LocalRecordNode;

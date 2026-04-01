@@ -5,10 +5,10 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 
-import { apiRoutes } from '@colanode/server/api';
-import { clientDecorator } from '@colanode/server/api/client/plugins/client';
-import { corsPlugin } from '@colanode/server/api/client/plugins/cors';
-import { errorHandler } from '@colanode/server/api/client/plugins/error-handler';
+import { apiRoutes } from '@worknest/server/api';
+import { clientDecorator } from '@worknest/server/api/client/plugins/client';
+import { corsPlugin } from '@worknest/server/api/client/plugins/cors';
+import { errorHandler } from '@worknest/server/api/client/plugins/error-handler';
 
 export const buildTestApp = (): FastifyInstance => {
   const app = fastify();

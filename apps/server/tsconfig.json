@@ -4,9 +4,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@colanode/server/*": ["./src/*"],
-      "@colanode/core/*": ["../../packages/core/src/*"],
-      "@colanode/crdt/*": ["../../packages/crdt/src/*"]
+      "@worknest/server/*": ["./src/*"],
+      "@worknest/core/*": ["../../packages/core/src/*"],
+      "@worknest/crdt/*": ["../../packages/crdt/src/*"]
     }
   },
   "references": [

@@ -1,11 +1,11 @@
-import { LocalNode } from '@colanode/client/types';
-import { ChannelSidebarItem } from '@colanode/ui/components/channels/channel-sidebar-item';
-import { ChatSidebarItem } from '@colanode/ui/components/chats/chat-sidebar-item';
-import { DatabaseSidebarItem } from '@colanode/ui/components/databases/database-sidiebar-item';
-import { ViewSidebarItem } from '@colanode/ui/components/databases/view-sidebar-item';
-import { FolderSidebarItem } from '@colanode/ui/components/folders/folder-sidebar-item';
-import { PageSidebarItem } from '@colanode/ui/components/pages/page-sidebar-item';
-import { SpaceSidebarItem } from '@colanode/ui/components/spaces/space-sidebar-item';
+import { LocalNode } from '@worknest/client/types';
+import { ChannelSidebarItem } from '@worknest/ui/components/channels/channel-sidebar-item';
+import { ChatSidebarItem } from '@worknest/ui/components/chats/chat-sidebar-item';
+import { DatabaseSidebarItem } from '@worknest/ui/components/databases/database-sidiebar-item';
+import { ViewSidebarItem } from '@worknest/ui/components/databases/view-sidebar-item';
+import { FolderSidebarItem } from '@worknest/ui/components/folders/folder-sidebar-item';
+import { PageSidebarItem } from '@worknest/ui/components/pages/page-sidebar-item';
+import { SpaceSidebarItem } from '@worknest/ui/components/spaces/space-sidebar-item';
 
 interface SidebarItemProps {
   node: LocalNode;

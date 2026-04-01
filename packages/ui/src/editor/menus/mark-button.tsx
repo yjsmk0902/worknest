@@ -1,4 +1,4 @@
-import { cn } from '@colanode/ui/lib/utils';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MarkButtonProps {
   isActive: boolean;

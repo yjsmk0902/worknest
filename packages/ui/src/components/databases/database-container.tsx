@@ -1,7 +1,7 @@
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { Database } from '@colanode/ui/components/databases/database';
-import { DatabaseViews } from '@colanode/ui/components/databases/database-views';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { Database } from '@worknest/ui/components/databases/database';
+import { DatabaseViews } from '@worknest/ui/components/databases/database-views';
 
 interface DatabaseContainerProps {
   database: LocalDatabaseNode;

@@ -2,13 +2,13 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { LoginOutput } from '@colanode/core';
-import { RegisterForm } from '@colanode/ui/components/auth/email-register-form';
-import { EmailVerifyForm } from '@colanode/ui/components/auth/email-verify-form';
-import { GoogleLogin } from '@colanode/ui/components/auth/google-login';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useAuth } from '@colanode/ui/contexts/auth';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { LoginOutput } from '@worknest/core';
+import { RegisterForm } from '@worknest/ui/components/auth/email-register-form';
+import { EmailVerifyForm } from '@worknest/ui/components/auth/email-verify-form';
+import { GoogleLogin } from '@worknest/ui/components/auth/google-login';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useAuth } from '@worknest/ui/contexts/auth';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 type RegisterState =
   | {
@@ -148,7 +148,7 @@ export const Register = () => {
         </h1>
         <p className="text-sm text-muted-foreground">
           {state.type === 'register'
-            ? 'Sign up to get started with Colanode'
+            ? 'Sign up to get started with Worknest'
             : 'Enter the code sent to your email'}
         </p>
       </div>

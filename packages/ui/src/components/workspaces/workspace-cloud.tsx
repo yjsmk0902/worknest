@@ -1,12 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 
-import { isColanodeDomain } from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useServer } from '@colanode/ui/contexts/server';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { isWorknestDomain } from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useServer } from '@worknest/ui/contexts/server';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
-const CLOUD_URL = 'https://cloud.colanode.com';
+const CLOUD_URL = 'https://cloud.worknest.com';
 
 export const WorkspaceCloud = () => {
   const server = useServer();
@@ -16,7 +16,7 @@ export const WorkspaceCloud = () => {
     return null;
   }
 
-  if (!isColanodeDomain(server.domain)) {
+  if (!isWorknestDomain(server.domain)) {
     return null;
   }
 
@@ -28,7 +28,7 @@ export const WorkspaceCloud = () => {
       </div>
       <div className="w-full flex flex-row items-center gap-4">
         <div className="flex-1 space-y-1">
-          <h3 className="font-semibold">Upgrade your Colanode Cloud plan</h3>
+          <h3 className="font-semibold">Upgrade your Worknest Cloud plan</h3>
           <p className="text-sm text-muted-foreground">
             Get more storage and higher limits for your workspace.
           </p>
@@ -38,7 +38,7 @@ export const WorkspaceCloud = () => {
             variant="default"
             size="sm"
             onClick={() => {
-              window.colanode.openExternalUrl(CLOUD_URL);
+              window.worknest.openExternalUrl(CLOUD_URL);
             }}
           >
             <ExternalLink className="size-4" />

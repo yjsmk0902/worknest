@@ -1,6 +1,6 @@
 import { CircleFadingArrowUp } from 'lucide-react';
 
-import { useServer } from '@colanode/ui/contexts/server';
+import { useServer } from '@worknest/ui/contexts/server';
 
 export const ServerUpgradeRequired = () => {
   const server = useServer();
@@ -11,7 +11,7 @@ export const ServerUpgradeRequired = () => {
         <CircleFadingArrowUp className="h-10 w-10 text-foreground" />
         <h2 className="text-4xl text-foreground">Server upgrade required</h2>
         <p className="text-sm text-muted-foreground">
-          The Colanode server{' '}
+          The Worknest server{' '}
           <span className="font-semibold">{server.name}</span> with domain{' '}
           <span className="font-semibold">{server.domain}</span> is running an
           outdated version and cannot serve this workspace. Please ask your
@@ -20,7 +20,7 @@ export const ServerUpgradeRequired = () => {
         <p className="text-sm text-muted-foreground">
           Check the{' '}
           <a
-            href="https://github.com/colanode/colanode"
+            href="https://github.com/worknest/worknest"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 underline"

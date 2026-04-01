@@ -1,12 +1,12 @@
-{{- $storageType := default "file" .Values.colanode.storage.type -}}
-{{- $persistence := .Values.colanode.storage.file.persistence -}}
+{{- $storageType := default "file" .Values.worknest.storage.type -}}
+{{- $persistence := .Values.worknest.storage.file.persistence -}}
 {{- if and (eq $storageType "file") $persistence.enabled (not $persistence.existingClaim) -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "colanode.storagePvcName" . }}
+  name: {{ include "worknest.storagePvcName" . }}
   labels:
-    {{- include "colanode.labels" . | nindent 4 }}
+    {{- include "worknest.labels" . | nindent 4 }}
 spec:
   accessModes:
     {{- range $persistence.accessModes }}
@@ -14,7 +14,7 @@ spec:
     {{- end }}
   resources:
     requests:
-      storage: {{ required "colanode.storage.file.persistence.size must be set when creating a storage PVC" $persistence.size }}
+      storage: {{ required "worknest.storage.file.persistence.size must be set when creating a storage PVC" $persistence.size }}
 {{- if $persistence.storageClass }}
   storageClassName: {{ $persistence.storageClass }}
 {{- end }}

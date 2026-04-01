@@ -1,6 +1,6 @@
-import { QueryHandler } from '@colanode/client/lib/types';
-import { QueryMap } from '@colanode/client/queries';
-import { AppService } from '@colanode/client/services/app-service';
+import { QueryHandler } from '@worknest/client/lib/types';
+import { QueryMap } from '@worknest/client/queries';
+import { AppService } from '@worknest/client/services/app-service';
 
 import { AccountListQueryHandler } from './accounts/accounts-list';
 import { MetadataListQueryHandler } from './apps/metadata-list';

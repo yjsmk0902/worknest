@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useApp } from '@colanode/ui/contexts/app';
+import { useApp } from '@worknest/ui/contexts/app';
 
 const mobileDeviceRegex =
   /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i;

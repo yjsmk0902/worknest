@@ -5,20 +5,20 @@ import { toast } from 'sonner';
 import {
   LocalDatabaseNode,
   LocalDatabaseViewNode,
-} from '@colanode/client/types';
-import { generateFractionalIndex, generateId, IdType } from '@colanode/core';
+} from '@worknest/client/types';
+import { generateFractionalIndex, generateId, IdType } from '@worknest/core';
 import {
   DatabaseForm,
   DatabaseFormValues,
-} from '@colanode/ui/components/databases/database-form';
+} from '@worknest/ui/components/databases/database-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface DatabaseCreateDialogProps {
   spaceId: string;

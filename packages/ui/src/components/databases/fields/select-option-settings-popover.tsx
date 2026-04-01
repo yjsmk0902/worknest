@@ -2,22 +2,22 @@ import { debounceStrategy, usePacedMutations } from '@tanstack/react-db';
 import { Ellipsis, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { SelectOptionAttributes } from '@colanode/core';
-import { SelectOptionDeleteDialog } from '@colanode/ui/components/databases/fields/select-option-delete-dialog';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Label } from '@colanode/ui/components/ui/label';
+import { LocalNode } from '@worknest/client/types';
+import { SelectOptionAttributes } from '@worknest/core';
+import { SelectOptionDeleteDialog } from '@worknest/ui/components/databases/fields/select-option-delete-dialog';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Label } from '@worknest/ui/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { selectOptionColors } from '@colanode/ui/lib/databases';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { selectOptionColors } from '@worknest/ui/lib/databases';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface SelectOptionSettingsPopoverProps {
   fieldId: string;

@@ -1,10 +1,10 @@
 import { sha256 } from 'js-sha256';
 import ms from 'ms';
 
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { EventLoop } from '@colanode/client/lib/event-loop';
-import { AccountSocket } from '@colanode/client/services/accounts/account-socket';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { EventLoop } from '@worknest/client/lib/event-loop';
+import { AccountSocket } from '@worknest/client/services/accounts/account-socket';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 import {
   SynchronizerOutputMessage,
   SynchronizerInputMessage,
@@ -12,7 +12,7 @@ import {
   SynchronizerMap,
   createDebugger,
   Message,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export type SynchronizerStatus = 'idle' | 'waiting' | 'processing';
 

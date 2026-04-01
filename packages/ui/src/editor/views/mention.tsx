@@ -2,9 +2,9 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { type NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { defaultClasses } from '@colanode/ui/editor/classes';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { defaultClasses } from '@worknest/ui/editor/classes';
 
 export const MentionNodeView = ({ node }: NodeViewProps) => {
   const workspace = useWorkspace();

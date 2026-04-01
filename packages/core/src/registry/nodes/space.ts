@@ -1,8 +1,8 @@
 import { z } from 'zod/v4';
 
-import { extractNodeRole } from '@colanode/core/lib/nodes';
-import { hasNodeRole, hasWorkspaceRole } from '@colanode/core/lib/permissions';
-import { NodeModel, nodeRoleEnum } from '@colanode/core/registry/nodes/core';
+import { extractNodeRole } from '@worknest/core/lib/nodes';
+import { hasNodeRole, hasWorkspaceRole } from '@worknest/core/lib/permissions';
+import { NodeModel, nodeRoleEnum } from '@worknest/core/registry/nodes/core';
 
 export const spaceChildAttributesSchema = z.object({
   id: z.string(),

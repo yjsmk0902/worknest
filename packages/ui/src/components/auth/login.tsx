@@ -2,13 +2,13 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { LoginOutput } from '@colanode/core';
-import { LoginForm } from '@colanode/ui/components/auth/email-login-form';
-import { EmailVerifyForm } from '@colanode/ui/components/auth/email-verify-form';
-import { GoogleLogin } from '@colanode/ui/components/auth/google-login';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useAuth } from '@colanode/ui/contexts/auth';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { LoginOutput } from '@worknest/core';
+import { LoginForm } from '@worknest/ui/components/auth/email-login-form';
+import { EmailVerifyForm } from '@worknest/ui/components/auth/email-verify-form';
+import { GoogleLogin } from '@worknest/ui/components/auth/google-login';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useAuth } from '@worknest/ui/contexts/auth';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 type LoginState =
   | {

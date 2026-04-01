@@ -1,10 +1,10 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   DocumentUpdateMutationInput,
   DocumentUpdateMutationOutput,
-} from '@colanode/client/mutations';
-import { decodeState } from '@colanode/crdt';
+} from '@worknest/client/mutations';
+import { decodeState } from '@worknest/crdt';
 
 export class DocumentUpdateMutationHandler
   extends WorkspaceMutationHandlerBase

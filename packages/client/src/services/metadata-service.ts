@@ -1,8 +1,8 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapMetadata } from '@colanode/client/lib/mappers';
-import { AppService } from '@colanode/client/services/app-service';
-import { Metadata } from '@colanode/client/types/apps';
-import { createDebugger } from '@colanode/core';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapMetadata } from '@worknest/client/lib/mappers';
+import { AppService } from '@worknest/client/services/app-service';
+import { Metadata } from '@worknest/client/types/apps';
+import { createDebugger } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:metadata');
 

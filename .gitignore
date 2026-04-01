@@ -163,9 +163,9 @@ apps/desktop/assets/icons.db
 apps/desktop/assets/fonts/satoshi-variable.woff2
 apps/desktop/assets/fonts/satoshi-variable-italic.woff2
 apps/desktop/assets/fonts/antonio.ttf
-apps/desktop/assets/colanode-logo.png
-apps/desktop/assets/colanode-logo.ico
-apps/desktop/assets/colanode-logo.icns
+apps/desktop/assets/worknest-logo.png
+apps/desktop/assets/worknest-logo.ico
+apps/desktop/assets/worknest-logo.icns
 
 # Ignore web assets
 apps/web/public/assets/emojis.db
@@ -175,8 +175,8 @@ apps/web/public/assets/icons.svg
 apps/web/public/assets/fonts/satoshi-variable.woff2
 apps/web/public/assets/fonts/satoshi-variable-italic.woff2
 apps/web/public/assets/fonts/antonio.ttf
-apps/web/public/assets/colanode-logo-192.jpg
-apps/web/public/assets/colanode-logo-512.jpg
+apps/web/public/assets/worknest-logo-192.jpg
+apps/web/public/assets/worknest-logo-512.jpg
 
 # Ignore mobile assets
 apps/mobile/assets/ui/index.html

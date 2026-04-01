@@ -1,5 +1,5 @@
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { WorkspaceHomeBreadcrumb } from '@colanode/ui/components/workspaces/workspace-home-breadcrumb';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { WorkspaceHomeBreadcrumb } from '@worknest/ui/components/workspaces/workspace-home-breadcrumb';
 
 export const WorkspaceHomeContainer = () => {
   return (

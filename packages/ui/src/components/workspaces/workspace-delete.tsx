@@ -9,11 +9,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@colanode/ui/components/ui/alert-dialog';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+} from '@worknest/ui/components/ui/alert-dialog';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 export const WorkspaceDelete = () => {
   const workspace = useWorkspace();

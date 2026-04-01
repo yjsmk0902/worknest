@@ -2,21 +2,21 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { MessagesSquare, Reply, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { MessageQuickReaction } from '@colanode/ui/components/messages/message-quick-reaction';
-import { MessageReactionCreatePopover } from '@colanode/ui/components/messages/message-reaction-create-popover';
+import { LocalMessageNode } from '@worknest/client/types';
+import { MessageQuickReaction } from '@worknest/ui/components/messages/message-quick-reaction';
+import { MessageReactionCreatePopover } from '@worknest/ui/components/messages/message-reaction-create-popover';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetTitle,
-} from '@colanode/ui/components/ui/sheet';
-import { useConversation } from '@colanode/ui/contexts/conversation';
-import { useMessage } from '@colanode/ui/contexts/message';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { defaultEmojis } from '@colanode/ui/lib/assets';
-import { buildNodeReactionKey } from '@colanode/ui/lib/nodes';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/sheet';
+import { useConversation } from '@worknest/ui/contexts/conversation';
+import { useMessage } from '@worknest/ui/contexts/message';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { defaultEmojis } from '@worknest/ui/lib/assets';
+import { buildNodeReactionKey } from '@worknest/ui/lib/nodes';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MessageMenuMobileProps {
   message: LocalMessageNode;

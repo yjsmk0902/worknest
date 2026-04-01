@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { SidebarMenuType } from '@colanode/client/types';
-import { SidebarChats } from '@colanode/ui/components/layouts/sidebars/sidebar-chats';
-import { SidebarMenu } from '@colanode/ui/components/layouts/sidebars/sidebar-menu';
-import { SidebarSettings } from '@colanode/ui/components/layouts/sidebars/sidebar-settings';
-import { SidebarSpaces } from '@colanode/ui/components/layouts/sidebars/sidebar-spaces';
-import { useApp } from '@colanode/ui/contexts/app';
-import { cn } from '@colanode/ui/lib/utils';
+import { SidebarMenuType } from '@worknest/client/types';
+import { SidebarChats } from '@worknest/ui/components/layouts/sidebars/sidebar-chats';
+import { SidebarMenu } from '@worknest/ui/components/layouts/sidebars/sidebar-menu';
+import { SidebarSettings } from '@worknest/ui/components/layouts/sidebars/sidebar-settings';
+import { SidebarSpaces } from '@worknest/ui/components/layouts/sidebars/sidebar-spaces';
+import { useApp } from '@worknest/ui/contexts/app';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const Sidebar = () => {
   const app = useApp();

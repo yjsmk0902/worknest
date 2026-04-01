@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
-import { Emoji } from '@colanode/client/types';
-import { EmojiBrowser } from '@colanode/ui/components/emojis/emoji-browser';
-import { EmojiSearch } from '@colanode/ui/components/emojis/emoji-search';
-import { EmojiSkinToneSelector } from '@colanode/ui/components/emojis/emoji-skin-tone-selector';
-import { Input } from '@colanode/ui/components/ui/input';
-import { EmojiPickerContext } from '@colanode/ui/contexts/emoji-picker';
+import { Emoji } from '@worknest/client/types';
+import { EmojiBrowser } from '@worknest/ui/components/emojis/emoji-browser';
+import { EmojiSearch } from '@worknest/ui/components/emojis/emoji-search';
+import { EmojiSkinToneSelector } from '@worknest/ui/components/emojis/emoji-skin-tone-selector';
+import { Input } from '@worknest/ui/components/ui/input';
+import { EmojiPickerContext } from '@worknest/ui/contexts/emoji-picker';
 
 interface EmojiPickerProps {
   onPick: (emoji: Emoji, skinTone: number) => void;

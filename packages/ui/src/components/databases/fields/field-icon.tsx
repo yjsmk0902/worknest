@@ -14,7 +14,7 @@ import {
   User,
 } from 'lucide-react';
 
-import { FieldType } from '@colanode/core';
+import { FieldType } from '@worknest/core';
 
 interface FieldIconProps {
   type?: FieldType;

@@ -1,12 +1,12 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { LogoutContainer } from '@colanode/ui/components/auth/logout-container';
-import { LogoutTab } from '@colanode/ui/components/auth/logout-tab';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { LogoutContainer } from '@worknest/ui/components/auth/logout-container';
+import { LogoutTab } from '@worknest/ui/components/auth/logout-tab';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceRoute,
   workspaceMaskRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const logoutRoute = createRoute({
   getParentRoute: () => workspaceRoute,

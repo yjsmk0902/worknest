@@ -1,24 +1,24 @@
 import { TrashIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Server } from '@colanode/client/types';
-import { formatDate, isColanodeDomain, timeAgo } from '@colanode/core';
-import { ServerAvatar } from '@colanode/ui/components/servers/server-avatar';
-import { Badge } from '@colanode/ui/components/ui/badge';
-import { Button } from '@colanode/ui/components/ui/button';
+import { Server } from '@worknest/client/types';
+import { formatDate, isWorknestDomain, timeAgo } from '@worknest/core';
+import { ServerAvatar } from '@worknest/ui/components/servers/server-avatar';
+import { Badge } from '@worknest/ui/components/ui/badge';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@colanode/ui/components/ui/dialog';
+} from '@worknest/ui/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@colanode/ui/components/ui/tooltip';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/tooltip';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ServerSettingsDialogProps {
   open: boolean;
@@ -45,7 +45,7 @@ export const ServerSettingsDialog = ({
     return () => clearInterval(interval);
   }, [open]);
 
-  const canDelete = !isColanodeDomain(server.domain);
+  const canDelete = !isWorknestDomain(server.domain);
   const isAvailable = server.state?.isAvailable ?? false;
   const isOutdated = server.isOutdated;
 

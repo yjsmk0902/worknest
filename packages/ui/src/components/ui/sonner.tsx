@@ -1,6 +1,6 @@
 import { Toaster as Sonner, ToasterProps } from 'sonner';
 
-import { useTheme } from '@colanode/ui/contexts/theme';
+import { useTheme } from '@worknest/ui/contexts/theme';
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const theme = useTheme();

@@ -1,11 +1,11 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 import { Fragment } from 'react';
 
-import { LocalFileNode } from '@colanode/client/types';
-import { formatBytes, formatDate } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { FileThumbnail } from '@colanode/ui/components/files/file-thumbnail';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalFileNode } from '@worknest/client/types';
+import { formatBytes, formatDate } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { FileThumbnail } from '@worknest/ui/components/files/file-thumbnail';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface FileSidebarProps {
   file: LocalFileNode;

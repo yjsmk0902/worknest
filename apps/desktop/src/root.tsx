@@ -3,7 +3,7 @@ import '../../../packages/ui/src/styles/globals.css';
 
 import { createRoot } from 'react-dom/client';
 
-import { App } from '@colanode/ui';
+import { App } from '@worknest/ui';
 
 const Root = () => {
   return <App type="desktop" />;

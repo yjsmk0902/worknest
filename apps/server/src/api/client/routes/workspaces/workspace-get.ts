@@ -8,8 +8,8 @@ import {
   UserStatus,
   apiErrorOutputSchema,
   workspaceOutputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 
 export const workspaceGetRoute: FastifyPluginCallbackZod = (
   instance,

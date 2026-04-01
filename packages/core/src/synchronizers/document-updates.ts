@@ -1,4 +1,4 @@
-import { UpdateMergeMetadata } from '@colanode/core/types/crdt';
+import { UpdateMergeMetadata } from '@worknest/core/types/crdt';
 
 export type SyncDocumentUpdatesInput = {
   type: 'document.updates';
@@ -15,7 +15,7 @@ export type SyncDocumentUpdateData = {
   mergedUpdates: UpdateMergeMetadata[] | null | undefined;
 };
 
-declare module '@colanode/core' {
+declare module '@worknest/core' {
   interface SynchronizerMap {
     'document.updates': {
       input: SyncDocumentUpdatesInput;

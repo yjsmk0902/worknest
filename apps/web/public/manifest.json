@@ -1,6 +1,6 @@
 {
-  "short_name": "Colanode",
-  "name": "Colanode",
+  "short_name": "Worknest",
+  "name": "Worknest",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,13 +8,13 @@
       "type": "image/x-icon"
     },
     {
-      "src": "assets/colanode-logo-192.jpg",
+      "src": "assets/worknest-logo-192.jpg",
       "type": "image/jpeg",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/colanode-logo-512.jpg",
+      "src": "assets/worknest-logo-512.jpg",
       "type": "image/jpeg",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -26,6 +26,6 @@
   "theme_color": "#000000",
   "background_color": "#ffffff",
   "orientation": "any",
-  "description": "Colanode Web Application",
+  "description": "Worknest Web Application",
   "prefer_related_applications": false
 }

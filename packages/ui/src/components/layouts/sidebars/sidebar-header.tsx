@@ -1,5 +1,5 @@
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
-import { cn } from '@colanode/ui/lib/utils';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface SidebarHeaderProps {
   title: string;

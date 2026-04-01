@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Download } from '@colanode/client/types';
+import { Download } from '@worknest/client/types';
 
 export const createDownloadsCollection = (userId: string) => {
   return createCollection<Download, string>({
@@ -9,7 +9,7 @@ export const createDownloadsCollection = (userId: string) => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'download.list',
             userId,

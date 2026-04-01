@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Metadata } from '@colanode/client/types';
+import { Metadata } from '@worknest/client/types';
 
 export const buildMetadataKey = (namespace: string, key: string) => {
   return `${namespace}.${key}`;
@@ -13,7 +13,7 @@ export const createMetadataCollection = () => {
     },
     sync: {
       sync({ begin, write, commit, markReady, collection }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'metadata.list',
           })
@@ -61,7 +61,7 @@ export const createMetadataCollection = () => {
     },
     onInsert: async ({ transaction }) => {
       const metadata = transaction.mutations[0].modified;
-      return await window.colanode.executeMutation({
+      return await window.worknest.executeMutation({
         type: 'metadata.update',
         namespace: metadata.namespace,
         key: metadata.key,
@@ -80,7 +80,7 @@ export const createMetadataCollection = () => {
             return;
           }
 
-          return await window.colanode.executeMutation({
+          return await window.worknest.executeMutation({
             type: 'metadata.update',
             namespace: original.namespace,
             key: original.key,
@@ -97,7 +97,7 @@ export const createMetadataCollection = () => {
             throw new Error(`Original app metadata not found for delete`);
           }
 
-          await window.colanode.executeMutation({
+          await window.worknest.executeMutation({
             type: 'metadata.delete',
             namespace: original.namespace,
             key: original.key,

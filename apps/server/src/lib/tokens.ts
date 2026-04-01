@@ -1,8 +1,8 @@
 import { sha256 } from 'js-sha256';
 
-import { database } from '@colanode/server/data/database';
-import { uuid } from '@colanode/server/lib/utils';
-import { AccountContext } from '@colanode/server/types/api';
+import { database } from '@worknest/server/data/database';
+import { uuid } from '@worknest/server/lib/utils';
+import { AccountContext } from '@worknest/server/types/api';
 
 const DEVICE_TOKEN_PREFIX = 'cnd_';
 

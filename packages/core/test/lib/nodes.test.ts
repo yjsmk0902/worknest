@@ -5,8 +5,8 @@ import {
   extractNodeName,
   extractNodeAvatar,
   extractNodeRole,
-} from '@colanode/core/lib/nodes';
-import { SpaceAttributes } from '@colanode/core/registry/nodes/space';
+} from '@worknest/core/lib/nodes';
+import { SpaceAttributes } from '@worknest/core/registry/nodes/space';
 
 describe('nodes', () => {
   const makeSpaceAttributes = (

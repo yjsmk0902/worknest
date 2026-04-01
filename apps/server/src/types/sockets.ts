@@ -1,4 +1,4 @@
-import { ClientContext } from '@colanode/server/types/api';
+import { ClientContext } from '@worknest/server/types/api';
 
 export type SocketContext = {
   id: string;

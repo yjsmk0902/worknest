@@ -1,11 +1,11 @@
 import { debounceStrategy, usePacedMutations } from '@tanstack/react-db';
 import { useEffect, useRef } from 'react';
 
-import { LocalNode } from '@colanode/client/types';
-import { Input } from '@colanode/ui/components/ui/input';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
+import { LocalNode } from '@worknest/client/types';
+import { Input } from '@worknest/ui/components/ui/input';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
 
 export const RecordName = () => {
   const workspace = useWorkspace();

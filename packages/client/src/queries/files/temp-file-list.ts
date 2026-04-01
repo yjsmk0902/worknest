@@ -1,10 +1,10 @@
-import { TempFile } from '@colanode/client/types';
+import { TempFile } from '@worknest/client/types';
 
 export type TempFileListQueryInput = {
   type: 'temp.file.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'temp.file.list': {
       input: TempFileListQueryInput;

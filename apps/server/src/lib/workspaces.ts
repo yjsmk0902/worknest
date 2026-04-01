@@ -5,17 +5,17 @@ import {
   WorkspaceOutput,
   WorkspaceStatus,
   UserStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { SelectAccount } from '@colanode/server/data/schema';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { SelectAccount } from '@worknest/server/data/schema';
 import {
   generateInitialMessageBlocks,
   generateWelcomePageBlocks,
-} from '@colanode/server/lib/blocks';
-import { config } from '@colanode/server/lib/config';
-import { createDocument } from '@colanode/server/lib/documents';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { createNode } from '@colanode/server/lib/nodes';
+} from '@worknest/server/lib/blocks';
+import { config } from '@worknest/server/lib/config';
+import { createDocument } from '@worknest/server/lib/documents';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { createNode } from '@worknest/server/lib/nodes';
 
 export const createWorkspace = async (
   account: SelectAccount,

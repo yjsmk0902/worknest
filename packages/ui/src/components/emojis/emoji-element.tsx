@@ -1,8 +1,8 @@
 import { ShieldQuestionMark } from 'lucide-react';
 
-import { useApp } from '@colanode/ui/contexts/app';
-import { useQuery } from '@colanode/ui/hooks/use-query';
-import { cn } from '@colanode/ui/lib/utils';
+import { useApp } from '@worknest/ui/contexts/app';
+import { useQuery } from '@worknest/ui/hooks/use-query';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface EmojiElementProps {
   id: string;

@@ -4,9 +4,9 @@ import {
   EditorCommand,
   LocalDatabaseNode,
   LocalDatabaseViewNode,
-} from '@colanode/client/types';
-import { IdType, generateId, generateFractionalIndex } from '@colanode/core';
-import { collections } from '@colanode/ui/collections';
+} from '@worknest/client/types';
+import { IdType, generateId, generateFractionalIndex } from '@worknest/core';
+import { collections } from '@worknest/ui/collections';
 
 export const DatabaseCommand: EditorCommand = {
   key: 'database',

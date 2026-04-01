@@ -14,29 +14,29 @@ import {
   NodeAttributes,
   MutationStatus,
   UpdateNodeMutationData,
-} from '@colanode/core';
-import { decodeState, YDoc } from '@colanode/crdt';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { decodeState, YDoc } from '@worknest/crdt';
+import { database } from '@worknest/server/data/database';
 import {
   CreateCollaboration,
   SelectCollaboration,
   SelectNode,
   SelectNodeUpdate,
-} from '@colanode/server/data/schema';
+} from '@worknest/server/data/schema';
 import {
   applyCollaboratorUpdates,
   checkCollaboratorChanges,
-} from '@colanode/server/lib/collaborations';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { createLogger } from '@colanode/server/lib/logger';
-import { storage } from '@colanode/server/lib/storage';
-import { jobService } from '@colanode/server/services/job-service';
-import { WorkspaceContext } from '@colanode/server/types/api';
+} from '@worknest/server/lib/collaborations';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { createLogger } from '@worknest/server/lib/logger';
+import { storage } from '@worknest/server/lib/storage';
+import { jobService } from '@worknest/server/services/job-service';
+import { WorkspaceContext } from '@worknest/server/types/api';
 import {
   ConcurrentUpdateResult,
   CreateNodeInput,
   UpdateNodeInput,
-} from '@colanode/server/types/nodes';
+} from '@worknest/server/types/nodes';
 
 const logger = createLogger('server:lib:nodes');
 

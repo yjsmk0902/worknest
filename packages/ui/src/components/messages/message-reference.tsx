@@ -1,10 +1,10 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { MessageAuthorAvatar } from '@colanode/ui/components/messages/message-author-avatar';
-import { MessageAuthorName } from '@colanode/ui/components/messages/message-author-name';
-import { MessageContent } from '@colanode/ui/components/messages/message-content';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalMessageNode } from '@worknest/client/types';
+import { MessageAuthorAvatar } from '@worknest/ui/components/messages/message-author-avatar';
+import { MessageAuthorName } from '@worknest/ui/components/messages/message-author-name';
+import { MessageContent } from '@worknest/ui/components/messages/message-content';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface MessageReferenceProps {
   messageId: string;

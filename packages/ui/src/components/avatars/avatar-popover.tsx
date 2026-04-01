@@ -1,9 +1,9 @@
-import { AvatarPicker } from '@colanode/ui/components/avatars/avatar-picker';
+import { AvatarPicker } from '@worknest/ui/components/avatars/avatar-picker';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
+} from '@worknest/ui/components/ui/popover';
 
 interface AvatarPopoverProps {
   onPick: (avatar: string) => void;

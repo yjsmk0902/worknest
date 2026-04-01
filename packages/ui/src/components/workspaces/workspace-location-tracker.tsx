@@ -1,9 +1,9 @@
 import { useRouter } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
-import { collections } from '@colanode/ui/collections';
-import { buildMetadataKey } from '@colanode/ui/collections/metadata';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { collections } from '@worknest/ui/collections';
+import { buildMetadataKey } from '@worknest/ui/collections/metadata';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const upsertMetadata = (namespace: string, key: string, value: unknown) => {
   const metadataKey = buildMetadataKey(namespace, key);

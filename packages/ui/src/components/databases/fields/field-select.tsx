@@ -1,9 +1,9 @@
 import { Check, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldAttributes, FieldType } from '@colanode/core';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { Button } from '@colanode/ui/components/ui/button';
+import { FieldAttributes, FieldType } from '@worknest/core';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -11,13 +11,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
+} from '@worknest/ui/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface FieldSelectProps {
   fields: FieldAttributes[];

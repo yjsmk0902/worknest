@@ -1,12 +1,12 @@
-import { LocalNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { ChannelSettings } from '@colanode/ui/components/channels/channel-settings';
-import { NodeCollaboratorsPopover } from '@colanode/ui/components/collaborators/node-collaborators-popover';
-import { DatabaseSettings } from '@colanode/ui/components/databases/database-settings';
-import { FileSettings } from '@colanode/ui/components/files/file-settings';
-import { FolderSettings } from '@colanode/ui/components/folders/folder-settings';
-import { PageSettings } from '@colanode/ui/components/pages/page-settings';
-import { RecordSettings } from '@colanode/ui/components/records/record-settings';
+import { LocalNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { ChannelSettings } from '@worknest/ui/components/channels/channel-settings';
+import { NodeCollaboratorsPopover } from '@worknest/ui/components/collaborators/node-collaborators-popover';
+import { DatabaseSettings } from '@worknest/ui/components/databases/database-settings';
+import { FileSettings } from '@worknest/ui/components/files/file-settings';
+import { FolderSettings } from '@worknest/ui/components/folders/folder-settings';
+import { PageSettings } from '@worknest/ui/components/pages/page-settings';
+import { RecordSettings } from '@worknest/ui/components/records/record-settings';
 
 interface NodeSettingsProps {
   node: LocalNode;

@@ -1,6 +1,6 @@
-type ColanodeLogoProps = React.HTMLAttributes<SVGElement>;
+type WorknestLogoProps = React.HTMLAttributes<SVGElement>;
 
-export const ColanodeLogo = (props: ColanodeLogoProps) => {
+export const WorknestLogo = (props: WorknestLogoProps) => {
   return (
     <svg
       id="Layer_1"

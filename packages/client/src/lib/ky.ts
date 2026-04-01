@@ -1,6 +1,6 @@
 import { HTTPError } from 'ky';
 
-import { ApiErrorCode, ApiErrorOutput } from '@colanode/core';
+import { ApiErrorCode, ApiErrorOutput } from '@worknest/core';
 
 export const parseApiError = async (
   error: unknown

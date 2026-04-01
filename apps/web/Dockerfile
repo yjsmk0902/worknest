@@ -30,11 +30,11 @@ COPY ../../apps/web apps/web
 COPY ../../tsconfig.base.json ./
 
 # Build packages
-RUN npm run build -w @colanode/core && \
-    npm run build -w @colanode/crdt && \
-    npm run build -w @colanode/client && \
-    npm run build -w @colanode/ui && \
-    npm run build -w @colanode/web && \
+RUN npm run build -w @worknest/core && \
+    npm run build -w @worknest/crdt && \
+    npm run build -w @worknest/client && \
+    npm run build -w @worknest/ui && \
+    npm run build -w @worknest/web && \
     npm prune --production
 
 

@@ -6,15 +6,15 @@ import {
   ApiErrorCode,
   apiErrorOutputSchema,
   loginOutputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
 import {
   buildLoginSuccessOutput,
   buildLoginVerifyOutput,
   verifyPassword,
-} from '@colanode/server/lib/accounts';
-import { config } from '@colanode/server/lib/config';
-import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
+} from '@worknest/server/lib/accounts';
+import { config } from '@worknest/server/lib/config';
+import { isAuthEmailRateLimited } from '@worknest/server/lib/rate-limits';
 
 export const emailLoginRoute: FastifyPluginCallbackZod = (
   instance,

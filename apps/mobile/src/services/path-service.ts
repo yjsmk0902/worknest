@@ -1,6 +1,6 @@
 import { Paths, File, Directory } from 'expo-file-system';
 
-import { PathService } from '@colanode/client/services';
+import { PathService } from '@worknest/client/services';
 
 export class MobilePathService implements PathService {
   private readonly avatarsDirectoryPath = new Directory(

@@ -2,11 +2,11 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { NodeRole } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { NodeCollaboratorRoleDropdown } from '@colanode/ui/components/collaborators/node-collaborator-role-dropdown';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { NodeRole } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { NodeCollaboratorRoleDropdown } from '@worknest/ui/components/collaborators/node-collaborator-role-dropdown';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface NodeCollaboratorProps {
   nodeId: string;

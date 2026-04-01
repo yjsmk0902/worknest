@@ -6,10 +6,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@colanode/ui/components/ui/alert-dialog';
-import { Button } from '@colanode/ui/components/ui/button';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/alert-dialog';
+import { Button } from '@worknest/ui/components/ui/button';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface FieldDeleteDialogProps {
   id: string;

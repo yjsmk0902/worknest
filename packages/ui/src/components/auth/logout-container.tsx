@@ -1,13 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
-import { LogoutBreadcrumb } from '@colanode/ui/components/auth/logout-breadcrumb';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { LogoutBreadcrumb } from '@worknest/ui/components/auth/logout-breadcrumb';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 export const LogoutContainer = () => {
   const workspace = useWorkspace();

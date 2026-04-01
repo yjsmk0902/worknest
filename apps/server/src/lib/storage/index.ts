@@ -1,5 +1,5 @@
-import { config } from '@colanode/server/lib/config';
-import type { StorageConfig } from '@colanode/server/lib/config/storage';
+import { config } from '@worknest/server/lib/config';
+import type { StorageConfig } from '@worknest/server/lib/config/storage';
 
 import { AzureBlobStorage } from './azure';
 import type { Storage } from './core';

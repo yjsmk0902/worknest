@@ -1,4 +1,4 @@
-import { PathService } from '@colanode/client/services';
+import { PathService } from '@worknest/client/services';
 
 export class WebPathService implements PathService {
   private readonly appPath = '';

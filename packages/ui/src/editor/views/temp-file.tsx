@@ -3,13 +3,13 @@ import { type NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 import { X } from 'lucide-react';
 
-import { FileSubtype } from '@colanode/core';
-import { collections } from '@colanode/ui/collections';
-import { FileNoPreview } from '@colanode/ui/components/files/file-no-preview';
-import { FilePreviewAudio } from '@colanode/ui/components/files/previews/file-preview-audio';
-import { FilePreviewImage } from '@colanode/ui/components/files/previews/file-preview-image';
-import { FilePreviewVideo } from '@colanode/ui/components/files/previews/file-preview-video';
-import { canPreviewFile } from '@colanode/ui/lib/files';
+import { FileSubtype } from '@worknest/core';
+import { collections } from '@worknest/ui/collections';
+import { FileNoPreview } from '@worknest/ui/components/files/file-no-preview';
+import { FilePreviewAudio } from '@worknest/ui/components/files/previews/file-preview-audio';
+import { FilePreviewImage } from '@worknest/ui/components/files/previews/file-preview-image';
+import { FilePreviewVideo } from '@worknest/ui/components/files/previews/file-preview-video';
+import { canPreviewFile } from '@worknest/ui/lib/files';
 
 interface TempFilePreviewProps {
   name: string;

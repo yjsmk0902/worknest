@@ -1,18 +1,18 @@
 import { createMemoryHistory, createRouter } from '@tanstack/react-router';
 import { useCallback, useRef } from 'react';
 
-import { Tab } from '@colanode/client/types';
+import { Tab } from '@worknest/client/types';
 import {
   compareString,
   generateFractionalIndex,
   generateId,
   IdType,
-} from '@colanode/core';
-import { collections } from '@colanode/ui/collections';
-import { TabsContent } from '@colanode/ui/components/layouts/tabs/tabs-content';
-import { TabsHeader } from '@colanode/ui/components/layouts/tabs/tabs-header';
-import { TabManagerContext } from '@colanode/ui/contexts/tab-manager';
-import { router, routeTree } from '@colanode/ui/routes';
+} from '@worknest/core';
+import { collections } from '@worknest/ui/collections';
+import { TabsContent } from '@worknest/ui/components/layouts/tabs/tabs-content';
+import { TabsHeader } from '@worknest/ui/components/layouts/tabs/tabs-header';
+import { TabManagerContext } from '@worknest/ui/contexts/tab-manager';
+import { router, routeTree } from '@worknest/ui/routes';
 
 export const LayoutDesktop = () => {
   const routersRef = useRef<Map<string, typeof router>>(new Map());
@@ -78,7 +78,7 @@ export const LayoutDesktop = () => {
       }
 
       const location = event.toLocation.href;
-      window.colanode.executeMutation({
+      window.worknest.executeMutation({
         type: 'tab.update',
         id,
         location,

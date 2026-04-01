@@ -1,10 +1,10 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   FileCreateMutationInput,
   FileCreateMutationOutput,
-} from '@colanode/client/mutations';
-import { generateId, IdType } from '@colanode/core';
+} from '@worknest/client/mutations';
+import { generateId, IdType } from '@worknest/core';
 
 export class FileCreateMutationHandler
   extends WorkspaceMutationHandlerBase

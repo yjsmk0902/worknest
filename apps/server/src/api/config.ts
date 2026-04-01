@@ -1,7 +1,7 @@
 import { FastifyPluginCallbackZod } from 'fastify-type-provider-zod';
 
-import { build, ServerConfig, serverConfigSchema } from '@colanode/core';
-import { config } from '@colanode/server/lib/config';
+import { build, ServerConfig, serverConfigSchema } from '@worknest/core';
+import { config } from '@worknest/server/lib/config';
 
 export const configGetRoute: FastifyPluginCallbackZod = (instance, _, done) => {
   instance.route({

@@ -1,13 +1,13 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { NodeContainer } from '@colanode/ui/components/nodes/node-container';
-import { NodeErrorContainer } from '@colanode/ui/components/nodes/node-error-container';
-import { NodeTab } from '@colanode/ui/components/nodes/node-tab';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { NodeContainer } from '@worknest/ui/components/nodes/node-container';
+import { NodeErrorContainer } from '@worknest/ui/components/nodes/node-error-container';
+import { NodeTab } from '@worknest/ui/components/nodes/node-tab';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceRoute,
   workspaceMaskRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const nodeRoute = createRoute({
   getParentRoute: () => workspaceRoute,

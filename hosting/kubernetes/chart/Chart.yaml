@@ -1,6 +1,6 @@
 apiVersion: v2
-name: colanode
-description: A Helm chart for Colanode - open-source & local-first collaboration workspace
+name: worknest
+description: A Helm chart for Worknest - open-source & local-first collaboration workspace
 type: application
 version: 0.2.2
 # appVersion is auto-updated by the release workflow

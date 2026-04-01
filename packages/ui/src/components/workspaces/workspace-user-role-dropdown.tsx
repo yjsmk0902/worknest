@@ -1,16 +1,16 @@
 import { Check, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { WorkspaceRole } from '@colanode/core';
+import { WorkspaceRole } from '@worknest/core';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface WorkspaceRoleItem {
   name: string;

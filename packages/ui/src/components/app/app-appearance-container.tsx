@@ -1,12 +1,12 @@
 import { Check, Laptop, Moon, Sun } from 'lucide-react';
 
-import { ThemeColor, ThemeMode } from '@colanode/client/types';
-import { AppAppearanceBreadcrumb } from '@colanode/ui/components/app/app-appearance-breadcrumb';
-import { Container } from '@colanode/ui/components/layouts/containers/container';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
-import { cn } from '@colanode/ui/lib/utils';
+import { ThemeColor, ThemeMode } from '@worknest/client/types';
+import { AppAppearanceBreadcrumb } from '@worknest/ui/components/app/app-appearance-breadcrumb';
+import { Container } from '@worknest/ui/components/layouts/containers/container';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ThemeModeOption {
   key: string;

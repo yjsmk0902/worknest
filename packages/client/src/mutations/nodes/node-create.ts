@@ -1,4 +1,4 @@
-import { NodeAttributes } from '@colanode/core';
+import { NodeAttributes } from '@worknest/core';
 
 export type NodeCreateMutationInput = {
   type: 'node.create';
@@ -11,7 +11,7 @@ export type NodeCreateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'node.create': {
       input: NodeCreateMutationInput;

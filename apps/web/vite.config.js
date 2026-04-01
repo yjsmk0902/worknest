@@ -13,11 +13,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@colanode/web': resolve(__dirname, './src'),
-      '@colanode/core': resolve(__dirname, '../../packages/core/src'),
-      '@colanode/crdt': resolve(__dirname, '../../packages/crdt/src'),
-      '@colanode/client': resolve(__dirname, '../../packages/client/src'),
-      '@colanode/ui': resolve(__dirname, '../../packages/ui/src'),
+      '@worknest/web': resolve(__dirname, './src'),
+      '@worknest/core': resolve(__dirname, '../../packages/core/src'),
+      '@worknest/crdt': resolve(__dirname, '../../packages/crdt/src'),
+      '@worknest/client': resolve(__dirname, '../../packages/client/src'),
+      '@worknest/ui': resolve(__dirname, '../../packages/ui/src'),
     },
   },
   optimizeDeps: {

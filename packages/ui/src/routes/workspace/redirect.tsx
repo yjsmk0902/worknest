@@ -1,12 +1,12 @@
 import { createRoute, notFound, redirect } from '@tanstack/react-router';
 
-import { collections } from '@colanode/ui/collections';
-import { buildMetadataKey } from '@colanode/ui/collections/metadata';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { collections } from '@worknest/ui/collections';
+import { buildMetadataKey } from '@worknest/ui/collections/metadata';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceMaskRoute,
   workspaceRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const workspaceRedirectRoute = createRoute({
   getParentRoute: () => workspaceRoute,

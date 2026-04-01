@@ -6,7 +6,7 @@ import {
   LocalDatabaseViewNode,
   LocalRecordNode,
   ViewField,
-} from '@colanode/client/types';
+} from '@worknest/client/types';
 import {
   compareString,
   SortDirection,
@@ -15,19 +15,19 @@ import {
   SpecialId,
   generateId,
   IdType,
-} from '@colanode/core';
-import { BoardView } from '@colanode/ui/components/databases/boards/board-view';
-import { CalendarView } from '@colanode/ui/components/databases/calendars/calendar-view';
-import { TableView } from '@colanode/ui/components/databases/tables/table-view';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { DatabaseViewContext } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/core';
+import { BoardView } from '@worknest/ui/components/databases/boards/board-view';
+import { CalendarView } from '@worknest/ui/components/databases/calendars/calendar-view';
+import { TableView } from '@worknest/ui/components/databases/tables/table-view';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { DatabaseViewContext } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 import {
   generateFieldValuesFromFilters,
   getDefaultFieldWidth,
   getDefaultNameWidth,
   getDefaultViewFieldDisplay,
-} from '@colanode/ui/lib/databases';
+} from '@worknest/ui/lib/databases';
 
 interface ViewProps {
   view: LocalDatabaseViewNode;

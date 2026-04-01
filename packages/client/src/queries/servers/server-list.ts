@@ -1,10 +1,10 @@
-import { Server } from '@colanode/client/types';
+import { Server } from '@worknest/client/types';
 
 export type ServerListQueryInput = {
   type: 'server.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'server.list': {
       input: ServerListQueryInput;

@@ -6,10 +6,10 @@ import {
   ApiErrorCode,
   extractNodeRole,
   FileStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { fetchNodeTree, mapNode } from '@colanode/server/lib/nodes';
-import { storage } from '@colanode/server/lib/storage';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { fetchNodeTree, mapNode } from '@worknest/server/lib/nodes';
+import { storage } from '@worknest/server/lib/storage';
 
 export const fileDownloadRoute: FastifyPluginCallbackZod = (
   instance,

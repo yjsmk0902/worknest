@@ -2,12 +2,12 @@ import { eq, useLiveInfiniteQuery } from '@tanstack/react-db';
 import { useNavigate } from '@tanstack/react-router';
 import { match } from 'ts-pattern';
 
-import { FolderLayoutType, LocalFileNode } from '@colanode/client/types';
-import { GalleryLayout } from '@colanode/ui/components/folders/galleries/gallery-layout';
-import { GridLayout } from '@colanode/ui/components/folders/grids/grid-layout';
-import { ListLayout } from '@colanode/ui/components/folders/lists/list-layout';
-import { FolderContext } from '@colanode/ui/contexts/folder';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { FolderLayoutType, LocalFileNode } from '@worknest/client/types';
+import { GalleryLayout } from '@worknest/ui/components/folders/galleries/gallery-layout';
+import { GridLayout } from '@worknest/ui/components/folders/grids/grid-layout';
+import { ListLayout } from '@worknest/ui/components/folders/lists/list-layout';
+import { FolderContext } from '@worknest/ui/contexts/folder';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const FILES_PER_PAGE = 100;
 

@@ -1,8 +1,8 @@
 import { FileText } from 'lucide-react';
 
-import { EditorCommand, LocalPageNode } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core';
-import { collections } from '@colanode/ui/collections';
+import { EditorCommand, LocalPageNode } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core';
+import { collections } from '@worknest/ui/collections';
 
 export const PageCommand: EditorCommand = {
   key: 'page',

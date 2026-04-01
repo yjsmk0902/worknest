@@ -7,22 +7,22 @@ import {
   syncMutationsInputSchema,
   ApiErrorCode,
   WorkspaceStatus,
-} from '@colanode/core';
-import { updateDocumentFromMutation } from '@colanode/server/lib/documents';
+} from '@worknest/core';
+import { updateDocumentFromMutation } from '@worknest/server/lib/documents';
 import {
   markNodeAsOpened,
   markNodeAsSeen,
-} from '@colanode/server/lib/node-interactions';
+} from '@worknest/server/lib/node-interactions';
 import {
   createNodeReaction,
   deleteNodeReaction,
-} from '@colanode/server/lib/node-reactions';
+} from '@worknest/server/lib/node-reactions';
 import {
   createNodeFromMutation,
   updateNodeFromMutation,
   deleteNodeFromMutation,
-} from '@colanode/server/lib/nodes';
-import { WorkspaceContext } from '@colanode/server/types/api';
+} from '@worknest/server/lib/nodes';
+import { WorkspaceContext } from '@worknest/server/types/api';
 
 export const mutationsSyncRoute: FastifyPluginCallbackZod = (
   instance,

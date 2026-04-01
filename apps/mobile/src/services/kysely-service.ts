@@ -16,9 +16,9 @@ import {
   SqliteQueryCompiler,
 } from 'kysely';
 
-import { KyselyBuildOptions, KyselyService } from '@colanode/client/services';
-import { MobileFileSystem } from '@colanode/mobile/services/file-system';
-import { MobilePathService } from '@colanode/mobile/services/path-service';
+import { KyselyBuildOptions, KyselyService } from '@worknest/client/services';
+import { MobileFileSystem } from '@worknest/mobile/services/file-system';
+import { MobilePathService } from '@worknest/mobile/services/path-service';
 
 export class MobileKyselyService implements KyselyService {
   private readonly fs = new MobileFileSystem();

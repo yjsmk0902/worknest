@@ -1,8 +1,8 @@
 import fs from 'fs';
 
-import { ThemeMode, WindowState } from '@colanode/client/types';
-import { build } from '@colanode/core';
-import { DesktopPathService } from '@colanode/desktop/main/path-service';
+import { ThemeMode, WindowState } from '@worknest/client/types';
+import { build } from '@worknest/core';
+import { DesktopPathService } from '@worknest/desktop/main/path-service';
 
 interface BootstrapData {
   version: string;

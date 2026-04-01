@@ -1,15 +1,15 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { collections } from '@colanode/ui/collections';
-import { ChannelTab } from '@colanode/ui/components/channels/channel-tab';
-import { ChatTab } from '@colanode/ui/components/chats/chat-tab';
-import { DatabaseTab } from '@colanode/ui/components/databases/database-tab';
-import { FileTab } from '@colanode/ui/components/files/file-tab';
-import { FolderTab } from '@colanode/ui/components/folders/folder-tab';
-import { MessageTab } from '@colanode/ui/components/messages/message-tab';
-import { PageTab } from '@colanode/ui/components/pages/page-tab';
-import { RecordTab } from '@colanode/ui/components/records/record-tab';
-import { SpaceTab } from '@colanode/ui/components/spaces/space-tab';
+import { collections } from '@worknest/ui/collections';
+import { ChannelTab } from '@worknest/ui/components/channels/channel-tab';
+import { ChatTab } from '@worknest/ui/components/chats/chat-tab';
+import { DatabaseTab } from '@worknest/ui/components/databases/database-tab';
+import { FileTab } from '@worknest/ui/components/files/file-tab';
+import { FolderTab } from '@worknest/ui/components/folders/folder-tab';
+import { MessageTab } from '@worknest/ui/components/messages/message-tab';
+import { PageTab } from '@worknest/ui/components/pages/page-tab';
+import { RecordTab } from '@worknest/ui/components/records/record-tab';
+import { SpaceTab } from '@worknest/ui/components/spaces/space-tab';
 
 interface NodeTabProps {
   userId: string;

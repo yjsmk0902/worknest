@@ -1,6 +1,6 @@
 import { FastifyPluginCallback } from 'fastify';
 
-import { accountAuthenticator } from '@colanode/server/api/client/plugins/account-auth';
+import { accountAuthenticator } from '@worknest/server/api/client/plugins/account-auth';
 
 import { accountSyncRoute } from './account-sync';
 import { accountUpdateRoute } from './account-update';

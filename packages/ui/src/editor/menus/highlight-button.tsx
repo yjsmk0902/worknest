@@ -6,9 +6,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { editorColors } from '@colanode/ui/lib/editor';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { editorColors } from '@worknest/ui/lib/editor';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const HighlightButton = ({
   editor,

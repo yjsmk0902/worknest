@@ -1,8 +1,8 @@
 {
-  "_comment": "Colanode Server Configuration - Copy this file to config.local.json for local development or use it as a template for your self-hosted server",
-  "_docs": "https://colanode.com/docs/self-hosting/configuration/",
+  "_comment": "Worknest Server Configuration - Copy this file to config.local.json for local development or use it as a template for your self-hosted server",
+  "_docs": "https://worknest.com/docs/self-hosting/configuration/",
 
-  "name": "Colanode Local",
+  "name": "Worknest Local",
   "web": {
     "domain": "localhost:4000"
   },
@@ -37,7 +37,7 @@
     "tus": {
       "locker": {
         "type": "redis",
-        "prefix": "colanode:tus:lock"
+        "prefix": "worknest:tus:lock"
       },
       "cache": {
         "type": "none"
@@ -56,8 +56,8 @@
   "email": {
     "enabled": false,
     "from": {
-      "email": "colanode@example.com",
-      "name": "Colanode"
+      "email": "worknest@example.com",
+      "name": "Worknest"
     },
     "provider": {
       "type": "smtp",
@@ -73,7 +73,7 @@
   "jobs": {
     "queue": {
       "name": "jobs",
-      "prefix": "colanode"
+      "prefix": "worknest"
     },
     "nodeUpdatesMerge": {
       "enabled": false,

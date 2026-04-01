@@ -1,12 +1,12 @@
 // import { Document } from '@langchain/core/documents';
 // import ms from 'ms';
 
-// import { RerankedContextItem } from '@colanode/server/types/assistant';
+// import { RerankedContextItem } from '@worknest/server/types/assistant';
 // import {
 //   NodeMetadata,
 //   DocumentMetadata,
-// } from '@colanode/server/types/metadata';
-// import { SearchResult } from '@colanode/server/types/retrieval';
+// } from '@worknest/server/types/metadata';
+// import { SearchResult } from '@worknest/server/types/retrieval';
 
 // export const formatDate = (date?: Date | null): string => {
 //   if (!date) return 'Unknown time';

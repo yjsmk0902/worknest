@@ -1,9 +1,9 @@
 import { ReactNode, useCallback } from 'react';
 
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { DatabaseContext } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { DatabaseContext } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface DatabaseProps {
   database: LocalDatabaseNode;

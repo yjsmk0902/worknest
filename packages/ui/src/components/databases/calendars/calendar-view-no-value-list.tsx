@@ -1,10 +1,10 @@
 import { InView } from 'react-intersection-observer';
 
-import { DatabaseViewFilterAttributes, FieldAttributes } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useRecordsQuery } from '@colanode/ui/hooks/use-records-query';
+import { DatabaseViewFilterAttributes, FieldAttributes } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useRecordsQuery } from '@worknest/ui/hooks/use-records-query';
 
 interface CalendarViewNoValueListProps {
   filters: DatabaseViewFilterAttributes[];

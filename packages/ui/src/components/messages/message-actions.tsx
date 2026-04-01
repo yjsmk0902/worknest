@@ -1,13 +1,13 @@
 import { MessagesSquare, Reply, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 
-import { MessageQuickReaction } from '@colanode/ui/components/messages/message-quick-reaction';
-import { MessageReactionCreatePopover } from '@colanode/ui/components/messages/message-reaction-create-popover';
-import { useConversation } from '@colanode/ui/contexts/conversation';
-import { useMessage } from '@colanode/ui/contexts/message';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { defaultEmojis } from '@colanode/ui/lib/assets';
-import { buildNodeReactionKey } from '@colanode/ui/lib/nodes';
+import { MessageQuickReaction } from '@worknest/ui/components/messages/message-quick-reaction';
+import { MessageReactionCreatePopover } from '@worknest/ui/components/messages/message-reaction-create-popover';
+import { useConversation } from '@worknest/ui/contexts/conversation';
+import { useMessage } from '@worknest/ui/contexts/message';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { defaultEmojis } from '@worknest/ui/lib/assets';
+import { buildNodeReactionKey } from '@worknest/ui/lib/nodes';
 
 const MessageAction = ({ children }: { children: React.ReactNode }) => {
   return (

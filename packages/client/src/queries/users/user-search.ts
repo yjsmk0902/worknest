@@ -1,4 +1,4 @@
-import { User } from '@colanode/client/types/users';
+import { User } from '@worknest/client/types/users';
 
 export type UserSearchQueryInput = {
   type: 'user.search';
@@ -7,7 +7,7 @@ export type UserSearchQueryInput = {
   exclude?: string[];
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'user.search': {
       input: UserSearchQueryInput;

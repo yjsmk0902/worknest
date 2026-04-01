@@ -1,10 +1,10 @@
 import { useLiveQuery } from '@tanstack/react-db';
 
-import { WindowState } from '@colanode/client/types';
-import { collections } from '@colanode/ui/collections';
-import { TabAddButton } from '@colanode/ui/components/layouts/tabs/tab-add-button';
-import { TabsHeaderItem } from '@colanode/ui/components/layouts/tabs/tabs-header-item';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
+import { WindowState } from '@worknest/client/types';
+import { collections } from '@worknest/ui/collections';
+import { TabAddButton } from '@worknest/ui/components/layouts/tabs/tab-add-button';
+import { TabsHeaderItem } from '@worknest/ui/components/layouts/tabs/tabs-header-item';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
 
 export const TabsHeader = () => {
   const [platform] = useMetadata<string>('app', 'platform');

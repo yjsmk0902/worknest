@@ -3,7 +3,7 @@ export type IconSvgGetQueryInput = {
   id: string;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'icon.svg.get': {
       input: IconSvgGetQueryInput;

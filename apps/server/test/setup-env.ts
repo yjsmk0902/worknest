@@ -11,7 +11,7 @@ type TestEnvConfig = {
   NODE_ENV: string;
 };
 
-const ENV_PATH = path.join(os.tmpdir(), 'colanode-test-env.json');
+const ENV_PATH = path.join(os.tmpdir(), 'worknest-test-env.json');
 
 if (!fs.existsSync(ENV_PATH)) {
   throw new Error(`Test env file not found at ${ENV_PATH}`);

@@ -1,4 +1,4 @@
-import { Emoji } from '@colanode/client/types/emojis';
+import { Emoji } from '@worknest/client/types/emojis';
 
 export type EmojiListQueryInput = {
   type: 'emoji.list';
@@ -7,7 +7,7 @@ export type EmojiListQueryInput = {
   count: number;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'emoji.list': {
       input: EmojiListQueryInput;

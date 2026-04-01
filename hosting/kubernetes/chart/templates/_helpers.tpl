@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "colanode.name" -}}
+{{- define "worknest.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "colanode.fullname" -}}
+{{- define "worknest.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "colanode.chart" -}}
+{{- define "worknest.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "colanode.labels" -}}
-helm.sh/chart: {{ include "colanode.chart" . }}
-{{ include "colanode.selectorLabels" . }}
+{{- define "worknest.labels" -}}
+helm.sh/chart: {{ include "worknest.chart" . }}
+{{ include "worknest.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,68 +45,68 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "colanode.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "colanode.name" . }}
+{{- define "worknest.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "worknest.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "colanode.serviceAccountName" -}}
-{{- if .Values.colanode.serviceAccount.create }}
-{{- default (include "colanode.fullname" .) .Values.colanode.serviceAccount.name }}
+{{- define "worknest.serviceAccountName" -}}
+{{- if .Values.worknest.serviceAccount.create }}
+{{- default (include "worknest.fullname" .) .Values.worknest.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.colanode.serviceAccount.name }}
+{{- default "default" .Values.worknest.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
 {{/*
 Return the PostgreSQL hostname
 */}}
-{{- define "colanode.postgresql.hostname" -}}
+{{- define "worknest.postgresql.hostname" -}}
 {{- printf "%s-postgresql" .Release.Name -}}
 {{- end }}
 
 {{/*
 Return the Redis hostname
 */}}
-{{- define "colanode.redis.hostname" -}}
+{{- define "worknest.redis.hostname" -}}
 {{- printf "%s-redis-primary" .Release.Name -}}
 {{- end }}
 
 {{/*
 Return the MinIO hostname
 */}}
-{{- define "colanode.minio.hostname" -}}
+{{- define "worknest.minio.hostname" -}}
 {{- printf "%s-minio" .Release.Name -}}
 {{- end }}
 
 {{/*
 Return the default PVC name used for file storage
 */}}
-{{- define "colanode.storagePvcName" -}}
-{{- printf "%s-storage" (include "colanode.fullname" .) -}}
+{{- define "worknest.storagePvcName" -}}
+{{- printf "%s-storage" (include "worknest.fullname" .) -}}
 {{- end }}
 
 {{/*
 Return the config.json ConfigMap name
 */}}
-{{- define "colanode.configJsonConfigMapName" -}}
-{{- if .Values.colanode.configFile.existingConfigMap -}}
-{{ .Values.colanode.configFile.existingConfigMap }}
-{{- else if .Values.colanode.configFile.name }}
-{{ .Values.colanode.configFile.name }}
+{{- define "worknest.configJsonConfigMapName" -}}
+{{- if .Values.worknest.configFile.existingConfigMap -}}
+{{ .Values.worknest.configFile.existingConfigMap }}
+{{- else if .Values.worknest.configFile.name }}
+{{ .Values.worknest.configFile.name }}
 {{- else }}
-{{ printf "%s-config-json" (include "colanode.fullname" .) }}
+{{ printf "%s-config-json" (include "worknest.fullname" .) }}
 {{- end }}
 {{- end }}
 
 {{/*
 Helper to get value from secret key reference or direct value
-Usage: {{ include "colanode.getValueOrSecret" (dict "key" "theKey" "value" .Values.path.to.value) }}
+Usage: {{ include "worknest.getValueOrSecret" (dict "key" "theKey" "value" .Values.path.to.value) }}
 */}}
-{{- define "colanode.getValueOrSecret" -}}
+{{- define "worknest.getValueOrSecret" -}}
 {{- $value := .value -}}
 {{- if and $value.existingSecret $value.secretKey -}}
 valueFrom:
@@ -120,9 +120,9 @@ value: {{ $value.value | quote }}
 
 {{/*
 Helper to get required value from secret key reference or direct value
-Usage: {{ include "colanode.getRequiredValueOrSecret" (dict "key" "theKey" "value" .Values.path.to.value) }}
+Usage: {{ include "worknest.getRequiredValueOrSecret" (dict "key" "theKey" "value" .Values.path.to.value) }}
 */}}
-{{- define "colanode.getRequiredValueOrSecret" -}}
+{{- define "worknest.getRequiredValueOrSecret" -}}
 {{- $value := .value -}}
 {{- if and $value.existingSecret $value.secretKey -}}
 valueFrom:
@@ -137,13 +137,13 @@ value: {{ $value.value | quote }}
 {{- end }}
 
 {{/*
-Colanode Server Environment Variables
+Worknest Server Environment Variables
 */}}
-{{- define "colanode.serverEnvVars" -}}
+{{- define "worknest.serverEnvVars" -}}
 - name: NODE_ENV
-  value: {{ default "production" .Values.colanode.nodeEnv | quote }}
+  value: {{ default "production" .Values.worknest.nodeEnv | quote }}
 - name: PORT
-  value: {{ .Values.colanode.service.port | quote }}
+  value: {{ .Values.worknest.service.port | quote }}
 
 - name: POSTGRES_PASSWORD
   valueFrom:
@@ -151,11 +151,11 @@ Colanode Server Environment Variables
       name: {{ .Release.Name }}-postgresql
       key: postgres-password
 - name: POSTGRES_URL
-  value: "postgres://{{ .Values.postgresql.auth.username }}:$(POSTGRES_PASSWORD)@{{ include "colanode.postgresql.hostname" . }}:5432/{{ .Values.postgresql.auth.database }}"
+  value: "postgres://{{ .Values.postgresql.auth.username }}:$(POSTGRES_PASSWORD)@{{ include "worknest.postgresql.hostname" . }}:5432/{{ .Values.postgresql.auth.database }}"
 
 - name: REDIS_PASSWORD
   {{- if .Values.redis.auth.existingSecret }}
-  {{- include "colanode.getRequiredValueOrSecret" (dict
+  {{- include "worknest.getRequiredValueOrSecret" (dict
         "key" "redis.auth.password"
         "value" (dict
           "value"        .Values.redis.auth.password
@@ -168,24 +168,24 @@ Colanode Server Environment Variables
       key: {{ .Values.redis.auth.secretKeys.redisPasswordKey }}
   {{- end }}
 - name: REDIS_URL
-  value: "redis://:$(REDIS_PASSWORD)@{{ include "colanode.redis.hostname" . }}:6379/0"
+  value: "redis://:$(REDIS_PASSWORD)@{{ include "worknest.redis.hostname" . }}:6379/0"
 
-{{- $configFile := .Values.colanode.configFile }}
+{{- $configFile := .Values.worknest.configFile }}
 {{- $mountConfigFile := or $configFile.enabled $configFile.existingConfigMap }}
 {{- if $mountConfigFile }}
 - name: CONFIG
   value: "/config.json"
 {{- end }}
 
-{{- range $index, $env := .Values.colanode.additionalEnv }}
-- name: {{ required (printf "colanode.additionalEnv[%d].name is required" $index) $env.name }}
+{{- range $index, $env := .Values.worknest.additionalEnv }}
+- name: {{ required (printf "worknest.additionalEnv[%d].name is required" $index) $env.name }}
   {{- if hasKey $env "valueFrom" }}
   valueFrom:
 {{ toYaml $env.valueFrom | nindent 4 }}
   {{- else if hasKey $env "value" }}
   value: {{ $env.value | quote }}
   {{- else }}
-  {{- fail (printf "Provide either value or valueFrom for colanode.additionalEnv[%d]" $index) }}
+  {{- fail (printf "Provide either value or valueFrom for worknest.additionalEnv[%d]" $index) }}
   {{- end }}
 {{- end }}
 {{- end }}
@@ -193,9 +193,9 @@ Colanode Server Environment Variables
 {{/*
 Render extra volume mounts for file:// pointers
 */}}
-{{- define "colanode.renderExtraVolumeMounts" -}}
+{{- define "worknest.renderExtraVolumeMounts" -}}
 {{- range $mount := . }}
-- name: {{ required "colanode.extraVolumeMounts[].name is required" $mount.name }}
+- name: {{ required "worknest.extraVolumeMounts[].name is required" $mount.name }}
   mountPath: {{ required (printf "Specify mountPath for extraVolumeMount %s" $mount.name) $mount.mountPath }}
 {{- with $mount.subPath }}
   subPath: {{ . }}
@@ -209,7 +209,7 @@ Render extra volume mounts for file:// pointers
 {{/*
 Render extra volumes (Secrets/ConfigMaps) for file:// pointers
 */}}
-{{- define "colanode.renderExtraVolumes" -}}
+{{- define "worknest.renderExtraVolumes" -}}
 {{- range $volume := . }}
 -
 {{ toYaml $volume | nindent 2 }}

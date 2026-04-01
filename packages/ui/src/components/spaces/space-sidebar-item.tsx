@@ -1,17 +1,17 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 import { ChevronRight } from 'lucide-react';
 
-import { LocalSpaceNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { SidebarItem } from '@colanode/ui/components/layouts/sidebars/sidebar-item';
-import { SpaceSidebarDropdown } from '@colanode/ui/components/spaces/space-sidebar-dropdown';
+import { LocalSpaceNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { SidebarItem } from '@worknest/ui/components/layouts/sidebars/sidebar-item';
+import { SpaceSidebarDropdown } from '@worknest/ui/components/spaces/space-sidebar-dropdown';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@colanode/ui/components/ui/collapsible';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { sortSpaceChildren } from '@colanode/ui/lib/spaces';
+} from '@worknest/ui/components/ui/collapsible';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { sortSpaceChildren } from '@worknest/ui/lib/spaces';
 
 interface SpaceSidebarItemProps {
   space: LocalSpaceNode;

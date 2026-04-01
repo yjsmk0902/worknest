@@ -1,7 +1,7 @@
-import { LocalFolderNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Link } from '@colanode/ui/components/ui/link';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalFolderNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Link } from '@worknest/ui/components/ui/link';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface FolderSidebarItemProps {
   folder: LocalFolderNode;

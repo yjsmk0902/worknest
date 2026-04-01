@@ -7,22 +7,22 @@ import {
   SelectServer,
   SelectWorkspace,
   appDatabaseMigrations,
-} from '@colanode/client/databases/app';
-import { Mediator } from '@colanode/client/handlers';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapAccount, mapWorkspace } from '@colanode/client/lib/mappers';
-import { AccountService } from '@colanode/client/services/accounts/account-service';
-import { AppMeta } from '@colanode/client/services/app-meta';
-import { AssetService } from '@colanode/client/services/asset-service';
-import { FileSystem } from '@colanode/client/services/file-system';
-import { JobService } from '@colanode/client/services/job-service';
-import { KyselyService } from '@colanode/client/services/kysely-service';
-import { MetadataService } from '@colanode/client/services/metadata-service';
-import { PathService } from '@colanode/client/services/path-service';
-import { ServerService } from '@colanode/client/services/server-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { Account } from '@colanode/client/types/accounts';
-import { ServerAttributes } from '@colanode/client/types/servers';
+} from '@worknest/client/databases/app';
+import { Mediator } from '@worknest/client/handlers';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapAccount, mapWorkspace } from '@worknest/client/lib/mappers';
+import { AccountService } from '@worknest/client/services/accounts/account-service';
+import { AppMeta } from '@worknest/client/services/app-meta';
+import { AssetService } from '@worknest/client/services/asset-service';
+import { FileSystem } from '@worknest/client/services/file-system';
+import { JobService } from '@worknest/client/services/job-service';
+import { KyselyService } from '@worknest/client/services/kysely-service';
+import { MetadataService } from '@worknest/client/services/metadata-service';
+import { PathService } from '@worknest/client/services/path-service';
+import { ServerService } from '@worknest/client/services/server-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { Account } from '@worknest/client/types/accounts';
+import { ServerAttributes } from '@worknest/client/types/servers';
 import {
   ApiHeader,
   build,
@@ -30,7 +30,7 @@ import {
   generateFractionalIndex,
   generateId,
   IdType,
-} from '@colanode/core';
+} from '@worknest/core';
 
 const debug = createDebugger('desktop:service:app');
 

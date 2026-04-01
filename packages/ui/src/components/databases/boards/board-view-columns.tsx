@@ -1,8 +1,8 @@
-import { FieldAttributes } from '@colanode/core';
-import { BoardViewColumnsCollaborator } from '@colanode/ui/components/databases/boards/board-view-columns-collaborator';
-import { BoardViewColumnsCreatedBy } from '@colanode/ui/components/databases/boards/board-view-columns-created-by';
-import { BoardViewColumnsMultiSelect } from '@colanode/ui/components/databases/boards/board-view-columns-multi-select';
-import { BoardViewColumnsSelect } from '@colanode/ui/components/databases/boards/board-view-columns-select';
+import { FieldAttributes } from '@worknest/core';
+import { BoardViewColumnsCollaborator } from '@worknest/ui/components/databases/boards/board-view-columns-collaborator';
+import { BoardViewColumnsCreatedBy } from '@worknest/ui/components/databases/boards/board-view-columns-created-by';
+import { BoardViewColumnsMultiSelect } from '@worknest/ui/components/databases/boards/board-view-columns-multi-select';
+import { BoardViewColumnsSelect } from '@worknest/ui/components/databases/boards/board-view-columns-select';
 
 interface BoardViewColumnsProps {
   field: FieldAttributes;

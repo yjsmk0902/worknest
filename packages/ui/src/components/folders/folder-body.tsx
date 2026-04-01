@@ -9,10 +9,10 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { LocalFolderNode, FolderLayoutType } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { FolderFiles } from '@colanode/ui/components/folders/folder-files';
-import { Button } from '@colanode/ui/components/ui/button';
+import { LocalFolderNode, FolderLayoutType } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { FolderFiles } from '@worknest/ui/components/folders/folder-files';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +20,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Dropzone } from '@colanode/ui/components/ui/dropzone';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { openFileDialog } from '@colanode/ui/lib/files';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Dropzone } from '@worknest/ui/components/ui/dropzone';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { openFileDialog } from '@worknest/ui/lib/files';
 
 export type FolderLayoutOption = {
   value: FolderLayoutType;
@@ -75,7 +75,7 @@ export const FolderBody = ({ folder }: FolderBodyProps) => {
 
     if (result.type === 'success') {
       result.files.forEach((tempFile) => {
-        window.colanode
+        window.worknest
           .executeMutation({
             type: 'file.create',
             userId: workspace.userId,

@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Architecture Overview
-Colanode is a local-first collaboration workspace. Clients keep a local SQLite cache and sync to the server (Fastify + Postgres + Redis) in the background for offline-first behavior. Real-time editing uses CRDTs (Yjs) to merge concurrent changes. Shared packages provide core types, sync logic, and UI; see `README.md` for product and hosting context.
+Worknest is a local-first collaboration workspace. Clients keep a local SQLite cache and sync to the server (Fastify + Postgres + Redis) in the background for offline-first behavior. Real-time editing uses CRDTs (Yjs) to merge concurrent changes. Shared packages provide core types, sync logic, and UI; see `README.md` for product and hosting context.
 
 ## Project Structure & Module Organization
 - `apps/`: client and server apps (`server`, `web`, `desktop`, `mobile`).
@@ -22,11 +22,11 @@ Colanode is a local-first collaboration workspace. Clients keep a local SQLite c
 ## Coding Guidelines
 - Ground changes in the existing codebase. Start from the closest feature and mirror its folders, naming, and flow.
 - Keep shared behavior in `packages/`; keep `apps/` thin and focused on wiring and UI.
-- Server routes use Fastify plugins with Zod schemas from `@colanode/core`. Update schemas and error codes before handlers.
+- Server routes use Fastify plugins with Zod schemas from `@worknest/core`. Update schemas and error codes before handlers.
 - Client operations follow the query/mutation pattern: define typed `type: 'feature.action'` inputs/outputs in `packages/client/src/queries` or `packages/client/src/mutations`, then wire handlers in `packages/client/src/handlers`.
 - Use Kysely (`database`) for SQL access and limit raw SQL.
 - UI styling uses Tailwind utilities, shared styles in `packages/ui/src/styles`, and shadcn components in `packages/ui/src/components/ui`. Prefer shared components over one-off styling.
-- Use `@colanode/*` imports and follow ESLint import grouping; keep filenames consistent with nearby code.
+- Use `@worknest/*` imports and follow ESLint import grouping; keep filenames consistent with nearby code.
 
 ## Server Configuration
 - Config file location: set via `CONFIG` environment variable (e.g., `CONFIG=/path/to/config.json`).

@@ -1,16 +1,16 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { parseApiError } from '@colanode/client/lib/ky';
-import { mapWorkspace } from '@colanode/client/lib/mappers';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { parseApiError } from '@worknest/client/lib/ky';
+import { mapWorkspace } from '@worknest/client/lib/mappers';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   MutationError,
   MutationErrorCode,
   WorkspaceUpdateMutationInput,
   WorkspaceUpdateMutationOutput,
-} from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services/app-service';
-import { Workspace } from '@colanode/client/types';
-import { WorkspaceUpdateInput } from '@colanode/core';
+} from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services/app-service';
+import { Workspace } from '@worknest/client/types';
+import { WorkspaceUpdateInput } from '@worknest/core';
 
 export class WorkspaceUpdateMutationHandler implements MutationHandler<WorkspaceUpdateMutationInput> {
   private readonly app: AppService;

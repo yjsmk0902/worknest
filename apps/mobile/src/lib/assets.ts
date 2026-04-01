@@ -1,7 +1,7 @@
 import { Asset } from 'expo-asset';
 import { Directory, File } from 'expo-file-system';
 
-import { PathService } from '@colanode/client/services';
+import { PathService } from '@worknest/client/services';
 
 import emojisDatabaseAsset from '../../assets/emojis.db';
 import neotraxFontAsset from '../../assets/fonts/neotrax.otf';

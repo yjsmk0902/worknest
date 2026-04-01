@@ -1,6 +1,6 @@
-import { build } from '@colanode/core';
-import { WebFileSystem } from '@colanode/web/services/file-system';
-import { WebPathService } from '@colanode/web/services/path-service';
+import { build } from '@worknest/core';
+import { WebFileSystem } from '@worknest/web/services/file-system';
+import { WebPathService } from '@worknest/web/services/path-service';
 
 type BootstrapData = {
   version: string;

@@ -1,13 +1,13 @@
 import * as Comlink from 'comlink';
 import { createRoot } from 'react-dom/client';
 
-import { eventBus } from '@colanode/client/lib';
-import { BrowserNotSupported } from '@colanode/web/components/browser-not-supported';
-import { MobileNotSupported } from '@colanode/web/components/mobile-not-supported';
-import { ColanodeWorkerApi } from '@colanode/web/lib/types';
-import { isMobileDevice, isOpfsSupported } from '@colanode/web/lib/utils';
-import { Root } from '@colanode/web/root';
-import DedicatedWorker from '@colanode/web/workers/dedicated?worker';
+import { eventBus } from '@worknest/client/lib';
+import { BrowserNotSupported } from '@worknest/web/components/browser-not-supported';
+import { MobileNotSupported } from '@worknest/web/components/mobile-not-supported';
+import { WorknestWorkerApi } from '@worknest/web/lib/types';
+import { isMobileDevice, isOpfsSupported } from '@worknest/web/lib/utils';
+import { Root } from '@worknest/web/root';
+import DedicatedWorker from '@worknest/web/workers/dedicated?worker';
 
 const initializeApp = async () => {
   const isMobile = isMobileDevice();
@@ -25,9 +25,9 @@ const initializeApp = async () => {
   }
 
   const worker = new DedicatedWorker();
-  const workerApi = Comlink.wrap<ColanodeWorkerApi>(worker);
+  const workerApi = Comlink.wrap<WorknestWorkerApi>(worker);
 
-  window.colanode = {
+  window.worknest = {
     init: async () => {
       return workerApi.init();
     },

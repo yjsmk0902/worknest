@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 
-import { ZOD_TEXT_DESCRIPTION } from '@colanode/core/lib/constants';
+import { ZOD_TEXT_DESCRIPTION } from '@worknest/core/lib/constants';
 
 export const booleanFieldValueSchema = z.object({
   type: z.literal('boolean'),

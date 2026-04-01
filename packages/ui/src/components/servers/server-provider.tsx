@@ -1,9 +1,9 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { isFeatureSupported } from '@colanode/client/lib';
-import { collections } from '@colanode/ui/collections';
-import { ServerNotFound } from '@colanode/ui/components/servers/server-not-found';
-import { ServerContext } from '@colanode/ui/contexts/server';
+import { isFeatureSupported } from '@worknest/client/lib';
+import { collections } from '@worknest/ui/collections';
+import { ServerNotFound } from '@worknest/ui/components/servers/server-not-found';
+import { ServerContext } from '@worknest/ui/contexts/server';
 
 interface ServerProviderProps {
   domain: string;

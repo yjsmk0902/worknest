@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { LocalFileNode } from '@colanode/client/types';
+import { LocalFileNode } from '@worknest/client/types';
 
 interface FolderContext {
   id: string;

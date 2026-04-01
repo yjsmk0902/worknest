@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@colanode/mobile",
+  "name": "@worknest/mobile",
   "version": "1.0.0",
-  "author": "Colanode",
-  "description": "Colanode mobile application",
+  "author": "Worknest",
+  "description": "Worknest mobile application",
   "main": "src/index.ts",
   "scripts": {
     "start": "expo start",

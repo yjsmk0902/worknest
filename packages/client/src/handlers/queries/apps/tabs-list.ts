@@ -1,10 +1,10 @@
-import { SelectTab } from '@colanode/client/databases/app/schema';
-import { mapTab } from '@colanode/client/lib/mappers';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { TabsListQueryInput } from '@colanode/client/queries/apps/tabs-list';
-import { AppService } from '@colanode/client/services/app-service';
-import { Tab } from '@colanode/client/types/apps';
-import { Event } from '@colanode/client/types/events';
+import { SelectTab } from '@worknest/client/databases/app/schema';
+import { mapTab } from '@worknest/client/lib/mappers';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { TabsListQueryInput } from '@worknest/client/queries/apps/tabs-list';
+import { AppService } from '@worknest/client/services/app-service';
+import { Tab } from '@worknest/client/types/apps';
+import { Event } from '@worknest/client/types/events';
 
 export class TabsListQueryHandler implements QueryHandler<TabsListQueryInput> {
   private readonly app: AppService;

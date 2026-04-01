@@ -1,13 +1,13 @@
-import { EventBus } from '@colanode/client/lib';
-import { MutationInput, MutationResult } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { AppInitOutput, TempFile } from '@colanode/client/types';
+import { EventBus } from '@worknest/client/lib';
+import { MutationInput, MutationResult } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { AppInitOutput, TempFile } from '@worknest/client/types';
 
 interface SaveDialogOptions {
   name: string;
 }
 
-export interface ColanodeWindowApi {
+export interface WorknestWindowApi {
   init: () => Promise<AppInitOutput>;
   reset: () => Promise<void>;
   executeMutation: <T extends MutationInput>(
@@ -31,7 +31,7 @@ export interface ColanodeWindowApi {
 
 declare global {
   interface Window {
-    colanode: ColanodeWindowApi;
+    worknest: WorknestWindowApi;
     eventBus: EventBus;
   }
 }

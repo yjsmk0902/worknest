@@ -1,12 +1,12 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { InfoContainer } from '@colanode/ui/components/app/info-container';
-import { InfoTab } from '@colanode/ui/components/app/info-tab';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { InfoContainer } from '@worknest/ui/components/app/info-container';
+import { InfoTab } from '@worknest/ui/components/app/info-tab';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceMaskRoute,
   workspaceRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const infoRoute = createRoute({
   getParentRoute: () => workspaceRoute,

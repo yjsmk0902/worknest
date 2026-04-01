@@ -2,9 +2,9 @@ import { useLiveQuery } from '@tanstack/react-db';
 import { useRouter } from '@tanstack/react-router';
 import { Home } from 'lucide-react';
 
-import { collections } from '@colanode/ui/collections';
-import { Button } from '@colanode/ui/components/ui/button';
-import { getDefaultWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { collections } from '@worknest/ui/collections';
+import { Button } from '@worknest/ui/components/ui/button';
+import { getDefaultWorkspaceUserId } from '@worknest/ui/routes/utils';
 
 export const AuthCancel = () => {
   const router = useRouter();

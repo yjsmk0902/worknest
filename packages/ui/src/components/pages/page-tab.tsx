@@ -1,5 +1,5 @@
-import { LocalPageNode } from '@colanode/client/types';
-import { Tab } from '@colanode/ui/components/layouts/tabs/tab';
+import { LocalPageNode } from '@worknest/client/types';
+import { Tab } from '@worknest/ui/components/layouts/tabs/tab';
 
 interface PageTabProps {
   page: LocalPageNode;

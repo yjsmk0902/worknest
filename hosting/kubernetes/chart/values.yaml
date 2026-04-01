@@ -1,21 +1,21 @@
-# Default values for colanode.
+# Default values for worknest.
 
 # -- Override the name for the selector labels, defaults to the chart name
 nameOverride: ''
 # -- Override the full name of the deployed resources, defaults to a combination of the release name and the name for the selector labels
 fullnameOverride: ''
 
-# Core Colanode Configuration
-colanode:
-  # -- Number of replicas for the Colanode server deployment
+# Core Worknest Configuration
+worknest:
+  # -- Number of replicas for the Worknest server deployment
   replicaCount: 1
 
   image:
-    # -- Colanode server image repository
-    repository: ghcr.io/colanode/server
-    # -- Colanode server image pull policy
+    # -- Worknest server image repository
+    repository: ghcr.io/worknest/server
+    # -- Worknest server image pull policy
     pullPolicy: Always
-    # -- Colanode server image tag
+    # -- Worknest server image tag
     tag: 'latest'
 
   # -- Image pull secrets
@@ -71,7 +71,7 @@ colanode:
   autoscaling:
     enabled: false
 
-  # -- Node runtime mode exposed as NODE_ENV. Even without colanode.configFile,
+  # -- Node runtime mode exposed as NODE_ENV. Even without worknest.configFile,
   #    the container ships with a default config.json that references env://POSTGRES_URL
   #    and env://REDIS_URL; this chart wires those automatically.
   nodeEnv: production
@@ -87,7 +87,7 @@ colanode:
   additionalEnv: []
 
   # -- Extra volume mounts for file:// pointers (e.g., TLS certs). Combine with
-  #    colanode.extraVolumes below to mount Secrets/ConfigMaps into the pod.
+  #    worknest.extraVolumes below to mount Secrets/ConfigMaps into the pod.
   #    Example: config.json contains "ca": "file://secrets/postgres-ca.crt".
   #      extraVolumeMounts:
   #        - name: postgres-ca
@@ -127,7 +127,7 @@ colanode:
 
     file:
       # -- Directory inside the pod where files are stored when using file storage
-      directory: /var/lib/colanode/storage
+      directory: /var/lib/worknest/storage
       persistence:
         # -- Enable a PersistentVolumeClaim for file storage
         enabled: true
@@ -145,7 +145,7 @@ colanode:
       # -- Custom endpoint for S3-compatible storage. Leave empty to use the bundled MinIO service hostname
       endpoint: ''
       # -- Bucket name to use when STORAGE_TYPE is s3
-      bucket: colanode
+      bucket: worknest
       # -- Region for the S3 bucket
       region: us-east-1
       # -- Force path-style URLs (required for MinIO and most S3-compatible providers)
@@ -207,7 +207,7 @@ postgresql:
   enabled: true
   image:
     registry: ghcr.io
-    repository: colanode/postgresql
+    repository: worknest/postgresql
     tag: '17'
     pullPolicy: Always
 
@@ -215,7 +215,7 @@ postgresql:
     username: postgres
     # password: ""  # Leave empty to auto-generate
     # existingSecret: ""  # Will use auto-generated secret
-    database: colanode_db
+    database: worknest_db
     secretKeys:
       userPasswordKey: 'postgres-password'
   primary:
@@ -255,8 +255,8 @@ minio:
     size: 10Gi
   service:
     type: ClusterIP
-  # Create default buckets for Colanode
-  defaultBuckets: 'colanode'
+  # Create default buckets for Worknest
+  defaultBuckets: 'worknest'
   extraArgs:
     - '--console-address'
     - ':9001'

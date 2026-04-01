@@ -1,9 +1,9 @@
 import WebSocket from 'isomorphic-ws';
 
-import { BackoffCalculator } from '@colanode/client/lib/backoff-calculator';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { AccountService } from '@colanode/client/services/accounts/account-service';
-import { Message, SocketInitOutput, createDebugger } from '@colanode/core';
+import { BackoffCalculator } from '@worknest/client/lib/backoff-calculator';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { AccountService } from '@worknest/client/services/accounts/account-service';
+import { Message, SocketInitOutput, createDebugger } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:account-socket');
 

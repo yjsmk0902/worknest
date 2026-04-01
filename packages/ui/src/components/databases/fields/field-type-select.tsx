@@ -1,9 +1,9 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { FieldType } from '@colanode/core';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { Button } from '@colanode/ui/components/ui/button';
+import { FieldType } from '@worknest/core';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -11,18 +11,18 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
+} from '@worknest/ui/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
+} from '@worknest/ui/components/ui/popover';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/scroll-area';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface FieldTypeOption {
   name: string;

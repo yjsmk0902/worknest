@@ -1,8 +1,8 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalMessageNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalMessageNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface MessageAuthorAvatarProps {
   message: LocalMessageNode;

@@ -2,8 +2,8 @@ import {
   getColorForId,
   getAvatarSizeClasses,
   AvatarProps,
-} from '@colanode/ui/lib/avatars';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/lib/avatars';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const AvatarFallback = (props: AvatarProps) => {
   const { id, name, size, className } = props;

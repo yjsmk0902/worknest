@@ -1,10 +1,10 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalSpaceNode } from '@colanode/client/types';
-import { SidebarHeader } from '@colanode/ui/components/layouts/sidebars/sidebar-header';
-import { SpaceCreateButton } from '@colanode/ui/components/spaces/space-create-button';
-import { SpaceSidebarItem } from '@colanode/ui/components/spaces/space-sidebar-item';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalSpaceNode } from '@worknest/client/types';
+import { SidebarHeader } from '@worknest/ui/components/layouts/sidebars/sidebar-header';
+import { SpaceCreateButton } from '@worknest/ui/components/spaces/space-create-button';
+import { SpaceSidebarItem } from '@worknest/ui/components/spaces/space-sidebar-item';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const SidebarSpaces = () => {
   const workspace = useWorkspace();

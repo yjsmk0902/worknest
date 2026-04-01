@@ -1,9 +1,9 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   NodeCreateMutationInput,
   NodeCreateMutationOutput,
-} from '@colanode/client/mutations/nodes/node-create';
+} from '@worknest/client/mutations/nodes/node-create';
 
 export class NodeCreateMutationHandler
   extends WorkspaceMutationHandlerBase

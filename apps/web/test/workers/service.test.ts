@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { WebFileSystem } from '@colanode/web/services/file-system';
-import { WebPathService } from '@colanode/web/services/path-service';
+import { WebFileSystem } from '@worknest/web/services/file-system';
+import { WebPathService } from '@worknest/web/services/path-service';
 
 import { MockFileSystemDirectoryHandle } from '../helpers/mock-opfs';
 
@@ -27,7 +27,7 @@ describe('Service Worker', () => {
 
   const importWorker = async () => {
     vi.resetModules();
-    return import('@colanode/web/workers/service');
+    return import('@worknest/web/workers/service');
   };
 
   beforeEach(async () => {

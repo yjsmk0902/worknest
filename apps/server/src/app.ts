@@ -5,12 +5,12 @@ import {
   validatorCompiler,
 } from 'fastify-type-provider-zod';
 
-import { apiRoutes } from '@colanode/server/api';
-import { clientDecorator } from '@colanode/server/api/client/plugins/client';
-import { corsPlugin } from '@colanode/server/api/client/plugins/cors';
-import { errorHandler } from '@colanode/server/api/client/plugins/error-handler';
-import { config } from '@colanode/server/lib/config';
-import { createLogger } from '@colanode/server/lib/logger';
+import { apiRoutes } from '@worknest/server/api';
+import { clientDecorator } from '@worknest/server/api/client/plugins/client';
+import { corsPlugin } from '@worknest/server/api/client/plugins/cors';
+import { errorHandler } from '@worknest/server/api/client/plugins/error-handler';
+import { config } from '@worknest/server/lib/config';
+import { createLogger } from '@worknest/server/lib/logger';
 
 const logger = createLogger('server:app');
 

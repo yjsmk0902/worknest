@@ -9,16 +9,16 @@ import {
   apiErrorOutputSchema,
   emailPasswordResetInitOutputSchema,
   emailPasswordResetInitInputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { config } from '@colanode/server/lib/config';
-import { generateOtpCode, saveOtp } from '@colanode/server/lib/otps';
-import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
-import { jobService } from '@colanode/server/services/job-service';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { config } from '@worknest/server/lib/config';
+import { generateOtpCode, saveOtp } from '@worknest/server/lib/otps';
+import { isAuthEmailRateLimited } from '@worknest/server/lib/rate-limits';
+import { jobService } from '@worknest/server/services/job-service';
 import {
   AccountPasswordResetOtpAttributes,
   Otp,
-} from '@colanode/server/types/otps';
+} from '@worknest/server/types/otps';
 
 export const emailPasswordResetInitRoute: FastifyPluginCallbackZod = (
   instance,

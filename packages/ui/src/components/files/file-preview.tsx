@@ -1,13 +1,13 @@
-import { DownloadStatus, LocalFileNode } from '@colanode/client/types';
-import { FileStatus } from '@colanode/core';
-import { FileDownloadProgress } from '@colanode/ui/components/files/file-download-progress';
-import { FileNoPreview } from '@colanode/ui/components/files/file-no-preview';
-import { FileNotUploaded } from '@colanode/ui/components/files/file-not-uploaded';
-import { FilePreviewAudio } from '@colanode/ui/components/files/previews/file-preview-audio';
-import { FilePreviewImage } from '@colanode/ui/components/files/previews/file-preview-image';
-import { FilePreviewVideo } from '@colanode/ui/components/files/previews/file-preview-video';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
+import { DownloadStatus, LocalFileNode } from '@worknest/client/types';
+import { FileStatus } from '@worknest/core';
+import { FileDownloadProgress } from '@worknest/ui/components/files/file-download-progress';
+import { FileNoPreview } from '@worknest/ui/components/files/file-no-preview';
+import { FileNotUploaded } from '@worknest/ui/components/files/file-not-uploaded';
+import { FilePreviewAudio } from '@worknest/ui/components/files/previews/file-preview-audio';
+import { FilePreviewImage } from '@worknest/ui/components/files/previews/file-preview-image';
+import { FilePreviewVideo } from '@worknest/ui/components/files/previews/file-preview-video';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
 
 interface FilePreviewProps {
   file: LocalFileNode;

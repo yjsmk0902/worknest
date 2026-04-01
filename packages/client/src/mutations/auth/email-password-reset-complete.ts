@@ -10,7 +10,7 @@ export type EmailPasswordResetCompleteMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'email.password.reset.complete': {
       input: EmailPasswordResetCompleteMutationInput;

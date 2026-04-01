@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Workspace } from '@colanode/client/types';
+import { Workspace } from '@worknest/client/types';
 
 export const createWorkspacesCollection = () => {
   return createCollection<Workspace, string>({
@@ -9,7 +9,7 @@ export const createWorkspacesCollection = () => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'workspace.list',
           })

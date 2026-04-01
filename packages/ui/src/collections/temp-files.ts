@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { TempFile } from '@colanode/client/types';
+import { TempFile } from '@worknest/client/types';
 
 export const createTempFilesCollection = () => {
   return createCollection<TempFile, string>({
@@ -9,7 +9,7 @@ export const createTempFilesCollection = () => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'temp.file.list',
           })

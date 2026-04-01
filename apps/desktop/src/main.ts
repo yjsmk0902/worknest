@@ -14,24 +14,24 @@ import path from 'path';
 import started from 'electron-squirrel-startup';
 import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 
-import { eventBus } from '@colanode/client/lib';
-import { MutationInput, MutationMap } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { AppMeta, AppService } from '@colanode/client/services';
-import { AppInitOutput, TempFile, ThemeMode } from '@colanode/client/types';
+import { eventBus } from '@worknest/client/lib';
+import { MutationInput, MutationMap } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { AppMeta, AppService } from '@worknest/client/services';
+import { AppInitOutput, TempFile, ThemeMode } from '@worknest/client/types';
 import {
   build,
   createDebugger,
   extractFileSubtype,
   generateId,
   IdType,
-} from '@colanode/core';
-import { AppBadge } from '@colanode/desktop/main/app-badge';
-import { BootstrapService } from '@colanode/desktop/main/bootstrap';
-import { DesktopFileSystem } from '@colanode/desktop/main/file-system';
-import { DesktopKyselyService } from '@colanode/desktop/main/kysely-service';
-import { DesktopPathService } from '@colanode/desktop/main/path-service';
-import { handleLocalRequest } from '@colanode/desktop/main/protocols';
+} from '@worknest/core';
+import { AppBadge } from '@worknest/desktop/main/app-badge';
+import { BootstrapService } from '@worknest/desktop/main/bootstrap';
+import { DesktopFileSystem } from '@worknest/desktop/main/file-system';
+import { DesktopKyselyService } from '@worknest/desktop/main/kysely-service';
+import { DesktopPathService } from '@worknest/desktop/main/path-service';
+import { handleLocalRequest } from '@worknest/desktop/main/protocols';
 
 const appMeta: AppMeta = {
   type: 'desktop',
@@ -48,8 +48,8 @@ let appBadge: AppBadge | null = null;
 
 const debug = createDebugger('desktop:main');
 
-electronApp.setName('Colanode');
-electronApp.setAppUserModelId('com.colanode.desktop');
+electronApp.setName('Worknest');
+electronApp.setAppUserModelId('com.worknest.desktop');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -59,7 +59,7 @@ if (started) {
 updateElectronApp({
   updateSource: {
     type: UpdateSourceType.ElectronPublicUpdateService,
-    repo: 'colanode/colanode',
+    repo: 'worknest/worknest',
     host: 'https://update.electronjs.org',
   },
   updateInterval: '5 minutes',
@@ -79,7 +79,7 @@ const createWindow = async () => {
     fullscreenable: true,
     minWidth: 800,
     minHeight: 600,
-    icon: path.join(pathService.assets, 'colanode-logo.png'),
+    icon: path.join(pathService.assets, 'worknest-logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
@@ -186,9 +186,9 @@ const initApp = async (): Promise<AppInitOutput> => {
     await app.metadata.delete('app', 'theme.mode');
   }
 
-  // add default Colanode servers
-  await app.createServer(new URL('https://eu.colanode.com/config'));
-  await app.createServer(new URL('https://us.colanode.com/config'));
+  // add default Worknest servers
+  await app.createServer(new URL('https://eu.worknest.com/config'));
+  await app.createServer(new URL('https://us.worknest.com/config'));
 
   return 'success';
 };

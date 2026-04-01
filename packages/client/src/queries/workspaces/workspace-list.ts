@@ -1,10 +1,10 @@
-import { Workspace } from '@colanode/client/types/workspaces';
+import { Workspace } from '@worknest/client/types/workspaces';
 
 export type WorkspaceListQueryInput = {
   type: 'workspace.list';
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'workspace.list': {
       input: WorkspaceListQueryInput;

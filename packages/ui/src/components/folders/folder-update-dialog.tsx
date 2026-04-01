@@ -1,17 +1,17 @@
-import { LocalFolderNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
+import { LocalFolderNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
 import {
   FolderForm,
   FolderFormValues,
-} from '@colanode/ui/components/folders/folder-form';
+} from '@worknest/ui/components/folders/folder-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface FolderUpdateDialogProps {
   folder: LocalFolderNode;

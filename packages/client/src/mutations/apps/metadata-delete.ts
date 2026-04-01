@@ -8,7 +8,7 @@ export type MetadataDeleteMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'metadata.delete': {
       input: MetadataDeleteMutationInput;

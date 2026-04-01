@@ -1,9 +1,9 @@
-import { LocalFileNode } from '@colanode/client/types';
-import { FileNoPreview } from '@colanode/ui/components/files/file-no-preview';
-import { FilePreview } from '@colanode/ui/components/files/file-preview';
-import { FileSaveButton } from '@colanode/ui/components/files/file-save-button';
-import { FileSidebar } from '@colanode/ui/components/files/file-sidebar';
-import { canPreviewFile } from '@colanode/ui/lib/files';
+import { LocalFileNode } from '@worknest/client/types';
+import { FileNoPreview } from '@worknest/ui/components/files/file-no-preview';
+import { FilePreview } from '@worknest/ui/components/files/file-preview';
+import { FileSaveButton } from '@worknest/ui/components/files/file-save-button';
+import { FileSidebar } from '@worknest/ui/components/files/file-sidebar';
+import { canPreviewFile } from '@worknest/ui/lib/files';
 
 interface FileContainerProps {
   file: LocalFileNode;

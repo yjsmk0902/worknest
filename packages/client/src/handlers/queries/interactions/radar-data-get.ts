@@ -1,10 +1,10 @@
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
 import {
   RadarDataGetQueryInput,
   RadarDataGetQueryOutput,
-} from '@colanode/client/queries/interactions/radar-data-get';
-import { AppService } from '@colanode/client/services/app-service';
-import { Event } from '@colanode/client/types/events';
+} from '@worknest/client/queries/interactions/radar-data-get';
+import { AppService } from '@worknest/client/services/app-service';
+import { Event } from '@worknest/client/types/events';
 
 export class RadarDataGetQueryHandler
   implements QueryHandler<RadarDataGetQueryInput>

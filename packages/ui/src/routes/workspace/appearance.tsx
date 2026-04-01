@@ -1,12 +1,12 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { AppAppearanceContainer } from '@colanode/ui/components/app/app-appearance-container';
-import { AppAppearanceTab } from '@colanode/ui/components/app/app-appearance-tab';
-import { getWorkspaceUserId } from '@colanode/ui/routes/utils';
+import { AppAppearanceContainer } from '@worknest/ui/components/app/app-appearance-container';
+import { AppAppearanceTab } from '@worknest/ui/components/app/app-appearance-tab';
+import { getWorkspaceUserId } from '@worknest/ui/routes/utils';
 import {
   workspaceRoute,
   workspaceMaskRoute,
-} from '@colanode/ui/routes/workspace';
+} from '@worknest/ui/routes/workspace';
 
 export const appAppearanceRoute = createRoute({
   getParentRoute: () => workspaceRoute,

@@ -1,6 +1,6 @@
-import { LocalChatNode } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { Conversation } from '@colanode/ui/components/messages/conversation';
+import { LocalChatNode } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { Conversation } from '@worknest/ui/components/messages/conversation';
 
 interface ChatContainerProps {
   node: LocalChatNode;

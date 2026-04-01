@@ -1,10 +1,10 @@
-import { eventBus, mapTempFile } from '@colanode/client/lib';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { eventBus, mapTempFile } from '@worknest/client/lib';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   TempFileCreateMutationInput,
   TempFileCreateMutationOutput,
-} from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class TempFileCreateMutationHandler
   implements MutationHandler<TempFileCreateMutationInput>

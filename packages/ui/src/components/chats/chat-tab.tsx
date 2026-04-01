@@ -1,8 +1,8 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { LocalChatNode } from '@colanode/client/types';
-import { collections } from '@colanode/ui/collections';
-import { Tab } from '@colanode/ui/components/layouts/tabs/tab';
+import { LocalChatNode } from '@worknest/client/types';
+import { collections } from '@worknest/ui/collections';
+import { Tab } from '@worknest/ui/components/layouts/tabs/tab';
 
 interface ChatTabProps {
   userId: string;

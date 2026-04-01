@@ -6,11 +6,11 @@ import {
   SelectNodeCounter,
   SelectNodeInteraction,
   SelectNodeReference,
-} from '@colanode/client/databases/workspace';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { NodeCounterType } from '@colanode/client/types/nodes';
-import { getIdType, IdType, MentionConstants } from '@colanode/core';
+} from '@worknest/client/databases/workspace';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { NodeCounterType } from '@worknest/client/types/nodes';
+import { getIdType, IdType, MentionConstants } from '@worknest/core';
 
 export class NodeCountersService {
   private readonly workspace: WorkspaceService;

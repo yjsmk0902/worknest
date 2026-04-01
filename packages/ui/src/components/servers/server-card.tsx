@@ -2,12 +2,12 @@ import { SettingsIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { Server } from '@colanode/client/types';
-import { ServerAvatar } from '@colanode/ui/components/servers/server-avatar';
-import { ServerDeleteDialog } from '@colanode/ui/components/servers/server-delete-dialog';
-import { ServerSettingsDialog } from '@colanode/ui/components/servers/server-settings-dialog';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { Server } from '@worknest/client/types';
+import { ServerAvatar } from '@worknest/ui/components/servers/server-avatar';
+import { ServerDeleteDialog } from '@worknest/ui/components/servers/server-delete-dialog';
+import { ServerSettingsDialog } from '@worknest/ui/components/servers/server-settings-dialog';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface ServerCardProps {
   server: Server;

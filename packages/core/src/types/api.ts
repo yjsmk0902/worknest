@@ -1,9 +1,9 @@
 import { z } from 'zod/v4';
 
 export enum ApiHeader {
-  ClientType = 'colanode-client-type',
-  ClientPlatform = 'colanode-client-platform',
-  ClientVersion = 'colanode-client-version',
+  ClientType = 'worknest-client-type',
+  ClientPlatform = 'worknest-client-platform',
+  ClientVersion = 'worknest-client-version',
 }
 
 export enum ApiErrorCode {

@@ -8,7 +8,7 @@ export type NodeInteractionSeenMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'node.interaction.seen': {
       input: NodeInteractionSeenMutationInput;

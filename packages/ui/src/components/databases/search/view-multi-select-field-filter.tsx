@@ -3,25 +3,25 @@ import { ChevronDown, Trash2 } from 'lucide-react';
 import {
   MultiSelectFieldAttributes,
   DatabaseViewFieldFilterAttributes,
-} from '@colanode/core';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
-import { SelectFieldOptions } from '@colanode/ui/components/databases/fields/select-field-options';
-import { SelectOptionBadge } from '@colanode/ui/components/databases/fields/select-option-badge';
-import { Button } from '@colanode/ui/components/ui/button';
+} from '@worknest/core';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
+import { SelectFieldOptions } from '@worknest/ui/components/databases/fields/select-field-options';
+import { SelectOptionBadge } from '@worknest/ui/components/databases/fields/select-option-badge';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
+} from '@worknest/ui/components/ui/dropdown-menu';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useViewFilter } from '@colanode/ui/hooks/use-view-filter';
-import { selectFieldFilterOperators } from '@colanode/ui/lib/databases';
+} from '@worknest/ui/components/ui/popover';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useViewFilter } from '@worknest/ui/hooks/use-view-filter';
+import { selectFieldFilterOperators } from '@worknest/ui/lib/databases';
 
 interface ViewMultiSelectFieldFilterProps {
   field: MultiSelectFieldAttributes;

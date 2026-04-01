@@ -1,6 +1,6 @@
 import { BulletList } from '@tiptap/extension-list';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
+import { defaultClasses } from '@worknest/ui/editor/classes';
 
 export const BulletListNode = BulletList.configure({
   HTMLAttributes: {

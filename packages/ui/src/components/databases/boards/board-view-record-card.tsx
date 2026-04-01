@@ -1,12 +1,12 @@
 import { useRef } from 'react';
 import { useDrag } from 'react-dnd';
 
-import { FieldValue } from '@colanode/core';
-import { RecordFieldValue } from '@colanode/ui/components/records/record-field-value';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useBoardView } from '@colanode/ui/contexts/board-view';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useRecord } from '@colanode/ui/contexts/record';
+import { FieldValue } from '@worknest/core';
+import { RecordFieldValue } from '@worknest/ui/components/records/record-field-value';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useBoardView } from '@worknest/ui/contexts/board-view';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useRecord } from '@worknest/ui/contexts/record';
 
 export const BoardViewRecordCard = () => {
   const view = useDatabaseView();

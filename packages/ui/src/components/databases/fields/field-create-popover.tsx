@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod/v4';
 
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   compareString,
   FieldAttributes,
@@ -12,25 +12,25 @@ import {
   generateFractionalIndex,
   generateId,
   IdType,
-} from '@colanode/core';
-import { DatabaseSelect } from '@colanode/ui/components/databases/database-select';
-import { FieldTypeSelect } from '@colanode/ui/components/databases/fields/field-type-select';
-import { Button } from '@colanode/ui/components/ui/button';
+} from '@worknest/core';
+import { DatabaseSelect } from '@worknest/ui/components/databases/database-select';
+import { FieldTypeSelect } from '@worknest/ui/components/databases/fields/field-type-select';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
+} from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/popover';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),

@@ -2,9 +2,9 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { X } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { collections } from '@colanode/ui/collections';
-import { useTabManager } from '@colanode/ui/contexts/tab-manager';
-import { cn } from '@colanode/ui/lib/utils';
+import { collections } from '@worknest/ui/collections';
+import { useTabManager } from '@worknest/ui/contexts/tab-manager';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface TabsHeaderItemProps {
   id: string;

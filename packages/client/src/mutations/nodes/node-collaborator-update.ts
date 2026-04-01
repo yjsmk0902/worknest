@@ -10,7 +10,7 @@ export type NodeCollaboratorUpdateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'node.collaborator.update': {
       input: NodeCollaboratorUpdateMutationInput;

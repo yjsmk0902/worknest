@@ -6,12 +6,12 @@ import {
 } from '@tiptap/react';
 import { Resizable } from 're-resizable';
 
-import { updateColumnWidth } from '@colanode/client/lib';
-import { defaultClasses } from '@colanode/ui/editor/classes';
-import { TableCellContextMenu } from '@colanode/ui/editor/menus/table-cell-context-menu';
-import { TableCellDropdownMenu } from '@colanode/ui/editor/menus/table-cell-dropdown-menu';
-import { editorColors } from '@colanode/ui/lib/editor';
-import { cn } from '@colanode/ui/lib/utils';
+import { updateColumnWidth } from '@worknest/client/lib';
+import { defaultClasses } from '@worknest/ui/editor/classes';
+import { TableCellContextMenu } from '@worknest/ui/editor/menus/table-cell-context-menu';
+import { TableCellDropdownMenu } from '@worknest/ui/editor/menus/table-cell-dropdown-menu';
+import { editorColors } from '@worknest/ui/lib/editor';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const TableHeaderNodeView = (props: NodeViewProps) => {
   const state = useEditorState({

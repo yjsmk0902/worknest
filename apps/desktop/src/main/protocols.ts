@@ -1,7 +1,7 @@
 import { net } from 'electron';
 import path from 'path';
 
-import { AssetService, PathService } from '@colanode/client/services';
+import { AssetService, PathService } from '@worknest/client/services';
 
 export const handleLocalRequest = async (
   paths: PathService,

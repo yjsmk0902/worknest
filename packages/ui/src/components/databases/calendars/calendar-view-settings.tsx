@@ -1,19 +1,19 @@
 import { Lock, LockOpen, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { ViewAvatarInput } from '@colanode/ui/components/databases/view-avatar-input';
-import { ViewFieldSettings } from '@colanode/ui/components/databases/view-field-settings';
-import { ViewRenameInput } from '@colanode/ui/components/databases/view-rename-input';
-import { ViewSettingsButton } from '@colanode/ui/components/databases/view-settings-button';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { ViewAvatarInput } from '@worknest/ui/components/databases/view-avatar-input';
+import { ViewFieldSettings } from '@worknest/ui/components/databases/view-field-settings';
+import { ViewRenameInput } from '@worknest/ui/components/databases/view-rename-input';
+import { ViewSettingsButton } from '@worknest/ui/components/databases/view-settings-button';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
 
 export const CalendarViewSettings = () => {
   const database = useDatabase();

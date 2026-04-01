@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateId, getIdType, IdType, isIdOfType } from '@colanode/core/lib/id';
+import { generateId, getIdType, IdType, isIdOfType } from '@worknest/core/lib/id';
 
 describe('id', () => {
   describe('generateId', () => {

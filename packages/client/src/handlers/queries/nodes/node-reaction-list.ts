@@ -1,8 +1,8 @@
-import { WorkspaceQueryHandlerBase } from '@colanode/client/handlers/queries/workspace-query-handler-base';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib';
-import { NodeReactionListQueryInput } from '@colanode/client/queries/nodes/node-reaction-list';
-import { Event } from '@colanode/client/types/events';
-import { NodeReaction } from '@colanode/client/types/nodes';
+import { WorkspaceQueryHandlerBase } from '@worknest/client/handlers/queries/workspace-query-handler-base';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib';
+import { NodeReactionListQueryInput } from '@worknest/client/queries/nodes/node-reaction-list';
+import { Event } from '@worknest/client/types/events';
+import { NodeReaction } from '@worknest/client/types/nodes';
 
 export class NodeReactionsListQueryHandler
   extends WorkspaceQueryHandlerBase

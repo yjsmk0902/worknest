@@ -1,4 +1,4 @@
-import { LoginOutput } from '@colanode/core';
+import { LoginOutput } from '@worknest/core';
 
 export type EmailVerifyMutationInput = {
   type: 'email.verify';
@@ -7,7 +7,7 @@ export type EmailVerifyMutationInput = {
   otp: string;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'email.verify': {
       input: EmailVerifyMutationInput;

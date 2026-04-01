@@ -1,6 +1,6 @@
-import { QueryError, QueryErrorCode } from '@colanode/client/queries';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+import { QueryError, QueryErrorCode } from '@worknest/client/queries';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 
 export abstract class WorkspaceQueryHandlerBase {
   protected readonly app: AppService;

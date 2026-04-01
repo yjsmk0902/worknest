@@ -1,10 +1,10 @@
 import { createCollection, parseLoadSubsetOptions } from '@tanstack/react-db';
 
-import { NodeReaction } from '@colanode/client/types';
+import { NodeReaction } from '@worknest/client/types';
 import {
   applyNodeReactionTransaction,
   buildNodeReactionKey,
-} from '@colanode/ui/lib/nodes';
+} from '@worknest/ui/lib/nodes';
 
 export const createNodeReactionsCollection = (userId: string) => {
   const loadedNodeIds = new Set<string>();
@@ -58,7 +58,7 @@ export const createNodeReactionsCollection = (userId: string) => {
             loadedNodeIds.add(nodeId);
 
             const promise = new Promise<void>((resolve) => {
-              window.colanode
+              window.worknest
                 .executeQuery({
                   type: 'node.reaction.list',
                   userId,

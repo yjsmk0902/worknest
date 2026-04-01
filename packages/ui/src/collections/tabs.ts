@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Tab } from '@colanode/client/types';
+import { Tab } from '@worknest/client/types';
 
 export const createTabsCollection = () => {
   return createCollection<Tab, string>({
@@ -9,7 +9,7 @@ export const createTabsCollection = () => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'tabs.list',
           })
@@ -49,7 +49,7 @@ export const createTabsCollection = () => {
     },
     onInsert: async ({ transaction }) => {
       const tab = transaction.mutations[0].modified;
-      return await window.colanode.executeMutation({
+      return await window.worknest.executeMutation({
         type: 'tab.create',
         id: tab.id,
         location: tab.location,
@@ -64,7 +64,7 @@ export const createTabsCollection = () => {
             throw new Error(`Original todo not found for update`);
           }
 
-          return await window.colanode.executeMutation({
+          return await window.worknest.executeMutation({
             type: 'tab.update',
             id: original.id,
             location: changes.location,
@@ -82,7 +82,7 @@ export const createTabsCollection = () => {
             throw new Error(`Original todo not found for delete`);
           }
 
-          await window.colanode.executeMutation({
+          await window.worknest.executeMutation({
             type: 'tab.delete',
             id: original.id,
           });

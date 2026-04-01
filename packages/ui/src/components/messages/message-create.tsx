@@ -9,24 +9,24 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 
-import { editorHasContent } from '@colanode/client/lib';
-import { LocalMessageNode } from '@colanode/client/types';
+import { editorHasContent } from '@worknest/client/lib';
+import { LocalMessageNode } from '@worknest/client/types';
 import {
   MessageEditor,
   MessageEditorRefProps,
-} from '@colanode/ui/components/messages/message-editor';
-import { MessageReplyBanner } from '@colanode/ui/components/messages/message-reply-banner';
+} from '@worknest/ui/components/messages/message-editor';
+import { MessageReplyBanner } from '@worknest/ui/components/messages/message-reply-banner';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useConversation } from '@colanode/ui/contexts/conversation';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
-import { openFileDialog } from '@colanode/ui/lib/files';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useConversation } from '@worknest/ui/contexts/conversation';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
+import { openFileDialog } from '@worknest/ui/lib/files';
 
 export interface MessageCreateRefProps {
   setReplyTo: (replyTo: LocalMessageNode) => void;

@@ -1,6 +1,6 @@
-import { getIdType, IdType } from '@colanode/core';
-import { RadarContext } from '@colanode/ui/contexts/radar';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
+import { getIdType, IdType } from '@worknest/core';
+import { RadarContext } from '@worknest/ui/contexts/radar';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
 
 interface RadarProviderProps {
   children: React.ReactNode;
@@ -119,14 +119,14 @@ export const RadarProvider = ({ children }: RadarProviderProps) => {
           };
         },
         markNodeAsSeen: (userId, nodeId) => {
-          window.colanode.executeMutation({
+          window.worknest.executeMutation({
             type: 'node.interaction.seen',
             nodeId,
             userId,
           });
         },
         markNodeAsOpened: (userId, nodeId) => {
-          window.colanode.executeMutation({
+          window.worknest.executeMutation({
             type: 'node.interaction.opened',
             nodeId,
             userId,

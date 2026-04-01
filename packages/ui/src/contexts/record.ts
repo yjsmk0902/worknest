@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { FieldValue } from '@colanode/core';
+import { FieldValue } from '@worknest/core';
 
 interface RecordContext {
   id: string;

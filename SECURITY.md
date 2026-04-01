@@ -1,11 +1,11 @@
 # Security Policy
 
-Colanode takes security seriously. If you discover a vulnerability, please report it privately and avoid public disclosure until we’ve had a chance to investigate.
+Worknest takes security seriously. If you discover a vulnerability, please report it privately and avoid public disclosure until we’ve had a chance to investigate.
 
 ## Reporting a vulnerability
 
 - Preferred: Use GitHub Security Advisories for this repository to submit a private report.
-- If you cannot use GitHub Security Advisories, contact the maintainers via the email listed on the Colanode GitHub organization profile.
+- If you cannot use GitHub Security Advisories, contact the maintainers via the email listed on the Worknest GitHub organization profile.
 
 Please include:
 

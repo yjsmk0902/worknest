@@ -1,4 +1,4 @@
-import { WorkspaceRole } from '@colanode/core';
+import { WorkspaceRole } from '@worknest/core';
 
 export type UserRoleUpdateMutationInput = {
   type: 'user.role.update';
@@ -10,7 +10,7 @@ export type UserRoleUpdateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'user.role.update': {
       input: UserRoleUpdateMutationInput;

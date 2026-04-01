@@ -3,7 +3,7 @@ export type EmojiSvgGetQueryInput = {
   id: string;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'emoji.svg.get': {
       input: EmojiSvgGetQueryInput;

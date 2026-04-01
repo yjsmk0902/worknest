@@ -1,11 +1,11 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapMetadata } from '@colanode/client/lib/mappers';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapMetadata } from '@worknest/client/lib/mappers';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   MetadataDeleteMutationInput,
   MetadataDeleteMutationOutput,
-} from '@colanode/client/mutations/apps/metadata-delete';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/apps/metadata-delete';
+import { AppService } from '@worknest/client/services/app-service';
 
 export class MetadataDeleteMutationHandler
   implements MutationHandler<MetadataDeleteMutationInput>

@@ -1,5 +1,5 @@
-import { collections } from '@colanode/ui/collections';
-import { buildMetadataKey } from '@colanode/ui/collections/metadata';
+import { collections } from '@worknest/ui/collections';
+import { buildMetadataKey } from '@worknest/ui/collections/metadata';
 
 export const getDefaultWorkspaceUserId = () => {
   const workspaceUserIds = collections.workspaces.map(

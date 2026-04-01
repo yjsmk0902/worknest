@@ -1,23 +1,23 @@
 import { ChevronDown, Trash2, Type } from 'lucide-react';
 
-import { DatabaseViewFieldFilterAttributes } from '@colanode/core';
-import { Button } from '@colanode/ui/components/ui/button';
+import { DatabaseViewFieldFilterAttributes } from '@worknest/core';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { Input } from '@colanode/ui/components/ui/input';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { Input } from '@worknest/ui/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useViewFilter } from '@colanode/ui/hooks/use-view-filter';
-import { nameFieldFilterOperators } from '@colanode/ui/lib/databases';
+} from '@worknest/ui/components/ui/popover';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useViewFilter } from '@worknest/ui/hooks/use-view-filter';
+import { nameFieldFilterOperators } from '@worknest/ui/lib/databases';
 
 interface ViewNameFieldFilterProps {
   filter: DatabaseViewFieldFilterAttributes;

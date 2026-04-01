@@ -1,8 +1,8 @@
 import { Folder } from 'lucide-react';
 
-import { EditorCommand, LocalFolderNode } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core/lib/id.js';
-import { collections } from '@colanode/ui/collections';
+import { EditorCommand, LocalFolderNode } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core/lib/id.js';
+import { collections } from '@worknest/ui/collections';
 
 export const FolderCommand: EditorCommand = {
   key: 'folder',

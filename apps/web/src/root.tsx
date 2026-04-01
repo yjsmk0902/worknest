@@ -3,7 +3,7 @@ import '../../../packages/ui/src/styles/globals.css';
 
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
-import { App } from '@colanode/ui';
+import { App } from '@worknest/ui';
 
 export const Root = () => {
   useRegisterSW({

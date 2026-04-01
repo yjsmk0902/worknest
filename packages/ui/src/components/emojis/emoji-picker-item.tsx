@@ -1,6 +1,6 @@
-import { Emoji } from '@colanode/client/types';
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { useEmojiPicker } from '@colanode/ui/contexts/emoji-picker';
+import { Emoji } from '@worknest/client/types';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { useEmojiPicker } from '@worknest/ui/contexts/emoji-picker';
 
 interface EmojiPickerItemProps {
   emoji: Emoji;

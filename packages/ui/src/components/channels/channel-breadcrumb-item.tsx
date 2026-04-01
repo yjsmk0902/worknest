@@ -1,5 +1,5 @@
-import { LocalChannelNode } from '@colanode/client/types';
-import { BreadcrumbItem } from '@colanode/ui/components/layouts/containers/breadcrumb-item';
+import { LocalChannelNode } from '@worknest/client/types';
+import { BreadcrumbItem } from '@worknest/ui/components/layouts/containers/breadcrumb-item';
 
 interface ChannelBreadcrumbItemProps {
   channel: LocalChannelNode;

@@ -2,9 +2,9 @@ import isHotkey from 'is-hotkey';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import React, { Fragment } from 'react';
 
-import { RecordNode } from '@colanode/core';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { RecordNode } from '@worknest/core';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface NameEditorProps {
   initialValue: string;

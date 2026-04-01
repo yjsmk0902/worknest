@@ -1,9 +1,9 @@
 // import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
-// import type { NodeType } from '@colanode/core';
-// import { enrichChunk } from '@colanode/server/lib/ai/llms';
-// import { config } from '@colanode/server/lib/config';
-// import { TextChunk } from '@colanode/server/types/chunking';
+// import type { NodeType } from '@worknest/core';
+// import { enrichChunk } from '@worknest/server/lib/ai/llms';
+// import { config } from '@worknest/server/lib/config';
+// import { TextChunk } from '@worknest/server/types/chunking';
 
 // export const chunkText = async (
 //   text: string,

@@ -1,6 +1,6 @@
 import { ListOrdered } from 'lucide-react';
 
-import { EditorCommand } from '@colanode/client/types';
+import { EditorCommand } from '@worknest/client/types';
 
 export const OrderedListCommand: EditorCommand = {
   key: 'ordered-list',

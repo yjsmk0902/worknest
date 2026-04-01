@@ -3,20 +3,20 @@ import { Edit } from 'lucide-react';
 import { useRef } from 'react';
 import { z } from 'zod/v4';
 
-import { generateId, IdType } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { AvatarPopover } from '@colanode/ui/components/avatars/avatar-popover';
-import { Button } from '@colanode/ui/components/ui/button';
+import { generateId, IdType } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { AvatarPopover } from '@worknest/ui/components/avatars/avatar-popover';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Textarea } from '@colanode/ui/components/ui/textarea';
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Textarea } from '@worknest/ui/components/ui/textarea';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
+import { cn } from '@worknest/ui/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long.'),

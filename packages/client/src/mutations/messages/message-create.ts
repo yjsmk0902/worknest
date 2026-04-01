@@ -12,7 +12,7 @@ export type MessageCreateMutationOutput = {
   id: string;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'message.create': {
       input: MessageCreateMutationInput;

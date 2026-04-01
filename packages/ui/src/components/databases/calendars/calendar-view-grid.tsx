@@ -6,15 +6,15 @@ import {
   FieldAttributes,
   isSameDay,
   DatabaseViewFilterAttributes,
-} from '@colanode/core';
-import { CalendarViewDay } from '@colanode/ui/components/databases/calendars/calendar-view-day';
-import { buttonVariants } from '@colanode/ui/components/ui/button';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useRecordsQuery } from '@colanode/ui/hooks/use-records-query';
-import { filterRecords } from '@colanode/ui/lib/databases';
-import { cn, getDisplayedDates } from '@colanode/ui/lib/utils';
+} from '@worknest/core';
+import { CalendarViewDay } from '@worknest/ui/components/databases/calendars/calendar-view-day';
+import { buttonVariants } from '@worknest/ui/components/ui/button';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useRecordsQuery } from '@worknest/ui/hooks/use-records-query';
+import { filterRecords } from '@worknest/ui/lib/databases';
+import { cn, getDisplayedDates } from '@worknest/ui/lib/utils';
 
 const toUTCDate = (dateParam: Date | string): Date => {
   const date = typeof dateParam === 'string' ? new Date(dateParam) : dateParam;

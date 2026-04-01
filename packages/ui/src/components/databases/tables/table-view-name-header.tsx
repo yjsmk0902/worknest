@@ -4,20 +4,20 @@ import { Resizable } from 're-resizable';
 import { Fragment, useRef, useState } from 'react';
 import { useDrop } from 'react-dnd';
 
-import { LocalNode } from '@colanode/client/types';
-import { SpecialId } from '@colanode/core';
-import { Input } from '@colanode/ui/components/ui/input';
+import { LocalNode } from '@worknest/client/types';
+import { SpecialId } from '@worknest/core';
+import { Input } from '@worknest/ui/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const TableViewNameHeader = () => {
   const workspace = useWorkspace();

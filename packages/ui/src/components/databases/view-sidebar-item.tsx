@@ -1,9 +1,9 @@
-import { LocalDatabaseViewNode } from '@colanode/client/types';
-import { ViewIcon } from '@colanode/ui/components/databases/view-icon';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMetadata } from '@colanode/ui/hooks/use-metadata';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalDatabaseViewNode } from '@worknest/client/types';
+import { ViewIcon } from '@worknest/ui/components/databases/view-icon';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMetadata } from '@worknest/ui/hooks/use-metadata';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ViewSidebarItemProps {
   view: LocalDatabaseViewNode;

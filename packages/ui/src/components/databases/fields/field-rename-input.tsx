@@ -1,11 +1,11 @@
 import { debounceStrategy, usePacedMutations } from '@tanstack/react-db';
 
-import { LocalNode } from '@colanode/client/types';
-import { FieldAttributes } from '@colanode/core';
-import { Input } from '@colanode/ui/components/ui/input';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
+import { LocalNode } from '@worknest/client/types';
+import { FieldAttributes } from '@worknest/core';
+import { Input } from '@worknest/ui/components/ui/input';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
 
 interface FieldRenameInputProps {
   field: FieldAttributes;

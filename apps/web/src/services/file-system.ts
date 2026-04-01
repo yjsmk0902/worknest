@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { FileReadStream, FileSystem } from '@colanode/client/services';
+import { FileReadStream, FileSystem } from '@worknest/client/services';
 
 export class WebFileSystem implements FileSystem {
   private root: FileSystemDirectoryHandle | null = null;

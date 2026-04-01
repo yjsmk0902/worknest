@@ -1,7 +1,7 @@
 import { useLiveQuery } from '@tanstack/react-db';
 
-import { collections } from '@colanode/ui/collections';
-import { TabsContentItem } from '@colanode/ui/components/layouts/tabs/tabs-content-item';
+import { collections } from '@worknest/ui/collections';
+import { TabsContentItem } from '@worknest/ui/components/layouts/tabs/tabs-content-item';
 
 export const TabsContent = () => {
   const tabsQuery = useLiveQuery(

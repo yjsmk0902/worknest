@@ -1,6 +1,6 @@
 import { ParsedOrderBy, SimpleComparison } from '@tanstack/db';
 
-import { LocalNode } from '@colanode/client/types/nodes';
+import { LocalNode } from '@worknest/client/types/nodes';
 
 export const isNodeSynced = (node: LocalNode): boolean => {
   if (typeof node.serverRevision === 'string') {

@@ -1,7 +1,7 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapUser } from '@colanode/client/lib/mappers';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { createDebugger, SyncUserData, UserOutput } from '@colanode/core';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapUser } from '@worknest/client/lib/mappers';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { createDebugger, SyncUserData, UserOutput } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:user');
 

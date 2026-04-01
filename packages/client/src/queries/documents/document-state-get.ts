@@ -1,4 +1,4 @@
-import { DocumentState } from '@colanode/client/types/documents';
+import { DocumentState } from '@worknest/client/types/documents';
 
 export type DocumentStateGetQueryInput = {
   type: 'document.state.get';
@@ -6,7 +6,7 @@ export type DocumentStateGetQueryInput = {
   userId: string;
 };
 
-declare module '@colanode/client/queries' {
+declare module '@worknest/client/queries' {
   interface QueryMap {
     'document.state.get': {
       input: DocumentStateGetQueryInput;

@@ -4,16 +4,16 @@ import {
   isValidUrl,
   StringFieldValue,
   UrlFieldAttributes,
-} from '@colanode/core';
+} from '@worknest/core';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from '@colanode/ui/components/ui/hover-card';
-import { Input } from '@colanode/ui/components/ui/input';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/hover-card';
+import { Input } from '@worknest/ui/components/ui/input';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface RecordUrlValueProps {
   field: UrlFieldAttributes;
@@ -65,7 +65,7 @@ export const RecordUrlValue = ({ field, readOnly }: RecordUrlValueProps) => {
           onClick={() => {
             if (!canOpen) return;
 
-            window.colanode.openExternalUrl(url);
+            window.worknest.openExternalUrl(url);
           }}
         >
           {url}

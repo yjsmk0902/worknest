@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-import { AvatarFallback } from '@colanode/ui/components/avatars/avatar-fallback';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
-import { AvatarProps, getAvatarSizeClasses } from '@colanode/ui/lib/avatars';
-import { cn } from '@colanode/ui/lib/utils';
+import { AvatarFallback } from '@worknest/ui/components/avatars/avatar-fallback';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
+import { AvatarProps, getAvatarSizeClasses } from '@worknest/ui/lib/avatars';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const AvatarImage = (props: AvatarProps) => {
   const workspace = useWorkspace();

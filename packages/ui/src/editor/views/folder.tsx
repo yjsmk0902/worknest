@@ -2,10 +2,10 @@ import { eq, useLiveQuery } from '@tanstack/react-db';
 import { type NodeViewProps } from '@tiptap/core';
 import { NodeViewWrapper } from '@tiptap/react';
 
-import { LocalFolderNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Link } from '@colanode/ui/components/ui/link';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { LocalFolderNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Link } from '@worknest/ui/components/ui/link';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const FolderNodeView = ({ node }: NodeViewProps) => {
   const workspace = useWorkspace();

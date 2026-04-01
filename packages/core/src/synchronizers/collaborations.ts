@@ -1,4 +1,4 @@
-import { NodeRole } from '@colanode/core/registry/nodes/core';
+import { NodeRole } from '@worknest/core/registry/nodes/core';
 
 export type SyncCollaborationsInput = {
   type: 'collaborations';
@@ -18,7 +18,7 @@ export type SyncCollaborationData = {
   revision: string;
 };
 
-declare module '@colanode/core' {
+declare module '@worknest/core' {
   interface SynchronizerMap {
     collaborations: {
       input: SyncCollaborationsInput;

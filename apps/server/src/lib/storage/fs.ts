@@ -4,12 +4,12 @@ import { Readable } from 'stream';
 import { FileStore } from '@tus/file-store';
 import { DataStore } from '@tus/server';
 
-import { redis } from '@colanode/server/data/redis';
+import { redis } from '@worknest/server/data/redis';
 import type {
   FileStorageProviderConfig,
   TusConfig,
-} from '@colanode/server/lib/config/storage';
-import { RedisKvStore } from '@colanode/server/lib/storage/tus/redis-kv';
+} from '@worknest/server/lib/config/storage';
+import { RedisKvStore } from '@worknest/server/lib/storage/tus/redis-kv';
 
 import type { Storage } from './core';
 

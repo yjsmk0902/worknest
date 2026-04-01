@@ -1,13 +1,13 @@
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { useNavigate } from '@tanstack/react-router';
 
-import { NodeContainer } from '@colanode/ui/components/nodes/node-container';
+import { NodeContainer } from '@worknest/ui/components/nodes/node-container';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
+} from '@worknest/ui/components/ui/dialog';
 
 interface NodeModalProps {
   nodeId: string;

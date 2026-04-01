@@ -1,6 +1,6 @@
 import { MessageCircle } from 'lucide-react';
 
-import { LocalMessageNode } from '@colanode/client/types';
+import { LocalMessageNode } from '@worknest/client/types';
 
 interface MessageTabProps {
   message: LocalMessageNode;

@@ -77,33 +77,33 @@ const execute = () => {
   ]);
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo.ico'),
+    path.resolve(IMAGES_DIR, 'worknest-logo.ico'),
     path.resolve(WEB_PUBLIC_DIR, 'favicon.ico')
   );
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo-192.jpg'),
-    path.resolve(WEB_ASSETS_DIR, 'colanode-logo-192.jpg')
+    path.resolve(IMAGES_DIR, 'worknest-logo-192.jpg'),
+    path.resolve(WEB_ASSETS_DIR, 'worknest-logo-192.jpg')
   );
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo-512.jpg'),
-    path.resolve(WEB_ASSETS_DIR, 'colanode-logo-512.jpg')
+    path.resolve(IMAGES_DIR, 'worknest-logo-512.jpg'),
+    path.resolve(WEB_ASSETS_DIR, 'worknest-logo-512.jpg')
   );
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo.png'),
-    path.resolve(DESKTOP_ASSETS_DIR, 'colanode-logo.png')
+    path.resolve(IMAGES_DIR, 'worknest-logo.png'),
+    path.resolve(DESKTOP_ASSETS_DIR, 'worknest-logo.png')
   );
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo.ico'),
-    path.resolve(DESKTOP_ASSETS_DIR, 'colanode-logo.ico')
+    path.resolve(IMAGES_DIR, 'worknest-logo.ico'),
+    path.resolve(DESKTOP_ASSETS_DIR, 'worknest-logo.ico')
   );
 
   copyFile(
-    path.resolve(IMAGES_DIR, 'colanode-logo.icns'),
-    path.resolve(DESKTOP_ASSETS_DIR, 'colanode-logo.icns')
+    path.resolve(IMAGES_DIR, 'worknest-logo.icns'),
+    path.resolve(DESKTOP_ASSETS_DIR, 'worknest-logo.icns')
   );
 };
 

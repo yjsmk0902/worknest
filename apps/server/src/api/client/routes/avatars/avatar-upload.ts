@@ -7,8 +7,8 @@ import {
   avatarUploadOutputSchema,
   generateId,
   IdType,
-} from '@colanode/core';
-import { storage } from '@colanode/server/lib/storage';
+} from '@worknest/core';
+import { storage } from '@worknest/server/lib/storage';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',

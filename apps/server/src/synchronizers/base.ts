@@ -1,6 +1,6 @@
-import { SynchronizerInput, SynchronizerOutputMessage } from '@colanode/core';
-import { Event } from '@colanode/server/types/events';
-import { ConnectedUser } from '@colanode/server/types/users';
+import { SynchronizerInput, SynchronizerOutputMessage } from '@worknest/core';
+import { Event } from '@worknest/server/types/events';
+import { ConnectedUser } from '@worknest/server/types/users';
 
 export type SynchronizerStatus = 'pending' | 'fetching';
 

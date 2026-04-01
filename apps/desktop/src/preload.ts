@@ -3,15 +3,15 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-import { eventBus } from '@colanode/client/lib';
-import { MutationInput, MutationMap } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { Event, TempFile } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core';
+import { eventBus } from '@worknest/client/lib';
+import { MutationInput, MutationMap } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { Event, TempFile } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core';
 
 const windowId = generateId(IdType.Window);
 
-contextBridge.exposeInMainWorld('colanode', {
+contextBridge.exposeInMainWorld('worknest', {
   init: () => ipcRenderer.invoke('init'),
   reset: () => ipcRenderer.invoke('reset'),
 

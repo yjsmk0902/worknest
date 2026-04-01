@@ -1,8 +1,8 @@
 import { JSONContent } from '@tiptap/core';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
-import { NodeChildrenRenderer } from '@colanode/ui/editor/renderers/node-children';
-import { cn } from '@colanode/ui/lib/utils';
+import { defaultClasses } from '@worknest/ui/editor/classes';
+import { NodeChildrenRenderer } from '@worknest/ui/editor/renderers/node-children';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ParagraphRendererProps {
   node: JSONContent;

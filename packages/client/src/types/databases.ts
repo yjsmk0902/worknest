@@ -1,4 +1,4 @@
-import { FieldAttributes } from '@colanode/core';
+import { FieldAttributes } from '@worknest/core';
 
 export type ViewField = {
   field: FieldAttributes;

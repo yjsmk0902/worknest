@@ -1,15 +1,15 @@
 import { Fragment } from 'react';
 
-import { BoardViewColumns } from '@colanode/ui/components/databases/boards/board-view-columns';
-import { BoardViewNoGroup } from '@colanode/ui/components/databases/boards/board-view-no-group';
-import { BoardViewSettings } from '@colanode/ui/components/databases/boards/board-view-settings';
-import { ViewFilterButton } from '@colanode/ui/components/databases/search/view-filter-button';
-import { ViewSearchBar } from '@colanode/ui/components/databases/search/view-search-bar';
-import { ViewSortButton } from '@colanode/ui/components/databases/search/view-sort-button';
-import { ViewFullscreenButton } from '@colanode/ui/components/databases/view-fullscreen-button';
-import { ViewTabs } from '@colanode/ui/components/databases/view-tabs';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
+import { BoardViewColumns } from '@worknest/ui/components/databases/boards/board-view-columns';
+import { BoardViewNoGroup } from '@worknest/ui/components/databases/boards/board-view-no-group';
+import { BoardViewSettings } from '@worknest/ui/components/databases/boards/board-view-settings';
+import { ViewFilterButton } from '@worknest/ui/components/databases/search/view-filter-button';
+import { ViewSearchBar } from '@worknest/ui/components/databases/search/view-search-bar';
+import { ViewSortButton } from '@worknest/ui/components/databases/search/view-sort-button';
+import { ViewFullscreenButton } from '@worknest/ui/components/databases/view-fullscreen-button';
+import { ViewTabs } from '@worknest/ui/components/databases/view-tabs';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
 
 export const BoardView = () => {
   const database = useDatabase();

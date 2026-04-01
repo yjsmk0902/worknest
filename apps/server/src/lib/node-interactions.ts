@@ -4,11 +4,11 @@ import {
   NodeInteractionOpenedMutation,
   NodeInteractionSeenMutation,
   MutationStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { mapNode } from '@colanode/server/lib/nodes';
-import { WorkspaceContext } from '@colanode/server/types/api';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { mapNode } from '@worknest/server/lib/nodes';
+import { WorkspaceContext } from '@worknest/server/types/api';
 
 export const markNodeAsSeen = async (
   workspace: WorkspaceContext,

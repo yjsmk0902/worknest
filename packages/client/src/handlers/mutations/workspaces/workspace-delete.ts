@@ -1,12 +1,12 @@
-import { parseApiError } from '@colanode/client/lib/ky';
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { parseApiError } from '@worknest/client/lib/ky';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   WorkspaceDeleteMutationInput,
   WorkspaceDeleteMutationOutput,
-} from '@colanode/client/mutations/workspaces/workspace-delete';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceOutput } from '@colanode/core';
+} from '@worknest/client/mutations/workspaces/workspace-delete';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceOutput } from '@worknest/core';
 
 export class WorkspaceDeleteMutationHandler
   implements MutationHandler<WorkspaceDeleteMutationInput>

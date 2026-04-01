@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Account } from '@colanode/client/types';
+import { Account } from '@worknest/client/types';
 
 export const createAccountsCollection = () => {
   return createCollection<Account, string>({
@@ -9,7 +9,7 @@ export const createAccountsCollection = () => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'account.list',
           })

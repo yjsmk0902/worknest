@@ -9,13 +9,13 @@ import {
   Users,
 } from 'lucide-react';
 
-import { UploadStatus } from '@colanode/client/types';
-import { SidebarHeader } from '@colanode/ui/components/layouts/sidebars/sidebar-header';
-import { SidebarSettingsItem } from '@colanode/ui/components/layouts/sidebars/sidebar-settings-item';
-import { Link } from '@colanode/ui/components/ui/link';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { useApp } from '@colanode/ui/contexts/app';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { UploadStatus } from '@worknest/client/types';
+import { SidebarHeader } from '@worknest/ui/components/layouts/sidebars/sidebar-header';
+import { SidebarSettingsItem } from '@worknest/ui/components/layouts/sidebars/sidebar-settings-item';
+import { Link } from '@worknest/ui/components/ui/link';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { useApp } from '@worknest/ui/contexts/app';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 export const SidebarSettings = () => {
   const app = useApp();

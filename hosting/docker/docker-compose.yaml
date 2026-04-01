@@ -3,22 +3,22 @@ version: '3.8'
 services:
   postgres:
     image: pgvector/pgvector:pg17
-    container_name: colanode_postgres
+    container_name: worknest_postgres
     restart: always
     environment:
-      POSTGRES_USER: colanode_user
+      POSTGRES_USER: worknest_user
       POSTGRES_PASSWORD: postgrespass123
-      POSTGRES_DB: colanode_db
+      POSTGRES_DB: worknest_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - '5432:5432'
     networks:
-      - colanode_network
+      - worknest_network
 
   valkey:
     image: valkey/valkey:8.1
-    container_name: colanode_valkey
+    container_name: worknest_valkey
     restart: always
     command: ['valkey-server', '--requirepass', 'your_valkey_password']
     volumes:
@@ -26,7 +26,7 @@ services:
     ports:
       - '6379:6379'
     networks:
-      - colanode_network
+      - worknest_network
 
   # ---------------------------------------------------------------
   # Optional MinIO Object Storage (Enable when using S3 storage)
@@ -35,7 +35,7 @@ services:
     profiles:
       - s3
     image: minio/minio:RELEASE.2025-04-08T15-41-24Z
-    container_name: colanode_minio
+    container_name: worknest_minio
     restart: always
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -50,9 +50,9 @@ services:
       - '9000:9000'
       - '9001:9001'
     entrypoint: sh
-    command: -c 'mkdir -p /data/colanode && minio server /data --address ":9000" --console-address ":9001"'
+    command: -c 'mkdir -p /data/worknest && minio server /data --address ":9000" --console-address ":9001"'
     networks:
-      - colanode_network
+      - worknest_network
 
   # ---------------------------------------------------------------
   # Optional SMTP Server (Mailpit) for Local Email Testing
@@ -68,17 +68,17 @@ services:
   # ---------------------------------------------------------------
   # smtp:
   #  image: axllent/mailpit:v1.24.1
-  #  container_name: colanode_smtp
+  #  container_name: worknest_smtp
   #  restart: always
   #  ports:
   #    - '1025:1025' # SMTP IN (Connect server service to this port)
   #    - '8025:8025' # Web UI
   #  networks:
-  #    - colanode_network
+  #    - worknest_network
 
   server:
-    image: ghcr.io/colanode/server:latest
-    container_name: colanode_server
+    image: ghcr.io/worknest/server:latest
+    container_name: worknest_server
     restart: always
     depends_on:
       - postgres
@@ -96,7 +96,7 @@ services:
       NODE_ENV: production
 
       # Required env:// secrets (default configuration references these as env://VAR)
-      POSTGRES_URL: postgres://colanode_user:postgrespass123@postgres:5432/colanode_db
+      POSTGRES_URL: postgres://worknest_user:postgrespass123@postgres:5432/worknest_db
       REDIS_URL: redis://:your_valkey_password@valkey:6379/0
 
       # If you want to override the default configuration mount a config.json as explained below
@@ -106,20 +106,20 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - server_storage:/var/lib/colanode/storage
+      - server_storage:/var/lib/worknest/storage
       # Mount a config.json sitting next to this compose file to override defaults.
       # - ./config.json:/config.json:ro
     networks:
-      - colanode_network
+      - worknest_network
 
   web:
-    image: ghcr.io/colanode/web:latest
-    container_name: colanode_web
+    image: ghcr.io/worknest/web:latest
+    container_name: worknest_web
     restart: always
     ports:
       - '4000:80'
     networks:
-      - colanode_network
+      - worknest_network
 
 volumes:
   postgres_data:
@@ -128,5 +128,5 @@ volumes:
   server_storage:
 
 networks:
-  colanode_network:
+  worknest_network:
     driver: bridge

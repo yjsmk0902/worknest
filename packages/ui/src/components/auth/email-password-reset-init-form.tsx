@@ -2,14 +2,14 @@ import { useForm } from '@tanstack/react-form';
 import { Mail } from 'lucide-react';
 import { z } from 'zod/v4';
 
-import { Button } from '@colanode/ui/components/ui/button';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Field,
   FieldError,
   FieldLabel,
-} from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
+} from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
 
 const formSchema = z.object({
   email: z.string().min(2).email(),

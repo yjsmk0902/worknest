@@ -1,9 +1,9 @@
 import { eq, useLiveQuery } from '@tanstack/react-db';
 
-import { UpdatedByFieldAttributes } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+import { UpdatedByFieldAttributes } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface RecordUpdatedByValueProps {
   field: UpdatedByFieldAttributes;

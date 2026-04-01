@@ -9,7 +9,7 @@ export type DocumentUpdateMutationOutput = {
   success: boolean;
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'document.update': {
       input: DocumentUpdateMutationInput;

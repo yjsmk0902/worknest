@@ -9,13 +9,13 @@ import {
 import { MetadataValue, S3Store } from '@tus/s3-store';
 import { DataStore } from '@tus/server';
 
-import { FILE_UPLOAD_PART_SIZE } from '@colanode/core';
-import { redis } from '@colanode/server/data/redis';
+import { FILE_UPLOAD_PART_SIZE } from '@worknest/core';
+import { redis } from '@worknest/server/data/redis';
 import type {
   S3StorageProviderConfig,
   TusConfig,
-} from '@colanode/server/lib/config/storage';
-import { RedisKvStore } from '@colanode/server/lib/storage/tus/redis-kv';
+} from '@worknest/server/lib/config/storage';
+import { RedisKvStore } from '@worknest/server/lib/storage/tus/redis-kv';
 
 import type { Storage } from './core';
 

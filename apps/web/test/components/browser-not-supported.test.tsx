@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BrowserNotSupported } from '@colanode/web/components/browser-not-supported';
+import { BrowserNotSupported } from '@worknest/web/components/browser-not-supported';
 import { customRender, screen } from '../test-utils';
 
 describe('components/BrowserNotSupported', () => {
@@ -22,7 +22,7 @@ describe('components/BrowserNotSupported', () => {
     expect(desktopLink).toBeInTheDocument();
     expect(desktopLink).toHaveAttribute(
       'href',
-      'https://colanode.com/downloads'
+      'https://worknest.com/downloads'
     );
     expect(desktopLink).toHaveAttribute('target', '_blank');
     expect(desktopLink).toHaveAttribute('rel', 'noopener noreferrer');
@@ -37,7 +37,7 @@ describe('components/BrowserNotSupported', () => {
     expect(githubLink).toBeInTheDocument();
     expect(githubLink).toHaveAttribute(
       'href',
-      'https://github.com/colanode/colanode'
+      'https://github.com/worknest/worknest'
     );
     expect(githubLink).toHaveAttribute('target', '_blank');
     expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer');

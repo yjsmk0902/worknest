@@ -8,16 +8,16 @@ import {
   apiErrorOutputSchema,
   loginOutputSchema,
   emailRegisterInputSchema,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { SelectAccount } from '@colanode/server/data/schema';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { SelectAccount } from '@worknest/server/data/schema';
 import {
   buildLoginSuccessOutput,
   buildLoginVerifyOutput,
   generatePasswordHash,
-} from '@colanode/server/lib/accounts';
-import { config } from '@colanode/server/lib/config';
-import { isAuthEmailRateLimited } from '@colanode/server/lib/rate-limits';
+} from '@worknest/server/lib/accounts';
+import { config } from '@worknest/server/lib/config';
+import { isAuthEmailRateLimited } from '@worknest/server/lib/rate-limits';
 
 export const emailRegisterRoute: FastifyPluginCallbackZod = (
   instance,

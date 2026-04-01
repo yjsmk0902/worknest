@@ -1,6 +1,6 @@
 import { Heading3 } from 'lucide-react';
 
-import { EditorCommand } from '@colanode/client/types';
+import { EditorCommand } from '@worknest/client/types';
 
 export const Heading3Command: EditorCommand = {
   key: 'heading3',

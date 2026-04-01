@@ -12,12 +12,12 @@ import {
   usersCreateOutputSchema,
   UserStatus,
   WorkspaceStatus,
-} from '@colanode/core';
-import { database } from '@colanode/server/data/database';
-import { SelectAccount } from '@colanode/server/data/schema';
-import { eventBus } from '@colanode/server/lib/event-bus';
-import { getNameFromEmail } from '@colanode/server/lib/utils';
-import { jobService } from '@colanode/server/services/job-service';
+} from '@worknest/core';
+import { database } from '@worknest/server/data/database';
+import { SelectAccount } from '@worknest/server/data/schema';
+import { eventBus } from '@worknest/server/lib/event-bus';
+import { getNameFromEmail } from '@worknest/server/lib/utils';
+import { jobService } from '@worknest/server/services/job-service';
 
 export const usersCreateRoute: FastifyPluginCallbackZod = (
   instance,

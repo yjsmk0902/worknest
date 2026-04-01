@@ -1,12 +1,12 @@
-import { JobHandler } from '@colanode/server/jobs';
-import { sendEmailVerifyEmail } from '@colanode/server/lib/accounts';
+import { JobHandler } from '@worknest/server/jobs';
+import { sendEmailVerifyEmail } from '@worknest/server/lib/accounts';
 
 export type EmailVerifySendInput = {
   type: 'email.verify.send';
   otpId: string;
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     'email.verify.send': {
       input: EmailVerifySendInput;

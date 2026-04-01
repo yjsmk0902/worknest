@@ -1,20 +1,20 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { LocalPageNode, LocalSpaceNode } from '@colanode/client/types';
-import { generateId, IdType } from '@colanode/core';
+import { LocalPageNode, LocalSpaceNode } from '@worknest/client/types';
+import { generateId, IdType } from '@worknest/core';
 import {
   SpaceForm,
   SpaceFormValues,
-} from '@colanode/ui/components/spaces/space-form';
+} from '@worknest/ui/components/spaces/space-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface SpaceCreateDialogProps {
   open: boolean;

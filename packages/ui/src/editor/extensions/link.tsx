@@ -1,7 +1,7 @@
 import { Link } from '@tiptap/extension-link';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 
-import { defaultClasses } from '@colanode/ui/editor/classes';
+import { defaultClasses } from '@worknest/ui/editor/classes';
 
 export const LinkMark = Link.extend({
   inclusive: false,

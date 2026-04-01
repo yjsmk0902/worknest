@@ -1,6 +1,6 @@
-# Contributing to Colanode
+# Contributing to Worknest
 
-Thanks for taking the time to contribute! Colanode is an open-source, local-first collaboration platform with web, desktop, and server components. We welcome bug reports, feature requests, docs improvements, and code contributions.
+Thanks for taking the time to contribute! Worknest is an open-source, local-first collaboration platform with web, desktop, and server components. We welcome bug reports, feature requests, docs improvements, and code contributions.
 
 ## Before you start
 

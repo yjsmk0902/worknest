@@ -1,7 +1,7 @@
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib/types';
-import { IconSvgGetQueryInput } from '@colanode/client/queries/icons/icon-svg-get';
-import { AppService } from '@colanode/client/services/app-service';
-import { bytesToString } from '@colanode/core';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib/types';
+import { IconSvgGetQueryInput } from '@worknest/client/queries/icons/icon-svg-get';
+import { AppService } from '@worknest/client/services/app-service';
+import { bytesToString } from '@worknest/core';
 
 export class IconSvgGetQueryHandler
   implements QueryHandler<IconSvgGetQueryInput>

@@ -1,9 +1,9 @@
-import { WorkspaceMutationHandlerBase } from '@colanode/client/handlers/mutations/workspace-mutation-handler-base';
-import { MutationHandler } from '@colanode/client/lib/types';
+import { WorkspaceMutationHandlerBase } from '@worknest/client/handlers/mutations/workspace-mutation-handler-base';
+import { MutationHandler } from '@worknest/client/lib/types';
 import {
   NodeDeleteMutationInput,
   NodeDeleteMutationOutput,
-} from '@colanode/client/mutations/nodes/node-delete';
+} from '@worknest/client/mutations/nodes/node-delete';
 
 export class NodeDeleteMutationHandler
   extends WorkspaceMutationHandlerBase

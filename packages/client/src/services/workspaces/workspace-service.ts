@@ -4,23 +4,23 @@ import ms from 'ms';
 import {
   WorkspaceDatabaseSchema,
   workspaceDatabaseMigrations,
-} from '@colanode/client/databases/workspace';
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { mapMetadata } from '@colanode/client/lib/mappers';
-import { AccountService } from '@colanode/client/services/accounts/account-service';
-import { CollaborationService } from '@colanode/client/services/workspaces/collaboration-service';
-import { DocumentService } from '@colanode/client/services/workspaces/document-service';
-import { FileService } from '@colanode/client/services/workspaces/file-service';
-import { MutationService } from '@colanode/client/services/workspaces/mutation-service';
-import { NodeCountersService } from '@colanode/client/services/workspaces/node-counters-service';
-import { NodeInteractionService } from '@colanode/client/services/workspaces/node-interaction-service';
-import { NodeReactionService } from '@colanode/client/services/workspaces/node-reaction-service';
-import { NodeService } from '@colanode/client/services/workspaces/node-service';
-import { RadarService } from '@colanode/client/services/workspaces/radar-service';
-import { SyncService } from '@colanode/client/services/workspaces/sync-service';
-import { UserService } from '@colanode/client/services/workspaces/user-service';
-import { Workspace } from '@colanode/client/types/workspaces';
-import { createDebugger, WorkspaceRole, WorkspaceStatus } from '@colanode/core';
+} from '@worknest/client/databases/workspace';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { mapMetadata } from '@worknest/client/lib/mappers';
+import { AccountService } from '@worknest/client/services/accounts/account-service';
+import { CollaborationService } from '@worknest/client/services/workspaces/collaboration-service';
+import { DocumentService } from '@worknest/client/services/workspaces/document-service';
+import { FileService } from '@worknest/client/services/workspaces/file-service';
+import { MutationService } from '@worknest/client/services/workspaces/mutation-service';
+import { NodeCountersService } from '@worknest/client/services/workspaces/node-counters-service';
+import { NodeInteractionService } from '@worknest/client/services/workspaces/node-interaction-service';
+import { NodeReactionService } from '@worknest/client/services/workspaces/node-reaction-service';
+import { NodeService } from '@worknest/client/services/workspaces/node-service';
+import { RadarService } from '@worknest/client/services/workspaces/radar-service';
+import { SyncService } from '@worknest/client/services/workspaces/sync-service';
+import { UserService } from '@worknest/client/services/workspaces/user-service';
+import { Workspace } from '@worknest/client/types/workspaces';
+import { createDebugger, WorkspaceRole, WorkspaceStatus } from '@worknest/core';
 
 const debug = createDebugger('desktop:service:workspace');
 

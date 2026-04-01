@@ -17,8 +17,8 @@ import {
   SqliteQueryCompiler,
 } from 'kysely';
 
-import { KyselyBuildOptions, KyselyService } from '@colanode/client/services';
-import { WebFileSystem } from '@colanode/web/services/file-system';
+import { KyselyBuildOptions, KyselyService } from '@worknest/client/services';
+import { WebFileSystem } from '@worknest/web/services/file-system';
 
 const configureSqliteWasmUrl = () => {
   const globalState = globalThis as typeof globalThis & {

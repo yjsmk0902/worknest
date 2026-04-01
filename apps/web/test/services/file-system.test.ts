@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
-import { WebFileSystem } from '@colanode/web/services/file-system';
+import { WebFileSystem } from '@worknest/web/services/file-system';
 import { MockFileSystemDirectoryHandle } from '../helpers/mock-opfs';
 
 describe('services/file-system', () => {

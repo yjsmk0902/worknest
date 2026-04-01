@@ -3,14 +3,14 @@ import { useLocation } from '@tanstack/react-router';
 import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Sidebar } from '@colanode/ui/components/layouts/sidebars/sidebar';
+import { Sidebar } from '@worknest/ui/components/layouts/sidebars/sidebar';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetTitle,
   SheetTrigger,
-} from '@colanode/ui/components/ui/sheet';
+} from '@worknest/ui/components/ui/sheet';
 
 export const SidebarMobile = () => {
   const location = useLocation();
@@ -24,7 +24,7 @@ export const SidebarMobile = () => {
     <Sheet open={open} onOpenChange={setOpen}>
       <VisuallyHidden>
         <SheetTitle>Sidebar</SheetTitle>
-        <SheetDescription>Colanode sidebar for mobile devices</SheetDescription>
+        <SheetDescription>Worknest sidebar for mobile devices</SheetDescription>
       </VisuallyHidden>
       <SheetTrigger asChild>
         <button className="px-2 outline-none" aria-label="Open sidebar">

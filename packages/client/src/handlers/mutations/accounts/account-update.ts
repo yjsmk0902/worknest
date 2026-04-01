@@ -1,14 +1,14 @@
-import { eventBus } from '@colanode/client/lib/event-bus';
-import { parseApiError } from '@colanode/client/lib/ky';
-import { mapAccount } from '@colanode/client/lib/mappers';
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { eventBus } from '@worknest/client/lib/event-bus';
+import { parseApiError } from '@worknest/client/lib/ky';
+import { mapAccount } from '@worknest/client/lib/mappers';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   AccountUpdateMutationInput,
   AccountUpdateMutationOutput,
-} from '@colanode/client/mutations/accounts/account-update';
-import { AppService } from '@colanode/client/services/app-service';
-import { AccountUpdateInput, AccountUpdateOutput } from '@colanode/core';
+} from '@worknest/client/mutations/accounts/account-update';
+import { AppService } from '@worknest/client/services/app-service';
+import { AccountUpdateInput, AccountUpdateOutput } from '@worknest/core';
 
 export class AccountUpdateMutationHandler
   implements MutationHandler<AccountUpdateMutationInput>

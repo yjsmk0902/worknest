@@ -4,15 +4,15 @@ import { CircleAlert } from 'lucide-react';
 import {
   CreatedByFieldAttributes,
   DatabaseViewFilterAttributes,
-} from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { BoardViewColumn } from '@colanode/ui/components/databases/boards/board-view-column';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { BoardViewContext } from '@colanode/ui/contexts/board-view';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useLiveQuery } from '@colanode/ui/hooks/use-live-query';
+} from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { BoardViewColumn } from '@worknest/ui/components/databases/boards/board-view-column';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { BoardViewContext } from '@worknest/ui/contexts/board-view';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useLiveQuery } from '@worknest/ui/hooks/use-live-query';
 
 interface BoardViewColumnsCreatedByProps {
   field: CreatedByFieldAttributes;

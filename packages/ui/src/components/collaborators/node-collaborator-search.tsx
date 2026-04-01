@@ -1,10 +1,10 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
-import { User } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Badge } from '@colanode/ui/components/ui/badge';
-import { Button } from '@colanode/ui/components/ui/button';
+import { User } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Badge } from '@worknest/ui/components/ui/badge';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,19 +12,19 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
+} from '@worknest/ui/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
+} from '@worknest/ui/components/ui/popover';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useQuery } from '@colanode/ui/hooks/use-query';
+} from '@worknest/ui/components/ui/scroll-area';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useQuery } from '@worknest/ui/hooks/use-query';
 
 interface NodeCollaboratorSearchProps {
   excluded: string[];

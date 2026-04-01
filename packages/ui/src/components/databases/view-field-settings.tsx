@@ -1,17 +1,17 @@
 import { Eye, EyeOff, Trash2 } from 'lucide-react';
 import { Fragment, useCallback, useState } from 'react';
 
-import { FieldDeleteDialog } from '@colanode/ui/components/databases/fields/field-delete-dialog';
-import { FieldIcon } from '@colanode/ui/components/databases/fields/field-icon';
+import { FieldDeleteDialog } from '@worknest/ui/components/databases/fields/field-delete-dialog';
+import { FieldIcon } from '@worknest/ui/components/databases/fields/field-icon';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@colanode/ui/components/ui/tooltip';
-import { useDatabase } from '@colanode/ui/contexts/database';
-import { useDatabaseView } from '@colanode/ui/contexts/database-view';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/tooltip';
+import { useDatabase } from '@worknest/ui/contexts/database';
+import { useDatabaseView } from '@worknest/ui/contexts/database-view';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface MutationInput {
   id: string;

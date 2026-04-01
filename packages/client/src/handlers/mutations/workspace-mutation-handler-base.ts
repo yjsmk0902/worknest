@@ -1,7 +1,7 @@
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
-import { WorkspaceStatus } from '@colanode/core';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
+import { WorkspaceStatus } from '@worknest/core';
 
 export abstract class WorkspaceMutationHandlerBase {
   protected readonly app: AppService;

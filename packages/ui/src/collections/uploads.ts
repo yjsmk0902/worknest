@@ -1,6 +1,6 @@
 import { createCollection } from '@tanstack/react-db';
 
-import { Upload } from '@colanode/client/types';
+import { Upload } from '@worknest/client/types';
 
 export const createUploadsCollection = (userId: string) => {
   return createCollection<Upload, string>({
@@ -9,7 +9,7 @@ export const createUploadsCollection = (userId: string) => {
     },
     sync: {
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'upload.list',
             userId,

@@ -9,8 +9,8 @@ export default defineConfig({
   root: rootDir,
   resolve: {
     alias: {
-      '@colanode/crdt': path.resolve(rootDir, 'src'),
-      '@colanode/core': path.resolve(rootDir, '../core/src'),
+      '@worknest/crdt': path.resolve(rootDir, 'src'),
+      '@worknest/core': path.resolve(rootDir, '../core/src'),
     },
   },
   test: {

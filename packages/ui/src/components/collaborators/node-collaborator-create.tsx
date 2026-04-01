@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { User } from '@colanode/client/types';
-import { NodeRole } from '@colanode/core';
-import { NodeCollaboratorRoleDropdown } from '@colanode/ui/components/collaborators/node-collaborator-role-dropdown';
-import { NodeCollaboratorSearch } from '@colanode/ui/components/collaborators/node-collaborator-search';
-import { Button } from '@colanode/ui/components/ui/button';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
+import { User } from '@worknest/client/types';
+import { NodeRole } from '@worknest/core';
+import { NodeCollaboratorRoleDropdown } from '@worknest/ui/components/collaborators/node-collaborator-role-dropdown';
+import { NodeCollaboratorSearch } from '@worknest/ui/components/collaborators/node-collaborator-search';
+import { Button } from '@worknest/ui/components/ui/button';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
 
 interface NodeCollaboratorCreateProps {
   nodeId: string;

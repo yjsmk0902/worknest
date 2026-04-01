@@ -1,16 +1,16 @@
 import { Copy, Settings, Trash2 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-import { LocalFileNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
-import { NodeDeleteDialog } from '@colanode/ui/components/nodes/node-delete-dialog';
+import { LocalFileNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
+import { NodeDeleteDialog } from '@worknest/ui/components/nodes/node-delete-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@colanode/ui/components/ui/dropdown-menu';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dropdown-menu';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface FileSettingsProps {
   file: LocalFileNode;

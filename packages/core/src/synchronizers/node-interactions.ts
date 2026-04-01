@@ -15,7 +15,7 @@ export type SyncNodeInteractionData = {
   lastOpenedAt: string | null;
 };
 
-declare module '@colanode/core' {
+declare module '@worknest/core' {
   interface SynchronizerMap {
     'node.interactions': {
       input: SyncNodeInteractionsInput;

@@ -12,12 +12,12 @@ type TestEnvConfig = {
   NODE_ENV: string;
 };
 
-const ENV_PATH = path.join(os.tmpdir(), 'colanode-test-env.json');
-const CONFIG_PATH = path.join(os.tmpdir(), 'colanode-test-config.json');
+const ENV_PATH = path.join(os.tmpdir(), 'worknest-test-env.json');
+const CONFIG_PATH = path.join(os.tmpdir(), 'worknest-test-config.json');
 
 export default async function globalSetup() {
   const postgres = await new PostgreSqlContainer('pgvector/pgvector:pg17')
-    .withDatabase('colanode_test')
+    .withDatabase('worknest_test')
     .withUsername('postgres')
     .withPassword('postgres')
     .start();
@@ -37,7 +37,7 @@ export default async function globalSetup() {
       tus: { locker: { type: 'memory' }, cache: { type: 'none' } },
       provider: {
         type: 'file',
-        directory: path.join(os.tmpdir(), 'colanode-test-storage'),
+        directory: path.join(os.tmpdir(), 'worknest-test-storage'),
       },
     },
   };

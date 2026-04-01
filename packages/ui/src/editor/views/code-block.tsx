@@ -1,4 +1,4 @@
-import '@colanode/ui/styles/highlight.css';
+import '@worknest/ui/styles/highlight.css';
 
 import { type NodeViewProps } from '@tiptap/core';
 import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
@@ -12,20 +12,20 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@colanode/ui/components/ui/command';
+} from '@worknest/ui/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
+} from '@worknest/ui/components/ui/popover';
 import {
   ScrollArea,
   ScrollViewport,
   ScrollBar,
-} from '@colanode/ui/components/ui/scroll-area';
-import { defaultClasses } from '@colanode/ui/editor/classes';
-import { languages } from '@colanode/ui/lib/lowlight';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/scroll-area';
+import { defaultClasses } from '@worknest/ui/editor/classes';
+import { languages } from '@worknest/ui/lib/lowlight';
+import { cn } from '@worknest/ui/lib/utils';
 
 export const CodeBlockNodeView = ({
   node,

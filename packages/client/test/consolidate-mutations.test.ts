@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { consolidateMutations } from '@colanode/client/lib/consolidate-mutations';
-import { Mutation } from '@colanode/core';
+import { consolidateMutations } from '@worknest/client/lib/consolidate-mutations';
+import { Mutation } from '@worknest/core';
 
 const makeMutation = (
   id: string,

@@ -1,4 +1,4 @@
-import { WorkspaceRole, WorkspaceStatus } from '@colanode/core';
+import { WorkspaceRole, WorkspaceStatus } from '@worknest/core';
 
 export type Workspace = {
   userId: string;

@@ -1,12 +1,12 @@
 import { InView } from 'react-intersection-observer';
 
-import { LocalChannelNode } from '@colanode/client/types';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Link } from '@colanode/ui/components/ui/link';
-import { UnreadBadge } from '@colanode/ui/components/ui/unread-badge';
-import { useRadar } from '@colanode/ui/contexts/radar';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalChannelNode } from '@worknest/client/types';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Link } from '@worknest/ui/components/ui/link';
+import { UnreadBadge } from '@worknest/ui/components/ui/unread-badge';
+import { useRadar } from '@worknest/ui/contexts/radar';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ChannelSidebarItemProps {
   channel: LocalChannelNode;

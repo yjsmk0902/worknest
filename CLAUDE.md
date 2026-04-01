@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Colanode is an open-source, local-first collaboration platform supporting real-time chat, rich text editing, customizable databases, and file management. It uses a sophisticated CRDT-based architecture (powered by Yjs) to enable offline-first operation with automatic conflict resolution.
+Worknest is an open-source, local-first collaboration platform supporting real-time chat, rich text editing, customizable databases, and file management. It uses a sophisticated CRDT-based architecture (powered by Yjs) to enable offline-first operation with automatic conflict resolution.
 
 ## Tech Stack Summary
 
@@ -80,7 +80,7 @@ npm run dev  # Vite dev server on port 4000
 
 ```bash
 cd apps/desktop
-npm run dev  # Electron + Vite with hot reload (DEBUG=colanode:*)
+npm run dev  # Electron + Vite with hot reload (DEBUG=worknest:*)
 ```
 
 **Mobile (experimental):**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareString, getNameFromEmail } from '@colanode/server/lib/utils';
+import { compareString, getNameFromEmail } from '@worknest/server/lib/utils';
 
 describe('utils', () => {
   it('builds display names from email local parts', () => {

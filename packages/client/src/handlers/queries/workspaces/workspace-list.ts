@@ -1,10 +1,10 @@
-import { SelectWorkspace } from '@colanode/client/databases/app';
-import { ChangeCheckResult, QueryHandler } from '@colanode/client/lib';
-import { mapWorkspace } from '@colanode/client/lib/mappers';
-import { WorkspaceListQueryInput } from '@colanode/client/queries/workspaces/workspace-list';
-import { AppService } from '@colanode/client/services/app-service';
-import { Event } from '@colanode/client/types/events';
-import { Workspace } from '@colanode/client/types/workspaces';
+import { SelectWorkspace } from '@worknest/client/databases/app';
+import { ChangeCheckResult, QueryHandler } from '@worknest/client/lib';
+import { mapWorkspace } from '@worknest/client/lib/mappers';
+import { WorkspaceListQueryInput } from '@worknest/client/queries/workspaces/workspace-list';
+import { AppService } from '@worknest/client/services/app-service';
+import { Event } from '@worknest/client/types/events';
+import { Workspace } from '@worknest/client/types/workspaces';
 
 export class WorkspaceListQueryHandler
   implements QueryHandler<WorkspaceListQueryInput>

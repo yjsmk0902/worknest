@@ -3,24 +3,24 @@ import ms from 'ms';
 import {
   SelectDownload,
   SelectNode,
-} from '@colanode/client/databases/workspace';
-import { eventBus } from '@colanode/client/lib/event-bus';
+} from '@worknest/client/databases/workspace';
+import { eventBus } from '@worknest/client/lib/event-bus';
 import {
   mapDownload,
   mapLocalFile,
   mapNode,
   mapUpload,
-} from '@colanode/client/lib/mappers';
-import { fetchNode } from '@colanode/client/lib/utils';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
-import { AppService } from '@colanode/client/services/app-service';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+} from '@worknest/client/lib/mappers';
+import { fetchNode } from '@worknest/client/lib/utils';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
+import { AppService } from '@worknest/client/services/app-service';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 import {
   DownloadStatus,
   LocalFile,
   UploadStatus,
-} from '@colanode/client/types/files';
-import { LocalFileNode } from '@colanode/client/types/nodes';
+} from '@worknest/client/types/files';
+import { LocalFileNode } from '@worknest/client/types/nodes';
 import {
   FileAttributes,
   FileStatus,
@@ -29,7 +29,7 @@ import {
   extractFileSubtype,
   generateId,
   formatBytes,
-} from '@colanode/core';
+} from '@worknest/core';
 
 const debug = createDebugger('desktop:service:file');
 

@@ -1,7 +1,7 @@
 import { createRouteMask } from '@tanstack/react-router';
 
-import { collections } from '@colanode/ui/collections';
-import { routeTree } from '@colanode/ui/routes';
+import { collections } from '@worknest/ui/collections';
+import { routeTree } from '@worknest/ui/routes';
 
 export const workspaceRouteMask = createRouteMask({
   routeTree: routeTree,

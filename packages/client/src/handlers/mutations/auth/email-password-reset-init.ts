@@ -1,16 +1,16 @@
-import { AuthMutationHandlerBase } from '@colanode/client/handlers/mutations/auth/base';
-import { parseApiError } from '@colanode/client/lib/ky';
-import { MutationHandler } from '@colanode/client/lib/types';
-import { MutationError, MutationErrorCode } from '@colanode/client/mutations';
+import { AuthMutationHandlerBase } from '@worknest/client/handlers/mutations/auth/base';
+import { parseApiError } from '@worknest/client/lib/ky';
+import { MutationHandler } from '@worknest/client/lib/types';
+import { MutationError, MutationErrorCode } from '@worknest/client/mutations';
 import {
   EmailPasswordResetInitMutationInput,
   EmailPasswordResetInitMutationOutput,
-} from '@colanode/client/mutations/auth/email-password-reset-init';
-import { AppService } from '@colanode/client/services/app-service';
+} from '@worknest/client/mutations/auth/email-password-reset-init';
+import { AppService } from '@worknest/client/services/app-service';
 import {
   EmailPasswordResetInitInput,
   EmailPasswordResetInitOutput,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export class EmailPasswordResetInitMutationHandler
   extends AuthMutationHandlerBase

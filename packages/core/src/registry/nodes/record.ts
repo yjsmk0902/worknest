@@ -1,10 +1,10 @@
 import { z } from 'zod/v4';
 
-import { extractNodeRole } from '@colanode/core/lib/nodes';
-import { hasNodeRole } from '@colanode/core/lib/permissions';
-import { richTextContentSchema } from '@colanode/core/registry/documents/rich-text';
-import { NodeModel } from '@colanode/core/registry/nodes/core';
-import { fieldValueSchema } from '@colanode/core/registry/nodes/field-value';
+import { extractNodeRole } from '@worknest/core/lib/nodes';
+import { hasNodeRole } from '@worknest/core/lib/permissions';
+import { richTextContentSchema } from '@worknest/core/registry/documents/rich-text';
+import { NodeModel } from '@worknest/core/registry/nodes/core';
+import { fieldValueSchema } from '@worknest/core/registry/nodes/field-value';
 
 export const recordAttributesSchema = z.object({
   type: z.literal('record'),

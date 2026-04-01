@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
-import { EmojiElement } from '@colanode/ui/components/emojis/emoji-element';
-import { Button } from '@colanode/ui/components/ui/button';
+import { EmojiElement } from '@worknest/ui/components/emojis/emoji-element';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { useQuery } from '@colanode/ui/hooks/use-query';
-import { defaultEmojis } from '@colanode/ui/lib/assets';
+} from '@worknest/ui/components/ui/popover';
+import { useQuery } from '@worknest/ui/hooks/use-query';
+import { defaultEmojis } from '@worknest/ui/lib/assets';
 
 interface EmojiSkinToneSelectorProps {
   skinTone: number;

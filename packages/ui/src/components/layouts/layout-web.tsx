@@ -5,8 +5,8 @@ import {
 } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
-import { routeTree } from '@colanode/ui/routes';
-import { routeMasks } from '@colanode/ui/routes/masks';
+import { routeTree } from '@worknest/ui/routes';
+import { routeMasks } from '@worknest/ui/routes/masks';
 
 export const LayoutWeb = () => {
   const router = useMemo(() => {

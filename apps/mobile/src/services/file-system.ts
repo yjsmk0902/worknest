@@ -1,6 +1,6 @@
 import { Directory, File as ExpoFile, Paths } from 'expo-file-system';
 
-import { FileReadStream, FileSystem } from '@colanode/client/services';
+import { FileReadStream, FileSystem } from '@worknest/client/services';
 
 export class MobileFileSystem implements FileSystem {
   private resolveDirectory(path: string): Directory | null {

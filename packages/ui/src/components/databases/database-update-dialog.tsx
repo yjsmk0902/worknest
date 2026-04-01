@@ -1,17 +1,17 @@
-import { LocalDatabaseNode } from '@colanode/client/types';
-import { NodeRole, hasNodeRole } from '@colanode/core';
+import { LocalDatabaseNode } from '@worknest/client/types';
+import { NodeRole, hasNodeRole } from '@worknest/core';
 import {
   DatabaseForm,
   DatabaseFormValues,
-} from '@colanode/ui/components/databases/database-form';
+} from '@worknest/ui/components/databases/database-form';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@colanode/ui/components/ui/dialog';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
+} from '@worknest/ui/components/ui/dialog';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
 
 interface DatabaseUpdateDialogProps {
   database: LocalDatabaseNode;

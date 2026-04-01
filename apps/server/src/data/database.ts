@@ -9,10 +9,10 @@ import {
 } from 'kysely';
 import pg from 'pg';
 
-import { databaseMigrations } from '@colanode/server/data/migrations';
-import { DatabaseSchema } from '@colanode/server/data/schema';
-import { config } from '@colanode/server/lib/config';
-import { createLogger } from '@colanode/server/lib/logger';
+import { databaseMigrations } from '@worknest/server/data/migrations';
+import { DatabaseSchema } from '@worknest/server/data/schema';
+import { config } from '@worknest/server/lib/config';
+import { createLogger } from '@worknest/server/lib/logger';
 
 const logger = createLogger('server:database');
 

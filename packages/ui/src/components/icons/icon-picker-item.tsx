@@ -1,6 +1,6 @@
-import { Icon } from '@colanode/client/types';
-import { IconElement } from '@colanode/ui/components/icons/icon-element';
-import { useIconPicker } from '@colanode/ui/contexts/icon-picker';
+import { Icon } from '@worknest/client/types';
+import { IconElement } from '@worknest/ui/components/icons/icon-element';
+import { useIconPicker } from '@worknest/ui/contexts/icon-picker';
 
 interface IconPickerItemProps {
   icon: Icon;

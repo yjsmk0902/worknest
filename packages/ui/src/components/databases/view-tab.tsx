@@ -1,6 +1,6 @@
-import { LocalDatabaseViewNode } from '@colanode/client/types';
-import { ViewIcon } from '@colanode/ui/components/databases/view-icon';
-import { cn } from '@colanode/ui/lib/utils';
+import { LocalDatabaseViewNode } from '@worknest/client/types';
+import { ViewIcon } from '@worknest/ui/components/databases/view-icon';
+import { cn } from '@worknest/ui/lib/utils';
 
 interface ViewTabProps {
   view: LocalDatabaseViewNode;

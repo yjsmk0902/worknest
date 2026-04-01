@@ -1,20 +1,20 @@
 // import { OpenAIEmbeddings } from '@langchain/openai';
 // import { sql } from 'kysely';
 
-// import { extractDocumentText, getNodeModel } from '@colanode/core';
-// import { database } from '@colanode/server/data/database';
-// import { CreateDocumentEmbedding } from '@colanode/server/data/schema';
-// import { JobHandler } from '@colanode/server/jobs';
-// import { chunkText } from '@colanode/server/lib/ai/chunking';
-// import { config } from '@colanode/server/lib/config';
-// import { fetchNode } from '@colanode/server/lib/nodes';
+// import { extractDocumentText, getNodeModel } from '@worknest/core';
+// import { database } from '@worknest/server/data/database';
+// import { CreateDocumentEmbedding } from '@worknest/server/data/schema';
+// import { JobHandler } from '@worknest/server/jobs';
+// import { chunkText } from '@worknest/server/lib/ai/chunking';
+// import { config } from '@worknest/server/lib/config';
+// import { fetchNode } from '@worknest/server/lib/nodes';
 
 // export type DocumentEmbedInput = {
 //   type: 'document.embed';
 //   documentId: string;
 // };
 
-// declare module '@colanode/server/jobs' {
+// declare module '@worknest/server/jobs' {
 //   interface JobMap {
 //     'document.embed': {
 //       input: DocumentEmbedInput;

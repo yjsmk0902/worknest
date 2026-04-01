@@ -5,19 +5,19 @@ import { useMemo, useState } from 'react';
 import {
   CollaboratorFieldAttributes,
   StringArrayFieldValue,
-} from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Badge } from '@colanode/ui/components/ui/badge';
+} from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Badge } from '@worknest/ui/components/ui/badge';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@colanode/ui/components/ui/popover';
-import { Separator } from '@colanode/ui/components/ui/separator';
-import { UserSearch } from '@colanode/ui/components/users/user-search';
-import { useRecord } from '@colanode/ui/contexts/record';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useRecordField } from '@colanode/ui/hooks/use-record-field';
+} from '@worknest/ui/components/ui/popover';
+import { Separator } from '@worknest/ui/components/ui/separator';
+import { UserSearch } from '@worknest/ui/components/users/user-search';
+import { useRecord } from '@worknest/ui/contexts/record';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useRecordField } from '@worknest/ui/hooks/use-record-field';
 
 interface CollaboratorBadgeProps {
   id: string;

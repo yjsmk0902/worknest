@@ -5,9 +5,9 @@ import {
   SelectMetadata,
   SelectTab,
   SelectTempFile,
-} from '@colanode/client/databases/app';
-import { SelectEmoji } from '@colanode/client/databases/emojis';
-import { SelectIcon } from '@colanode/client/databases/icons';
+} from '@worknest/client/databases/app';
+import { SelectEmoji } from '@worknest/client/databases/emojis';
+import { SelectIcon } from '@worknest/client/databases/icons';
 import {
   SelectMutation,
   SelectNode,
@@ -21,33 +21,33 @@ import {
   SelectLocalFile,
   SelectDownload,
   SelectUpload,
-} from '@colanode/client/databases/workspace';
-import { Account } from '@colanode/client/types/accounts';
-import { Metadata, Tab } from '@colanode/client/types/apps';
-import { Avatar } from '@colanode/client/types/avatars';
+} from '@worknest/client/databases/workspace';
+import { Account } from '@worknest/client/types/accounts';
+import { Metadata, Tab } from '@worknest/client/types/apps';
+import { Avatar } from '@worknest/client/types/avatars';
 import {
   Document,
   DocumentState,
   DocumentUpdate,
-} from '@colanode/client/types/documents';
-import { Emoji } from '@colanode/client/types/emojis';
+} from '@worknest/client/types/documents';
+import { Emoji } from '@worknest/client/types/emojis';
 import {
   LocalFile,
   Download,
   Upload,
   TempFile,
-} from '@colanode/client/types/files';
-import { Icon } from '@colanode/client/types/icons';
+} from '@worknest/client/types/files';
+import { Icon } from '@worknest/client/types/icons';
 import {
   LocalNode,
   NodeInteraction,
   NodeReaction,
   NodeReference,
-} from '@colanode/client/types/nodes';
-import { User } from '@colanode/client/types/users';
-import { Workspace } from '@colanode/client/types/workspaces';
-import { Mutation, NodeAttributes } from '@colanode/core';
-import { encodeState } from '@colanode/crdt';
+} from '@worknest/client/types/nodes';
+import { User } from '@worknest/client/types/users';
+import { Workspace } from '@worknest/client/types/workspaces';
+import { Mutation, NodeAttributes } from '@worknest/core';
+import { encodeState } from '@worknest/crdt';
 
 export const mapUser = (row: SelectUser): User => {
   return {

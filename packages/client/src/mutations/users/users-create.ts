@@ -2,7 +2,7 @@ import {
   UserCreateErrorOutput,
   UserCreateInput,
   UserOutput,
-} from '@colanode/core';
+} from '@worknest/core';
 
 export type UsersCreateMutationInput = {
   type: 'users.create';
@@ -15,7 +15,7 @@ export type UsersCreateMutationOutput = {
   errors: UserCreateErrorOutput[];
 };
 
-declare module '@colanode/client/mutations' {
+declare module '@worknest/client/mutations' {
   interface MutationMap {
     'users.create': {
       input: UsersCreateMutationInput;

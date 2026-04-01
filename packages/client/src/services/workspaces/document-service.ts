@@ -1,20 +1,20 @@
 import {
   CreateNodeReference,
   SelectDocument,
-} from '@colanode/client/databases/workspace';
-import { eventBus } from '@colanode/client/lib/event-bus';
+} from '@worknest/client/databases/workspace';
+import { eventBus } from '@worknest/client/lib/event-bus';
 import {
   mapDocument,
   mapDocumentState,
   mapDocumentUpdate,
   mapNodeReference,
-} from '@colanode/client/lib/mappers';
+} from '@worknest/client/lib/mappers';
 import {
   applyMentionUpdates,
   checkMentionChanges,
-} from '@colanode/client/lib/mentions';
-import { fetchNodeTree } from '@colanode/client/lib/utils';
-import { WorkspaceService } from '@colanode/client/services/workspaces/workspace-service';
+} from '@worknest/client/lib/mentions';
+import { fetchNodeTree } from '@worknest/client/lib/utils';
+import { WorkspaceService } from '@worknest/client/services/workspaces/workspace-service';
 import {
   CanUpdateDocumentContext,
   createDebugger,
@@ -27,8 +27,8 @@ import {
   NodeModel,
   SyncDocumentUpdateData,
   UpdateDocumentMutationData,
-} from '@colanode/core';
-import { encodeState, YDoc } from '@colanode/crdt';
+} from '@worknest/core';
+import { encodeState, YDoc } from '@worknest/crdt';
 
 const UPDATE_RETRIES_LIMIT = 10;
 

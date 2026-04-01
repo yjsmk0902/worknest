@@ -1,6 +1,6 @@
 import { Mark } from '@tiptap/core';
 
-import { editorColors } from '@colanode/ui/lib/editor';
+import { editorColors } from '@worknest/ui/lib/editor';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

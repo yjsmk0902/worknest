@@ -1,5 +1,5 @@
-import { DelayedComponent } from '@colanode/ui/components/ui/delayed-component';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
+import { DelayedComponent } from '@worknest/ui/components/ui/delayed-component';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
 
 export const AppLoading = () => {
   return (

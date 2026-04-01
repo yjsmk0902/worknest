@@ -1,6 +1,6 @@
-import { MutationInput, MutationMap } from '@colanode/client/mutations';
-import { QueryInput, QueryMap } from '@colanode/client/queries';
-import { Event } from '@colanode/client/types/events';
+import { MutationInput, MutationMap } from '@worknest/client/mutations';
+import { QueryInput, QueryMap } from '@worknest/client/queries';
+import { Event } from '@worknest/client/types/events';
 
 export interface MutationHandler<T extends MutationInput> {
   handleMutation: (input: T) => Promise<MutationMap[T['type']]['output']>;

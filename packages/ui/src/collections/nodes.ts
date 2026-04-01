@@ -1,7 +1,7 @@
 import { createCollection, parseLoadSubsetOptions } from '@tanstack/react-db';
 
-import { LocalNode } from '@colanode/client/types';
-import { applyNodeTransaction } from '@colanode/ui/lib/nodes';
+import { LocalNode } from '@worknest/client/types';
+import { applyNodeTransaction } from '@worknest/ui/lib/nodes';
 
 export const createNodesCollection = (userId: string) => {
   return createCollection<LocalNode, string>({
@@ -13,7 +13,7 @@ export const createNodesCollection = (userId: string) => {
     sync: {
       rowUpdateMode: 'full',
       sync({ begin, write, commit, markReady }) {
-        window.colanode
+        window.worknest
           .executeQuery({
             type: 'node.list',
             userId,
@@ -65,7 +65,7 @@ export const createNodesCollection = (userId: string) => {
           loadSubset: async (options) => {
             const parsedOptions = parseLoadSubsetOptions(options);
 
-            const nodes = await window.colanode.executeQuery({
+            const nodes = await window.worknest.executeQuery({
               type: 'node.list',
               userId,
               filters: parsedOptions.filters,

@@ -4,23 +4,23 @@ import { useRef } from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod/v4';
 
-import { generateId, IdType } from '@colanode/core';
-import { Avatar } from '@colanode/ui/components/avatars/avatar';
-import { Button } from '@colanode/ui/components/ui/button';
+import { generateId, IdType } from '@worknest/core';
+import { Avatar } from '@worknest/ui/components/avatars/avatar';
+import { Button } from '@worknest/ui/components/ui/button';
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '@colanode/ui/components/ui/field';
-import { Input } from '@colanode/ui/components/ui/input';
-import { Spinner } from '@colanode/ui/components/ui/spinner';
-import { Textarea } from '@colanode/ui/components/ui/textarea';
-import { useWorkspace } from '@colanode/ui/contexts/workspace';
-import { useIsMobile } from '@colanode/ui/hooks/use-is-mobile';
-import { useMutation } from '@colanode/ui/hooks/use-mutation';
-import { openFileDialog } from '@colanode/ui/lib/files';
-import { cn } from '@colanode/ui/lib/utils';
+} from '@worknest/ui/components/ui/field';
+import { Input } from '@worknest/ui/components/ui/input';
+import { Spinner } from '@worknest/ui/components/ui/spinner';
+import { Textarea } from '@worknest/ui/components/ui/textarea';
+import { useWorkspace } from '@worknest/ui/contexts/workspace';
+import { useIsMobile } from '@worknest/ui/hooks/use-is-mobile';
+import { useMutation } from '@worknest/ui/hooks/use-mutation';
+import { openFileDialog } from '@worknest/ui/lib/files';
+import { cn } from '@worknest/ui/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters long.'),

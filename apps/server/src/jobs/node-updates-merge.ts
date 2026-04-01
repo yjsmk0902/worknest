@@ -1,13 +1,13 @@
 import ms from 'ms';
 
-import { UpdateMergeMetadata } from '@colanode/core';
-import { mergeUpdates } from '@colanode/crdt';
-import { database } from '@colanode/server/data/database';
-import { SelectNodeUpdate } from '@colanode/server/data/schema';
-import { JobHandler } from '@colanode/server/jobs';
-import { config } from '@colanode/server/lib/config';
-import { fetchCounter, setCounter } from '@colanode/server/lib/counters';
-import { createLogger } from '@colanode/server/lib/logger';
+import { UpdateMergeMetadata } from '@worknest/core';
+import { mergeUpdates } from '@worknest/crdt';
+import { database } from '@worknest/server/data/database';
+import { SelectNodeUpdate } from '@worknest/server/data/schema';
+import { JobHandler } from '@worknest/server/jobs';
+import { config } from '@worknest/server/lib/config';
+import { fetchCounter, setCounter } from '@worknest/server/lib/counters';
+import { createLogger } from '@worknest/server/lib/logger';
 
 const logger = createLogger('server:job:node-updates-merge');
 
@@ -15,7 +15,7 @@ export type NodeUpdatesMergeInput = {
   type: 'node.updates.merge';
 };
 
-declare module '@colanode/server/jobs' {
+declare module '@worknest/server/jobs' {
   interface JobMap {
     'node.updates.merge': {
       input: NodeUpdatesMergeInput;

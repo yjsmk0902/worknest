@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-import { Icon } from '@colanode/client/types';
-import { IconBrowser } from '@colanode/ui/components/icons/icon-browser';
-import { IconSearch } from '@colanode/ui/components/icons/icon-search';
-import { Input } from '@colanode/ui/components/ui/input';
-import { IconPickerContext } from '@colanode/ui/contexts/icon-picker';
+import { Icon } from '@worknest/client/types';
+import { IconBrowser } from '@worknest/ui/components/icons/icon-browser';
+import { IconSearch } from '@worknest/ui/components/icons/icon-search';
+import { Input } from '@worknest/ui/components/ui/input';
+import { IconPickerContext } from '@worknest/ui/contexts/icon-picker';
 
 interface IconPickerProps {
   onPick: (icon: Icon) => void;
