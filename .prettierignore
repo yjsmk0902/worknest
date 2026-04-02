@@ -1,8 +1,0 @@
-dist
-out
-tsconfig.base.json
-tsconfig.json
-pnpm-lock.yaml
-package-lock.json
-.env
-LICENSE.md
