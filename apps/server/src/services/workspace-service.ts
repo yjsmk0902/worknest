@@ -5,6 +5,7 @@ import {
   invitations,
   users,
   orgMembers,
+  organizations,
   type Database,
 } from "@worknest/db";
 import type {
@@ -53,7 +54,7 @@ export class WorkspaceService {
           eq(workspaces.orgId, orgId),
           eq(workspaceMembers.userId, userId),
           isNull(workspaces.deletedAt),
-          ...(cursor ? [lt(workspaces.id, cursor)] : []),
+          ...(cursor ? [lt(workspaces.createdAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(workspaces.createdAt))
@@ -75,7 +76,9 @@ export class WorkspaceService {
         role: row.member.role,
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.ws.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.ws.createdAt.toISOString()
+          : null,
         has_more: hasMore,
       },
     };
@@ -113,33 +116,38 @@ export class WorkspaceService {
       throw AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Workspace slug already taken in this organization");
     }
 
-    const [ws] = await this.db
-      .insert(workspaces)
-      .values({
-        orgId,
-        name: input.name,
-        slug: input.slug,
-        logo: input.logo ?? null,
-        description: input.description ?? null,
-      })
-      .returning();
+    // Create workspace + admin membership atomically
+    const ws = await this.db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(workspaces)
+        .values({
+          orgId,
+          name: input.name,
+          slug: input.slug,
+          logo: input.logo ?? null,
+          description: input.description ?? null,
+        })
+        .returning();
 
-    // Make creator an admin
-    await this.db.insert(workspaceMembers).values({
-      workspaceId: ws!.id,
-      userId,
-      role: "admin",
+      // Make creator an admin
+      await tx.insert(workspaceMembers).values({
+        workspaceId: created!.id,
+        userId,
+        role: "admin",
+      });
+
+      return created!;
     });
 
     return {
-      id: ws!.id,
-      orgId: ws!.orgId,
-      name: ws!.name,
-      slug: ws!.slug,
-      logo: ws!.logo,
-      description: ws!.description,
-      createdAt: ws!.createdAt.toISOString(),
-      updatedAt: ws!.updatedAt.toISOString(),
+      id: ws.id,
+      orgId: ws.orgId,
+      name: ws.name,
+      slug: ws.slug,
+      logo: ws.logo,
+      description: ws.description,
+      createdAt: ws.createdAt.toISOString(),
+      updatedAt: ws.updatedAt.toISOString(),
     };
   }
 
@@ -166,6 +174,68 @@ export class WorkspaceService {
       description: ws.description,
       createdAt: ws.createdAt.toISOString(),
       updatedAt: ws.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Get Workspace by Slug ───────────────────────────────────────────
+
+  async getBySlug(orgSlug: string, wsSlug: string, userId: string) {
+    // First resolve the org by slug
+    const org = await this.db
+      .select({ id: organizations.id })
+      .from(organizations)
+      .where(
+        and(
+          eq(organizations.slug, orgSlug),
+          isNull(organizations.deletedAt),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!org) {
+      throw AppError.notFound("organization");
+    }
+
+    // Find workspace by slug within the org, ensuring user is a member
+    const row = await this.db
+      .select({
+        ws: workspaces,
+        member: workspaceMembers,
+      })
+      .from(workspaces)
+      .innerJoin(
+        workspaceMembers,
+        and(
+          eq(workspaceMembers.workspaceId, workspaces.id),
+          eq(workspaceMembers.userId, userId),
+        ),
+      )
+      .where(
+        and(
+          eq(workspaces.orgId, org.id),
+          eq(workspaces.slug, wsSlug),
+          isNull(workspaces.deletedAt),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!row) {
+      throw AppError.notFound("workspace");
+    }
+
+    return {
+      id: row.ws.id,
+      orgId: row.ws.orgId,
+      orgSlug,
+      name: row.ws.name,
+      slug: row.ws.slug,
+      logo: row.ws.logo,
+      description: row.ws.description,
+      role: row.member.role,
+      createdAt: row.ws.createdAt.toISOString(),
+      updatedAt: row.ws.updatedAt.toISOString(),
     };
   }
 
@@ -284,7 +354,7 @@ export class WorkspaceService {
       .where(
         and(
           eq(workspaceMembers.workspaceId, wsId),
-          ...(cursor ? [lt(workspaceMembers.id, cursor)] : []),
+          ...(cursor ? [lt(workspaceMembers.joinedAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(workspaceMembers.joinedAt))
@@ -308,7 +378,9 @@ export class WorkspaceService {
         },
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.member.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.member.joinedAt.toISOString()
+          : null,
         has_more: hasMore,
       },
     };
@@ -316,7 +388,7 @@ export class WorkspaceService {
 
   // ── Update Member Role ─────────────────────────────────────────────
 
-  async updateMemberRole(memberId: string, role: WsRole) {
+  async updateMemberRole(memberId: string, role: WsRole, callerUserId: string) {
     const member = await this.db
       .select()
       .from(workspaceMembers)
@@ -326,6 +398,23 @@ export class WorkspaceService {
 
     if (!member) {
       throw AppError.notFound("member");
+    }
+
+    // Verify caller is an admin of the workspace
+    const caller = await this.db
+      .select()
+      .from(workspaceMembers)
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, member.workspaceId),
+          eq(workspaceMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!caller || caller.role !== "admin") {
+      throw AppError.forbidden("Only workspace admin can change member roles");
     }
 
     const [updated] = await this.db
@@ -339,7 +428,7 @@ export class WorkspaceService {
 
   // ── Remove Member ──────────────────────────────────────────────────
 
-  async removeMember(memberId: string) {
+  async removeMember(memberId: string, callerUserId: string) {
     const member = await this.db
       .select()
       .from(workspaceMembers)
@@ -349,6 +438,23 @@ export class WorkspaceService {
 
     if (!member) {
       throw AppError.notFound("member");
+    }
+
+    // Verify caller is an admin of the workspace
+    const caller = await this.db
+      .select()
+      .from(workspaceMembers)
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, member.workspaceId),
+          eq(workspaceMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!caller || caller.role !== "admin") {
+      throw AppError.forbidden("Only workspace admin can remove members");
     }
 
     await this.db
@@ -441,7 +547,7 @@ export class WorkspaceService {
         and(
           eq(invitations.workspaceId, wsId),
           isNull(invitations.acceptedAt),
-          ...(cursor ? [lt(invitations.id, cursor)] : []),
+          ...(cursor ? [lt(invitations.createdAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(invitations.createdAt))
@@ -461,7 +567,9 @@ export class WorkspaceService {
         createdAt: inv.createdAt.toISOString(),
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.createdAt.toISOString()
+          : null,
         has_more: hasMore,
       },
     };

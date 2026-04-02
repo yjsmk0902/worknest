@@ -2,6 +2,13 @@ import { z } from "zod";
 
 // ── Pagination ─────────────────────────────────────────────────────────
 
+/**
+ * Cursor-based pagination query parameters.
+ * `cursor` is an ISO-8601 timestamp string returned as `next_cursor` from the
+ * previous page. It corresponds to the sort column (e.g. `createdAt` or
+ * `joinedAt`) so the server can perform a `< cursor` comparison for
+ * descending-order pagination.
+ */
 export const cursorPaginationQuery = z.object({
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),

@@ -8,6 +8,7 @@ import swaggerUi from "@fastify/swagger-ui";
 import websocket from "@fastify/websocket";
 
 import { createDb } from "@worknest/db";
+import { runMigrations } from "@worknest/db/migrate";
 import { createAuth } from "./lib/auth";
 import { createRedis } from "./lib/redis";
 import { errorHandler } from "./lib/errors";
@@ -81,6 +82,15 @@ async function main() {
   // ── Infrastructure ───────────────────────────────────────────────
 
   const { db, client: pgClient } = createDb();
+
+  // Run database migrations before anything else touches the DB
+  try {
+    await runMigrations(db);
+  } catch (err) {
+    console.error("Database migration failed — aborting startup.", err);
+    process.exit(1);
+  }
+
   const redis = createRedis();
   const auth = createAuth(db);
 

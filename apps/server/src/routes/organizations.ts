@@ -63,6 +63,24 @@ export async function organizationRoutes(
     },
   );
 
+  // ── GET /api/v1/organizations/by-slug/:slug ────────────────────────
+
+  app.get(
+    "/api/v1/organizations/by-slug/:slug",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Organizations"],
+        summary: "Get organization details by slug (current user must be a member)",
+      },
+    },
+    async (request, reply) => {
+      const { slug } = request.params as { slug: string };
+      const org = await service.getBySlug(slug, request.user!.id);
+      return reply.status(200).send({ data: org });
+    },
+  );
+
   // ── GET /api/v1/organizations/:id ──────────────────────────────────
 
   app.get(
@@ -104,6 +122,7 @@ export async function organizationRoutes(
   );
 
   // ── DELETE /api/v1/organizations/:id ───────────────────────────────
+  // Owner check is enforced in service.softDelete()
 
   app.delete(
     "/api/v1/organizations/:id",
@@ -185,6 +204,25 @@ export async function organizationRoutes(
     },
   );
 
+  // ── POST /api/v1/invitations/:id/resend ─────────────────────────────
+
+  app.post(
+    "/api/v1/invitations/:id/resend",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Organizations"],
+        summary: "Resend a pending invitation (refreshes token and expiry)",
+        params: uuidParam,
+      },
+    },
+    async (request, reply) => {
+      const { id } = uuidParam.parse(request.params);
+      const result = await service.resendInvitation(id, request.user!.id);
+      return reply.status(200).send({ data: result.invitation });
+    },
+  );
+
   // ── DELETE /api/v1/invitations/:id ─────────────────────────────────
 
   app.delete(
@@ -220,7 +258,7 @@ export async function organizationRoutes(
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
       const body = updateOrgMemberInput.parse(request.body);
-      await service.updateMemberRole(id, body.role);
+      await service.updateMemberRole(id, body.role, request.user!.id);
       return reply.status(200).send({ data: { success: true } });
     },
   );
@@ -239,7 +277,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.removeMember(id);
+      await service.removeMember(id, request.user!.id);
       return reply.status(204).send();
     },
   );

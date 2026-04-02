@@ -73,6 +73,27 @@ export async function workspaceRoutes(
     },
   );
 
+  // ── GET /api/v1/workspaces/by-slug/:orgSlug/:wsSlug ─────────────────
+
+  app.get(
+    "/api/v1/workspaces/by-slug/:orgSlug/:wsSlug",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Workspaces"],
+        summary: "Get workspace details by org slug and workspace slug",
+      },
+    },
+    async (request, reply) => {
+      const { orgSlug, wsSlug } = request.params as {
+        orgSlug: string;
+        wsSlug: string;
+      };
+      const ws = await service.getBySlug(orgSlug, wsSlug, request.user!.id);
+      return reply.status(200).send({ data: ws });
+    },
+  );
+
   // ── GET /api/v1/workspaces/:id ─────────────────────────────────────
 
   app.get(
@@ -211,7 +232,7 @@ export async function workspaceRoutes(
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
       const body = updateWsMemberInput.parse(request.body);
-      await service.updateMemberRole(id, body.role);
+      await service.updateMemberRole(id, body.role, request.user!.id);
       return reply.status(200).send({ data: { success: true } });
     },
   );
@@ -230,7 +251,7 @@ export async function workspaceRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.removeMember(id);
+      await service.removeMember(id, request.user!.id);
       return reply.status(204).send();
     },
   );

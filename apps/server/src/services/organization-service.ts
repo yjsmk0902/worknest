@@ -4,6 +4,7 @@ import {
   orgMembers,
   invitations,
   users,
+  workspaceMembers,
   type Database,
 } from "@worknest/db";
 import type {
@@ -47,7 +48,7 @@ export class OrganizationService {
         and(
           eq(orgMembers.userId, userId),
           isNull(organizations.deletedAt),
-          ...(cursor ? [lt(organizations.id, cursor)] : []),
+          ...(cursor ? [lt(organizations.createdAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(organizations.createdAt))
@@ -68,7 +69,9 @@ export class OrganizationService {
         role: row.member.role,
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.org.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.org.createdAt.toISOString()
+          : null,
         has_more: hasMore,
       },
     };
@@ -93,32 +96,34 @@ export class OrganizationService {
       throw AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Organization slug already taken");
     }
 
-    // Create org + membership in a single transaction (Drizzle doesn't have
-    // built-in transactions via the query builder, so we do sequential inserts —
-    // the caller can wrap in a transaction if needed, but for MVP this is fine)
-    const [org] = await this.db
-      .insert(organizations)
-      .values({
-        name: input.name,
-        slug: input.slug,
-        logo: input.logo ?? null,
-      })
-      .returning();
+    // Create org + owner membership atomically
+    const org = await this.db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(organizations)
+        .values({
+          name: input.name,
+          slug: input.slug,
+          logo: input.logo ?? null,
+        })
+        .returning();
 
-    // Make creator the owner
-    await this.db.insert(orgMembers).values({
-      orgId: org!.id,
-      userId,
-      role: "owner",
+      // Make creator the owner
+      await tx.insert(orgMembers).values({
+        orgId: created!.id,
+        userId,
+        role: "owner",
+      });
+
+      return created!;
     });
 
     return {
-      id: org!.id,
-      name: org!.name,
-      slug: org!.slug,
-      logo: org!.logo,
-      createdAt: org!.createdAt.toISOString(),
-      updatedAt: org!.updatedAt.toISOString(),
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      logo: org.logo,
+      createdAt: org.createdAt.toISOString(),
+      updatedAt: org.updatedAt.toISOString(),
     };
   }
 
@@ -143,6 +148,41 @@ export class OrganizationService {
       logo: org.logo,
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Get Org by Slug ─────────────────────────────────────────────────
+
+  async getBySlug(slug: string, userId: string) {
+    const row = await this.db
+      .select({
+        org: organizations,
+        member: orgMembers,
+      })
+      .from(organizations)
+      .innerJoin(
+        orgMembers,
+        and(
+          eq(orgMembers.orgId, organizations.id),
+          eq(orgMembers.userId, userId),
+        ),
+      )
+      .where(and(eq(organizations.slug, slug), isNull(organizations.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!row) {
+      throw AppError.notFound("organization");
+    }
+
+    return {
+      id: row.org.id,
+      name: row.org.name,
+      slug: row.org.slug,
+      logo: row.org.logo,
+      role: row.member.role,
+      createdAt: row.org.createdAt.toISOString(),
+      updatedAt: row.org.updatedAt.toISOString(),
     };
   }
 
@@ -240,7 +280,7 @@ export class OrganizationService {
       .where(
         and(
           eq(orgMembers.orgId, orgId),
-          ...(cursor ? [lt(orgMembers.id, cursor)] : []),
+          ...(cursor ? [lt(orgMembers.joinedAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(orgMembers.joinedAt))
@@ -264,7 +304,9 @@ export class OrganizationService {
         },
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.member.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.member.joinedAt.toISOString()
+          : null,
         has_more: hasMore,
       },
     };
@@ -272,7 +314,7 @@ export class OrganizationService {
 
   // ── Update Member Role ─────────────────────────────────────────────
 
-  async updateMemberRole(memberId: string, role: OrgRole) {
+  async updateMemberRole(memberId: string, role: OrgRole, callerUserId: string) {
     // Cannot change to owner via this endpoint
     if (role === "owner") {
       throw AppError.forbidden("Cannot assign owner role through this endpoint");
@@ -287,6 +329,23 @@ export class OrganizationService {
 
     if (!member) {
       throw AppError.notFound("member");
+    }
+
+    // Verify caller is admin or owner of the org
+    const caller = await this.db
+      .select()
+      .from(orgMembers)
+      .where(
+        and(
+          eq(orgMembers.orgId, member.orgId),
+          eq(orgMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!caller || !["owner", "admin"].includes(caller.role)) {
+      throw AppError.forbidden("Only org owner or admin can change member roles");
     }
 
     if (member.role === "owner") {
@@ -304,7 +363,7 @@ export class OrganizationService {
 
   // ── Remove Member ──────────────────────────────────────────────────
 
-  async removeMember(memberId: string) {
+  async removeMember(memberId: string, callerUserId: string) {
     const member = await this.db
       .select()
       .from(orgMembers)
@@ -314,6 +373,23 @@ export class OrganizationService {
 
     if (!member) {
       throw AppError.notFound("member");
+    }
+
+    // Verify caller is admin or owner of the org
+    const caller = await this.db
+      .select()
+      .from(orgMembers)
+      .where(
+        and(
+          eq(orgMembers.orgId, member.orgId),
+          eq(orgMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!caller || !["owner", "admin"].includes(caller.role)) {
+      throw AppError.forbidden("Only org owner or admin can remove members");
     }
 
     if (member.role === "owner") {
@@ -408,7 +484,7 @@ export class OrganizationService {
         and(
           eq(invitations.orgId, orgId),
           isNull(invitations.acceptedAt),
-          ...(cursor ? [lt(invitations.id, cursor)] : []),
+          ...(cursor ? [lt(invitations.createdAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(invitations.createdAt))
@@ -428,9 +504,94 @@ export class OrganizationService {
         createdAt: inv.createdAt.toISOString(),
       })),
       pagination: {
-        next_cursor: hasMore ? items[items.length - 1]!.id : null,
+        next_cursor: hasMore
+          ? items[items.length - 1]!.createdAt.toISOString()
+          : null,
         has_more: hasMore,
       },
+    };
+  }
+
+  // ── Resend Invitation ──────────────────────────────────────────────
+
+  async resendInvitation(invitationId: string, callerUserId: string) {
+    const invitation = await this.db
+      .select()
+      .from(invitations)
+      .where(eq(invitations.id, invitationId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!invitation) {
+      throw AppError.notFound("invitation");
+    }
+
+    if (invitation.acceptedAt) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        "Cannot resend an already accepted invitation",
+      );
+    }
+
+    // Determine which org/ws this invitation belongs to and verify caller permission
+    if (invitation.orgId) {
+      const caller = await this.db
+        .select()
+        .from(orgMembers)
+        .where(
+          and(
+            eq(orgMembers.orgId, invitation.orgId),
+            eq(orgMembers.userId, callerUserId),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!caller || !["owner", "admin"].includes(caller.role)) {
+        throw AppError.forbidden("Only org owner or admin can resend invitations");
+      }
+    } else if (invitation.workspaceId) {
+      const caller = await this.db
+        .select()
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, invitation.workspaceId),
+            eq(workspaceMembers.userId, callerUserId),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!caller || caller.role !== "admin") {
+        throw AppError.forbidden("Only workspace admin can resend invitations");
+      }
+    }
+
+    // Generate new token and refresh expiry
+    const token = generateToken();
+    const tokenHash = hashToken(token);
+
+    const [updated] = await this.db
+      .update(invitations)
+      .set({
+        tokenHash,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      })
+      .where(eq(invitations.id, invitationId))
+      .returning();
+
+    return {
+      invitation: {
+        id: updated!.id,
+        email: updated!.email,
+        role: updated!.role,
+        invitedBy: updated!.invitedBy,
+        expiresAt: updated!.expiresAt.toISOString(),
+        acceptedAt: null,
+        createdAt: updated!.createdAt.toISOString(),
+      },
+      token, // Return raw token (for sending via email)
     };
   }
 

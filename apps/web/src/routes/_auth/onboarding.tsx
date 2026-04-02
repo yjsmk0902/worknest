@@ -15,6 +15,10 @@ import { z } from 'zod';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
+import {
+  createOrganizationInput,
+  createWorkspaceInput,
+} from '@worknest/shared';
 import { apiClient, ApiError } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/onboarding')({
@@ -23,35 +27,44 @@ export const Route = createFileRoute('/_auth/onboarding')({
 
 const TOTAL_STEPS = 3;
 
-const orgSchema = z.object({
-  name: z
-    .string()
-    .min(1, '조직 이름을 입력해주세요.')
-    .max(100, '100자 이하여야 합니다.'),
-  slug: z
-    .string()
-    .min(2, '슬러그는 2자 이상이어야 합니다.')
-    .max(50, '50자 이하여야 합니다.')
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      '영문 소문자, 숫자, 하이픈만 사용 가능합니다.',
-    ),
-});
+// Re-use shared schemas with Korean error messages via superRefine
+const orgSchema = createOrganizationInput
+  .pick({ name: true, slug: true })
+  .superRefine((data, ctx) => {
+    if (!data.name || data.name.length < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['name'],
+        message: '조직 이름을 입력해주세요.',
+      });
+    }
+    if (data.name && data.name.length > 100) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['name'],
+        message: '100자 이하여야 합니다.',
+      });
+    }
+  });
 
-const wsSchema = z.object({
-  name: z
-    .string()
-    .min(1, '워크스페이스 이름을 입력해주세요.')
-    .max(100, '100자 이하여야 합니다.'),
-  slug: z
-    .string()
-    .min(2, '슬러그는 2자 이상이어야 합니다.')
-    .max(50, '50자 이하여야 합니다.')
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      '영문 소문자, 숫자, 하이픈만 사용 가능합니다.',
-    ),
-});
+const wsSchema = createWorkspaceInput
+  .pick({ name: true, slug: true })
+  .superRefine((data, ctx) => {
+    if (!data.name || data.name.length < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['name'],
+        message: '워크스페이스 이름을 입력해주세요.',
+      });
+    }
+    if (data.name && data.name.length > 100) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['name'],
+        message: '100자 이하여야 합니다.',
+      });
+    }
+  });
 
 function slugify(text: string): string {
   return text

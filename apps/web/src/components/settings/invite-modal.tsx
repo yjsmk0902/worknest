@@ -13,6 +13,7 @@ import {
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
+import { createWsInvitationInput } from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
 import { toast } from '@worknest/ui';
 
@@ -22,9 +23,15 @@ interface InviteModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const inviteSchema = z.object({
-  email: z.string().email('올바른 이메일 주소를 입력해주세요.'),
-  role: z.enum(['admin', 'member', 'guest']),
+// Re-use shared schema with Korean error message for email
+const inviteSchema = createWsInvitationInput.superRefine((data, ctx) => {
+  if (!z.string().email().safeParse(data.email).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['email'],
+      message: '올바른 이메일 주소를 입력해주세요.',
+    });
+  }
 });
 
 type InviteForm = z.infer<typeof inviteSchema>;

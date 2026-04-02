@@ -18,6 +18,7 @@ import { toast } from '@worknest/ui';
 import { apiClient } from '../../../../lib/api-client';
 import { SettingsLayout } from '../../../../components/settings/settings-layout';
 import { InvitationList } from '../../../../components/settings/invitation-list';
+import { useWorkspaceContext } from '../../../../contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/members',
@@ -27,21 +28,27 @@ export const Route = createFileRoute(
 
 interface Member {
   id: string;
+  workspaceId: string;
   userId: string;
-  name: string;
-  email: string;
-  avatarUrl: string | null;
   role: 'admin' | 'member' | 'guest';
+  joinedAt: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    avatarUrl: string | null;
+  };
 }
 
 function WorkspaceSettingsMembers() {
   const { orgSlug, wsSlug } = Route.useParams();
+  const { wsId } = useWorkspaceContext();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
 
   const membersQuery = useQuery<Member[]>({
-    queryKey: ['workspace', wsSlug, 'members'],
-    queryFn: () => apiClient.get(`/workspaces/${wsSlug}/members`),
+    queryKey: ['workspace', wsId, 'members'],
+    queryFn: () => apiClient.get(`/workspaces/${wsId}/members`),
   });
 
   const updateRoleMutation = useMutation({
@@ -54,7 +61,7 @@ function WorkspaceSettingsMembers() {
     }) => apiClient.patch(`/workspace-members/${memberId}`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['workspace', wsSlug, 'members'],
+        queryKey: ['workspace', wsId, 'members'],
       });
       toast('역할이 변경되었습니다.');
     },
@@ -68,7 +75,7 @@ function WorkspaceSettingsMembers() {
       apiClient.delete(`/workspace-members/${memberId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['workspace', wsSlug, 'members'],
+        queryKey: ['workspace', wsId, 'members'],
       });
       toast('멤버가 제거되었습니다.');
     },
@@ -79,8 +86,8 @@ function WorkspaceSettingsMembers() {
 
   const filteredMembers = (membersQuery.data ?? []).filter(
     (m) =>
-      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      m.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -171,16 +178,16 @@ function WorkspaceSettingsMembers() {
                   >
                     <div className="flex flex-1 items-center gap-3">
                       <Avatar
-                        src={member.avatarUrl}
-                        fallback={member.name}
+                        src={member.user.avatarUrl}
+                        fallback={member.user.name}
                         size="md"
                       />
                       <span className="truncate text-sm font-medium">
-                        {member.name}
+                        {member.user.name}
                       </span>
                     </div>
                     <div className="w-[200px] truncate text-sm text-muted-foreground">
-                      {member.email}
+                      {member.user.email}
                     </div>
                     <div className="w-[120px]">
                       <RoleSelect
@@ -223,7 +230,7 @@ function WorkspaceSettingsMembers() {
         <Separator />
 
         {/* Pending invitations */}
-        <InvitationList workspaceId={wsSlug} />
+        <InvitationList workspaceId={wsId} />
       </div>
     </SettingsLayout>
   );

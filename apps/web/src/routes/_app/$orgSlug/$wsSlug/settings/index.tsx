@@ -17,6 +17,7 @@ import {
 import { toast } from '@worknest/ui';
 import { apiClient } from '../../../../lib/api-client';
 import { SettingsLayout } from '../../../../components/settings/settings-layout';
+import { useWorkspaceContext } from '../../../../contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/',
@@ -34,11 +35,12 @@ interface WorkspaceDetails {
 
 function WorkspaceSettingsGeneral() {
   const { orgSlug, wsSlug } = Route.useParams();
+  const { wsId } = useWorkspaceContext();
   const queryClient = useQueryClient();
 
   const wsQuery = useQuery<WorkspaceDetails>({
-    queryKey: ['workspace', wsSlug],
-    queryFn: () => apiClient.get(`/workspaces/${wsSlug}`),
+    queryKey: ['workspace', wsId],
+    queryFn: () => apiClient.get(`/workspaces/${wsId}`),
   });
 
   if (wsQuery.isLoading) {
@@ -86,7 +88,7 @@ function WorkspaceSettingsGeneral() {
       <GeneralSettingsForm
         workspace={wsQuery.data!}
         onSaved={() =>
-          queryClient.invalidateQueries({ queryKey: ['workspace', wsSlug] })
+          queryClient.invalidateQueries({ queryKey: ['workspace', wsId] })
         }
       />
     </SettingsLayout>
