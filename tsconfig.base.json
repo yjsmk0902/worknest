@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "paths": {
+      "@worknest/shared": ["./packages/shared/src"],
+      "@worknest/shared/*": ["./packages/shared/src/*"],
+      "@worknest/db": ["./packages/db/src"],
+      "@worknest/db/*": ["./packages/db/src/*"],
+      "@worknest/ui": ["./packages/ui/src"],
+      "@worknest/ui/*": ["./packages/ui/src/*"],
+      "@worknest/editor": ["./packages/editor/src"],
+      "@worknest/editor/*": ["./packages/editor/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Background / Foreground */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    /* Primary (Indigo) */
+    --primary: 238 76% 54%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    /* Muted */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    /* Accent */
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    /* Destructive */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Border / Input / Ring */
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 238 76% 54%;
+
+    /* Sidebar */
+    --sidebar-background: 240 4.8% 97.5%;
+    --sidebar-foreground: 240 5.9% 10%;
+    --sidebar-border: 240 5.9% 90%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    /* Radius */
+    --radius: 0.375rem;
+
+    /* Priority colors */
+    --priority-urgent: 0 84% 60%;
+    --priority-high: 25 95% 53%;
+    --priority-medium: 48 96% 53%;
+    --priority-low: 217 91% 60%;
+    --priority-none: 220 9% 66%;
+
+    /* Status category colors */
+    --status-backlog-bg: 240 5% 96%;
+    --status-backlog-text: 240 4% 46%;
+    --status-unstarted-bg: 214 95% 93%;
+    --status-unstarted-text: 217 91% 53%;
+    --status-started-bg: 48 96% 89%;
+    --status-started-text: 32 95% 44%;
+    --status-completed-bg: 142 77% 93%;
+    --status-completed-text: 142 72% 39%;
+    --status-cancelled-bg: 0 93% 94%;
+    --status-cancelled-text: 0 72% 51%;
+
+    /* Font families */
+    --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Menlo, Consolas,
+      monospace;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 5.5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 5.5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 238 76% 64%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 18%;
+    --input: 240 3.7% 18%;
+    --ring: 238 76% 64%;
+
+    --sidebar-background: 240 10% 5.5%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 18%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+
+    /* Priority colors (dark) */
+    --priority-urgent: 0 91% 71%;
+    --priority-high: 27 96% 61%;
+    --priority-medium: 48 97% 63%;
+    --priority-low: 217 93% 68%;
+    --priority-none: 220 9% 46%;
+
+    /* Status category colors (dark) */
+    --status-backlog-bg: 240 4% 16%;
+    --status-backlog-text: 240 5% 65%;
+    --status-unstarted-bg: 215 50% 23%;
+    --status-unstarted-text: 217 93% 68%;
+    --status-started-bg: 28 73% 15%;
+    --status-started-text: 45 93% 58%;
+    --status-completed-bg: 143 64% 17%;
+    --status-completed-text: 142 69% 58%;
+    --status-cancelled-bg: 0 63% 15%;
+    --status-cancelled-text: 0 91% 71%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+}

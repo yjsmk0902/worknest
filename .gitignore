@@ -1,9 +1,35 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
+*.tsbuildinfo
+
+# Environment variables
 .env
 .env.local
+.env.*.local
 *.local
-.DS_Store
+
+# Turborepo
 .turbo
+
+# Testing
 coverage/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Obsidian
 .obsidian/
+
+# Debug logs
+npm-debug.log*
+pnpm-debug.log*
+
+# MinIO data (local dev)
+minio_data/

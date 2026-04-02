@@ -1,0 +1,443 @@
+import { useState } from 'react';
+import { Link, useParams } from '@tanstack/react-router';
+import {
+  Bell,
+  ChevronDown,
+  ChevronRight,
+  CircleUser,
+  FileText,
+  Folder,
+  LogOut,
+  Plus,
+  Settings,
+  Star,
+  User,
+  Check,
+  PanelLeftClose,
+  PanelLeft,
+} from 'lucide-react';
+import { cn } from '@worknest/ui';
+import { Avatar } from '@worknest/ui';
+import { Separator } from '@worknest/ui';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@worknest/ui';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@worknest/ui';
+import { Button } from '@worknest/ui';
+import { useUIStore } from '../../stores/ui-store';
+import { useAuthStore } from '../../stores/auth-store';
+
+export function Sidebar() {
+  const collapsed = useUIStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const currentOrg = useAuthStore((s) => s.currentOrg);
+  const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
+
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
+
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(
+    new Set(),
+  );
+
+  if (collapsed) {
+    return <CollapsedSidebar onToggle={toggleSidebar} />;
+  }
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <nav
+        role="navigation"
+        aria-label="Main navigation"
+        className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-all duration-150 ease-in-out"
+      >
+        {/* Org/WS selector */}
+        <OrgWorkspaceSelector collapsed={false} />
+
+        {/* Main nav content */}
+        <div className="flex-1 overflow-y-auto px-2 py-2">
+          {/* My Work section */}
+          <SectionLabel>My Work</SectionLabel>
+          <NavItem
+            icon={<Bell className="h-4 w-4" />}
+            label="Inbox"
+            href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : '#'}
+            badge={3}
+          />
+          <NavItem
+            icon={<CircleUser className="h-4 w-4" />}
+            label="My Issues"
+            href={
+              orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/issues` : '#'
+            }
+          />
+          <NavItem
+            icon={<Star className="h-4 w-4" />}
+            label="Favorites"
+            href={
+              orgSlug && wsSlug
+                ? `/${orgSlug}/${wsSlug}/my/favorites`
+                : '#'
+            }
+          />
+
+          <div className="my-2" />
+
+          {/* Projects section */}
+          <SectionLabel>Projects</SectionLabel>
+          {/* Placeholder project items */}
+          <NavItem
+            icon={<Folder className="h-4 w-4" />}
+            label="WORK"
+            href={
+              orgSlug && wsSlug
+                ? `/${orgSlug}/${wsSlug}/projects/WORK/issues`
+                : '#'
+            }
+            expandable
+          />
+          <button
+            type="button"
+            className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            <span>프로젝트 추가</span>
+          </button>
+
+          <div className="my-2" />
+
+          {/* Wiki section */}
+          <SectionLabel>Wiki</SectionLabel>
+          <NavItem
+            icon={<FileText className="h-4 w-4" />}
+            label="DevOps"
+            href={
+              orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/wiki/devops` : '#'
+            }
+            expandable
+          />
+          <button
+            type="button"
+            className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            <span>스페이스 추가</span>
+          </button>
+        </div>
+
+        {/* Bottom: user area + toggle */}
+        <div className="border-t border-sidebar-border px-2 py-2">
+          <UserMenu collapsed={false} />
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="mt-1 flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            aria-label="Collapse sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+            <span>사이드바 접기</span>
+          </button>
+        </div>
+      </nav>
+    </TooltipProvider>
+  );
+}
+
+function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
+  return (
+    <TooltipProvider delayDuration={200}>
+      <nav
+        role="navigation"
+        aria-label="Main navigation"
+        className="fixed left-0 top-0 z-30 flex h-screen w-[48px] flex-col items-center border-r border-sidebar-border bg-sidebar-background py-2 text-sidebar-foreground transition-all duration-150 ease-in-out"
+      >
+        {/* Org/WS initial */}
+        <OrgWorkspaceSelector collapsed />
+
+        <div className="my-1 w-8 border-t border-sidebar-border" />
+
+        {/* My Work icons */}
+        <CollapsedNavItem icon={<Bell className="h-5 w-5" />} label="Inbox" />
+        <CollapsedNavItem
+          icon={<CircleUser className="h-5 w-5" />}
+          label="My Issues"
+        />
+        <CollapsedNavItem
+          icon={<Star className="h-5 w-5" />}
+          label="Favorites"
+        />
+
+        <div className="my-1 w-8 border-t border-sidebar-border" />
+
+        {/* Projects */}
+        <CollapsedNavItem
+          icon={<Folder className="h-5 w-5" />}
+          label="WORK"
+        />
+        <CollapsedNavItem
+          icon={<Plus className="h-5 w-5" />}
+          label="프로젝트 추가"
+        />
+
+        <div className="my-1 w-8 border-t border-sidebar-border" />
+
+        {/* Wiki */}
+        <CollapsedNavItem
+          icon={<FileText className="h-5 w-5" />}
+          label="DevOps"
+        />
+        <CollapsedNavItem
+          icon={<Plus className="h-5 w-5" />}
+          label="스페이스 추가"
+        />
+
+        <div className="flex-1" />
+
+        {/* User + toggle */}
+        <div className="my-1 w-8 border-t border-sidebar-border" />
+        <UserMenu collapsed />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onToggle}
+              className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">사이드바 펼치기</TooltipContent>
+        </Tooltip>
+      </nav>
+    </TooltipProvider>
+  );
+}
+
+// -- Sub-components --
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+interface NavItemProps {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  badge?: number;
+  active?: boolean;
+  expandable?: boolean;
+}
+
+function NavItem({
+  icon,
+  label,
+  href,
+  badge,
+  active,
+  expandable,
+}: NavItemProps) {
+  return (
+    <Link
+      to={href}
+      className={cn(
+        'flex h-8 items-center gap-2 rounded-md px-3 text-sm transition-colors hover:bg-sidebar-accent',
+        active && 'bg-sidebar-accent font-medium',
+      )}
+    >
+      {icon}
+      <span className="flex-1 truncate">{label}</span>
+      {badge != null && badge > 0 && (
+        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+          {badge}
+        </span>
+      )}
+      {expandable && (
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      )}
+    </Link>
+  );
+}
+
+function CollapsedNavItem({
+  icon,
+  label,
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+        >
+          {icon}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
+  const currentOrg = useAuthStore((s) => s.currentOrg);
+  const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
+
+  const orgName = currentOrg?.name ?? 'Organization';
+  const wsName = currentWorkspace?.name ?? 'Workspace';
+  const initials =
+    orgName.charAt(0).toUpperCase() + (wsName.charAt(0) ?? '').toUpperCase();
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-md text-sm font-semibold hover:bg-sidebar-accent"
+          >
+            {initials.charAt(0)}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {orgName} / {wsName}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex h-12 w-full items-center gap-2 px-3 hover:bg-sidebar-accent"
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+            {initials.charAt(0)}
+          </div>
+          <div className="flex-1 text-left">
+            <p className="truncate text-sm font-medium">{orgName}</p>
+            <p className="truncate text-xs text-muted-foreground">{wsName}</p>
+          </div>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[280px] p-2">
+        <p className="px-2 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {orgName}
+        </p>
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+        >
+          <Check className="h-4 w-4 text-primary" />
+          <span>{wsName}</span>
+        </button>
+        <Separator className="my-2" />
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Plus className="h-4 w-4" />
+          <span>새 워크스페이스 만들기</span>
+        </button>
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Settings className="h-4 w-4" />
+          <span>조직 설정</span>
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function UserMenu({ collapsed }: { collapsed: boolean }) {
+  const currentUser = useAuthStore((s) => s.currentUser);
+  const name = currentUser?.name ?? 'User';
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center"
+          >
+            <Avatar
+              src={currentUser?.avatarUrl}
+              fallback={name}
+              size="sm"
+            />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{name}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex h-10 w-full items-center gap-2 rounded-md px-3 hover:bg-sidebar-accent"
+        >
+          <Avatar
+            src={currentUser?.avatarUrl}
+            fallback={name}
+            size="sm"
+          />
+          <span className="flex-1 truncate text-left text-sm">{name}</span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[200px] p-1">
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+        >
+          <User className="h-4 w-4" />
+          <span>프로필</span>
+        </button>
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+        >
+          <Settings className="h-4 w-4" />
+          <span>워크스페이스 설정</span>
+        </button>
+        <Separator className="my-1" />
+        <button
+          type="button"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-accent"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>로그아웃</span>
+        </button>
+      </PopoverContent>
+    </Popover>
+  );
+}
