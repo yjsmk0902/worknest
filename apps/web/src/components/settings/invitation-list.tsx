@@ -25,10 +25,10 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
   const queryClient = useQueryClient();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
-  const invitationsQuery = useQuery<Invitation[]>({
+  const invitationsQuery = useQuery({
     queryKey: ['workspaces', workspaceId, 'invitations'],
     queryFn: () =>
-      apiClient.get<Invitation[]>(
+      apiClient.getList<Invitation>(
         `/workspaces/${workspaceId}/invitations`,
       ),
   });
@@ -82,7 +82,8 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
     );
   }
 
-  const pendingInvitations = (invitationsQuery.data ?? []).filter(
+  const invitations = invitationsQuery.data?.data ?? [];
+  const pendingInvitations = invitations.filter(
     (inv) => !inv.acceptedAt,
   );
 

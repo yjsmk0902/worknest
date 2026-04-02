@@ -237,7 +237,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.cancelInvitation(id);
+      await service.cancelInvitation(id, request.user!.id);
       return reply.status(204).send();
     },
   );

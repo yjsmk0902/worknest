@@ -597,7 +597,7 @@ export class OrganizationService {
 
   // ── Cancel Invitation ──────────────────────────────────────────────
 
-  async cancelInvitation(invitationId: string) {
+  async cancelInvitation(invitationId: string, callerUserId: string) {
     const invitation = await this.db
       .select()
       .from(invitations)
@@ -607,6 +607,29 @@ export class OrganizationService {
 
     if (!invitation) {
       throw AppError.notFound("invitation");
+    }
+
+    // Verify caller has admin+ permission on the relevant org or workspace
+    if (invitation.orgId) {
+      const callerMember = await this.db
+        .select()
+        .from(orgMembers)
+        .where(and(eq(orgMembers.orgId, invitation.orgId), eq(orgMembers.userId, callerUserId)))
+        .limit(1)
+        .then((rows) => rows[0]);
+      if (!callerMember || callerMember.role === "member") {
+        throw AppError.forbidden("Only org admins can cancel invitations");
+      }
+    } else if (invitation.workspaceId) {
+      const callerMember = await this.db
+        .select()
+        .from(workspaceMembers)
+        .where(and(eq(workspaceMembers.workspaceId, invitation.workspaceId), eq(workspaceMembers.userId, callerUserId)))
+        .limit(1)
+        .then((rows) => rows[0]);
+      if (!callerMember || callerMember.role !== "admin") {
+        throw AppError.forbidden("Only workspace admins can cancel invitations");
+      }
     }
 
     await this.db.delete(invitations).where(eq(invitations.id, invitationId));

@@ -46,9 +46,9 @@ function WorkspaceSettingsMembers() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const membersQuery = useQuery<Member[]>({
+  const membersQuery = useQuery({
     queryKey: ['workspace', wsId, 'members'],
-    queryFn: () => apiClient.get(`/workspaces/${wsId}/members`),
+    queryFn: () => apiClient.getList<Member>(`/workspaces/${wsId}/members`),
   });
 
   const updateRoleMutation = useMutation({
@@ -84,7 +84,8 @@ function WorkspaceSettingsMembers() {
     },
   });
 
-  const filteredMembers = (membersQuery.data ?? []).filter(
+  const members = membersQuery.data?.data ?? [];
+  const filteredMembers = members.filter(
     (m) =>
       m.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.user.email.toLowerCase().includes(searchQuery.toLowerCase()),
