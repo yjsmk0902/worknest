@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
 import {
   Bell,
@@ -47,13 +46,6 @@ export function Sidebar() {
   };
   const orgSlug = params.orgSlug ?? '';
   const wsSlug = params.wsSlug ?? '';
-
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-    new Set(),
-  );
-  const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(
-    new Set(),
-  );
 
   if (collapsed) {
     return <CollapsedSidebar onToggle={toggleSidebar} />;

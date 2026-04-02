@@ -1,6 +1,6 @@
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 import type { QueryClient } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
+import { Toaster } from '@worknest/ui';
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -14,12 +14,7 @@ function RootLayout() {
   return (
     <>
       <Outlet />
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          className: 'font-sans',
-        }}
-      />
+      <Toaster position="bottom-right" />
     </>
   );
 }

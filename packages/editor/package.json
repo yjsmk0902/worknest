@@ -26,7 +26,6 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@worknest/shared": "workspace:*",
     "@worknest/ui": "workspace:*",
     "@tiptap/core": "^2.11.2",
     "@tiptap/react": "^2.11.2",

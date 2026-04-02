@@ -33,7 +33,7 @@ const orgSchema = z.object({
     .min(2, '슬러그는 2자 이상이어야 합니다.')
     .max(50, '50자 이하여야 합니다.')
     .regex(
-      /^[a-z0-9][a-z0-9-]*[a-z0-9]$/,
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       '영문 소문자, 숫자, 하이픈만 사용 가능합니다.',
     ),
 });
@@ -48,7 +48,7 @@ const wsSchema = z.object({
     .min(2, '슬러그는 2자 이상이어야 합니다.')
     .max(50, '50자 이하여야 합니다.')
     .regex(
-      /^[a-z0-9][a-z0-9-]*[a-z0-9]$/,
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       '영문 소문자, 숫자, 하이픈만 사용 가능합니다.',
     ),
 });
@@ -70,6 +70,7 @@ function OnboardingPage() {
   const [orgData, setOrgData] = useState({ name: '', slug: '' });
   const [orgErrors, setOrgErrors] =
     useState<Partial<Record<string, string>>>();
+  const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
 
   // Step 2: Workspace
@@ -82,6 +83,7 @@ function OnboardingPage() {
     mutationFn: (data: { name: string; slug: string }) =>
       apiClient.post<{ id: string; slug: string }>('/organizations', data),
     onSuccess: (result) => {
+      setCreatedOrgId(result.id);
       setCreatedOrgSlug(result.slug);
       setStep(2);
     },
@@ -90,7 +92,7 @@ function OnboardingPage() {
   const createWsMutation = useMutation({
     mutationFn: (data: { name: string; slug: string }) =>
       apiClient.post<{ id: string; slug: string }>(
-        `/organizations/${createdOrgSlug}/workspaces`,
+        `/organizations/${createdOrgId}/workspaces`,
         data,
       ),
     onSuccess: (result) => {

@@ -61,7 +61,7 @@ export function InviteModal({
       setFieldErrors({});
       onOpenChange(false);
     },
-    onError: (error) => {
+    onError: () => {
       // Error is shown in the form
     },
   });

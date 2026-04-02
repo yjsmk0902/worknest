@@ -42,7 +42,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const json = await response.json();
+
+  // Unwrap standard `{ data: T }` envelope if present.
+  // List endpoints return `{ data: [...], pagination: {...} }` — return as-is.
+  if (json && typeof json === 'object' && 'data' in json && !('pagination' in json)) {
+    return json.data as T;
+  }
+
+  return json as T;
 }
 
 export const apiClient = {

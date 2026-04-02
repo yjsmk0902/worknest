@@ -32,7 +32,6 @@
     "@tanstack/react-router": "^1.95.1",
     "@tanstack/react-query": "^5.62.8",
     "zustand": "^5.0.2",
-    "better-auth": "^1.1.14",
     "zod": "^3.24.1"
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -13,7 +13,6 @@ import { z } from 'zod';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { Skeleton } from '@worknest/ui';
 import { apiClient, ApiError } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/invite/$token')({
@@ -32,7 +31,7 @@ const registerSchema = z.object({
   name: z
     .string()
     .min(1, '이름을 입력해주세요.')
-    .max(50, '이름은 50자 이하여야 합니다.'),
+    .max(100, '이름은 100자 이하여야 합니다.'),
   password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.'),
 });
 

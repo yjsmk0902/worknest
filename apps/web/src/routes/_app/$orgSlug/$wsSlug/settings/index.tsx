@@ -16,7 +16,6 @@ import {
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
 import { apiClient } from '../../../../lib/api-client';
-import { AppHeader } from '../../../../components/layout/app-header';
 import { SettingsLayout } from '../../../../components/settings/settings-layout';
 
 export const Route = createFileRoute(
