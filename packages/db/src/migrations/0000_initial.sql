@@ -10,13 +10,57 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ── Users ──────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS "users" (
-  "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  "email"      TEXT        NOT NULL,
-  "name"       TEXT        NOT NULL,
-  "avatar_url" TEXT,
+  "id"             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  "email"          TEXT        NOT NULL,
+  "name"           TEXT        NOT NULL,
+  "avatar_url"     TEXT,
+  "email_verified" BOOLEAN     NOT NULL DEFAULT false,
+  "created_at"     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updated_at"     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT "users_email_unique" UNIQUE ("email")
+);
+
+-- ── Better Auth: Sessions ─────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "sessions" (
+  "id"         TEXT        PRIMARY KEY,
+  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "token"      TEXT        NOT NULL,
+  "expires_at" TIMESTAMPTZ NOT NULL,
+  "ip_address" TEXT,
+  "user_agent" TEXT,
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-  CONSTRAINT "users_email_unique" UNIQUE ("email")
+  CONSTRAINT "sessions_token_unique" UNIQUE ("token")
+);
+
+-- ── Better Auth: Accounts ─────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "accounts" (
+  "id"                    TEXT        PRIMARY KEY,
+  "user_id"               UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "account_id"            TEXT        NOT NULL,
+  "provider_id"           TEXT        NOT NULL,
+  "access_token"          TEXT,
+  "refresh_token"         TEXT,
+  "access_token_expires_at" TIMESTAMPTZ,
+  "refresh_token_expires_at" TIMESTAMPTZ,
+  "scope"                 TEXT,
+  "id_token"              TEXT,
+  "password"              TEXT,
+  "created_at"            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updated_at"            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ── Better Auth: Verifications ────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS "verifications" (
+  "id"         TEXT        PRIMARY KEY,
+  "identifier" TEXT        NOT NULL,
+  "value"      TEXT        NOT NULL,
+  "expires_at" TIMESTAMPTZ NOT NULL,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 -- ── Organizations ──────────────────────────────────────────────────────

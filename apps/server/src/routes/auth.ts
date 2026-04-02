@@ -8,9 +8,12 @@ import {
   loginInput,
   acceptInvitationParams,
 } from "@worknest/shared";
+import { eq } from "drizzle-orm";
+import { invitations as invitationsTable } from "@worknest/db";
 import { OrganizationService } from "../services/organization-service";
 import { WorkspaceService } from "../services/workspace-service";
 import { AppError, ErrorCode } from "../lib/errors";
+import { createHash } from "node:crypto";
 
 /**
  * Authentication routes.
@@ -133,6 +136,46 @@ export async function authRoutes(
       });
 
       return reply.status(200).send({ data: { success: true } });
+    },
+  );
+
+  // ── GET /api/v1/auth/invitations/:token ─────────────────────────
+
+  app.get(
+    "/api/v1/auth/invitations/:token",
+    {
+      schema: {
+        tags: ["Auth"],
+        summary: "Get invitation info by token (no auth required)",
+        params: acceptInvitationParams,
+      },
+    },
+    async (_request, reply) => {
+      const { token } = acceptInvitationParams.parse(_request.params);
+      const tokenHash = createHash("sha256").update(token).digest("hex");
+
+      const invitation = await db
+        .select()
+        .from(invitationsTable)
+        .where(eq(invitationsTable.tokenHash, tokenHash))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!invitation) {
+        throw AppError.notFound("invitation");
+      }
+
+      return reply.status(200).send({
+        data: {
+          id: invitation.id,
+          email: invitation.email,
+          role: invitation.role,
+          expired: new Date(invitation.expiresAt) < new Date(),
+          accepted: !!invitation.acceptedAt,
+          orgId: invitation.orgId,
+          workspaceId: invitation.workspaceId,
+        },
+      });
     },
   );
 
