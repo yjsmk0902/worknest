@@ -9,7 +9,7 @@ import {
   acceptInvitationParams,
 } from "@worknest/shared";
 import { eq } from "drizzle-orm";
-import { invitations as invitationsTable } from "@worknest/db";
+import { invitations as invitationsTable, organizations, workspaces, users as usersTable } from "@worknest/db";
 import { OrganizationService } from "../services/organization-service";
 import { WorkspaceService } from "../services/workspace-service";
 import { AppError, ErrorCode } from "../lib/errors";
@@ -165,15 +165,47 @@ export async function authRoutes(
         throw AppError.notFound("invitation");
       }
 
+      // Resolve org/workspace name
+      let orgName: string | undefined;
+      let workspaceName: string | undefined;
+
+      if (invitation.orgId) {
+        const org = await db
+          .select({ name: organizations.name })
+          .from(organizations)
+          .where(eq(organizations.id, invitation.orgId))
+          .limit(1)
+          .then((rows) => rows[0]);
+        orgName = org?.name;
+      }
+
+      if (invitation.workspaceId) {
+        const ws = await db
+          .select({ name: workspaces.name })
+          .from(workspaces)
+          .where(eq(workspaces.id, invitation.workspaceId))
+          .limit(1)
+          .then((rows) => rows[0]);
+        workspaceName = ws?.name;
+      }
+
+      // Check if account exists for this email
+      const existingUser = await db
+        .select({ id: usersTable.id })
+        .from(usersTable)
+        .where(eq(usersTable.email, invitation.email))
+        .limit(1)
+        .then((rows) => rows[0]);
+
       return reply.status(200).send({
         data: {
-          id: invitation.id,
           email: invitation.email,
           role: invitation.role,
+          orgName,
+          workspaceName,
+          hasAccount: !!existingUser,
           expired: new Date(invitation.expiresAt) < new Date(),
           accepted: !!invitation.acceptedAt,
-          orgId: invitation.orgId,
-          workspaceId: invitation.workspaceId,
         },
       });
     },
