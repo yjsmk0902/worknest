@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -29,6 +30,10 @@ export const issueStatuses = pgTable(
     name: text("name").notNull(),
     color: text("color").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Workflow category for grouping: backlog | unstarted | started | completed | cancelled */
+    category: text("category").notNull(), // 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled'
+    /** Whether this status is the default for new issues in the project */
+    isDefault: boolean("is_default").notNull().default(false),
   },
   (table) => [
     uniqueIndex("issue_statuses_project_name_unique").on(
@@ -62,6 +67,8 @@ export const issueTypes = pgTable(
     icon: text("icon").notNull(),
     color: text("color").notNull(),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Whether this type is the default for new issues in the project */
+    isDefault: boolean("is_default").notNull().default(false),
   },
   (table) => [
     uniqueIndex("issue_types_project_name_unique").on(
@@ -126,6 +133,9 @@ export const issues = pgTable(
     index("issues_project_id_idx").on(table.projectId),
     index("issues_status_id_idx").on(table.statusId),
     index("issues_parent_id_idx").on(table.parentId),
+    index("issues_priority_idx").on(table.priority),
+    index("issues_due_date_idx").on(table.dueDate),
+    index("issues_creator_id_idx").on(table.creatorId),
   ],
 );
 
@@ -179,6 +189,7 @@ export const issueAssignees = pgTable(
       table.issueId,
       table.userId,
     ),
+    index("issue_assignees_user_id_idx").on(table.userId),
   ],
 );
 

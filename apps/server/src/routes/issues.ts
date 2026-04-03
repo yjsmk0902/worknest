@@ -8,7 +8,8 @@ import { ActivityService } from "../services/activity-service";
 import {
   createIssueInput,
   updateIssueInput,
-  issueFilterQuery,
+  issueListQuery,
+  bulkUpdateInput,
   cursorPaginationQuery,
 } from "@worknest/shared";
 
@@ -77,15 +78,55 @@ export async function issueRoutes(
       preHandler: [requireAuth],
       schema: {
         tags: ["Issues"],
-        summary: "List issues in a project with optional filters",
-        querystring: issueFilterQuery,
+        summary: "List issues in a project with optional filters, sorting, and cursor pagination",
+        querystring: issueListQuery,
       },
     },
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
-      const filters = issueFilterQuery.parse(request.query);
-      const result = await service.list(projectId, request.user!.id, filters);
+      const query = issueListQuery.parse(request.query);
+      const result = await service.list(projectId, request.user!.id, query);
       return reply.status(200).send(result);
+    },
+  );
+
+  // ── GET /api/v1/projects/:projectId/issues/stats ───────────────────
+
+  app.get(
+    "/api/v1/projects/:projectId/issues/stats",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Issues"],
+        summary: "Get issue count stats grouped by status",
+        querystring: issueListQuery,
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = projectParams.parse(request.params);
+      const query = issueListQuery.parse(request.query);
+      const result = await service.stats(projectId, request.user!.id, query);
+      return reply.status(200).send(result);
+    },
+  );
+
+  // ── PATCH /api/v1/projects/:projectId/issues/bulk ─────────────────
+
+  app.patch(
+    "/api/v1/projects/:projectId/issues/bulk",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Issues"],
+        summary: "Bulk update multiple issues",
+        body: bulkUpdateInput,
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = projectParams.parse(request.params);
+      const body = bulkUpdateInput.parse(request.body);
+      const result = await service.bulkUpdate(projectId, request.user!.id, body);
+      return reply.status(200).send({ data: result });
     },
   );
 

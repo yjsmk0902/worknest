@@ -27,6 +27,7 @@ import { issueStatusRoutes } from "./routes/issue-statuses";
 import { issueTypeRoutes } from "./routes/issue-types";
 import { labelRoutes } from "./routes/labels";
 import { issueRoutes } from "./routes/issues";
+import { viewRoutes } from "./routes/views";
 
 // WebSocket
 import { websocketHandler } from "./websocket/handler";
@@ -101,7 +102,7 @@ async function main() {
 
   // Initialize BullMQ
   initQueue();
-  registerAllJobs();
+  registerAllJobs(db);
   startWorker();
 
   // ── Register Routes ──────────────────────────────────────────────
@@ -116,6 +117,7 @@ async function main() {
   await issueTypeRoutes(app, { auth, db });
   await labelRoutes(app, { auth, db });
   await issueRoutes(app, { auth, db });
+  await viewRoutes(app, { auth, db });
   await websocketHandler(app, { auth, db });
 
   // ── Graceful Shutdown ────────────────────────────────────────────

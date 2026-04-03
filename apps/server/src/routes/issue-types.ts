@@ -85,6 +85,7 @@ export async function issueTypeRoutes(
           icon: row.icon,
           color: row.color,
           sortOrder: row.sortOrder,
+          isDefault: row.isDefault,
         })),
       });
     },
@@ -152,6 +153,7 @@ export async function issueTypeRoutes(
           icon: updated.icon,
           color: updated.color,
           sortOrder: updated.sortOrder,
+          isDefault: updated.isDefault,
         },
       });
     },

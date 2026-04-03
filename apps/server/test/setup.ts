@@ -102,6 +102,8 @@ export interface TestIssueStatus {
   name: string;
   color: string;
   sortOrder: number;
+  category: string;
+  isDefault: boolean;
 }
 
 export interface TestIssueType {
@@ -111,6 +113,20 @@ export interface TestIssueType {
   icon: string;
   color: string;
   sortOrder: number;
+  isDefault: boolean;
+}
+
+export interface TestView {
+  id: string;
+  projectId: string;
+  name: string;
+  createdBy: string | null;
+  filters: unknown;
+  sort: unknown;
+  groupBy: string | null;
+  type: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface TestIssue {
@@ -185,6 +201,7 @@ export const stores = {
   issueLabels: [] as TestIssueLabel[],
   labels: [] as TestLabel[],
   activities: [] as TestActivity[],
+  views: [] as TestView[],
   sessions: new Map<string, TestUser>(),
 };
 
@@ -332,11 +349,11 @@ export function createTestProject(
 
   // Seed default statuses
   const defaultStatuses = [
-    { name: "Backlog", color: "#6b7280", sortOrder: 0 },
-    { name: "Todo", color: "#3b82f6", sortOrder: 1 },
-    { name: "In Progress", color: "#f59e0b", sortOrder: 2 },
-    { name: "Done", color: "#22c55e", sortOrder: 3 },
-    { name: "Cancelled", color: "#ef4444", sortOrder: 4 },
+    { name: "Backlog", color: "#6b7280", sortOrder: 0, category: "backlog", isDefault: true },
+    { name: "Todo", color: "#3b82f6", sortOrder: 1, category: "unstarted", isDefault: false },
+    { name: "In Progress", color: "#f59e0b", sortOrder: 2, category: "started", isDefault: false },
+    { name: "Done", color: "#22c55e", sortOrder: 3, category: "completed", isDefault: false },
+    { name: "Cancelled", color: "#ef4444", sortOrder: 4, category: "cancelled", isDefault: false },
   ];
   for (const s of defaultStatuses) {
     stores.issueStatuses.push({
@@ -348,10 +365,10 @@ export function createTestProject(
 
   // Seed default types
   const defaultTypes = [
-    { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0 },
-    { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1 },
-    { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2 },
-    { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3 },
+    { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0, isDefault: true },
+    { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1, isDefault: false },
+    { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2, isDefault: false },
+    { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3, isDefault: false },
   ];
   for (const t of defaultTypes) {
     stores.issueTypes.push({
@@ -440,6 +457,31 @@ export function createTestLabel(
 }
 
 /**
+ * Create a test view directly in the store.
+ */
+export function createTestView(
+  projectId: string,
+  createdBy: string,
+  overrides: Partial<TestView> = {},
+): TestView {
+  const view: TestView = {
+    id: randomUUID(),
+    projectId,
+    name: "Test View",
+    createdBy,
+    filters: [],
+    sort: null,
+    groupBy: null,
+    type: "list",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  stores.views.push(view);
+  return view;
+}
+
+/**
  * Create a session cookie value for a user, simulating a logged-in session.
  */
 export function loginAsUser(user: TestUser): string {
@@ -466,6 +508,7 @@ export function cleanup(): void {
   stores.issueLabels.length = 0;
   stores.labels.length = 0;
   stores.activities.length = 0;
+  stores.views.length = 0;
   stores.sessions.clear();
 }
 
@@ -610,6 +653,7 @@ function getStoreForTable(tableName: string): unknown[] | null {
     labels: stores.labels,
     activities: stores.activities,
     users: stores.users,
+    views: stores.views,
   };
   return map[tableName] ?? null;
 }
@@ -642,9 +686,18 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
     },
     issue_statuses: {
       sortOrder: 0,
+      category: "backlog",
+      isDefault: false,
     },
     issue_types: {
       sortOrder: 0,
+      isDefault: false,
+    },
+    views: {
+      filters: [],
+      sort: null,
+      groupBy: null,
+      createdBy: null,
     },
     issue_assignees: {
       assignedAt: new Date(),
@@ -716,6 +769,11 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
           return value.getTime() < rightValue.getTime();
         }
         return (value as number) < (rightValue as number);
+      case ">":
+        if (value instanceof Date && rightValue instanceof Date) {
+          return value.getTime() > rightValue.getTime();
+        }
+        return (value as number) > (rightValue as number);
       case "ilike": {
         if (typeof value !== "string" || typeof rightValue !== "string") return false;
         const pattern = rightValue.replace(/%/g, ".*");
@@ -760,6 +818,17 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     const fieldName = snakeToCamel(colName);
     const value = row[fieldName];
     return values.includes(value);
+  }
+
+  // NotInArray
+  if (cond.type === "not_in_array") {
+    const left = cond.left as Record<string, unknown>;
+    const values = cond.values as unknown[];
+    const colName = getColumnName(left);
+    if (!colName) return true;
+    const fieldName = snakeToCamel(colName);
+    const value = row[fieldName];
+    return !values.includes(value);
   }
 
   return true;
@@ -886,6 +955,13 @@ export function createInMemoryDb(): unknown {
 
     chain.orderBy = (...args: unknown[]) => {
       _orderBy = args;
+      return chain;
+    };
+
+    chain.groupBy = (..._args: unknown[]) => {
+      // No-op in the in-memory mock -- aggregations are not supported.
+      // The chain still returns results (without grouping) so callers
+      // get a non-empty array they can iterate over.
       return chain;
     };
 

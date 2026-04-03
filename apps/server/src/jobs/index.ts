@@ -1,9 +1,15 @@
+import type { Database } from "@worknest/db";
+import { registerProcessor } from "../lib/queue";
+import { createBulkActivityProcessor } from "./bulk-activity";
+
 /**
  * Job processor registry.
  *
- * Activity recording is handled synchronously via ActivityService.record().
- * This file is kept as a no-op placeholder for future job registrations.
+ * Register all BullMQ job processors. Must be called before `startWorker()`.
  */
-export function registerAllJobs(): void {
-  // No async jobs registered for MVP
+export function registerAllJobs(db: Database): void {
+  registerProcessor({
+    name: "bulk-activity",
+    processor: createBulkActivityProcessor(db),
+  });
 }

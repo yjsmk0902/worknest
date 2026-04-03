@@ -1,21 +1,13 @@
 import { create } from 'zustand';
-
-type ActiveContext =
-  | 'list'
-  | 'detail'
-  | 'editor'
-  | 'modal'
-  | 'command-palette';
+import { useHotkeyStore } from './hotkey-store';
 
 interface UIState {
   sidebarCollapsed: boolean;
   commandPaletteOpen: boolean;
-  activeContext: ActiveContext;
 
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setCommandPaletteOpen: (open: boolean) => void;
-  setActiveContext: (context: ActiveContext) => void;
 }
 
 const getSavedSidebarState = (): boolean => {
@@ -29,7 +21,6 @@ const getSavedSidebarState = (): boolean => {
 export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: getSavedSidebarState(),
   commandPaletteOpen: false,
-  activeContext: 'list',
 
   toggleSidebar: () =>
     set((state) => {
@@ -51,11 +42,8 @@ export const useUIStore = create<UIState>((set) => ({
     set({ sidebarCollapsed: collapsed });
   },
 
-  setCommandPaletteOpen: (open) =>
-    set({
-      commandPaletteOpen: open,
-      activeContext: open ? 'command-palette' : 'list',
-    }),
-
-  setActiveContext: (context) => set({ activeContext: context }),
+  setCommandPaletteOpen: (open) => {
+    useHotkeyStore.getState().setActiveContext(open ? 'command-palette' : 'list');
+    set({ commandPaletteOpen: open });
+  },
 }));

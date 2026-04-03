@@ -41,3 +41,17 @@ export function broadcastIssueDeleted(
     timestamp: new Date().toISOString(),
   });
 }
+
+/**
+ * Broadcast that multiple issues were bulk-updated in a project.
+ */
+export function broadcastIssueBulkUpdated(
+  projectId: string,
+  data: { actorId: string; issueIds: string[]; changes: Record<string, unknown> },
+): void {
+  broadcast(`project:${projectId}`, {
+    type: "issue.bulk_updated",
+    payload: data,
+    timestamp: new Date().toISOString(),
+  });
+}

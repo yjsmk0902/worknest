@@ -8,6 +8,7 @@ import type { IssueOutput } from '@worknest/shared';
 interface QuickAddProps {
   projectId: string;
   parentId?: string;
+  defaultStatusId?: string;
   onCreated?: (issue: IssueOutput) => void;
   onClose?: () => void;
 }
@@ -15,6 +16,7 @@ interface QuickAddProps {
 export function QuickAdd({
   projectId,
   parentId,
+  defaultStatusId,
   onCreated,
   onClose,
 }: QuickAddProps) {
@@ -23,7 +25,7 @@ export function QuickAdd({
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; parentId?: string }) =>
+    mutationFn: (data: { title: string; parentId?: string; statusId?: string }) =>
       apiClient.post<IssueOutput>(
         `/projects/${projectId}/issues`,
         data,
@@ -44,7 +46,7 @@ export function QuickAdd({
         title: newIssue.title,
         description: null,
         descriptionText: null,
-        statusId: null,
+        statusId: defaultStatusId ?? null,
         typeId: null,
         priority: 'none',
         parentId: parentId ?? null,
@@ -86,6 +88,7 @@ export function QuickAdd({
     createMutation.mutate({
       title: trimmed,
       ...(parentId ? { parentId } : {}),
+      ...(defaultStatusId ? { statusId: defaultStatusId } : {}),
     });
 
     setTitle('');

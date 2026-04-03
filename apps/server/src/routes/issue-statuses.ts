@@ -83,6 +83,8 @@ export async function issueStatusRoutes(
           name: row.name,
           color: row.color,
           sortOrder: row.sortOrder,
+          category: row.category,
+          isDefault: row.isDefault,
         })),
       });
     },
@@ -148,6 +150,8 @@ export async function issueStatusRoutes(
           name: updated.name,
           color: updated.color,
           sortOrder: updated.sortOrder,
+          category: updated.category,
+          isDefault: updated.isDefault,
         },
       });
     },

@@ -105,7 +105,7 @@ export const issueOutput = z.object({
 
 export type IssueOutput = z.infer<typeof issueOutput>;
 
-// ── Issue Filter ─────────────────────────────────────────────────────────
+// ── Issue Filter (legacy — kept for backward compatibility) ─────────────
 
 export const issueFilterQuery = z.object({
   statusId: z.string().uuid().optional(),
@@ -121,7 +121,69 @@ export const issueFilterQuery = z.object({
 
 export type IssueFilterQuery = z.infer<typeof issueFilterQuery>;
 
+// ── Issue List Query (extended multi-value filters) ─────────────────────
+
+export const issueListQuery = z.object({
+  // Multi-value filters (comma-separated in URL)
+  statusId: z.union([z.string().uuid(), z.string()]).optional(),
+  statusIdNot: z.union([z.string().uuid(), z.string()]).optional(),
+  typeId: z.union([z.string().uuid(), z.string()]).optional(),
+  typeIdNot: z.union([z.string().uuid(), z.string()]).optional(),
+  priority: z.string().optional(), // can be comma-separated
+  priorityNot: z.string().optional(),
+  assigneeId: z.union([z.string().uuid(), z.string()]).optional(),
+  assigneeIdNot: z.union([z.string().uuid(), z.string()]).optional(),
+  assigneeEmpty: z.coerce.boolean().optional(), // is_empty
+  labelId: z.union([z.string().uuid(), z.string()]).optional(), // includes
+  labelIdNot: z.union([z.string().uuid(), z.string()]).optional(), // excludes
+  dueBefore: z.string().optional(), // ISO date
+  dueAfter: z.string().optional(),
+  dueEmpty: z.coerce.boolean().optional(),
+  title: z.string().optional(), // contains
+  search: z.string().optional(), // full-text search (keep for backward compat)
+  parentId: z.string().uuid().optional(),
+  // Sort
+  sort: z
+    .enum(["created_at", "updated_at", "priority", "due_date", "manual"])
+    .optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+  // Pagination
+  cursor: z.string().optional(), // opaque base64 cursor
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export type IssueListQuery = z.infer<typeof issueListQuery>;
+
+// ── Bulk Update ─────────────────────────────────────────────────────────
+
+export const bulkUpdateInput = z.object({
+  issueIds: z.array(z.string().uuid()).min(1).max(50),
+  changes: z
+    .object({
+      statusId: z.string().uuid().optional(),
+      typeId: z.string().uuid().optional(),
+      priority: priorityEnum.optional(),
+      assigneeIds: z.array(z.string().uuid()).optional(), // set assignees
+      labelIds: z.array(z.string().uuid()).optional(), // set labels
+    })
+    .refine((obj) => Object.values(obj).some((v) => v !== undefined), {
+      message: "At least one change is required",
+    }),
+});
+
+export type BulkUpdateInput = z.infer<typeof bulkUpdateInput>;
+
 // ── Issue Status / Type ──────────────────────────────────────────────────
+
+export const statusCategory = z.enum([
+  "backlog",
+  "unstarted",
+  "started",
+  "completed",
+  "cancelled",
+]);
+
+export type StatusCategory = z.infer<typeof statusCategory>;
 
 export const issueStatusOutput = z.object({
   id: z.string().uuid(),
@@ -129,6 +191,8 @@ export const issueStatusOutput = z.object({
   name: z.string(),
   color: z.string(),
   sortOrder: z.number(),
+  category: statusCategory,
+  isDefault: z.boolean(),
 });
 
 export type IssueStatusOutput = z.infer<typeof issueStatusOutput>;
@@ -140,6 +204,7 @@ export const issueTypeOutput = z.object({
   icon: z.string(),
   color: z.string(),
   sortOrder: z.number(),
+  isDefault: z.boolean(),
 });
 
 export type IssueTypeOutput = z.infer<typeof issueTypeOutput>;

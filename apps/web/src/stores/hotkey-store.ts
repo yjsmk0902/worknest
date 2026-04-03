@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 
-interface HotkeyState {
-  activeContext: string;
-  contextStack: string[];
+export type ActiveContext =
+  | 'global'
+  | 'list'
+  | 'detail'
+  | 'board'
+  | 'editor'
+  | 'modal'
+  | 'command-palette';
 
-  setActiveContext: (context: string) => void;
-  pushContext: (context: string) => void;
+interface HotkeyState {
+  activeContext: ActiveContext;
+  contextStack: ActiveContext[];
+
+  setActiveContext: (context: ActiveContext) => void;
+  pushContext: (context: ActiveContext) => void;
   popContext: () => void;
 }
 

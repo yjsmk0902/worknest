@@ -19,18 +19,18 @@ import { AppError, ErrorCode } from "../lib/errors";
 // ── Default Seeds ─────────────────────────────────────────────────────
 
 const DEFAULT_STATUSES = [
-  { name: "Backlog", color: "#6b7280", sortOrder: 0 },
-  { name: "Todo", color: "#3b82f6", sortOrder: 1 },
-  { name: "In Progress", color: "#f59e0b", sortOrder: 2 },
-  { name: "Done", color: "#22c55e", sortOrder: 3 },
-  { name: "Cancelled", color: "#ef4444", sortOrder: 4 },
+  { name: "Backlog", color: "#6b7280", sortOrder: 0, category: "backlog" as const, isDefault: true },
+  { name: "Todo", color: "#3b82f6", sortOrder: 1, category: "unstarted" as const, isDefault: false },
+  { name: "In Progress", color: "#f59e0b", sortOrder: 2, category: "started" as const, isDefault: false },
+  { name: "Done", color: "#22c55e", sortOrder: 3, category: "completed" as const, isDefault: false },
+  { name: "Cancelled", color: "#ef4444", sortOrder: 4, category: "cancelled" as const, isDefault: false },
 ];
 
 const DEFAULT_TYPES = [
-  { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0 },
-  { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1 },
-  { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2 },
-  { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3 },
+  { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0, isDefault: true },
+  { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1, isDefault: false },
+  { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2, isDefault: false },
+  { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3, isDefault: false },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -180,6 +180,8 @@ export class ProjectService {
           name: s.name,
           color: s.color,
           sortOrder: s.sortOrder,
+          category: s.category,
+          isDefault: s.isDefault,
         })),
       );
 
@@ -191,6 +193,7 @@ export class ProjectService {
           icon: t.icon,
           color: t.color,
           sortOrder: t.sortOrder,
+          isDefault: t.isDefault,
         })),
       );
 

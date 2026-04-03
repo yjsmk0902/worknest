@@ -25,6 +25,8 @@ import { Route as ProjectSettingsMembersRoute } from './routes/_app/$orgSlug/$ws
 import { Route as ProjectSettingsLabelsRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels';
 import { Route as IssueListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/index';
 import { Route as IssueDetailRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId';
+import { Route as BoardRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/board/index';
+import { Route as ViewRedirectRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId';
 
 const AuthLayoutRouteWithChildren = AuthLayoutRoute.addChildren([
   LoginRoute,
@@ -36,6 +38,8 @@ const AuthLayoutRouteWithChildren = AuthLayoutRoute.addChildren([
 const ProjectLayoutRouteWithChildren = ProjectLayoutRoute.addChildren([
   IssueListRoute,
   IssueDetailRoute,
+  BoardRoute,
+  ViewRedirectRoute,
   ProjectSettingsIndexRoute,
   ProjectSettingsMembersRoute,
   ProjectSettingsLabelsRoute,

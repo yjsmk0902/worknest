@@ -15,6 +15,13 @@
       "when": 1743634800000,
       "tag": "0001_cp2_issues",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743721200000,
+      "tag": "0002_cp3_views",
+      "breakpoints": true
     }
   ]
 }

@@ -47,4 +47,21 @@ export function useIssueRealtime(projectId: string): void {
       });
     }
   });
+
+  // issue.bulk_updated -> invalidate issues list (full invalidation for bulk)
+  useWebSocketEvent('issue.bulk_updated', (data) => {
+    const payload = data as { actorId?: string } | undefined;
+
+    // Skip if the current user initiated the bulk action to avoid double-update.
+    // The mutation's onSuccess already invalidated the cache.
+    const currentUserId =
+      queryClient.getQueryData<{ id: string }>(['my', 'profile'])?.id;
+    if (payload?.actorId && payload.actorId === currentUserId) {
+      return;
+    }
+
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'issues'],
+    });
+  });
 }

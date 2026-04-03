@@ -15,17 +15,7 @@ import type {
   CursorPaginationQuery,
 } from "@worknest/shared";
 import { AppError, ErrorCode } from "../lib/errors";
-import crypto from "node:crypto";
-
-// ── Helpers ────────────────────────────────────────────────────────────
-
-function hashToken(token: string): string {
-  return crypto.createHash("sha256").update(token).digest("hex");
-}
-
-function generateToken(): string {
-  return crypto.randomBytes(32).toString("base64url");
-}
+import { hashToken, generateToken } from "../lib/crypto";
 
 // ── Service ────────────────────────────────────────────────────────────
 

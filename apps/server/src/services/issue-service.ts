@@ -1,4 +1,18 @@
-import { eq, and, isNull, lt, desc, ilike, sql, inArray } from "drizzle-orm";
+import {
+  eq,
+  and,
+  isNull,
+  lt,
+  gt,
+  desc,
+  asc,
+  ilike,
+  sql,
+  inArray,
+  notInArray,
+  count,
+  type SQL,
+} from "drizzle-orm";
 import {
   issues,
   issueStatuses,
@@ -11,14 +25,65 @@ import {
   projectMembers,
   type Database,
 } from "@worknest/db";
-import type { CreateIssueInput, UpdateIssueInput, IssueFilterQuery } from "@worknest/shared";
+import type {
+  CreateIssueInput,
+  UpdateIssueInput,
+  IssueListQuery,
+  BulkUpdateInput,
+} from "@worknest/shared";
+import { isValidSortKey } from "@worknest/shared";
 import { AppError, ErrorCode } from "../lib/errors";
 import { ActivityService } from "./activity-service";
+import { addJob } from "../lib/queue";
 import {
   broadcastIssueCreated,
   broadcastIssueUpdated,
   broadcastIssueDeleted,
+  broadcastIssueBulkUpdated,
 } from "../websocket/issue-events";
+
+// ── Constants ───────────────────────────────────────────────────────────
+
+/** Numeric ordering for priority sort (lower = more urgent) */
+const PRIORITY_ORDER: Record<string, number> = {
+  urgent: 1,
+  high: 2,
+  medium: 3,
+  low: 4,
+  none: 5,
+};
+
+// ── Cursor Helpers ──────────────────────────────────────────────────────
+
+interface CursorPayload {
+  v: string | number; // sort value
+  id: string; // issue id
+}
+
+function encodeCursor(sortValue: string | number, issueId: string): string {
+  return Buffer.from(JSON.stringify({ v: sortValue, id: issueId })).toString("base64");
+}
+
+function decodeCursor(cursor: string): CursorPayload | null {
+  try {
+    const json = Buffer.from(cursor, "base64").toString("utf-8");
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.id === "string" && parsed.v !== undefined) {
+      return parsed as CursorPayload;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Parse a comma-separated query param value into an array of trimmed strings.
+ */
+function parseMultiValue(val: string | undefined): string[] {
+  if (!val) return [];
+  return val.split(",").map((v) => v.trim()).filter(Boolean);
+}
 
 // ── Service ──────────────────────────────────────────────────────────────
 
@@ -309,50 +374,203 @@ export class IssueService {
     return issue;
   }
 
-  // ── List Issues ───────────────────────────────────────────────────────
+  // ── Build Filter Conditions (shared between list & stats) ─────────────
 
-  async list(projectId: string, callerUserId: string, filters: IssueFilterQuery) {
-    await this.verifyProjectMember(projectId, callerUserId);
-
-    const { cursor, limit, statusId, typeId, priority, assigneeId, labelId, parentId, search } =
-      filters;
-
-    // Build where conditions
-    const conditions = [
+  /**
+   * Build Drizzle SQL conditions from query params. Used by both `list()` and `stats()`.
+   * If `skipStatus` is true, statusId/statusIdNot filters are omitted (for stats).
+   */
+  private buildFilterConditions(
+    projectId: string,
+    query: IssueListQuery,
+    opts?: { skipStatus?: boolean },
+  ): SQL[] {
+    const conditions: SQL[] = [
       eq(issues.projectId, projectId),
       isNull(issues.deletedAt),
     ];
 
-    if (cursor) {
-      conditions.push(lt(issues.createdAt, new Date(cursor)));
-    }
-    if (statusId) {
-      conditions.push(eq(issues.statusId, statusId));
-    }
-    if (typeId) {
-      conditions.push(eq(issues.typeId, typeId));
-    }
-    if (priority) {
-      conditions.push(eq(issues.priority, priority));
-    }
-    if (parentId) {
-      conditions.push(eq(issues.parentId, parentId));
-    }
-    if (search) {
-      conditions.push(ilike(issues.title, `%${search}%`));
+    // ── Status ──────────────────────────────────────────────────────────
+    if (!opts?.skipStatus) {
+      const statusIds = parseMultiValue(query.statusId);
+      if (statusIds.length > 0) {
+        conditions.push(inArray(issues.statusId, statusIds));
+      }
+      const statusIdsNot = parseMultiValue(query.statusIdNot);
+      if (statusIdsNot.length > 0) {
+        conditions.push(notInArray(issues.statusId, statusIdsNot));
+      }
     }
 
-    // Build query with optional assignee/label joins (both can apply simultaneously)
-    // Use subquery-based conditions so filters are independent
-    if (assigneeId) {
+    // ── Type ────────────────────────────────────────────────────────────
+    const typeIds = parseMultiValue(query.typeId);
+    if (typeIds.length > 0) {
+      conditions.push(inArray(issues.typeId, typeIds));
+    }
+    const typeIdsNot = parseMultiValue(query.typeIdNot);
+    if (typeIdsNot.length > 0) {
+      conditions.push(notInArray(issues.typeId, typeIdsNot));
+    }
+
+    // ── Priority ────────────────────────────────────────────────────────
+    const priorities = parseMultiValue(query.priority);
+    if (priorities.length > 0) {
+      conditions.push(inArray(issues.priority, priorities));
+    }
+    const prioritiesNot = parseMultiValue(query.priorityNot);
+    if (prioritiesNot.length > 0) {
+      conditions.push(notInArray(issues.priority, prioritiesNot));
+    }
+
+    // ── Assignee ────────────────────────────────────────────────────────
+    if (query.assigneeEmpty === true) {
+      // Issues with NO assignees
       conditions.push(
-        sql`${issues.id} IN (SELECT ${issueAssignees.issueId} FROM ${issueAssignees} WHERE ${eq(issueAssignees.userId, assigneeId)})`,
+        sql`NOT EXISTS (SELECT 1 FROM ${issueAssignees} WHERE ${issueAssignees.issueId} = ${issues.id})`,
       );
     }
-    if (labelId) {
+    const assigneeIds = parseMultiValue(query.assigneeId);
+    if (assigneeIds.length > 0) {
       conditions.push(
-        sql`${issues.id} IN (SELECT ${issueLabels.issueId} FROM ${issueLabels} WHERE ${eq(issueLabels.labelId, labelId)})`,
+        sql`${issues.id} IN (SELECT ${issueAssignees.issueId} FROM ${issueAssignees} WHERE ${inArray(issueAssignees.userId, assigneeIds)})`,
       );
+    }
+    const assigneeIdsNot = parseMultiValue(query.assigneeIdNot);
+    if (assigneeIdsNot.length > 0) {
+      conditions.push(
+        sql`${issues.id} NOT IN (SELECT ${issueAssignees.issueId} FROM ${issueAssignees} WHERE ${inArray(issueAssignees.userId, assigneeIdsNot)})`,
+      );
+    }
+
+    // ── Label ───────────────────────────────────────────────────────────
+    const labelIds = parseMultiValue(query.labelId);
+    if (labelIds.length > 0) {
+      conditions.push(
+        sql`${issues.id} IN (SELECT ${issueLabels.issueId} FROM ${issueLabels} WHERE ${inArray(issueLabels.labelId, labelIds)})`,
+      );
+    }
+    const labelIdsNot = parseMultiValue(query.labelIdNot);
+    if (labelIdsNot.length > 0) {
+      conditions.push(
+        sql`${issues.id} NOT IN (SELECT ${issueLabels.issueId} FROM ${issueLabels} WHERE ${inArray(issueLabels.labelId, labelIdsNot)})`,
+      );
+    }
+
+    // ── Due date ────────────────────────────────────────────────────────
+    if (query.dueEmpty === true) {
+      conditions.push(isNull(issues.dueDate));
+    }
+    if (query.dueBefore) {
+      conditions.push(lt(issues.dueDate, new Date(query.dueBefore)));
+    }
+    if (query.dueAfter) {
+      conditions.push(gt(issues.dueDate, new Date(query.dueAfter)));
+    }
+
+    // ── Title / Search ──────────────────────────────────────────────────
+    if (query.title) {
+      conditions.push(ilike(issues.title, `%${query.title}%`));
+    }
+    if (query.search) {
+      conditions.push(ilike(issues.title, `%${query.search}%`));
+    }
+
+    // ── Parent ──────────────────────────────────────────────────────────
+    if (query.parentId) {
+      conditions.push(eq(issues.parentId, query.parentId));
+    }
+
+    return conditions;
+  }
+
+  // ── List Issues ───────────────────────────────────────────────────────
+
+  async list(projectId: string, callerUserId: string, query: IssueListQuery) {
+    await this.verifyProjectMember(projectId, callerUserId);
+
+    const { cursor, limit, sort = "created_at", order = "desc" } = query;
+
+    // Build where conditions
+    const conditions = this.buildFilterConditions(projectId, query);
+
+    // ── Cursor pagination ───────────────────────────────────────────────
+    let cursorData: CursorPayload | null = null;
+    if (cursor) {
+      cursorData = decodeCursor(cursor);
+      if (!cursorData) {
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, "Invalid cursor format");
+      }
+    }
+
+    // ── Build sort & cursor clause ──────────────────────────────────────
+    const dir = order === "asc" ? asc : desc;
+    const dirOp = order === "asc" ? gt : lt;
+    let orderByClause: SQL;
+
+    if (sort === "priority") {
+      // Custom priority ordering: urgent=1, high=2, medium=3, low=4, none=5
+      const priorityExpr = sql`CASE ${issues.priority}
+        WHEN 'urgent' THEN 1
+        WHEN 'high' THEN 2
+        WHEN 'medium' THEN 3
+        WHEN 'low' THEN 4
+        ELSE 5
+      END`;
+
+      if (cursorData) {
+        const cursorPriority = Number(cursorData.v);
+        // Keyset pagination on (priority_order, id)
+        conditions.push(
+          sql`(${priorityExpr}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorPriority}, ${cursorData.id})`,
+        );
+      }
+
+      orderByClause = sql`${dir(priorityExpr)}, ${dir(issues.id)}`;
+    } else if (sort === "manual") {
+      // Fractional indexing sort_order with created_at tie-breaker
+      if (cursorData) {
+        const cursorSort = String(cursorData.v);
+        conditions.push(
+          sql`(${issues.sortOrder}, ${issues.createdAt}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorSort}, (SELECT ${issues.createdAt} FROM ${issues} WHERE ${issues.id} = ${cursorData.id}), ${cursorData.id})`,
+        );
+      }
+
+      orderByClause = sql`${dir(issues.sortOrder)}, ${dir(issues.createdAt)}, ${dir(issues.id)}`;
+    } else if (sort === "due_date") {
+      // NULLs last for ascending, NULLs first for descending
+      const col = issues.dueDate;
+      if (cursorData) {
+        const cursorVal = String(cursorData.v);
+        if (cursorVal === "null") {
+          // After all non-null due dates
+          conditions.push(
+            sql`(${col} IS NULL AND ${issues.id} ${order === "asc" ? sql`>` : sql`<`} ${cursorData.id})`,
+          );
+        } else {
+          conditions.push(
+            sql`(
+              (${col} IS NOT NULL AND (${col}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorVal}, ${cursorData.id}))
+              OR ${col} IS NULL
+            )`,
+          );
+        }
+      }
+
+      orderByClause = order === "asc"
+        ? sql`${col} ASC NULLS LAST, ${issues.id} ASC`
+        : sql`${col} DESC NULLS LAST, ${issues.id} DESC`;
+    } else {
+      // created_at or updated_at
+      const col = sort === "updated_at" ? issues.updatedAt : issues.createdAt;
+
+      if (cursorData) {
+        const cursorDate = new Date(String(cursorData.v));
+        conditions.push(
+          sql`(${col}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorDate}, ${cursorData.id})`,
+        );
+      }
+
+      orderByClause = sql`${dir(col)}, ${dir(issues.id)}`;
     }
 
     const baseQuery = this.db
@@ -381,7 +599,7 @@ export class IssueService {
       .leftJoin(issueTypes, eq(issues.typeId, issueTypes.id))
       .leftJoin(users, eq(issues.creatorId, users.id))
       .where(and(...conditions))
-      .orderBy(desc(issues.createdAt))
+      .orderBy(orderByClause)
       .limit(limit + 1);
 
     const rows = await baseQuery;
@@ -391,33 +609,51 @@ export class IssueService {
     // Batch-fetch assignees and labels for all returned issues
     const issueIds = items.map((r) => r.issue.id);
 
-    let assigneeMap = new Map<
+    const assigneeMap = new Map<
       string,
       { assignee: { id: string; userId: string }; user: { id: string; name: string; email: string; avatarUrl: string | null } }[]
     >();
-    let labelMap = new Map<
+    const labelMap = new Map<
       string,
       { issueLabel: { id: string; labelId: string }; label: { id: string; name: string; color: string } }[]
     >();
 
     if (issueIds.length > 0) {
-      const allAssignees = await this.db
-        .select({
-          issueId: issueAssignees.issueId,
-          assignee: {
-            id: issueAssignees.id,
-            userId: issueAssignees.userId,
-          },
-          user: {
-            id: users.id,
-            name: users.name,
-            email: users.email,
-            avatarUrl: users.avatarUrl,
-          },
-        })
-        .from(issueAssignees)
-        .innerJoin(users, eq(issueAssignees.userId, users.id))
-        .where(inArray(issueAssignees.issueId, issueIds));
+      const [allAssignees, allLabels] = await Promise.all([
+        this.db
+          .select({
+            issueId: issueAssignees.issueId,
+            assignee: {
+              id: issueAssignees.id,
+              userId: issueAssignees.userId,
+            },
+            user: {
+              id: users.id,
+              name: users.name,
+              email: users.email,
+              avatarUrl: users.avatarUrl,
+            },
+          })
+          .from(issueAssignees)
+          .innerJoin(users, eq(issueAssignees.userId, users.id))
+          .where(inArray(issueAssignees.issueId, issueIds)),
+        this.db
+          .select({
+            issueId: issueLabels.issueId,
+            issueLabel: {
+              id: issueLabels.id,
+              labelId: issueLabels.labelId,
+            },
+            label: {
+              id: labels.id,
+              name: labels.name,
+              color: labels.color,
+            },
+          })
+          .from(issueLabels)
+          .innerJoin(labels, eq(issueLabels.labelId, labels.id))
+          .where(inArray(issueLabels.issueId, issueIds)),
+      ]);
 
       for (const row of allAssignees) {
         const existing = assigneeMap.get(row.issueId) ?? [];
@@ -425,27 +661,29 @@ export class IssueService {
         assigneeMap.set(row.issueId, existing);
       }
 
-      const allLabels = await this.db
-        .select({
-          issueId: issueLabels.issueId,
-          issueLabel: {
-            id: issueLabels.id,
-            labelId: issueLabels.labelId,
-          },
-          label: {
-            id: labels.id,
-            name: labels.name,
-            color: labels.color,
-          },
-        })
-        .from(issueLabels)
-        .innerJoin(labels, eq(issueLabels.labelId, labels.id))
-        .where(inArray(issueLabels.issueId, issueIds));
-
       for (const row of allLabels) {
         const existing = labelMap.get(row.issueId) ?? [];
         existing.push({ issueLabel: row.issueLabel, label: row.label });
         labelMap.set(row.issueId, existing);
+      }
+    }
+
+    // Build next cursor from the last item
+    let nextCursor: string | null = null;
+    if (hasMore && items.length > 0) {
+      const lastIssue = items[items.length - 1]!.issue;
+      if (sort === "priority") {
+        const numericPriority = PRIORITY_ORDER[lastIssue.priority] ?? 5;
+        nextCursor = encodeCursor(numericPriority, lastIssue.id);
+      } else if (sort === "manual") {
+        nextCursor = encodeCursor(lastIssue.sortOrder, lastIssue.id);
+      } else if (sort === "due_date") {
+        const dueVal = lastIssue.dueDate ? lastIssue.dueDate.toISOString() : "null";
+        nextCursor = encodeCursor(dueVal, lastIssue.id);
+      } else if (sort === "updated_at") {
+        nextCursor = encodeCursor(lastIssue.updatedAt.toISOString(), lastIssue.id);
+      } else {
+        nextCursor = encodeCursor(lastIssue.createdAt.toISOString(), lastIssue.id);
       }
     }
 
@@ -458,9 +696,7 @@ export class IssueService {
         ),
       ),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.issue.createdAt.toISOString()
-          : null,
+        next_cursor: nextCursor,
         has_more: hasMore,
       },
     };
@@ -531,6 +767,9 @@ export class IssueService {
       });
     }
     if (input.sortOrder !== undefined && input.sortOrder !== existing.sortOrder) {
+      if (!isValidSortKey(input.sortOrder)) {
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, "Invalid sort order format");
+      }
       updates.sortOrder = input.sortOrder;
     }
     if (input.dueDate !== undefined) {
@@ -900,5 +1139,197 @@ export class IssueService {
         ),
       ),
     };
+  }
+
+  // ── Issue Stats ──────────────────────────────────────────────────────
+
+  /**
+   * Return issue counts grouped by status for a project.
+   * Accepts the same filter params as list() minus status filters.
+   */
+  async stats(projectId: string, callerUserId: string, query: IssueListQuery) {
+    await this.verifyProjectMember(projectId, callerUserId);
+
+    // Build conditions but skip status filters so stats show all statuses
+    const conditions = this.buildFilterConditions(projectId, query, { skipStatus: true });
+
+    const rows = await this.db
+      .select({
+        statusId: issues.statusId,
+        statusName: issueStatuses.name,
+        category: issueStatuses.category,
+        count: count(),
+      })
+      .from(issues)
+      .leftJoin(issueStatuses, eq(issues.statusId, issueStatuses.id))
+      .where(and(...conditions))
+      .groupBy(issues.statusId, issueStatuses.name, issueStatuses.category);
+
+    // Build byStatus map and total for the client
+    const byStatus: Record<string, number> = {};
+    let total = 0;
+    for (const r of rows) {
+      if (r.statusId) {
+        byStatus[r.statusId] = Number(r.count);
+      }
+      total += Number(r.count);
+    }
+
+    return { byStatus, total };
+  }
+
+  // ── Bulk Update ──────────────────────────────────────────────────────
+
+  /**
+   * Update multiple issues in a single transaction (all-or-nothing).
+   * Enqueues an async bulk-activity job after success.
+   */
+  async bulkUpdate(
+    projectId: string,
+    callerUserId: string,
+    input: BulkUpdateInput,
+  ) {
+    await this.verifyProjectMember(projectId, callerUserId);
+
+    const { issueIds, changes } = input;
+
+    // ── Validate all issues belong to this project and are not deleted ──
+
+    const existingIssues = await this.db
+      .select({ id: issues.id, projectId: issues.projectId })
+      .from(issues)
+      .where(
+        and(
+          inArray(issues.id, issueIds),
+          isNull(issues.deletedAt),
+        ),
+      );
+
+    const existingIds = new Set(existingIssues.map((i) => i.id));
+    const missingIds = issueIds.filter((id) => !existingIds.has(id));
+    if (missingIds.length > 0) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        `Issues not found or deleted: ${missingIds.join(", ")}`,
+      );
+    }
+
+    const wrongProject = existingIssues.filter((i) => i.projectId !== projectId);
+    if (wrongProject.length > 0) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        `Issues do not belong to this project: ${wrongProject.map((i) => i.id).join(", ")}`,
+      );
+    }
+
+    // ── Validate referenced statusId/typeId belong to the project ──────
+
+    if (changes.statusId) {
+      const status = await this.db
+        .select({ id: issueStatuses.id })
+        .from(issueStatuses)
+        .where(
+          and(
+            eq(issueStatuses.id, changes.statusId),
+            eq(issueStatuses.projectId, projectId),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!status) {
+        throw AppError.notFound("issue status");
+      }
+    }
+
+    if (changes.typeId) {
+      const type = await this.db
+        .select({ id: issueTypes.id })
+        .from(issueTypes)
+        .where(
+          and(
+            eq(issueTypes.id, changes.typeId),
+            eq(issueTypes.projectId, projectId),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!type) {
+        throw AppError.notFound("issue type");
+      }
+    }
+
+    // ── Execute all updates in a single transaction ────────────────────
+
+    await this.db.transaction(async (tx) => {
+      // Build column updates
+      const columnUpdates: Record<string, unknown> = { updatedAt: new Date() };
+      if (changes.statusId) columnUpdates.statusId = changes.statusId;
+      if (changes.typeId) columnUpdates.typeId = changes.typeId;
+      if (changes.priority) columnUpdates.priority = changes.priority;
+
+      // Update issue columns
+      if (Object.keys(columnUpdates).length > 1) {
+        // more than just updatedAt
+        await tx
+          .update(issues)
+          .set(columnUpdates)
+          .where(inArray(issues.id, issueIds));
+      } else {
+        // Still touch updatedAt
+        await tx
+          .update(issues)
+          .set({ updatedAt: new Date() })
+          .where(inArray(issues.id, issueIds));
+      }
+
+      // Handle assignees: clear existing + insert new (replace strategy)
+      if (changes.assigneeIds !== undefined) {
+        await tx
+          .delete(issueAssignees)
+          .where(inArray(issueAssignees.issueId, issueIds));
+
+        if (changes.assigneeIds.length > 0) {
+          const assigneeRows = issueIds.flatMap((issueId) =>
+            changes.assigneeIds!.map((userId) => ({
+              issueId,
+              userId,
+            })),
+          );
+          await tx.insert(issueAssignees).values(assigneeRows).onConflictDoNothing();
+        }
+      }
+
+      // Handle labels: clear existing + insert new (replace strategy)
+      if (changes.labelIds !== undefined) {
+        await tx
+          .delete(issueLabels)
+          .where(inArray(issueLabels.issueId, issueIds));
+
+        if (changes.labelIds.length > 0) {
+          const labelRows = issueIds.flatMap((issueId) =>
+            changes.labelIds!.map((labelId) => ({
+              issueId,
+              labelId,
+            })),
+          );
+          await tx.insert(issueLabels).values(labelRows).onConflictDoNothing();
+        }
+      }
+    });
+
+    // ── Broadcast WebSocket event ──────────────────────────────────────
+    broadcastIssueBulkUpdated(projectId, { actorId: callerUserId, issueIds, changes });
+
+    // ── Enqueue async activity recording ───────────────────────────────
+    await addJob("bulk-activity", {
+      actorId: callerUserId,
+      projectId,
+      issueIds,
+      changes,
+    });
+
+    return { updated: issueIds.length };
   }
 }

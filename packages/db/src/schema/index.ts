@@ -13,6 +13,7 @@ export {
 } from "./issues";
 export { labels } from "./labels";
 export { activities } from "./activities";
+export { views } from "./views";
 
 // ── Relations ───────────────────────────────────────────────────────────
 export { usersRelations } from "./users";
@@ -32,3 +33,4 @@ export {
 } from "./issues";
 export { labelsRelations } from "./labels";
 export { activitiesRelations } from "./activities";
+export { viewsRelations } from "./views";
