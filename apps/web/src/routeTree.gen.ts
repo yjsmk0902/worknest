@@ -18,6 +18,13 @@ import { Route as WorkspaceLayoutRoute } from './routes/_app/$orgSlug/$wsSlug';
 import { Route as WorkspaceIndexRoute } from './routes/_app/$orgSlug/$wsSlug/index';
 import { Route as WorkspaceSettingsIndexRoute } from './routes/_app/$orgSlug/$wsSlug/settings/index';
 import { Route as WorkspaceSettingsMembersRoute } from './routes/_app/$orgSlug/$wsSlug/settings/members';
+import { Route as ProjectListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/index';
+import { Route as ProjectLayoutRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId';
+import { Route as ProjectSettingsIndexRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/index';
+import { Route as ProjectSettingsMembersRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members';
+import { Route as ProjectSettingsLabelsRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels';
+import { Route as IssueListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/index';
+import { Route as IssueDetailRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId';
 
 const AuthLayoutRouteWithChildren = AuthLayoutRoute.addChildren([
   LoginRoute,
@@ -26,10 +33,20 @@ const AuthLayoutRouteWithChildren = AuthLayoutRoute.addChildren([
   OnboardingRoute,
 ]);
 
+const ProjectLayoutRouteWithChildren = ProjectLayoutRoute.addChildren([
+  IssueListRoute,
+  IssueDetailRoute,
+  ProjectSettingsIndexRoute,
+  ProjectSettingsMembersRoute,
+  ProjectSettingsLabelsRoute,
+]);
+
 const WorkspaceLayoutRouteWithChildren = WorkspaceLayoutRoute.addChildren([
   WorkspaceIndexRoute,
   WorkspaceSettingsIndexRoute,
   WorkspaceSettingsMembersRoute,
+  ProjectListRoute,
+  ProjectLayoutRouteWithChildren,
 ]);
 
 const AppLayoutRouteWithChildren = AppLayoutRoute.addChildren([

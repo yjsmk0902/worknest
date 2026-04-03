@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@worknest/ui';
@@ -6,6 +6,10 @@ import { apiClient, ApiError } from '../lib/api-client';
 import { useAuthStore, type User } from '../stores/auth-store';
 import { Sidebar } from '../components/layout/sidebar';
 import { useUIStore } from '../stores/ui-store';
+import { useGlobalShortcuts } from '../hooks/use-global-shortcuts';
+import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
+import { connect, disconnect } from '../lib/websocket';
+import { useWebSocket } from '../hooks/use-websocket';
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
@@ -15,7 +19,6 @@ function AppLayout() {
   const navigate = useNavigate();
   const setCurrentUser = useAuthStore((s) => s.setCurrentUser);
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
-  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 
   const profileQuery = useQuery<User>({
     queryKey: ['my', 'profile'],
@@ -40,17 +43,27 @@ function AppLayout() {
     }
   }, [profileQuery.data, setCurrentUser]);
 
-  // Cmd+\ sidebar toggle
+  // Global keyboard shortcuts (Cmd+K, Cmd+/, Cmd+\)
+  const { shortcutsSheetOpen, setShortcutsSheetOpen } = useGlobalShortcuts();
+
+  // WebSocket: connect on auth, disconnect on unmount
+  const userId = profileQuery.data?.id;
+
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
-        e.preventDefault();
-        toggleSidebar();
-      }
+    if (userId) {
+      connect();
     }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggleSidebar]);
+    return () => {
+      disconnect();
+    };
+  }, [userId]);
+
+  // Subscribe to personal user channel
+  const userChannels = useMemo(
+    () => (userId ? [`user:${userId}`] : []),
+    [userId],
+  );
+  useWebSocket(userChannels);
 
   // Show loading while checking auth
   if (profileQuery.isLoading) {
@@ -80,6 +93,10 @@ function AppLayout() {
       >
         <Outlet />
       </main>
+      <KeyboardShortcutsSheet
+        open={shortcutsSheetOpen}
+        onOpenChange={setShortcutsSheetOpen}
+      />
     </div>
   );
 }

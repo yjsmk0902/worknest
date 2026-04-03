@@ -22,6 +22,11 @@ import { authRoutes } from "./routes/auth";
 import { profileRoutes } from "./routes/profile";
 import { organizationRoutes } from "./routes/organizations";
 import { workspaceRoutes } from "./routes/workspaces";
+import { projectRoutes } from "./routes/projects";
+import { issueStatusRoutes } from "./routes/issue-statuses";
+import { issueTypeRoutes } from "./routes/issue-types";
+import { labelRoutes } from "./routes/labels";
+import { issueRoutes } from "./routes/issues";
 
 // WebSocket
 import { websocketHandler } from "./websocket/handler";
@@ -106,7 +111,12 @@ async function main() {
   await profileRoutes(app, { auth, db });
   await organizationRoutes(app, { auth, db });
   await workspaceRoutes(app, { auth, db });
-  await websocketHandler(app, { auth });
+  await projectRoutes(app, { auth, db });
+  await issueStatusRoutes(app, { auth, db });
+  await issueTypeRoutes(app, { auth, db });
+  await labelRoutes(app, { auth, db });
+  await issueRoutes(app, { auth, db });
+  await websocketHandler(app, { auth, db });
 
   // ── Graceful Shutdown ────────────────────────────────────────────
 

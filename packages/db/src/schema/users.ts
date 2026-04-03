@@ -2,6 +2,9 @@ import { pgTable, text, timestamp, uuid, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { orgMembers } from "./organizations";
 import { workspaceMembers } from "./workspaces";
+import { projectMembers } from "./projects";
+import { issueAssignees } from "./issues";
+import { activities } from "./activities";
 
 /**
  * Core users table.
@@ -22,4 +25,7 @@ export const users = pgTable("users", {
 export const usersRelations = relations(users, ({ many }) => ({
   orgMemberships: many(orgMembers),
   workspaceMemberships: many(workspaceMembers),
+  projectMemberships: many(projectMembers),
+  issueAssignments: many(issueAssignees),
+  activities: many(activities),
 }));

@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
+import { eq, and } from "drizzle-orm";
+import { projectMembers, type Database } from "@worknest/db";
 import type { Auth } from "../lib/auth";
 import {
   subscribe,
@@ -44,7 +46,11 @@ interface UnsubscribeMessage {
   channel: string;
 }
 
-type ClientMessage = SubscribeMessage | UnsubscribeMessage;
+interface PingMessage {
+  type: "ping";
+}
+
+type ClientMessage = SubscribeMessage | UnsubscribeMessage | PingMessage;
 
 interface ServerEvent {
   type: string;
@@ -100,9 +106,9 @@ export function sendToUser(userId: string, event: ServerEvent): void {
  */
 export async function websocketHandler(
   app: FastifyInstance,
-  opts: { auth: Auth },
+  opts: { auth: Auth; db: Database },
 ): Promise<void> {
-  const { auth } = opts;
+  const { auth, db } = opts;
 
   app.get(
     "/api/v1/ws",
@@ -138,7 +144,7 @@ export async function websocketHandler(
       request.log.info({ userId }, "WebSocket connected");
 
       // ── Message handling ─────────────────────────────────────────
-      socket.on("message", (raw) => {
+      socket.on("message", async (raw) => {
         let msg: ClientMessage;
         try {
           msg = JSON.parse(raw.toString()) as ClientMessage;
@@ -151,7 +157,8 @@ export async function websocketHandler(
 
         switch (msg.type) {
           case "subscribe": {
-            if (!msg.channel || !parseChannel(msg.channel)) {
+            const parsed = msg.channel ? parseChannel(msg.channel) : null;
+            if (!parsed) {
               socket.send(
                 JSON.stringify({
                   type: "error",
@@ -160,6 +167,43 @@ export async function websocketHandler(
               );
               return;
             }
+
+            // Verify project membership before subscribing
+            if (parsed.type === "project") {
+              try {
+                const member = await db
+                  .select({ id: projectMembers.id })
+                  .from(projectMembers)
+                  .where(
+                    and(
+                      eq(projectMembers.projectId, parsed.id),
+                      eq(projectMembers.userId, userId),
+                    ),
+                  )
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!member) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Not a member of this project" },
+                    }),
+                  );
+                  return;
+                }
+              } catch (err) {
+                request.log.error({ err, channel: msg.channel }, "Failed to verify project membership");
+                socket.send(
+                  JSON.stringify({
+                    type: "error",
+                    payload: { message: "Authorization check failed" },
+                  }),
+                );
+                return;
+              }
+            }
+
             subscribe(socket, msg.channel);
             socket.send(
               JSON.stringify({ type: "subscribed", channel: msg.channel }),
@@ -174,6 +218,11 @@ export async function websocketHandler(
                 JSON.stringify({ type: "unsubscribed", channel: msg.channel }),
               );
             }
+            break;
+          }
+
+          case "ping": {
+            socket.send(JSON.stringify({ type: "pong" }));
             break;
           }
 

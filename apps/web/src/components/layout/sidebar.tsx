@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Link, useParams } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   Bell,
   ChevronDown,
@@ -32,6 +34,15 @@ import {
 import { Button } from '@worknest/ui';
 import { useUIStore } from '../../stores/ui-store';
 import { useAuthStore } from '../../stores/auth-store';
+import { apiClient } from '../../lib/api-client';
+import { CreateProjectModal } from '../projects/create-project-modal';
+
+interface SidebarProject {
+  id: string;
+  name: string;
+  prefix: string;
+  iconUrl: string | null;
+}
 
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
@@ -91,25 +102,7 @@ export function Sidebar() {
           <div className="my-2" />
 
           {/* Projects section */}
-          <SectionLabel>Projects</SectionLabel>
-          {/* Placeholder project items */}
-          <NavItem
-            icon={<Folder className="h-4 w-4" />}
-            label="WORK"
-            href={
-              orgSlug && wsSlug
-                ? `/${orgSlug}/${wsSlug}/projects/WORK/issues`
-                : '#'
-            }
-            expandable
-          />
-          <button
-            type="button"
-            className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            <span>프로젝트 추가</span>
-          </button>
+          <SidebarProjects orgSlug={orgSlug} wsSlug={wsSlug} />
 
           <div className="my-2" />
 
@@ -177,14 +170,7 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
         <div className="my-1 w-8 border-t border-sidebar-border" />
 
         {/* Projects */}
-        <CollapsedNavItem
-          icon={<Folder className="h-5 w-5" />}
-          label="WORK"
-        />
-        <CollapsedNavItem
-          icon={<Plus className="h-5 w-5" />}
-          label="프로젝트 추가"
-        />
+        <CollapsedSidebarProjects />
 
         <div className="my-1 w-8 border-t border-sidebar-border" />
 
@@ -218,6 +204,148 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
         </Tooltip>
       </nav>
     </TooltipProvider>
+  );
+}
+
+// -- CollapsedSidebarProjects --
+
+function CollapsedSidebarProjects() {
+  const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
+  const wsId = currentWorkspace?.id;
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
+
+  const projectsQuery = useQuery({
+    queryKey: ['workspaces', wsId, 'projects', 'sidebar'],
+    queryFn: () =>
+      apiClient.getList<SidebarProject>(
+        `/workspaces/${wsId}/projects/sidebar`,
+      ),
+    enabled: !!wsId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const projects = projectsQuery.data?.data ?? [];
+
+  return (
+    <>
+      {projects.map((project) => (
+        <Tooltip key={project.id}>
+          <TooltipTrigger asChild>
+            <Link
+              to={
+                orgSlug && wsSlug
+                  ? `/${orgSlug}/${wsSlug}/projects/${project.id}/issues`
+                  : '#'
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+            >
+              {project.iconUrl ? (
+                <span className="text-base">{project.iconUrl}</span>
+              ) : (
+                <Folder className="h-5 w-5" />
+              )}
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">{project.name}</TooltipContent>
+        </Tooltip>
+      ))}
+      <CollapsedNavItem
+        icon={<Plus className="h-5 w-5" />}
+        label="프로젝트 추가"
+      />
+    </>
+  );
+}
+
+// -- SidebarProjects --
+
+function SidebarProjects({
+  orgSlug,
+  wsSlug,
+}: {
+  orgSlug: string;
+  wsSlug: string;
+}) {
+  const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
+  const wsId = currentWorkspace?.id;
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  const projectsQuery = useQuery({
+    queryKey: ['workspaces', wsId, 'projects', 'sidebar'],
+    queryFn: () =>
+      apiClient.getList<SidebarProject>(
+        `/workspaces/${wsId}/projects/sidebar`,
+      ),
+    enabled: !!wsId,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const projects = projectsQuery.data?.data ?? [];
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setCollapsed((prev) => !prev)}
+          className="flex flex-1 items-center gap-1 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+        >
+          {collapsed ? (
+            <ChevronRight className="h-3 w-3" />
+          ) : (
+            <ChevronDown className="h-3 w-3" />
+          )}
+          Projects
+        </button>
+      </div>
+
+      {!collapsed && (
+        <>
+          {projects.map((project) => (
+            <NavItem
+              key={project.id}
+              icon={
+                project.iconUrl ? (
+                  <span className="text-sm">{project.iconUrl}</span>
+                ) : (
+                  <Folder className="h-4 w-4" />
+                )
+              }
+              label={project.name}
+              href={
+                orgSlug && wsSlug
+                  ? `/${orgSlug}/${wsSlug}/projects/${project.id}/issues`
+                  : '#'
+              }
+            />
+          ))}
+
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            <span>프로젝트 추가</span>
+          </button>
+        </>
+      )}
+
+      {wsId && (
+        <CreateProjectModal
+          workspaceId={wsId}
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+        />
+      )}
+    </>
   );
 }
 

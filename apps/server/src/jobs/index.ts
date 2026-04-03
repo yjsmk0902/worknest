@@ -1,22 +1,9 @@
 /**
  * Job processor registry.
  *
- * Import and register all BullMQ job processors here.
- * Each processor is registered by name so the worker can dispatch
- * incoming jobs to the correct handler.
- *
- * @example
- * ```ts
- * import { registerProcessor } from "../lib/queue";
- * import { processEmailJob } from "./email-job";
- *
- * export function registerAllJobs() {
- *   registerProcessor({ name: "send-email", processor: processEmailJob });
- * }
- * ```
+ * Activity recording is handled synchronously via ActivityService.record().
+ * This file is kept as a no-op placeholder for future job registrations.
  */
 export function registerAllJobs(): void {
-  // No jobs registered yet — add them as features are implemented.
-  // Example:
-  // registerProcessor({ name: "send-email", processor: processEmailJob });
+  // No async jobs registered for MVP
 }
