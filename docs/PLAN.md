@@ -2,22 +2,22 @@
 
 **기준 문서**: `docs/specs/FEATURE_SPEC.md` v0.5
 **작성일**: 2026-04-01
-**최종 수정**: 2026-04-02
+**최종 수정**: 2026-04-03
 **에이전트 팀**: DBA, Backend, Frontend, Design, QA, DevOps, Tech Lead
 
 ---
 
 ## 진행 상황
 
-| CP | 상태 | 커밋 | 주요 산출물 |
-|----|------|------|-----------|
+| CP       | 상태     | 커밋                     | 주요 산출물                                        |
+| -------- | ------ | ---------------------- | --------------------------------------------- |
 | **CP-1** | **완료** | 6건 (b1cf00b7~7aa49bb3) | 모노레포, 인증, Org/WS CRUD, 설정 UI, 199 테스트, 마이그레이션 |
-| CP-2 | 대기 | - | 프로젝트, 이슈, 라벨, Quick Add, 키보드 단축키 |
-| CP-3 | 대기 | - | 리스트 뷰, 칸반 보드, 필터, 벌크 작업 |
-| CP-4 | 대기 | - | 사이클, 이슈 추가/제거, 이월 |
-| CP-5 | 대기 | - | Wiki Space, 페이지 트리, TipTap 에디터, 파일 업로드 |
-| CP-6 | 대기 | - | Cmd+K, My Work, 댓글, 알림 |
-| CP-7 | 대기 | - | Docker 배포, 온보딩, Empty State, E2E |
+| **CP-2** | **완료** | 1ff93e29               | 프로젝트, 이슈, 라벨, Quick Add, 키보드 단축키, TipTap 에디터  |
+| CP-3     | 대기     | -                      | 리스트 뷰, 칸반 보드, 필터, 벌크 작업                       |
+| CP-4     | 대기     | -                      | 사이클, 이슈 추가/제거, 이월                             |
+| CP-5     | 대기     | -                      | Wiki Space, 페이지 트리, TipTap 에디터, 파일 업로드        |
+| CP-6     | 대기     | -                      | Cmd+K, My Work, 댓글, 알림                        |
+| CP-7     | 대기     | -                      | Docker 배포, 온보딩, Empty State, E2E              |
 
 ### CP-1 완료 상세
 
@@ -27,6 +27,15 @@
 - **Wave 4**: Tech Lead 통합 검증 — 14건 수정
 - **Wave 5**: QA 테스트 199개
 - **추가 수정**: MUST 3건 + SHOULD 5건 + Critical 2건 (마이그레이션, slug→UUID, 트랜잭션, 페이지네이션, 권한, 초대 응답)
+
+### CP-2 완료 상세
+
+- **Phase 1**: DBA — projects, issues, labels, activities 스키마 + 마이그레이션 (search_vector 트리거, pg_trgm)
+- **Phase 2 (병렬)**: Design 4 스펙 | Backend Project API + Issue API + Label + Activity + WebSocket | Shared Zod 스키마
+- **Phase 3 (병렬)**: FE 프로젝트 리스트/설정 | 이슈 상세/Quick Add/서브이슈 | TipTap 에디터 패키지 | 키보드 단축키 + WebSocket 클라이언트
+- **Phase 4**: Tech Lead 통합 검증 — 12건 수정 (admin 강등 방지, body 스키마, 멤버십 체크, WS 인증 등)
+- **Phase 5**: QA 테스트 (서버 통합 3파일 + 프론트 유닛 6파일)
+- **2차 검증**: 6개 에이전트 병렬 재검증 → CRITICAL 8건 + WARNING 43건 → 수정 완료
 
 ---
 
