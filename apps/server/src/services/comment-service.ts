@@ -551,6 +551,21 @@ export class CommentService {
       throw AppError.notFound("comment");
     }
 
+    // Verify membership
+    if (comment.issueId) {
+      await requireProjectMembershipForIssue(
+        this.db,
+        comment.issueId,
+        callerUserId,
+      );
+    } else if (comment.pageId) {
+      await requireSpaceMembershipForPage(
+        this.db,
+        comment.pageId,
+        callerUserId,
+      );
+    }
+
     const existing = await this.db
       .select()
       .from(reactions)

@@ -20,6 +20,7 @@ import {
 } from '@worknest/ui';
 import type { JSONContent } from '@tiptap/core';
 import type { MentionQueryFn } from '@worknest/editor';
+import { formatRelativeTime } from '../../lib/format-time';
 import { CommentEditor } from './comment-editor';
 import { Reactions } from './reactions';
 
@@ -64,29 +65,6 @@ interface CommentItemProps {
   onReactionToggle: (commentId: string, emoji: string) => void;
   /** Mention query function for the comment editor */
   mentionQueryFn?: MentionQueryFn;
-}
-
-// ── Relative time ──────────────────────────────────────────────────────
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-
-  if (diffMinutes < 1) return '방금 전';
-  if (diffMinutes < 60) return `${diffMinutes}분 전`;
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}시간 전`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}일 전`;
-
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks < 4) return `${diffWeeks}주 전`;
-
-  return date.toLocaleDateString('ko-KR');
 }
 
 // ── Read-only renderer ─────────────────────────────────────────────────
@@ -145,7 +123,7 @@ export function CommentItem({
 
   const isAuthor = comment.authorId === currentUserId;
   const authorName = comment.author?.name ?? '알 수 없는 사용자';
-  const avatarSize = isReply ? 'sm' : 'sm';
+  const avatarSize = 'sm';
 
   const handleEditSubmit = (content: JSONContent) => {
     onEdit(comment.id, content);

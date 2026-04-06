@@ -16,6 +16,7 @@ import { Skeleton, toast, cn } from '@worknest/ui';
 import type { ActivityOutput } from '@worknest/shared';
 import type { MentionQueryFn } from '@worknest/editor';
 import { apiClient, type ListResponse } from '../../lib/api-client';
+import { formatRelativeTime } from '../../lib/format-time';
 import { useAuthStore } from '../../stores/auth-store';
 import { useWebSocket } from '../../hooks/use-websocket';
 import { useWebSocketEvent } from '../../hooks/use-websocket-event';
@@ -52,29 +53,6 @@ interface TimelineActivity {
 }
 
 type TimelineEntry = TimelineComment | TimelineActivity;
-
-// ── Relative time helper (shared) ──────────────────────────────────────
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / 60000);
-
-  if (diffMinutes < 1) return '방금 전';
-  if (diffMinutes < 60) return `${diffMinutes}분 전`;
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours}시간 전`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}일 전`;
-
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks < 4) return `${diffWeeks}주 전`;
-
-  return date.toLocaleDateString('ko-KR');
-}
 
 // ── Activity icon/description helpers ──────────────────────────────────
 
@@ -609,6 +587,28 @@ export function CommentList({
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-foreground">댓글 &amp; 활동</h3>
         <TimelineSkeleton />
+      </div>
+    );
+  }
+
+  // ── Error state ───────────────────────────────────────────────────
+
+  if (commentsQuery.isError) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-foreground">댓글 &amp; 활동</h3>
+        <div className="flex flex-col items-center justify-center py-8">
+          <p className="text-sm text-muted-foreground">
+            댓글을 불러오는데 실패했습니다.
+          </p>
+          <button
+            type="button"
+            className="mt-2 text-sm text-primary hover:underline"
+            onClick={() => commentsQuery.refetch()}
+          >
+            다시 시도
+          </button>
+        </div>
       </div>
     );
   }

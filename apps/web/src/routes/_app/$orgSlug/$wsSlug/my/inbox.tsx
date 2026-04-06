@@ -170,7 +170,7 @@ function InboxPage() {
           context.previousData,
         );
       }
-      toast('읽음 처리에 실패했습니다.');
+      toast.error('읽음 처리에 실패했습니다.');
     },
     onSuccess: () => {
       toast('모든 알림이 읽음 처리되었습니다.');

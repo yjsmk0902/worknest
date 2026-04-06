@@ -16,9 +16,11 @@ import {
   labels,
   projects,
   users,
+  workspaceMembers,
   type Database,
 } from "@worknest/db";
 import { createRequireAuth } from "../middleware/auth";
+import { AppError } from "../lib/errors";
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -90,6 +92,23 @@ export async function myWorkRoutes(
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
       const callerUserId = request.user!.id;
+
+      // Verify caller is a workspace member
+      const wsMember = await db
+        .select({ id: workspaceMembers.id })
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, workspaceId),
+            eq(workspaceMembers.userId, callerUserId),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!wsMember) {
+        throw AppError.forbidden("You are not a member of this workspace");
+      }
 
       // Fetch all issues assigned to the caller in this workspace
       const rows = await db

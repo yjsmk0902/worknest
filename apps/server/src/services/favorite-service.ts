@@ -1,10 +1,12 @@
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, isNull } from "drizzle-orm";
 import {
   favorites,
   projects,
+  projectMembers,
   issues,
   wikiPages,
   wikiSpaces,
+  wikiSpaceMembers,
   type Database,
 } from "@worknest/db";
 import type {
@@ -62,6 +64,9 @@ export class FavoriteService {
    */
   async create(callerUserId: string, input: CreateFavoriteInput) {
     const { entityType, entityId } = input;
+
+    // Verify entity exists and caller has access
+    await this.verifyEntityAccess(callerUserId, entityType, entityId);
 
     // Check for duplicate
     const fkColumn = ENTITY_TYPE_TO_COLUMN[entityType];
@@ -169,6 +174,113 @@ export class FavoriteService {
     }
 
     return row;
+  }
+
+  /**
+   * Verify that the entity exists and the caller has membership to access it.
+   */
+  private async verifyEntityAccess(
+    callerUserId: string,
+    entityType: FavoriteEntityType,
+    entityId: string,
+  ) {
+    switch (entityType) {
+      case "project": {
+        const project = await this.db
+          .select({ id: projects.id })
+          .from(projects)
+          .where(and(eq(projects.id, entityId), isNull(projects.deletedAt)))
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!project) throw AppError.notFound("project");
+
+        const member = await this.db
+          .select({ id: projectMembers.id })
+          .from(projectMembers)
+          .where(
+            and(
+              eq(projectMembers.projectId, entityId),
+              eq(projectMembers.userId, callerUserId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!member) throw AppError.forbidden("You are not a member of this project");
+        break;
+      }
+
+      case "issue": {
+        const issue = await this.db
+          .select({ id: issues.id, projectId: issues.projectId })
+          .from(issues)
+          .where(and(eq(issues.id, entityId), isNull(issues.deletedAt)))
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!issue) throw AppError.notFound("issue");
+
+        const member = await this.db
+          .select({ id: projectMembers.id })
+          .from(projectMembers)
+          .where(
+            and(
+              eq(projectMembers.projectId, issue.projectId),
+              eq(projectMembers.userId, callerUserId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!member) throw AppError.forbidden("You are not a member of this project");
+        break;
+      }
+
+      case "page": {
+        const page = await this.db
+          .select({ id: wikiPages.id, wikiSpaceId: wikiPages.wikiSpaceId })
+          .from(wikiPages)
+          .where(and(eq(wikiPages.id, entityId), isNull(wikiPages.deletedAt)))
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!page) throw AppError.notFound("wiki_page");
+
+        const member = await this.db
+          .select({ id: wikiSpaceMembers.id })
+          .from(wikiSpaceMembers)
+          .where(
+            and(
+              eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
+              eq(wikiSpaceMembers.userId, callerUserId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!member) throw AppError.forbidden("You are not a member of this wiki space");
+        break;
+      }
+
+      case "space": {
+        const space = await this.db
+          .select({ id: wikiSpaces.id })
+          .from(wikiSpaces)
+          .where(eq(wikiSpaces.id, entityId))
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!space) throw AppError.notFound("wiki_space");
+
+        const member = await this.db
+          .select({ id: wikiSpaceMembers.id })
+          .from(wikiSpaceMembers)
+          .where(
+            and(
+              eq(wikiSpaceMembers.wikiSpaceId, entityId),
+              eq(wikiSpaceMembers.userId, callerUserId),
+            ),
+          )
+          .limit(1)
+          .then((rows) => rows[0]);
+        if (!member) throw AppError.forbidden("You are not a member of this wiki space");
+        break;
+      }
+    }
   }
 
   /**

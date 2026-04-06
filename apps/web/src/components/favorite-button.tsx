@@ -95,7 +95,7 @@ export function FavoriteButton({
       if (context?.previousData) {
         queryClient.setQueryData(['my', 'favorites'], context.previousData);
       }
-      toast('즐겨찾기 추가에 실패했습니다.');
+      toast.error('즐겨찾기 추가에 실패했습니다.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'favorites'] });
@@ -124,7 +124,7 @@ export function FavoriteButton({
       if (context?.previousData) {
         queryClient.setQueryData(['my', 'favorites'], context.previousData);
       }
-      toast('즐겨찾기 해제에 실패했습니다.');
+      toast.error('즐겨찾기 해제에 실패했습니다.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'favorites'] });

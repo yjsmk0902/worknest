@@ -145,7 +145,7 @@ export async function notificationRoutes(
         throw AppError.notFound("notification");
       }
 
-      return reply.status(200).send({ data: { success: true } });
+      return reply.status(204).send();
     },
   );
 }

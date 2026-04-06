@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
-import { eq, and } from "drizzle-orm";
-import { projectMembers, wikiPages, wikiSpaceMembers, type Database } from "@worknest/db";
+import { eq, and, isNull } from "drizzle-orm";
+import { issues, projectMembers, wikiPages, wikiSpaceMembers, type Database } from "@worknest/db";
 import type { Auth } from "../lib/auth";
 import {
   subscribe,
@@ -194,6 +194,61 @@ export async function websocketHandler(
                 }
               } catch (err) {
                 request.log.error({ err, channel: msg.channel }, "Failed to verify project membership");
+                socket.send(
+                  JSON.stringify({
+                    type: "error",
+                    payload: { message: "Authorization check failed" },
+                  }),
+                );
+                return;
+              }
+            }
+
+            // Verify project membership before subscribing to an issue channel
+            if (parsed.type === "issue") {
+              try {
+                // Look up the issue to find its project
+                const issue = await db
+                  .select({ projectId: issues.projectId })
+                  .from(issues)
+                  .where(and(eq(issues.id, parsed.id), isNull(issues.deletedAt)))
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!issue) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Issue not found" },
+                    }),
+                  );
+                  return;
+                }
+
+                // Verify user is a member of the project
+                const member = await db
+                  .select({ id: projectMembers.id })
+                  .from(projectMembers)
+                  .where(
+                    and(
+                      eq(projectMembers.projectId, issue.projectId),
+                      eq(projectMembers.userId, userId),
+                    ),
+                  )
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!member) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Not a member of this project" },
+                    }),
+                  );
+                  return;
+                }
+              } catch (err) {
+                request.log.error({ err, channel: msg.channel }, "Failed to verify issue project membership");
                 socket.send(
                   JSON.stringify({
                     type: "error",

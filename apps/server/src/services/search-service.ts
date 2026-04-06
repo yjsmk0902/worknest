@@ -18,6 +18,13 @@ const ISSUE_KEY_PATTERN = /^([A-Z]{2,5})-(\d+)$/;
 /** Default per-category limit */
 const DEFAULT_LIMIT = 20;
 
+// ── Helpers ───────────────────────────────────────────────────────────
+
+/** Escape special ILIKE characters so they are matched literally. */
+function escapeLikePattern(s: string): string {
+  return s.replace(/[%_\\]/g, "\\$&");
+}
+
 // ── Service ────────────────────────────────────────────────────────────
 
 export class SearchService {
@@ -249,7 +256,7 @@ export class SearchService {
       .innerJoin(projects, eq(issues.projectId, projects.id))
       .where(
         and(
-          ilike(issues.title, `%${q}%`),
+          ilike(issues.title, `%${escapeLikePattern(q)}%`),
           inArray(issues.projectId, projectIds),
           isNull(issues.deletedAt),
         ),
@@ -287,7 +294,7 @@ export class SearchService {
       .innerJoin(wikiSpaces, eq(wikiPages.wikiSpaceId, wikiSpaces.id))
       .where(
         and(
-          ilike(wikiPages.title, `%${q}%`),
+          ilike(wikiPages.title, `%${escapeLikePattern(q)}%`),
           inArray(wikiPages.wikiSpaceId, spaceIds),
           isNull(wikiPages.deletedAt),
         ),
@@ -329,7 +336,7 @@ export class SearchService {
       .where(
         and(
           eq(projects.workspaceId, workspaceId),
-          ilike(projects.name, `%${q}%`),
+          ilike(projects.name, `%${escapeLikePattern(q)}%`),
           isNull(projects.deletedAt),
         ),
       )

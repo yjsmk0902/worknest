@@ -27,7 +27,7 @@ import {
   BookOpen,
   AlertTriangle,
 } from 'lucide-react';
-import { Skeleton, toast } from '@worknest/ui';
+import { Button, Skeleton, toast } from '@worknest/ui';
 import {
   generateKeyBetween,
   type FavoriteOutput,
@@ -204,7 +204,7 @@ function FavoritesPage() {
       if (context?.previousData) {
         queryClient.setQueryData(['my', 'favorites'], context.previousData);
       }
-      toast('즐겨찾기 해제에 실패했습니다.');
+      toast.error('즐겨찾기 해제에 실패했습니다.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'favorites'] });
@@ -219,7 +219,7 @@ function FavoritesPage() {
       }),
     onError: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'favorites'] });
-      toast('순서 변경에 실패했습니다.');
+      toast.error('순서 변경에 실패했습니다.');
     },
   });
 
@@ -246,13 +246,6 @@ function FavoritesPage() {
       const newIndex = items.findIndex((f) => f.id === over.id);
 
       if (oldIndex === -1 || newIndex === -1) return;
-
-      // Compute new sortOrder using fractional indexing
-      const above = newIndex > 0 ? items[newIndex > oldIndex ? newIndex : newIndex - 1] : null;
-      const below =
-        newIndex < items.length - 1
-          ? items[newIndex < oldIndex ? newIndex : newIndex + 1]
-          : null;
 
       // When moving down, we insert after the target; when moving up, before the target.
       let newSortOrder: string;
@@ -380,6 +373,14 @@ function FavoritesPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               즐겨찾기를 불러올 수 없습니다.
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => favoritesQuery.refetch()}
+            >
+              다시 시도
+            </Button>
           </div>
         </div>
       </div>
