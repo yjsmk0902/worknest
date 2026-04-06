@@ -3,6 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { Badge } from '@worknest/ui';
 import { cn } from '@worknest/ui';
 import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
+import { EmptyState } from '../empty-state';
 
 // ── Status Badge Config ────────────────────────────────────────────────
 
@@ -247,20 +248,14 @@ interface CycleEmptyStateProps {
 
 export function CycleEmptyState({ onCreateClick }: CycleEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16">
-      <RefreshCw className="h-12 w-12 text-muted-foreground" />
-      <h3 className="text-lg font-medium">아직 사이클이 없습니다</h3>
-      <p className="text-sm text-muted-foreground text-center max-w-[320px]">
-        사이클을 만들어 이슈를 그룹화하고 진행 상황을 추적하세요
-      </p>
-      <button
-        type="button"
-        onClick={onCreateClick}
-        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        <span>+</span>
-        사이클 생성
-      </button>
-    </div>
+    <EmptyState
+      icon={RefreshCw}
+      title="사이클이 없습니다"
+      description="사이클을 만들어 스프린트를 관리하세요"
+      action={{
+        label: '사이클 만들기',
+        onClick: onCreateClick,
+      }}
+    />
   );
 }

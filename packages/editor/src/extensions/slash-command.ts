@@ -1,6 +1,6 @@
-import { Extension } from "@tiptap/core";
+import { Extension, type Editor } from "@tiptap/core";
 import { ReactRenderer } from "@tiptap/react";
-import Suggestion, { type SuggestionOptions } from "@tiptap/suggestion";
+import Suggestion, { type SuggestionOptions, type Range } from "@tiptap/suggestion";
 import {
   SlashCommandList,
   getSlashCommandItems,
@@ -127,8 +127,8 @@ export const SlashCommand = Extension.create({
           range,
           props,
         }: {
-          editor: unknown;
-          range: unknown;
+          editor: Editor;
+          range: Range;
           props: SlashCommandItem;
         }) => {
           props.command({ editor, range });

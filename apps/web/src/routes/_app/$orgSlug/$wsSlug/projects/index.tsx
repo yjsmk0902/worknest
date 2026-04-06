@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Folder, Plus } from 'lucide-react';
-import { Button } from '@worknest/ui';
-import { Skeleton } from '@worknest/ui';
+import { Button, Skeleton } from '@worknest/ui';
 import { apiClient } from '../../../../../lib/api-client';
 import { AppHeader } from '../../../../../components/layout/app-header';
 import { ProjectCard } from '../../../../../components/projects/project-card';
 import { CreateProjectModal } from '../../../../../components/projects/create-project-modal';
+import { EmptyState } from '../../../../../components/empty-state';
 import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
 
 export const Route = createFileRoute(
@@ -95,22 +95,15 @@ function ProjectListPage() {
 
         {/* Empty state */}
         {projectsQuery.isSuccess && projects.length === 0 && (
-          <div className="flex min-h-[400px] flex-col items-center justify-center">
-            <Folder className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-base font-medium text-foreground">
-              프로젝트가 없습니다
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              팀의 첫 프로젝트를 만들어보세요
-            </p>
-            <Button
-              className="mt-4"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              프로젝트 만들기
-            </Button>
-          </div>
+          <EmptyState
+            icon={Folder}
+            title="프로젝트가 없습니다"
+            description="프로젝트를 만들어 이슈와 작업을 관리하세요"
+            action={{
+              label: '프로젝트 만들기',
+              onClick: () => setCreateModalOpen(true),
+            }}
+          />
         )}
 
         {/* Project grid */}

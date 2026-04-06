@@ -7,6 +7,7 @@ import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import websocket from "@fastify/websocket";
+import pino from "pino";
 
 import { createDb } from "@worknest/db";
 import { runMigrations } from "@worknest/db/migrate";
@@ -14,6 +15,7 @@ import { createAuth } from "./lib/auth";
 import { createRedis } from "./lib/redis";
 import { errorHandler } from "./lib/errors";
 import { globalRateLimit } from "./middleware/rate-limit";
+import { registerSecurityHeaders } from "./middleware/security-headers";
 import { initQueue, startWorker, closeQueue, addJob } from "./lib/queue";
 import { registerAllJobs } from "./jobs/index";
 
@@ -44,10 +46,76 @@ import { websocketHandler } from "./websocket/handler";
 
 // ── Bootstrap ──────────────────────────────────────────────────────────
 
+const isWorkerOnly = process.env.WORKER_ONLY === "true";
+
 async function main() {
+  const logLevel = process.env.LOG_LEVEL ?? "info";
+
+  // ── Worker-only mode ─────────────────────────────────────────────
+  // Starts DB + Redis + BullMQ worker without the HTTP server.
+  // Useful in production to run workers as separate processes.
+
+  if (isWorkerOnly) {
+    const logger = pino({
+      level: logLevel,
+      transport:
+        process.env.NODE_ENV !== "production"
+          ? { target: "pino-pretty", options: { colorize: true } }
+          : undefined,
+    });
+
+    logger.info("Starting in worker-only mode...");
+
+    // ── Infrastructure ───────────────────────────────────────────
+
+    const { db, client: pgClient } = createDb();
+
+    try {
+      await runMigrations(db);
+    } catch (err) {
+      logger.error(err, "Database migration failed — aborting startup.");
+      process.exit(1);
+    }
+
+    const redis = createRedis();
+
+    // ── BullMQ ───────────────────────────────────────────────────
+
+    initQueue();
+    registerAllJobs(db);
+    startWorker();
+
+    // Schedule orphan file cleanup (runs every hour)
+    await addJob("orphan-cleanup", {}, { repeat: { every: 60 * 60 * 1000 } });
+
+    // Schedule hard-delete cleanup (runs every 24 hours)
+    await addJob(
+      "hard-delete-cleanup",
+      {},
+      { repeat: { every: 24 * 60 * 60 * 1000 } },
+    );
+
+    // ── Graceful Shutdown ────────────────────────────────────────
+
+    const shutdown = async (signal: string) => {
+      logger.info(`Received ${signal}, shutting down worker gracefully...`);
+      await closeQueue();
+      await redis.quit();
+      await pgClient.end();
+      process.exit(0);
+    };
+
+    process.on("SIGINT", () => shutdown("SIGINT"));
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+    logger.info("Worker started (worker-only mode)");
+    return;
+  }
+
+  // ── Full server mode (default) ───────────────────────────────────
+
   const port = Number(process.env.PORT ?? 3000);
   const host = process.env.HOST ?? "0.0.0.0";
-  const logLevel = process.env.LOG_LEVEL ?? "info";
 
   // ── Fastify Instance ─────────────────────────────────────────────
 
@@ -67,8 +135,13 @@ async function main() {
 
   // ── Plugins ──────────────────────────────────────────────────────
 
+  // Parse comma-separated CORS origins; default to localhost in development
+  const corsOrigin = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+    : ["http://localhost:3000"];
+
   await app.register(cors, {
-    origin: process.env.CORS_ORIGIN ?? "*",
+    origin: corsOrigin,
     credentials: true,
   });
 
@@ -97,6 +170,10 @@ async function main() {
 
   await app.register(websocket);
 
+  // ── Security Headers ──────────────────────────────────────────────
+
+  registerSecurityHeaders(app);
+
   // ── Global Rate Limit ────────────────────────────────────────────
 
   app.addHook("preHandler", globalRateLimit);
@@ -123,6 +200,13 @@ async function main() {
 
   // Schedule orphan file cleanup (runs every hour)
   await addJob("orphan-cleanup", {}, { repeat: { every: 60 * 60 * 1000 } });
+
+  // Schedule hard-delete cleanup (runs every 24 hours)
+  await addJob(
+    "hard-delete-cleanup",
+    {},
+    { repeat: { every: 24 * 60 * 60 * 1000 } },
+  );
 
   // ── Register Routes ──────────────────────────────────────────────
 

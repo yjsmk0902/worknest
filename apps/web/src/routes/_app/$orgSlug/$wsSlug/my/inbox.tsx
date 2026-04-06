@@ -19,6 +19,7 @@ import type { NotificationOutput, NotificationType } from '@worknest/shared';
 import { apiClient, type ListResponse } from '../../../../../lib/api-client';
 import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
 import { formatRelativeTime } from '../../../../../lib/format-time';
+import { EmptyState } from '../../../../../components/empty-state';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
@@ -331,13 +332,11 @@ function InboxPage() {
 
       {/* Notification list */}
       {filteredNotifications.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16">
-          <Bell className="h-12 w-12 text-muted-foreground/50" />
-          <p className="text-lg font-medium">새로운 알림이 없습니다</p>
-          <p className="text-sm text-muted-foreground">
-            알림이 도착하면 여기에 표시됩니다
-          </p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="새로운 알림이 없습니다"
+          description="알림이 도착하면 여기에 표시됩니다"
+        />
       ) : (
         <div
           className="flex-1 overflow-y-auto px-6"

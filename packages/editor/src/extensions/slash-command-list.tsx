@@ -6,6 +6,8 @@ import {
   useCallback,
   type KeyboardEvent,
 } from "react";
+import type { Editor } from "@tiptap/core";
+import type { Range } from "@tiptap/suggestion";
 import {
   Heading1,
   Heading2,
@@ -22,11 +24,17 @@ import {
   Minus,
 } from "lucide-react";
 
+/** Props passed to each slash command's `command` callback. */
+interface SlashCommandProps {
+  editor: Editor;
+  range: Range;
+}
+
 export interface SlashCommandItem {
   title: string;
   description: string;
   icon: React.ReactNode;
-  command: (props: { editor: unknown; range: unknown }) => void;
+  command: (props: SlashCommandProps) => void;
   keywords: string[];
   category: string;
 }
@@ -50,7 +58,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Heading1 size={18} />,
       keywords: ["heading1", "h1", "title"],
       category: "텍스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setNode("heading", { level: 1 }).run();
       },
     },
@@ -60,7 +68,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Heading2 size={18} />,
       keywords: ["heading2", "h2"],
       category: "텍스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setNode("heading", { level: 2 }).run();
       },
     },
@@ -70,7 +78,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Heading3 size={18} />,
       keywords: ["heading3", "h3"],
       category: "텍스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setNode("heading", { level: 3 }).run();
       },
     },
@@ -80,7 +88,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Pilcrow size={18} />,
       keywords: ["paragraph", "text", "plain"],
       category: "텍스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setParagraph().run();
       },
     },
@@ -91,7 +99,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <List size={18} />,
       keywords: ["bullet", "list", "unordered"],
       category: "리스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleBulletList().run();
       },
     },
@@ -101,7 +109,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <ListOrdered size={18} />,
       keywords: ["numbered", "ordered", "ol"],
       category: "리스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleOrderedList().run();
       },
     },
@@ -111,7 +119,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <ListTodo size={18} />,
       keywords: ["todo", "checklist", "task"],
       category: "리스트",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleTaskList().run();
       },
     },
@@ -122,7 +130,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Image size={18} />,
       keywords: ["image", "img", "picture", "photo"],
       category: "미디어",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).run();
         // Trigger file input for image upload
         const input = document.createElement("input");
@@ -147,7 +155,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Paperclip size={18} />,
       keywords: ["file", "attachment", "upload"],
       category: "미디어",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).run();
         const input = document.createElement("input");
         input.type = "file";
@@ -170,7 +178,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Code2 size={18} />,
       keywords: ["code", "codeblock", "pre"],
       category: "고급",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
       },
     },
@@ -180,7 +188,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Table size={18} />,
       keywords: ["table", "grid"],
       category: "고급",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor
           .chain()
           .focus()
@@ -195,7 +203,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Quote size={18} />,
       keywords: ["quote", "blockquote", "cite"],
       category: "고급",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleBlockquote().run();
       },
     },
@@ -205,7 +213,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       icon: <Minus size={18} />,
       keywords: ["divider", "hr", "line", "separator"],
       category: "고급",
-      command: ({ editor, range }: { editor: any; range: any }) => {
+      command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setHorizontalRule().run();
       },
     },

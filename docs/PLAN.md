@@ -17,7 +17,7 @@
 | **CP-4** | **완료** | -                      | 사이클 CRUD, 이슈 추가/제거, 활성화, 이월, 진행률, ~92 테스트     |
 | **CP-5** | **완료** | -                      | Wiki Space, 페이지 트리, TipTap 에디터, 파일 업로드, ~96 테스트 |
 | **CP-6** | **완료** | -                      | Cmd+K, My Work, 댓글/리액션, 알림, 검색, 즐겨찾기, ~108 테스트 |
-| CP-7     | 대기     | -                      | Docker 배포, 온보딩, Empty State, E2E              |
+| **CP-7** | **완료** | -                      | Docker 배포, 보안, Empty State, 에러 페이지, E2E, 기술 부채 정리 |
 
 ### CP-1 완료 상세
 
@@ -403,44 +403,57 @@
 
 ## CP-7: 배포 & QA
 
-> Dockerfile, docker-compose.prod, 리버스 프록시, .dockerignore, 셀프호스팅 문서, 온보딩 위저드, Empty State, Swagger, 에러 페이지, 버그 수정
+> Dockerfile, docker-compose.prod, 리버스 프록시, .dockerignore, 셀프호스팅 문서, Empty State, Swagger, 에러 페이지, 버그 수정
+>
+> **6-에이전트 사전 검토 완료** (2026-04-06): 아래는 검토 결과를 반영한 수정 계획.
+
+### 사전 검토에서 식별된 주요 조정사항
+
+| # | 변경 | 이유 |
+|---|------|------|
+| 1 | **CP7-BE-5 신규**: Worker 모드 분리 (`WORKER_ONLY` env) | DO-3 docker-compose worker 컨테이너의 CRITICAL 전제 조건 |
+| 2 | **CP7-QA-0 신규**: Playwright 인프라 설정 | QA-1 E2E 테스트의 전제 조건 (미설치 상태) |
+| 3 | BE-3, BE-4를 Phase 2에 명시, BE-1(Swagger)은 Phase 2 마지막 | 기존 phasing에서 누락 |
+| 4 | FE-1 (온보딩) scope 축소 | progress bar, skip, validation 이미 구현됨. 프로젝트 생성 단계 추가만 해당 |
+| 5 | `sanitize.ts` 테스트 추가 (QA-3에 포함) | 보안 critical gap |
 
 ### 실행 순서
 
-1. **[Phase 1 — 병렬]** DevOps: 프로덕션 Docker 구성 | Design: 온보딩 위저드 + Empty State + 에러 페이지 최종 스펙
-2. **[Phase 2 — 병렬]** Backend: Swagger 최종 정리 + 헬스체크 고도화 | Frontend: 온보딩 위저드 + Empty State + 에러 페이지 구현
-3. **[Phase 3]** DevOps: 셀프호스팅 배포 문서
-4. **[Phase 4]** Tech Lead: 전체 통합 검증 + 성능 리뷰
-5. **[Phase 5]** QA: 최종 E2E 시나리오 + 회귀 테스트
-6. **[Phase 6]** 전체: 버그 수정 사이클
+1. **[Phase 0 — Pre-flight]** BE-5: Worker 모드 분리 | QA-0: Playwright 설치 + config
+2. **[Phase 1 — 병렬]** DevOps: Dockerfiles + docker-compose + Caddy + .dockerignore + CI | Design: Empty State + 에러 페이지 스펙
+3. **[Phase 2 — 병렬]** Backend: 보안 헤더 → 헬스체크 → Hard delete cron → Swagger 정리 | Frontend: Empty State 통합 + 에러 바운더리 + 반응형 점검
+4. **[Phase 3]** DevOps: 셀프호스팅 문서
+5. **[Phase 4]** Tech Lead: 전체 통합 검증 + 기술 부채 정리
+6. **[Phase 5]** QA: E2E + 회귀 + 보안 + 엣지 케이스 테스트
+7. **[Phase 6]** 전체: 버그 수정 사이클
 
 ### 상세 태스크
 
-| Task ID | Agent | 설명 | 의존성 | 핵심 산출물 |
-|---------|-------|------|--------|------------|
-| CP7-DO-1* | DevOps | `Dockerfile.server`: Multi-stage build(build → runtime). Node.js 20 alpine. pnpm fetch + install + build. 최소 런타임 이미지. 헬스체크 CMD. | CP6-TL-1 | `Dockerfile.server` |
-| CP7-DO-2* | DevOps | `Dockerfile.web`: Multi-stage build(build → nginx). Vite build → nginx 정적 서빙. SPA fallback 설정. 환경 변수 런타임 주입(entrypoint.sh에서 `env.js` 생성). | CP6-TL-1 | `Dockerfile.web` |
-| CP7-DO-3* | DevOps | `docker-compose.prod.yml`: server, web, **worker**(BullMQ 워커 전용 컨테이너, 동일 서버 이미지에서 `--worker` 플래그로 분리 실행), postgres, redis, minio. 볼륨(데이터 영속), 네트워크, 재시작 정책(unless-stopped), 리소스 제한(deploy.resources). `.env.example` 프로덕션용. | CP7-DO-1, CP7-DO-2 | `docker-compose.prod.yml` |
-| CP7-DO-4 | DevOps | 리버스 프록시: Caddy 설정(자동 HTTPS). WebSocket 업그레이드 프록시. `/api` → server, `/` → web 라우팅. 헤더(HSTS, X-Frame-Options 등). | CP7-DO-3 | `Caddyfile`, `docker-compose.prod.yml`(Caddy 서비스 추가) |
-| CP7-DO-5 | DevOps | `.dockerignore` 작성. GitHub Actions release workflow: tag push → **Docker 이미지 빌드 검증** → Docker Hub/GHCR 이미지 push. **build.yml workflow**: PR 시 Docker 이미지 빌드 성공 여부 검증(push 없이 build-only). | CP7-DO-3 | `.dockerignore`, `.github/workflows/release.yml`, `.github/workflows/build.yml` |
-| CP7-DO-6 | DevOps | 셀프호스팅 배포 문서: 사전 요구사항(Docker, Compose), 빠른 시작(3단계), 환경 변수 설명, 백업/복원, 업그레이드 절차, 트러블슈팅. | CP7-DO-4 | `docs/self-hosting.md` |
-| CP7-DS-1 | Design | 온보딩 위저드 최종 스펙: 신규 가입 시 단계별 가이드(Org 생성 → WS 생성 → Project 생성 → 첫 이슈 생성 유도). 프로그레스 바, 건너뛰기 옵션. | 없음 | `docs/design/onboarding-wizard.md` |
-| CP7-DS-2 | Design | Empty State 최종 정리: 기능정의서 12.10 목록 기준, 각 화면별 일러스트/아이콘 + 메시지 + CTA 버튼 일관된 스타일. | 없음 | `docs/design/empty-states.md` |
-| CP7-DS-3 | Design | **에러 페이지 디자인 스펙**: 404 (페이지 없음), 500 (서버 오류), 403 (접근 거부) 화면. 일관된 레이아웃, 홈/뒤로가기 CTA, 에러 코드 표시. | 없음 | `docs/design/error-pages.md` |
-| CP7-BE-1 | Backend | Swagger 최종 정리: 모든 API 태그/설명/예시 확인, 응답 스키마 일관성, `@fastify/swagger-ui` 설정(`/api/v1/docs`). | CP6-BE-8 | `apps/server/src/routes/`(Swagger 어노테이션 보완) |
-| CP7-BE-2 | Backend | 헬스체크 고도화: `/readyz` — DB 연결 + Redis 연결 + 디스크 공간 확인. 응답에 각 서비스 상태 포함. | CP1-BE-1 | `apps/server/src/routes/health.ts`(확장) |
-| CP7-BE-3 | Backend | Soft delete 크론 job: 30일 경과 엔티티 hard delete + 파일 스토리지 정리. BullMQ 반복 job(CP1-BE-8 인프라 사용). | CP6-DBA-1, CP1-BE-8 | `apps/server/src/jobs/hard-delete-cleanup.ts` |
-| CP7-BE-4 | Backend | 보안 헤더 미들웨어: CORS origin whitelist + credentials, Content-Security-Policy, X-Content-Type-Options, X-Frame-Options. | CP1-BE-1 | `apps/server/src/middleware/security.ts` |
-| CP7-FE-1 | Frontend | 온보딩 위저드 개선: CP1-FE-4 기반, 프로그레스 바, 각 단계 유효성 검증, 건너뛰기 → 기본값으로 생성, 완료 시 My Work으로 리다이렉트. | CP7-DS-1, CP1-FE-4 | `apps/web/src/pages/onboarding/`(리팩토링) |
-| CP7-FE-2 | Frontend | Empty State 전체 구현: 기능정의서 12.10 목록 전체. 통일된 `EmptyState` 컴포넌트(아이콘, 메시지, CTA). 각 화면에 적용 확인. | CP7-DS-2 | `apps/web/src/components/empty-state.tsx`, 각 페이지 적용 |
-| CP7-FE-3 | Frontend | 에러 바운더리 + **에러 페이지**: 전역 에러 바운더리 + 라우트별 에러 페이지(404, 500, 403). CP7-DS-3 디자인 스펙 반영. 에러 리포트 토스트. | CP7-DS-3 | `apps/web/src/components/error-boundary.tsx`, `apps/web/src/pages/errors/` |
-| CP7-FE-4 | Frontend | 반응형 최종 점검: 1280+/1024~1279 동작 확인, ~1023px "데스크톱 브라우저 사용" 안내. 사이드바 축소(48px 아이콘) 동작. | 없음 | 각 레이아웃 컴포넌트 수정 |
-| CP7-TL-1* | Tech Lead | 전체 통합 검증: 전체 유저 시나리오 플로우(가입 → 온보딩 → 프로젝트 생성 → 이슈 CRUD → 칸반 → 사이클 → Wiki → 검색 → 알림). 성능 리뷰(N+1 쿼리, 불필요한 리렌더, 인덱스 누락). 보안 리뷰(인증/권한/XSS/CORS). 코드 컨벤션 최종 확인. | CP7-FE-4, CP7-BE-4 | 최종 리뷰 리포트 |
-| CP7-TL-2 | Tech Lead | 기술 부채 정리: TODO 주석 해결, 미사용 코드 제거, 타입 `any` 제거, 에러 핸들링 일관성 확인. | CP7-TL-1 | 리팩토링 PR |
-| CP7-QA-1* | QA | 최종 E2E 시나리오 테스트(Playwright): 신규 가입 → 온보딩 → 프로젝트 생성 → 이슈 생성(Quick Add) → 칸반 DnD → 사이클 생성 + 이슈 추가 → Wiki 페이지 작성 → Cmd+K 검색 → 알림 확인. | CP7-TL-1 | `e2e/full-flow.spec.ts` |
-| CP7-QA-2 | QA | 회귀 테스트: CP1~CP6 모든 테스트 실행, 깨진 테스트 수정. 커버리지 리포트 생성. | CP7-QA-1 | 테스트 커버리지 리포트 |
-| CP7-QA-3 | QA | 보안 테스트: 권한 우회 시도(다른 사용자 리소스 접근), Rate limiting 동작, XSS 페이로드 삽입, CSRF 방어, 세션 만료 동작. | CP7-TL-1 | `apps/server/test/security.test.ts` |
-| CP7-QA-4 | QA | 엣지 케이스 테스트: 이슈 삭제 연쇄 처리(서브이슈 승격, CycleIssue 제거, Wiki 링크 표시), 프로젝트 prefix 재사용 방지, Wiki 순환 참조, 동시 편집 Last-Write-Wins. | CP7-TL-1 | `apps/server/test/edge-cases.test.ts` |
+| Task ID | Phase | Agent | 설명 | 의존성 | 핵심 산출물 |
+|---------|-------|-------|------|--------|------------|
+| CP7-BE-5 | 0 | Backend | **Worker 모드 분리 (신규)**: `WORKER_ONLY` 환경변수로 서버/워커 프로세스 분리. worker 모드: DB + Redis + BullMQ worker만 실행 (Fastify HTTP 서버 스킵). server 모드: 기존 동작 유지. 동일 Docker 이미지에서 모드 전환. | 없음 | `apps/server/src/index.ts`(리팩토링) |
+| CP7-QA-0 | 0 | QA | **Playwright 인프라 (신규)**: `@playwright/test` 설치, `playwright.config.ts` 생성, `e2e/` 디렉토리, auth fixture (세션 쿠키 주입), 테스트 헬퍼 (API-based 데이터 시딩). | 없음 | `e2e/`, `playwright.config.ts` |
+| CP7-DO-1* | 1 | DevOps | `Dockerfile.server`: Multi-stage build(build → runtime). Node.js 20 alpine. pnpm + turbo build. sharp 네이티브 모듈 처리. 헬스체크 CMD. | CP7-BE-5 | `Dockerfile.server` |
+| CP7-DO-2* | 1 | DevOps | `Dockerfile.web`: Multi-stage build(build → nginx). Vite build → nginx 정적 서빙. SPA fallback. 런타임 env injection 불필요 (API 상대 경로). | 없음 | `Dockerfile.web` |
+| CP7-DO-3* | 1 | DevOps | `docker-compose.prod.yml`: server, web, **worker**(`WORKER_ONLY=true`로 분리 실행), postgres, redis, minio. 볼륨, 네트워크, 재시작 정책, 리소스 제한. `.env.example` 프로덕션용. | CP7-DO-1, CP7-DO-2, CP7-BE-5 | `docker-compose.prod.yml` |
+| CP7-DO-4 | 1 | DevOps | Caddy 리버스 프록시: 자동 HTTPS, WebSocket 업그레이드, `/api` → server, `/` → web. | CP7-DO-3 | `Caddyfile` |
+| CP7-DO-5 | 1 | DevOps | `.dockerignore` + GitHub Actions (release.yml: tag → GHCR push, build.yml: PR → build 검증). | CP7-DO-3 | `.dockerignore`, `.github/workflows/` |
+| CP7-DS-1 | 1 | Design | Empty State 최종 정리: 기능정의서 12.10 전체 목록, 통일된 아이콘 + 메시지 + CTA 스타일. | 없음 | `docs/design/empty-states.md` |
+| CP7-DS-2 | 1 | Design | 에러 페이지 디자인 스펙: 404, 500, 403. 일관된 레이아웃, CTA. | 없음 | `docs/design/error-pages.md` |
+| CP7-BE-4 | 2 | Backend | 보안 헤더 미들웨어: CORS origin whitelist (기본 `*` 제거), CSP (Swagger UI 호환), X-Content-Type-Options, X-Frame-Options. Swagger docs 경로 예외 처리. | 없음 | `apps/server/src/middleware/security-headers.ts` |
+| CP7-BE-2 | 2 | Backend | 헬스체크 고도화: `/readyz` — DB + Redis + 디스크(uploads/ writable) + 응답 시간. 업타임, 버전 메타데이터. | 없음 | `apps/server/src/routes/health.ts`(확장) |
+| CP7-BE-3 | 2 | Backend | Hard delete 크론 job: 30일 경과 soft-deleted 엔티티 배치 삭제 (issues, comments, wiki_pages). 파일 디스크 정리 후 DB 삭제 (CASCADE 순서). BullMQ 반복 job (24시간). | 없음 | `apps/server/src/jobs/hard-delete-cleanup.ts` |
+| CP7-BE-1 | 2 | Backend | Swagger 최종 정리: 모든 API 태그 정의(20개), 각 엔드포인트 summary/description 확인, 응답 스키마 일관성. **Phase 2 마지막 실행** (다른 BE 태스크 완료 후). | CP7-BE-2, CP7-BE-3, CP7-BE-4 | `apps/server/src/routes/`(보완) |
+| CP7-FE-2 | 2 | Frontend | Empty State 통합: `EmptyState` 컴포넌트 생성 (icon, title, description, action props). 11개 인라인 구현을 통합 컴포넌트로 교체. | CP7-DS-1 | `apps/web/src/components/empty-state.tsx` |
+| CP7-FE-3 | 2 | Frontend | 에러 바운더리 + 에러 페이지: `ErrorBoundary` 컴포넌트 + 404/500/403 페이지. TanStack Router `defaultErrorComponent` + `defaultNotFoundComponent` 설정. | CP7-DS-2 | `apps/web/src/components/error-boundary.tsx` |
+| CP7-FE-4 | 2 | Frontend | 반응형 최종 점검: `useMediaQuery` 훅, <1023px 미지원 배너, 1024-1279 사이드바 자동 축소, 테이블 컬럼 조정. | 없음 | `apps/web/src/hooks/use-media-query.ts` |
+| CP7-DO-6 | 3 | DevOps | 셀프호스팅 배포 문서: 빠른 시작(3단계), 환경 변수 설명, 백업/복원, 업그레이드, 트러블슈팅. | CP7-DO-4 | `docs/self-hosting.md` |
+| CP7-TL-1* | 4 | Tech Lead | 전체 통합 검증: 유저 시나리오 플로우, 성능 리뷰, 보안 리뷰, 코드 컨벤션. | CP7-FE-4, CP7-BE-4 | 최종 리뷰 리포트 |
+| CP7-TL-2 | 4 | Tech Lead | 기술 부채 정리: TODO 2개, `any` 14개, 에러 핸들링 일관성, 미사용 코드. | CP7-TL-1 | 리팩토링 |
+| CP7-QA-1* | 5 | QA | E2E 테스트(Playwright): 가입 → 프로젝트 → 이슈 → 칸반 → 사이클 → Wiki → 검색 → 알림. | CP7-TL-1, CP7-QA-0 | `e2e/full-flow.spec.ts` |
+| CP7-QA-2 | 5 | QA | 회귀 테스트: 전체 테스트 실행, 깨진 테스트 수정. | CP7-QA-1 | 커버리지 리포트 |
+| CP7-QA-3 | 5 | QA | 보안 테스트: 권한 우회, Rate limiting, XSS (`sanitize.ts` 단위 테스트 포함), 세션 만료. | CP7-TL-1, CP7-BE-4 | `apps/server/test/security.test.ts` |
+| CP7-QA-4 | 5 | QA | 엣지 케이스: 이슈 삭제 연쇄, prefix 재사용, Wiki 순환 참조, 동시 편집 LWW. | CP7-TL-1 | `apps/server/test/edge-cases.test.ts` |
 
 ---
 

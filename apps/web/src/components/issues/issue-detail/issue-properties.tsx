@@ -104,8 +104,9 @@ export function IssueProperties({
   });
 
   // Fetch cycles for this issue
-  // TODO: Replace with a dedicated backend endpoint (e.g. GET /issues/:issueId/cycles)
-  // to avoid fetching issues for every cycle.
+  // Deferred to v1.0: Replace with a dedicated backend endpoint
+  // (e.g. GET /issues/:issueId/cycles) to avoid N+1 fetches.
+  // Current approach works for MVP given the typical cycle count (< 5).
   const issueCyclesQuery = useQuery<CycleOutput[]>({
     queryKey: ['issues', issue.id, 'cycles'],
     queryFn: async () => {

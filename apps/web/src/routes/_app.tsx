@@ -11,6 +11,7 @@ import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
 import { CommandPalette } from '../components/command-palette/command-palette';
 import { connect, disconnect } from '../lib/websocket';
 import { useWebSocket } from '../hooks/use-websocket';
+import { useMediaQuery } from '../hooks/use-media-query';
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
@@ -20,6 +21,18 @@ function AppLayout() {
   const navigate = useNavigate();
   const setCurrentUser = useAuthStore((s) => s.setCurrentUser);
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
+  const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed);
+
+  // Auto-collapse sidebar at 1024-1279px
+  const isMediumViewport = useMediaQuery(
+    '(min-width: 1024px) and (max-width: 1279px)',
+  );
+
+  useEffect(() => {
+    if (isMediumViewport && !sidebarCollapsed) {
+      setSidebarCollapsed(true);
+    }
+  }, [isMediumViewport, sidebarCollapsed, setSidebarCollapsed]);
 
   const profileQuery = useQuery<User>({
     queryKey: ['my', 'profile'],

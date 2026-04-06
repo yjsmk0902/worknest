@@ -1,0 +1,20 @@
+{$DOMAIN:localhost} {
+	# API and WebSocket requests
+	handle /api/v1/* {
+		reverse_proxy server:4000
+	}
+
+	# Health check endpoints (no /api/v1 prefix)
+	handle /healthz {
+		reverse_proxy server:4000
+	}
+
+	handle /readyz {
+		reverse_proxy server:4000
+	}
+
+	# Web SPA
+	handle {
+		reverse_proxy web:80
+	}
+}

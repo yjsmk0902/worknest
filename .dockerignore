@@ -1,0 +1,46 @@
+# Dependencies (reinstalled in Docker)
+node_modules
+**/node_modules
+
+# Build artifacts (rebuilt in Docker)
+dist
+**/dist
+.turbo
+**/.turbo
+
+# Git
+.git
+.gitignore
+
+# Environment files (must not leak into images)
+.env
+.env.*
+!.env.example
+
+# Documentation
+*.md
+docs/
+LICENSE
+
+# Docker configs (not needed inside images)
+docker-compose*.yml
+Dockerfile*
+Caddyfile
+
+# CI/CD and tooling
+.github
+.claude
+.vscode
+.idea
+
+# Tests
+e2e
+**/*.test.ts
+**/*.spec.ts
+vitest.config.*
+playwright.config.*
+
+# Misc
+.DS_Store
+*.log
+coverage

@@ -4,6 +4,7 @@ import { createBulkActivityProcessor } from "./bulk-activity";
 import { createImageThumbnailProcessor } from "./image-thumbnail";
 import { createOrphanCleanupProcessor } from "./orphan-cleanup";
 import { createNotificationProcessor } from "./notification-job";
+import { createHardDeleteCleanupProcessor } from "./hard-delete-cleanup";
 
 /**
  * Job processor registry.
@@ -26,5 +27,9 @@ export function registerAllJobs(db: Database): void {
   registerProcessor({
     name: "notification",
     processor: createNotificationProcessor(db),
+  });
+  registerProcessor({
+    name: "hard-delete-cleanup",
+    processor: createHardDeleteCleanupProcessor(db),
   });
 }

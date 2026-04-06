@@ -175,7 +175,9 @@ export function CommandPalette() {
       keywords: ['이슈', '생성', 'issue', 'create', 'new'],
       action: () => {
         close();
-        // TODO: open issue creation modal
+        // Deferred to v1.0: Open a global issue-creation modal.
+        // Requires a workspace-aware modal that can select a target project,
+        // which depends on the global modal infrastructure planned for v1.0.
       },
     },
     {

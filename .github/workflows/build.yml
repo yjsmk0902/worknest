@@ -1,0 +1,62 @@
+name: Build Docker Images
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "Dockerfile.*"
+      - "docker-compose.prod.yml"
+      - "nginx.conf"
+      - "pnpm-lock.yaml"
+      - "turbo.json"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-server:
+    name: Build Server Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.server
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: worknest-server:pr-${{ github.event.pull_request.number }}
+
+  build-web:
+    name: Build Web Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: worknest-web:pr-${{ github.event.pull_request.number }}

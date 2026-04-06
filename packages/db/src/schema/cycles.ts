@@ -82,6 +82,8 @@ export const cycleIssues = pgTable(
       .references(() => issues.id, { onDelete: "cascade" }),
     addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
     removedAt: timestamp("removed_at", { withTimezone: true }),
+    // Self-referential FK requires (): AnyColumn cast — Drizzle ORM limitation.
+    // See: https://orm.drizzle.team/docs/indexes-constraints#foreign-key
     carriedFromId: uuid("carried_from_id").references(
       (): any => cycleIssues.id,
       { onDelete: "set null" },

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 import { eq, and, isNull } from "drizzle-orm";
-import { issues, projectMembers, wikiPages, wikiSpaceMembers, type Database } from "@worknest/db";
+import { issues, projectMembers, wikiPages, wikiSpaceMembers, workspaceMembers, type Database } from "@worknest/db";
 import type { Auth } from "../lib/auth";
 import {
   subscribe,
@@ -166,6 +166,55 @@ export async function websocketHandler(
                 }),
               );
               return;
+            }
+
+            // Users can only subscribe to their own personal channel
+            if (parsed.type === "user") {
+              if (parsed.id !== userId) {
+                socket.send(
+                  JSON.stringify({
+                    type: "error",
+                    payload: { message: "Cannot subscribe to another user's channel" },
+                  }),
+                );
+                return;
+              }
+            }
+
+            // Verify workspace membership before subscribing
+            if (parsed.type === "workspace") {
+              try {
+                const member = await db
+                  .select({ id: workspaceMembers.id })
+                  .from(workspaceMembers)
+                  .where(
+                    and(
+                      eq(workspaceMembers.workspaceId, parsed.id),
+                      eq(workspaceMembers.userId, userId),
+                    ),
+                  )
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!member) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Not a member of this workspace" },
+                    }),
+                  );
+                  return;
+                }
+              } catch (err) {
+                request.log.error({ err, channel: msg.channel }, "Failed to verify workspace membership");
+                socket.send(
+                  JSON.stringify({
+                    type: "error",
+                    payload: { message: "Authorization check failed" },
+                  }),
+                );
+                return;
+              }
             }
 
             // Verify project membership before subscribing

@@ -7,6 +7,7 @@ import type { WikiSpaceOutput } from '@worknest/shared';
 import { apiClient } from '../../../../../lib/api-client';
 import { AppHeader } from '../../../../../components/layout/app-header';
 import { SpaceFormModal } from '../../../../../components/wiki/space-form-modal';
+import { EmptyState } from '../../../../../components/empty-state';
 import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
 
 export const Route = createFileRoute(
@@ -80,22 +81,15 @@ function WikiIndexPage() {
 
         {/* Empty state */}
         {spacesQuery.isSuccess && spaces.length === 0 && (
-          <div className="flex min-h-[400px] flex-col items-center justify-center">
-            <BookOpen className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-base font-medium text-foreground">
-              위키 스페이스가 없습니다
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              팀의 지식을 정리할 첫 스페이스를 만들어보세요
-            </p>
-            <Button
-              className="mt-4"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              스페이스 만들기
-            </Button>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="지식을 한 곳에 모아보세요"
+            description="스페이스를 만들어 팀의 문서를 정리하세요"
+            action={{
+              label: '스페이스 만들기',
+              onClick: () => setCreateModalOpen(true),
+            }}
+          />
         )}
 
         {/* Space grid */}

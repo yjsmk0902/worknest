@@ -35,6 +35,7 @@ import {
 } from '@worknest/shared';
 import { apiClient } from '../../../../../lib/api-client';
 import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { EmptyState } from '../../../../../components/empty-state';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
@@ -396,13 +397,11 @@ function FavoritesPage() {
         <div className="px-6 py-4">
           <h1 className="text-2xl font-semibold">즐겨찾기</h1>
         </div>
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16">
-          <Star className="h-12 w-12 text-muted-foreground/50" />
-          <p className="text-lg font-medium">즐겨찾기한 항목이 없습니다</p>
-          <p className="text-sm text-muted-foreground">
-            프로젝트, 이슈, Wiki 페이지에서 ⭐를 눌러 즐겨찾기에 추가하세요
-          </p>
-        </div>
+        <EmptyState
+          icon={Star}
+          title="즐겨찾기한 항목이 없습니다"
+          description="프로젝트, 이슈, Wiki 페이지에서 별 아이콘을 눌러 즐겨찾기에 추가하세요"
+        />
       </div>
     );
   }

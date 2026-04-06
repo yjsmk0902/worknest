@@ -6,9 +6,10 @@ import {
   type RowSelectionState,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Loader2, CircleCheck, Plus, Search } from 'lucide-react';
+import { Loader2, CirclePlus, SearchX } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
 import { cn } from '@worknest/ui';
+import { EmptyState } from '../../empty-state';
 import { createIssueColumns } from './columns';
 import type { IssueOutput } from '@worknest/shared';
 
@@ -120,41 +121,29 @@ export function IssueListTable({
   if (issues.length === 0) {
     if (hasFilters) {
       return (
-        <div className="flex flex-col items-center justify-center py-24">
-          <Search className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">
-            검색 결과가 없습니다
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            필터 조건을 변경하거나 초기화해 보세요.
-          </p>
-          {onClearFilters && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={onClearFilters}
-            >
-              필터 초기화
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title="조건에 맞는 이슈가 없습니다"
+          description="필터 조건을 변경하거나 초기화해보세요"
+          action={
+            onClearFilters
+              ? { label: '필터 초기화', onClick: onClearFilters }
+              : undefined
+          }
+        />
       );
     }
 
     return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <CircleCheck className="h-12 w-12 text-muted-foreground/50" />
-        <h3 className="mt-4 text-lg font-medium text-foreground">
-          아직 이슈가 없습니다
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          첫 번째 이슈를 만들어 프로젝트를 시작하세요.
-        </p>
-        <Button className="mt-4" onClick={onShowQuickAdd}>
-          <Plus className="h-4 w-4" />
-          이슈 만들기
-        </Button>
-      </div>
+      <EmptyState
+        icon={CirclePlus}
+        title="C 를 눌러 첫 이슈를 만들어보세요"
+        description="이슈를 만들어 프로젝트의 작업을 추적하세요"
+        action={{
+          label: '이슈 만들기',
+          onClick: onShowQuickAdd,
+        }}
+      />
     );
   }
 
