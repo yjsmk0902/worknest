@@ -183,6 +183,82 @@ export interface TestActivity {
   createdAt: Date;
 }
 
+export interface TestCycle {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  status: string;
+  createdBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TestCycleIssue {
+  id: string;
+  cycleId: string;
+  issueId: string;
+  addedAt: Date;
+  removedAt: Date | null;
+  carriedFromId: string | null;
+}
+
+export interface TestWikiSpace {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string | null;
+  slug: string;
+  createdBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TestWikiSpaceMember {
+  id: string;
+  wikiSpaceId: string;
+  userId: string;
+  role: string;
+  createdAt: Date;
+}
+
+export interface TestWikiPage {
+  id: string;
+  wikiSpaceId: string;
+  title: string;
+  slug: string;
+  content: unknown;
+  contentFormat: string;
+  contentText: string | null;
+  parentId: string | null;
+  sortOrder: string;
+  createdBy: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface TestFile {
+  id: string;
+  issueId: string | null;
+  pageId: string | null;
+  name: string;
+  path: string;
+  mimeType: string;
+  size: number;
+  uploadedBy: string | null;
+  createdAt: Date;
+}
+
+export interface TestIssueMention {
+  id: string;
+  issueId: string;
+  pageId: string;
+  createdAt: Date;
+}
+
 // ── In-memory data stores ─────────────────────────────────────────────
 
 export const stores = {
@@ -202,6 +278,13 @@ export const stores = {
   labels: [] as TestLabel[],
   activities: [] as TestActivity[],
   views: [] as TestView[],
+  cycles: [] as TestCycle[],
+  cycleIssues: [] as TestCycleIssue[],
+  wikiSpaces: [] as TestWikiSpace[],
+  wikiSpaceMembers: [] as TestWikiSpaceMember[],
+  wikiPages: [] as TestWikiPage[],
+  files: [] as TestFile[],
+  issueMentions: [] as TestIssueMention[],
   sessions: new Map<string, TestUser>(),
 };
 
@@ -482,6 +565,141 @@ export function createTestView(
 }
 
 /**
+ * Create a test cycle directly in the store.
+ */
+export function createTestCycle(
+  projectId: string,
+  overrides: Partial<TestCycle> = {},
+): TestCycle {
+  const cycle: TestCycle = {
+    id: randomUUID(),
+    projectId,
+    name: "Test Cycle",
+    description: null,
+    startDate: null,
+    endDate: null,
+    status: "draft",
+    createdBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  stores.cycles.push(cycle);
+  return cycle;
+}
+
+/**
+ * Add an issue to a cycle directly in the store.
+ */
+export function addIssueToCycle(
+  cycleId: string,
+  issueId: string,
+  overrides: Partial<TestCycleIssue> = {},
+): TestCycleIssue {
+  const entry: TestCycleIssue = {
+    id: randomUUID(),
+    cycleId,
+    issueId,
+    addedAt: new Date(),
+    removedAt: null,
+    carriedFromId: null,
+    ...overrides,
+  };
+  stores.cycleIssues.push(entry);
+  return entry;
+}
+
+/**
+ * Create a test wiki space directly in the store.
+ */
+export function createTestWikiSpace(
+  workspaceId: string,
+  overrides: Partial<TestWikiSpace> = {},
+): TestWikiSpace {
+  const space: TestWikiSpace = {
+    id: randomUUID(),
+    workspaceId,
+    name: "Test Wiki Space",
+    description: null,
+    slug: `wiki-${randomUUID().slice(0, 8)}`,
+    createdBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+  stores.wikiSpaces.push(space);
+  return space;
+}
+
+/**
+ * Add a member to a wiki space directly in the store.
+ */
+export function addWikiSpaceMember(
+  spaceId: string,
+  userId: string,
+  role = "editor",
+): TestWikiSpaceMember {
+  const member: TestWikiSpaceMember = {
+    id: randomUUID(),
+    wikiSpaceId: spaceId,
+    userId,
+    role,
+    createdAt: new Date(),
+  };
+  stores.wikiSpaceMembers.push(member);
+  return member;
+}
+
+/**
+ * Create a test wiki page directly in the store.
+ */
+export function createTestWikiPage(
+  spaceId: string,
+  overrides: Partial<TestWikiPage> = {},
+): TestWikiPage {
+  const page: TestWikiPage = {
+    id: randomUUID(),
+    wikiSpaceId: spaceId,
+    title: "Test Page",
+    slug: `page-${randomUUID().slice(0, 8)}`,
+    content: null,
+    contentFormat: "json",
+    contentText: null,
+    parentId: null,
+    sortOrder: "a0",
+    createdBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+    ...overrides,
+  };
+  stores.wikiPages.push(page);
+  return page;
+}
+
+/**
+ * Create a test file directly in the store.
+ */
+export function createTestFile(
+  overrides: Partial<TestFile> = {},
+): TestFile {
+  const file: TestFile = {
+    id: randomUUID(),
+    issueId: null,
+    pageId: null,
+    name: "test-file.txt",
+    path: `/tmp/uploads/${randomUUID()}.txt`,
+    mimeType: "text/plain",
+    size: 1024,
+    uploadedBy: null,
+    createdAt: new Date(),
+    ...overrides,
+  };
+  stores.files.push(file);
+  return file;
+}
+
+/**
  * Create a session cookie value for a user, simulating a logged-in session.
  */
 export function loginAsUser(user: TestUser): string {
@@ -509,6 +727,13 @@ export function cleanup(): void {
   stores.labels.length = 0;
   stores.activities.length = 0;
   stores.views.length = 0;
+  stores.cycles.length = 0;
+  stores.cycleIssues.length = 0;
+  stores.wikiSpaces.length = 0;
+  stores.wikiSpaceMembers.length = 0;
+  stores.wikiPages.length = 0;
+  stores.files.length = 0;
+  stores.issueMentions.length = 0;
   stores.sessions.clear();
 }
 
@@ -654,6 +879,13 @@ function getStoreForTable(tableName: string): unknown[] | null {
     activities: stores.activities,
     users: stores.users,
     views: stores.views,
+    cycles: stores.cycles,
+    cycle_issues: stores.cycleIssues,
+    wiki_spaces: stores.wikiSpaces,
+    wiki_space_members: stores.wikiSpaceMembers,
+    wiki_pages: stores.wikiPages,
+    files: stores.files,
+    issue_mentions: stores.issueMentions,
   };
   return map[tableName] ?? null;
 }
@@ -718,6 +950,40 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       avatarUrl: null,
       emailVerified: false,
     },
+    cycles: {
+      description: null,
+      startDate: null,
+      endDate: null,
+      status: "draft",
+      createdBy: null,
+    },
+    cycle_issues: {
+      addedAt: new Date(),
+      removedAt: null,
+      carriedFromId: null,
+    },
+    wiki_spaces: {
+      description: null,
+      createdBy: null,
+    },
+    wiki_space_members: {
+      role: "editor",
+    },
+    wiki_pages: {
+      content: null,
+      contentFormat: "json",
+      contentText: null,
+      parentId: null,
+      sortOrder: "a0",
+      createdBy: null,
+      deletedAt: null,
+    },
+    files: {
+      issueId: null,
+      pageId: null,
+      uploadedBy: null,
+    },
+    issue_mentions: {},
   };
   return defaults[tableName] ?? {};
 }

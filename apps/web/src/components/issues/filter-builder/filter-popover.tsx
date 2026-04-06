@@ -22,6 +22,7 @@ import {
   type ActiveFilter,
 } from './use-issue-filters';
 import type {
+  CycleOutput,
   FilterField,
   FilterOperator,
   IssueStatusOutput,
@@ -138,6 +139,14 @@ export function FilterPopover({
     queryKey: ['projects', projectId, 'labels'],
     queryFn: () =>
       apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    staleTime: 5 * 60 * 1000,
+    enabled: open,
+  });
+
+  const cyclesQuery = useQuery<ListResponse<CycleOutput>>({
+    queryKey: ['projects', projectId, 'cycles'],
+    queryFn: () =>
+      apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -350,6 +359,7 @@ export function FilterPopover({
                 types={typesQuery.data ?? []}
                 members={membersQuery.data?.data ?? []}
                 labels={labelsQuery.data ?? []}
+                cycles={cyclesQuery.data?.data ?? []}
               />
             )}
 
@@ -420,6 +430,7 @@ function MultiSelectValues({
   types,
   members,
   labels,
+  cycles,
 }: {
   field: FilterField;
   selectedValues: string[];
@@ -430,6 +441,7 @@ function MultiSelectValues({
   types: IssueTypeOutput[];
   members: MemberOutput[];
   labels: LabelOutput[];
+  cycles: CycleOutput[];
 }) {
   const items = useMemo(() => {
     switch (field) {
@@ -462,12 +474,17 @@ function MultiSelectValues({
           label: l.name,
           color: l.color,
         }));
+      case 'cycleId':
+        return cycles.map((c) => ({
+          id: c.id,
+          label: c.name,
+        }));
       default:
         return [];
     }
-  }, [field, statuses, types, members, labels]);
+  }, [field, statuses, types, members, labels, cycles]);
 
-  const showSearch = field === 'assigneeId' || field === 'labelId';
+  const showSearch = field === 'assigneeId' || field === 'labelId' || field === 'cycleId';
 
   const filtered = searchQuery
     ? items.filter((item) =>

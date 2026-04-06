@@ -22,6 +22,20 @@
       "when": 1743721200000,
       "tag": "0002_cp3_views",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1743807600000,
+      "tag": "0003_cp4_cycles",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1743894000000,
+      "tag": "0004_cp5_wiki",
+      "breakpoints": true
     }
   ]
 }

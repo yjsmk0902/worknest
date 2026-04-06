@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import {
   Calendar,
   Check,
   ChevronDown,
   CircleCheck,
+  RefreshCw,
   Search,
   X,
 } from 'lucide-react';
@@ -17,9 +19,10 @@ import {
   toast,
 } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, type ListResponse } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, getTypeIcon, type Priority } from '../../../lib/issue-constants';
 import type {
+  CycleOutput,
   IssueOutput,
   IssueStatusOutput,
   IssueTypeOutput,
@@ -49,6 +52,8 @@ interface IssuePropertiesProps {
   issue: IssueOutput;
   projectId: string;
   mode: 'panel' | 'sidebar';
+  orgSlug?: string;
+  wsSlug?: string;
 }
 
 // ── Main Component ──────────────────────────────────────────────────────
@@ -57,6 +62,8 @@ export function IssueProperties({
   issue,
   projectId,
   mode,
+  orgSlug,
+  wsSlug,
 }: IssuePropertiesProps) {
   const queryClient = useQueryClient();
 
@@ -95,6 +102,35 @@ export function IssueProperties({
       apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
   });
+
+  // Fetch cycles for this issue
+  const issueCyclesQuery = useQuery<CycleOutput[]>({
+    queryKey: ['issues', issue.id, 'cycles'],
+    queryFn: async () => {
+      // Fetch all cycles, then filter to those containing this issue
+      const cyclesRes = await apiClient.getList<CycleOutput>(
+        `/projects/${projectId}/cycles`,
+      );
+      const cycles = cyclesRes.data;
+      const results: CycleOutput[] = [];
+      for (const cycle of cycles) {
+        try {
+          const issuesRes = await apiClient.getList<IssueOutput>(
+            `/projects/${projectId}/cycles/${cycle.id}/issues`,
+          );
+          if (issuesRes.data.some((i) => i.id === issue.id)) {
+            results.push(cycle);
+          }
+        } catch {
+          // Skip cycles we can't access
+        }
+      }
+      return results;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const issueCycles = issueCyclesQuery.data ?? [];
 
   // Update issue mutation
   const updateMutation = useMutation({
@@ -269,6 +305,18 @@ export function IssueProperties({
 
         <Separator />
 
+        {/* Cycle */}
+        <PropertySection label="사이클">
+          <CycleDisplay
+            cycles={issueCycles}
+            projectId={projectId}
+            orgSlug={orgSlug}
+            wsSlug={wsSlug}
+          />
+        </PropertySection>
+
+        <Separator />
+
         {/* Due date */}
         <PropertySection label="마감일">
           <DueDatePicker
@@ -338,6 +386,15 @@ export function IssueProperties({
         issueLabels={issue.labels ?? []}
         onAdd={(labelId) => addLabelMutation.mutate(labelId)}
         onRemove={(labelId) => removeLabelMutation.mutate(labelId)}
+      />
+
+      {/* Cycle */}
+      <span className="self-center text-sm text-muted-foreground">사이클</span>
+      <CycleDisplay
+        cycles={issueCycles}
+        projectId={projectId}
+        orgSlug={orgSlug}
+        wsSlug={wsSlug}
       />
 
       {/* Due date */}
@@ -765,6 +822,54 @@ function DueDatePicker({
           <X className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
       )}
+    </div>
+  );
+}
+
+// ── Cycle Display ──────────────────────────────────────────────────────
+
+function CycleDisplay({
+  cycles,
+  projectId,
+  orgSlug,
+  wsSlug,
+}: {
+  cycles: CycleOutput[];
+  projectId: string;
+  orgSlug?: string;
+  wsSlug?: string;
+}) {
+  if (cycles.length === 0) {
+    return (
+      <span className="text-sm text-muted-foreground">없음</span>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {cycles.map((cycle) => {
+        const href =
+          orgSlug && wsSlug
+            ? `/${orgSlug}/${wsSlug}/projects/${projectId}/cycles/${cycle.id}`
+            : undefined;
+
+        const content = (
+          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-sm hover:bg-accent cursor-pointer">
+            <RefreshCw className="h-3.5 w-3.5" />
+            {cycle.name}
+          </span>
+        );
+
+        if (href) {
+          return (
+            <Link key={cycle.id} to={href}>
+              {content}
+            </Link>
+          );
+        }
+
+        return <span key={cycle.id}>{content}</span>;
+      })}
     </div>
   );
 }

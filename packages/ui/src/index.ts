@@ -54,3 +54,13 @@ export { Badge, badgeVariants, type BadgeProps } from './components/badge';
 export { Separator, type SeparatorProps } from './components/separator';
 export { ScrollArea, type ScrollAreaProps } from './components/scroll-area';
 export { Toaster, toast, type ToasterProps } from './components/toast';
+export { Progress } from './components/progress';
+export {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
+} from './components/breadcrumb';

@@ -3,7 +3,7 @@ import { cn } from '@worknest/ui';
 import type { ActiveFilter } from './use-issue-filters';
 import { getFieldMeta } from './use-issue-filters';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
-import type { IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
+import type { CycleOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -25,6 +25,7 @@ interface FilterChipProps {
   types: IssueTypeOutput[];
   members: MemberOutput[];
   labels: LabelOutput[];
+  cycles?: CycleOutput[];
   onEdit: () => void;
   onRemove: () => void;
 }
@@ -37,6 +38,7 @@ function resolveValueDisplay(
   types: IssueTypeOutput[],
   members: MemberOutput[],
   labels: LabelOutput[],
+  cycles: CycleOutput[] = [],
 ): string {
   if (
     filter.operator === 'is_empty' ||
@@ -89,6 +91,12 @@ function resolveValueDisplay(
         .join(', ');
       return names;
     }
+    case 'cycleId': {
+      const names = values
+        .map((id) => cycles.find((c) => c.id === id)?.name ?? id)
+        .join(', ');
+      return names;
+    }
     case 'dueDate': {
       if (filter.operator === 'before') return `~${values[0]}`;
       if (filter.operator === 'after') return `${values[0]}~`;
@@ -131,6 +139,7 @@ export function FilterChip({
   types,
   members,
   labels,
+  cycles = [],
   onEdit,
   onRemove,
 }: FilterChipProps) {
@@ -143,6 +152,7 @@ export function FilterChip({
     types,
     members,
     labels,
+    cycles,
   );
 
   return (

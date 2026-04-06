@@ -23,6 +23,7 @@ import {
   users,
   projects,
   projectMembers,
+  cycleIssues,
   type Database,
 } from "@worknest/db";
 import type {
@@ -478,6 +479,24 @@ export class IssueService {
     // ── Parent ──────────────────────────────────────────────────────────
     if (query.parentId) {
       conditions.push(eq(issues.parentId, query.parentId));
+    }
+
+    // ── Cycle ───────────────────────────────────────────────────────────
+    if (query.cycleEmpty === true) {
+      // Issues not in any cycle
+      conditions.push(
+        sql`NOT EXISTS (SELECT 1 FROM ${cycleIssues} WHERE ${cycleIssues.issueId} = ${issues.id} AND ${cycleIssues.removedAt} IS NULL)`,
+      );
+    }
+    if (query.cycleId) {
+      conditions.push(
+        sql`${issues.id} IN (SELECT ${cycleIssues.issueId} FROM ${cycleIssues} WHERE ${cycleIssues.cycleId} = ${query.cycleId} AND ${cycleIssues.removedAt} IS NULL)`,
+      );
+    }
+    if (query.cycleIdNot) {
+      conditions.push(
+        sql`${issues.id} NOT IN (SELECT ${cycleIssues.issueId} FROM ${cycleIssues} WHERE ${cycleIssues.cycleId} = ${query.cycleIdNot} AND ${cycleIssues.removedAt} IS NULL)`,
+      );
     }
 
     return conditions;

@@ -6,7 +6,7 @@ import { useProjectContext } from '../../../contexts/project-context';
 import { useIssueFilters, type ActiveFilter } from './use-issue-filters';
 import { FilterChip } from './filter-chip';
 import { FilterPopover } from './filter-popover';
-import type { FilterField, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
+import type { CycleOutput, FilterField, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -66,10 +66,18 @@ export function FilterBar() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const cyclesQuery = useQuery<ListResponse<CycleOutput>>({
+    queryKey: ['projects', projectId, 'cycles'],
+    queryFn: () =>
+      apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const statuses = statusesQuery.data ?? [];
   const types = typesQuery.data ?? [];
   const members = membersQuery.data?.data ?? [];
   const labels = labelsQuery.data ?? [];
+  const cycles = cyclesQuery.data?.data ?? [];
 
   const editingFilter = editingField
     ? filters.find((f) => f.field === editingField)
@@ -113,6 +121,7 @@ export function FilterBar() {
                   types={types}
                   members={members}
                   labels={labels}
+                  cycles={cycles}
                   onEdit={() => {}}
                   onRemove={() => removeFilter(filter.field)}
                 />
@@ -125,6 +134,7 @@ export function FilterBar() {
               types={types}
               members={members}
               labels={labels}
+              cycles={cycles}
               onEdit={() => handleEditChip(filter.field)}
               onRemove={() => removeFilter(filter.field)}
             />

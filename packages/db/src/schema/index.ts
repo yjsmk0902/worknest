@@ -14,6 +14,10 @@ export {
 export { labels } from "./labels";
 export { activities } from "./activities";
 export { views } from "./views";
+export { cycles, cycleIssues } from "./cycles";
+export { wikiSpaces, wikiSpaceMembers, wikiPages } from "./wiki";
+export { files } from "./files";
+export { issueMentions } from "./mentions";
 
 // ── Relations ───────────────────────────────────────────────────────────
 export { usersRelations } from "./users";
@@ -34,3 +38,11 @@ export {
 export { labelsRelations } from "./labels";
 export { activitiesRelations } from "./activities";
 export { viewsRelations } from "./views";
+export { cyclesRelations, cycleIssuesRelations } from "./cycles";
+export {
+  wikiSpacesRelations,
+  wikiSpaceMembersRelations,
+  wikiPagesRelations,
+} from "./wiki";
+export { filesRelations } from "./files";
+export { issueMentionsRelations } from "./mentions";

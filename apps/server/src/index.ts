@@ -3,6 +3,7 @@ import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import multipart from "@fastify/multipart";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import websocket from "@fastify/websocket";
@@ -28,6 +29,10 @@ import { issueTypeRoutes } from "./routes/issue-types";
 import { labelRoutes } from "./routes/labels";
 import { issueRoutes } from "./routes/issues";
 import { viewRoutes } from "./routes/views";
+import { cycleRoutes } from "./routes/cycles";
+import { wikiSpaceRoutes } from "./routes/wiki-spaces";
+import { wikiPageRoutes } from "./routes/wiki-pages";
+import { fileRoutes } from "./routes/files";
 
 // WebSocket
 import { websocketHandler } from "./websocket/handler";
@@ -63,6 +68,12 @@ async function main() {
   });
 
   await app.register(cookie);
+
+  await app.register(multipart, {
+    limits: {
+      fileSize: 25 * 1024 * 1024, // 25MB
+    },
+  });
 
   await app.register(swagger, {
     openapi: {
@@ -118,6 +129,10 @@ async function main() {
   await labelRoutes(app, { auth, db });
   await issueRoutes(app, { auth, db });
   await viewRoutes(app, { auth, db });
+  await cycleRoutes(app, { auth, db });
+  await wikiSpaceRoutes(app, { auth, db });
+  await wikiPageRoutes(app, { auth, db });
+  await fileRoutes(app, { auth, db });
   await websocketHandler(app, { auth, db });
 
   // ── Graceful Shutdown ────────────────────────────────────────────

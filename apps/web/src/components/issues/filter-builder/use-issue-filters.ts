@@ -25,6 +25,9 @@ export interface IssueSearchParams {
   dueBefore?: string;
   dueAfter?: string;
   dueEmpty?: boolean;
+  cycleId?: string;
+  cycleIdNot?: string;
+  cycleEmpty?: boolean;
   title?: string;
   sort?: string;
   order?: string;
@@ -80,6 +83,13 @@ export const FILTER_FIELDS: {
     operators: ['before', 'after', 'is_empty'],
     defaultOperator: 'before',
     valueType: 'date',
+  },
+  {
+    field: 'cycleId',
+    label: '사이클',
+    operators: ['is', 'is_not', 'is_empty'],
+    defaultOperator: 'is',
+    valueType: 'multi-select',
   },
   {
     field: 'title',
@@ -191,6 +201,24 @@ function searchToFilters(search: IssueSearchParams): ActiveFilter[] {
       value: search.dueAfter,
     });
   }
+  if (search.cycleEmpty) {
+    filters.push({
+      field: 'cycleId',
+      operator: 'is_empty',
+    });
+  } else if (search.cycleId) {
+    filters.push({
+      field: 'cycleId',
+      operator: 'is',
+      value: search.cycleId.split(','),
+    });
+  } else if (search.cycleIdNot) {
+    filters.push({
+      field: 'cycleId',
+      operator: 'is_not',
+      value: search.cycleIdNot.split(','),
+    });
+  }
   if (search.title) {
     filters.push({
       field: 'title',
@@ -240,6 +268,11 @@ function filtersToSearch(
         if (f.operator === 'is_empty') next.dueEmpty = true;
         else if (f.operator === 'before') next.dueBefore = vals;
         else if (f.operator === 'after') next.dueAfter = vals;
+        break;
+      case 'cycleId':
+        if (f.operator === 'is_empty') next.cycleEmpty = true;
+        else if (f.operator === 'is_not') next.cycleIdNot = vals;
+        else next.cycleId = vals;
         break;
       case 'title':
         next.title = vals;
@@ -332,6 +365,11 @@ export function useIssueFilters() {
           if (f.operator === 'is_empty') params.dueEmpty = 'true';
           else if (f.operator === 'before') params.dueBefore = vals ?? '';
           else if (f.operator === 'after') params.dueAfter = vals ?? '';
+          break;
+        case 'cycleId':
+          if (f.operator === 'is_empty') params.cycleEmpty = 'true';
+          else if (f.operator === 'is_not') params.cycleIdNot = vals ?? '';
+          else params.cycleId = vals ?? '';
           break;
         case 'title':
           params.title = vals ?? '';

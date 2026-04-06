@@ -142,6 +142,10 @@ export const issueListQuery = z.object({
   title: z.string().optional(), // contains
   search: z.string().optional(), // full-text search (keep for backward compat)
   parentId: z.string().uuid().optional(),
+  // Cycle
+  cycleId: z.string().uuid().optional(), // issues in a specific cycle
+  cycleIdNot: z.string().uuid().optional(), // issues NOT in a specific cycle
+  cycleEmpty: z.coerce.boolean().optional(), // issues not in any cycle
   // Sort
   sort: z
     .enum(["created_at", "updated_at", "priority", "due_date", "manual"])

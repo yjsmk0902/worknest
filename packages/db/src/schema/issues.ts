@@ -13,6 +13,8 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { projects } from "./projects";
 import { labels } from "./labels";
+import { cycleIssues } from "./cycles";
+import { issueMentions } from "./mentions";
 
 /**
  * Issue statuses table.
@@ -164,6 +166,8 @@ export const issuesRelations = relations(issues, ({ one, many }) => ({
   }),
   assignees: many(issueAssignees),
   labels: many(issueLabels),
+  cycleIssues: many(cycleIssues),
+  issueMentions: many(issueMentions),
 }));
 
 /**

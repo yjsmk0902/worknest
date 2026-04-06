@@ -9,6 +9,7 @@ import { relations, sql } from "drizzle-orm";
 import { users } from "./users";
 import { organizations } from "./organizations";
 import { projects } from "./projects";
+import { wikiSpaces } from "./wiki";
 
 /**
  * Workspaces table.
@@ -46,6 +47,7 @@ export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
   }),
   members: many(workspaceMembers),
   projects: many(projects),
+  wikiSpaces: many(wikiSpaces),
 }));
 
 /**

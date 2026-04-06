@@ -6,3 +6,6 @@ export * from "./projects";
 export * from "./labels";
 export * from "./issues";
 export * from "./views";
+export * from "./cycles";
+export * from "./wiki";
+export * from "./files";

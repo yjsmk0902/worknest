@@ -26,7 +26,12 @@ import { Route as ProjectSettingsLabelsRoute } from './routes/_app/$orgSlug/$wsS
 import { Route as IssueListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/index';
 import { Route as IssueDetailRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId';
 import { Route as BoardRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/board/index';
+import { Route as CycleListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/index';
+import { Route as CycleDetailRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId';
 import { Route as ViewRedirectRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId';
+import { Route as WikiIndexRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/index';
+import { Route as WikiSpaceRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/$spaceId';
+import { Route as WikiPageRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId';
 
 const AuthLayoutRouteWithChildren = AuthLayoutRoute.addChildren([
   LoginRoute,
@@ -39,10 +44,16 @@ const ProjectLayoutRouteWithChildren = ProjectLayoutRoute.addChildren([
   IssueListRoute,
   IssueDetailRoute,
   BoardRoute,
+  CycleListRoute,
+  CycleDetailRoute,
   ViewRedirectRoute,
   ProjectSettingsIndexRoute,
   ProjectSettingsMembersRoute,
   ProjectSettingsLabelsRoute,
+]);
+
+const WikiSpaceRouteWithChildren = WikiSpaceRoute.addChildren([
+  WikiPageRoute,
 ]);
 
 const WorkspaceLayoutRouteWithChildren = WorkspaceLayoutRoute.addChildren([
@@ -51,6 +62,8 @@ const WorkspaceLayoutRouteWithChildren = WorkspaceLayoutRoute.addChildren([
   WorkspaceSettingsMembersRoute,
   ProjectListRoute,
   ProjectLayoutRouteWithChildren,
+  WikiIndexRoute,
+  WikiSpaceRouteWithChildren,
 ]);
 
 const AppLayoutRouteWithChildren = AppLayoutRoute.addChildren([

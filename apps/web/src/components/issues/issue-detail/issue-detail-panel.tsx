@@ -126,6 +126,8 @@ export function IssueDetailPanel({
           issue={issue}
           projectId={projectId}
           mode="panel"
+          orgSlug={orgSlug}
+          wsSlug={wsSlug}
         />
 
         {/* Body (scrollable) */}
@@ -222,6 +224,8 @@ export function IssueDetailPanel({
           issue={issue}
           projectId={projectId}
           mode="sidebar"
+          orgSlug={orgSlug}
+          wsSlug={wsSlug}
         />
       </div>
     </div>
