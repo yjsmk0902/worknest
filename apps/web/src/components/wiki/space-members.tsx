@@ -60,7 +60,7 @@ export function SpaceMembers({ spaceId }: SpaceMembersProps) {
       memberId: string;
       role: WikiSpaceRole;
     }) =>
-      apiClient.patch(`/wiki-space-members/${memberId}`, { role }),
+      apiClient.patch(`/wiki-spaces/${spaceId}/members/${memberId}`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'members'],
@@ -74,7 +74,7 @@ export function SpaceMembers({ spaceId }: SpaceMembersProps) {
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) =>
-      apiClient.delete(`/wiki-space-members/${memberId}`),
+      apiClient.delete(`/wiki-spaces/${spaceId}/members/${memberId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'members'],
