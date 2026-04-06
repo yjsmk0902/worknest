@@ -36,6 +36,13 @@
       "when": 1743894000000,
       "tag": "0004_cp5_wiki",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1743980400000,
+      "tag": "0005_cp6_common",
+      "breakpoints": true
     }
   ]
 }

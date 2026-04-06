@@ -1,4 +1,5 @@
 import { useParams } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   Bell,
   ChevronDown,
@@ -27,12 +28,14 @@ import {
 } from '@worknest/ui';
 import { useUIStore } from '../../stores/ui-store';
 import { useAuthStore } from '../../stores/auth-store';
+import { apiClient } from '../../lib/api-client';
 import { SectionLabel, NavItem, CollapsedNavItem } from './sidebar-nav';
 import {
   SidebarProjects,
   CollapsedSidebarProjects,
 } from './sidebar-projects';
 import { SidebarWiki, CollapsedSidebarWiki } from './sidebar-wiki';
+import { NotificationBell } from '../notification-bell';
 
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
@@ -59,19 +62,21 @@ export function Sidebar() {
         aria-label="Main navigation"
         className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground transition-all duration-150 ease-in-out"
       >
-        {/* Org/WS selector */}
-        <OrgWorkspaceSelector collapsed={false} />
+        {/* Org/WS selector + notification bell */}
+        <div className="flex items-center">
+          <div className="flex-1 min-w-0">
+            <OrgWorkspaceSelector collapsed={false} />
+          </div>
+          <div className="shrink-0 pr-2">
+            <NotificationBell />
+          </div>
+        </div>
 
         {/* Main nav content */}
         <div className="flex-1 overflow-y-auto px-2 py-2">
           {/* My Work section */}
           <SectionLabel>My Work</SectionLabel>
-          <NavItem
-            icon={<Bell className="h-4 w-4" />}
-            label="Inbox"
-            href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : '#'}
-            badge={3}
-          />
+          <InboxNavItem orgSlug={orgSlug} wsSlug={wsSlug} />
           <NavItem
             icon={<CircleUser className="h-4 w-4" />}
             label="My Issues"
@@ -176,6 +181,26 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
 }
 
 // -- Sub-components --
+
+function InboxNavItem({ orgSlug, wsSlug }: { orgSlug: string; wsSlug: string }) {
+  const unreadQuery = useQuery<{ count: number }>({
+    queryKey: ['my', 'notifications', 'unread-count'],
+    queryFn: () =>
+      apiClient.get<{ count: number }>('/my/notifications/unread-count'),
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    enabled: !!(orgSlug && wsSlug),
+  });
+
+  return (
+    <NavItem
+      icon={<Bell className="h-4 w-4" />}
+      label="Inbox"
+      href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : '#'}
+      badge={unreadQuery.data?.count}
+    />
+  );
+}
 
 function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
   const currentOrg = useAuthStore((s) => s.currentOrg);

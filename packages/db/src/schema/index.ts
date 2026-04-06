@@ -18,6 +18,9 @@ export { cycles, cycleIssues } from "./cycles";
 export { wikiSpaces, wikiSpaceMembers, wikiPages } from "./wiki";
 export { files } from "./files";
 export { issueMentions } from "./mentions";
+export { comments, reactions } from "./comments";
+export { notifications } from "./notifications";
+export { favorites } from "./favorites";
 
 // ── Relations ───────────────────────────────────────────────────────────
 export { usersRelations } from "./users";
@@ -46,3 +49,6 @@ export {
 } from "./wiki";
 export { filesRelations } from "./files";
 export { issueMentionsRelations } from "./mentions";
+export { commentsRelations, reactionsRelations } from "./comments";
+export { notificationsRelations } from "./notifications";
+export { favoritesRelations } from "./favorites";

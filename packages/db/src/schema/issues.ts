@@ -15,6 +15,7 @@ import { projects } from "./projects";
 import { labels } from "./labels";
 import { cycleIssues } from "./cycles";
 import { issueMentions } from "./mentions";
+import { comments } from "./comments";
 
 /**
  * Issue statuses table.
@@ -168,6 +169,7 @@ export const issuesRelations = relations(issues, ({ one, many }) => ({
   labels: many(issueLabels),
   cycleIssues: many(cycleIssues),
   issueMentions: many(issueMentions),
+  comments: many(comments),
 }));
 
 /**

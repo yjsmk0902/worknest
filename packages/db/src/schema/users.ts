@@ -5,6 +5,9 @@ import { workspaceMembers } from "./workspaces";
 import { projectMembers } from "./projects";
 import { issueAssignees } from "./issues";
 import { activities } from "./activities";
+import { comments, reactions } from "./comments";
+import { notifications } from "./notifications";
+import { favorites } from "./favorites";
 
 /**
  * Core users table.
@@ -28,4 +31,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   projectMemberships: many(projectMembers),
   issueAssignments: many(issueAssignees),
   activities: many(activities),
+  comments: many(comments),
+  reactions: many(reactions),
+  notifications: many(notifications),
+  favorites: many(favorites),
 }));

@@ -8,6 +8,7 @@ import { Sidebar } from '../components/layout/sidebar';
 import { useUIStore } from '../stores/ui-store';
 import { useGlobalShortcuts } from '../hooks/use-global-shortcuts';
 import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
+import { CommandPalette } from '../components/command-palette/command-palette';
 import { connect, disconnect } from '../lib/websocket';
 import { useWebSocket } from '../hooks/use-websocket';
 
@@ -97,6 +98,7 @@ function AppLayout() {
         open={shortcutsSheetOpen}
         onOpenChange={setShortcutsSheetOpen}
       />
+      <CommandPalette />
     </div>
   );
 }

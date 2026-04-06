@@ -3,6 +3,7 @@ import { registerProcessor } from "../lib/queue";
 import { createBulkActivityProcessor } from "./bulk-activity";
 import { createImageThumbnailProcessor } from "./image-thumbnail";
 import { createOrphanCleanupProcessor } from "./orphan-cleanup";
+import { createNotificationProcessor } from "./notification-job";
 
 /**
  * Job processor registry.
@@ -21,5 +22,9 @@ export function registerAllJobs(db: Database): void {
   registerProcessor({
     name: "orphan-cleanup",
     processor: createOrphanCleanupProcessor(db),
+  });
+  registerProcessor({
+    name: "notification",
+    processor: createNotificationProcessor(db),
   });
 }

@@ -38,6 +38,7 @@
     "@worknest/editor": "workspace:*",
     "@worknest/shared": "workspace:*",
     "@worknest/ui": "workspace:*",
+    "cmdk": "^1.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.24.1",

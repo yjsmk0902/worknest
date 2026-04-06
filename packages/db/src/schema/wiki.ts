@@ -10,6 +10,7 @@ import {
 import { relations, sql } from "drizzle-orm";
 import { users } from "./users";
 import { workspaces } from "./workspaces";
+import { comments } from "./comments";
 
 /**
  * Wiki spaces table.
@@ -157,4 +158,5 @@ export const wikiPagesRelations = relations(wikiPages, ({ one, many }) => ({
     relationName: "subPages",
   }),
   children: many(wikiPages, { relationName: "subPages" }),
+  comments: many(comments),
 }));

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -9,11 +9,47 @@ import {
 } from 'lucide-react';
 import { Button, Separator, Skeleton, ScrollArea } from '@worknest/ui';
 import { cn } from '@worknest/ui';
+import type { MentionQueryFn, MentionUser } from '@worknest/editor';
 import { apiClient } from '../../../lib/api-client';
 import { IssueProperties } from './issue-properties';
-import { IssueActivity } from './issue-activity';
+import { CommentList } from '../../comments/comment-list';
 import { SubIssues } from '../sub-issues';
 import type { IssueOutput } from '@worknest/shared';
+
+// ── Member type for mention suggestions ────────────────────────────────
+
+interface MemberOutput {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl: string | null;
+  };
+}
+
+function createProjectMentionQueryFn(projectId: string): MentionQueryFn {
+  return async (query: string): Promise<MentionUser[]> => {
+    const result = await apiClient.getList<MemberOutput>(
+      `/projects/${projectId}/members`,
+    );
+    const members = result.data ?? [];
+    const lower = query.toLowerCase();
+    return members
+      .filter(
+        (m) =>
+          m.user.name.toLowerCase().includes(lower) ||
+          m.user.email.toLowerCase().includes(lower),
+      )
+      .map((m) => ({
+        id: m.user.id,
+        name: m.user.name,
+        avatarUrl: m.user.avatarUrl ?? undefined,
+        email: m.user.email,
+      }));
+  };
+}
 
 interface IssueDetailPanelProps {
   issueId: string;
@@ -34,6 +70,11 @@ export function IssueDetailPanel({
   mode,
   onClose,
 }: IssueDetailPanelProps) {
+  const mentionQueryFn = useMemo(
+    () => createProjectMentionQueryFn(projectId),
+    [projectId],
+  );
+
   const issueQuery = useQuery<IssueOutput>({
     queryKey: ['projects', projectId, 'issues', issueId],
     queryFn: () =>
@@ -159,8 +200,12 @@ export function IssueDetailPanel({
 
           <Separator className="my-4" />
 
-          {/* Activity */}
-          <IssueActivity projectId={projectId} issueId={issue.id} />
+          {/* Comments & Activity */}
+          <CommentList
+            issueId={issue.id}
+            projectId={projectId}
+            mentionQueryFn={mentionQueryFn}
+          />
         </ScrollArea>
       </div>
     );
@@ -215,8 +260,12 @@ export function IssueDetailPanel({
 
           <Separator className="my-4" />
 
-          {/* Activity */}
-          <IssueActivity projectId={projectId} issueId={issue.id} />
+          {/* Comments & Activity */}
+          <CommentList
+            issueId={issue.id}
+            projectId={projectId}
+            mentionQueryFn={mentionQueryFn}
+          />
         </ScrollArea>
 
         {/* Properties sidebar */}

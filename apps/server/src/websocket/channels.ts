@@ -8,8 +8,9 @@ import type { WebSocket } from "@fastify/websocket";
  *   project:{id}    — project issue changes
  *   issue:{id}      — single issue detail changes
  *   user:{id}       — personal notifications
+ *   page:{id}       — wiki page real-time updates
  */
-export type ChannelType = "workspace" | "project" | "issue" | "user";
+export type ChannelType = "workspace" | "project" | "issue" | "user" | "page";
 
 /**
  * Parse a channel string into its type and id.
@@ -21,7 +22,7 @@ export function parseChannel(
   const [type, id] = channel.split(":");
   if (!type || !id) return null;
 
-  const validTypes: ChannelType[] = ["workspace", "project", "issue", "user"];
+  const validTypes: ChannelType[] = ["workspace", "project", "issue", "user", "page"];
   if (!validTypes.includes(type as ChannelType)) return null;
 
   return { type: type as ChannelType, id };

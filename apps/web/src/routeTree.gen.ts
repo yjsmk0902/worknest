@@ -29,6 +29,9 @@ import { Route as BoardRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$pr
 import { Route as CycleListRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/index';
 import { Route as CycleDetailRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId';
 import { Route as ViewRedirectRoute } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId';
+import { Route as InboxRoute } from './routes/_app/$orgSlug/$wsSlug/my/inbox';
+import { Route as MyIssuesRoute } from './routes/_app/$orgSlug/$wsSlug/my/issues';
+import { Route as FavoritesRoute } from './routes/_app/$orgSlug/$wsSlug/my/favorites';
 import { Route as WikiIndexRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/index';
 import { Route as WikiSpaceRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/$spaceId';
 import { Route as WikiPageRoute } from './routes/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId';
@@ -60,6 +63,9 @@ const WorkspaceLayoutRouteWithChildren = WorkspaceLayoutRoute.addChildren([
   WorkspaceIndexRoute,
   WorkspaceSettingsIndexRoute,
   WorkspaceSettingsMembersRoute,
+  InboxRoute,
+  MyIssuesRoute,
+  FavoritesRoute,
   ProjectListRoute,
   ProjectLayoutRouteWithChildren,
   WikiIndexRoute,

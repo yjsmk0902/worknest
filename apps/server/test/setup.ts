@@ -259,6 +259,49 @@ export interface TestIssueMention {
   createdAt: Date;
 }
 
+export interface TestComment {
+  id: string;
+  issueId: string | null;
+  pageId: string | null;
+  content: unknown;
+  parentId: string | null;
+  authorId: string | null;
+  resolvedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface TestReaction {
+  id: string;
+  commentId: string;
+  userId: string;
+  emoji: string;
+  createdAt: Date;
+}
+
+export interface TestNotification {
+  id: string;
+  userId: string;
+  issueId: string | null;
+  pageId: string | null;
+  type: string;
+  message: string;
+  readAt: Date | null;
+  createdAt: Date;
+}
+
+export interface TestFavorite {
+  id: string;
+  userId: string;
+  projectId: string | null;
+  issueId: string | null;
+  pageId: string | null;
+  spaceId: string | null;
+  sortOrder: string;
+  createdAt: Date;
+}
+
 // ── In-memory data stores ─────────────────────────────────────────────
 
 export const stores = {
@@ -285,6 +328,10 @@ export const stores = {
   wikiPages: [] as TestWikiPage[],
   files: [] as TestFile[],
   issueMentions: [] as TestIssueMention[],
+  comments: [] as TestComment[],
+  reactions: [] as TestReaction[],
+  notifications: [] as TestNotification[],
+  favorites: [] as TestFavorite[],
   sessions: new Map<string, TestUser>(),
 };
 
@@ -700,6 +747,89 @@ export function createTestFile(
 }
 
 /**
+ * Create a test comment directly in the store.
+ */
+export function createTestComment(
+  overrides: Partial<TestComment> = {},
+): TestComment {
+  const comment: TestComment = {
+    id: randomUUID(),
+    issueId: null,
+    pageId: null,
+    content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Test comment" }] }] },
+    parentId: null,
+    authorId: null,
+    resolvedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null,
+    ...overrides,
+  };
+  stores.comments.push(comment);
+  return comment;
+}
+
+/**
+ * Create a test reaction directly in the store.
+ */
+export function createTestReaction(
+  overrides: Partial<TestReaction> = {},
+): TestReaction {
+  const reaction: TestReaction = {
+    id: randomUUID(),
+    commentId: "",
+    userId: "",
+    emoji: "👍",
+    createdAt: new Date(),
+    ...overrides,
+  };
+  stores.reactions.push(reaction);
+  return reaction;
+}
+
+/**
+ * Create a test notification directly in the store.
+ */
+export function createTestNotification(
+  overrides: Partial<TestNotification> = {},
+): TestNotification {
+  const notification: TestNotification = {
+    id: randomUUID(),
+    userId: "",
+    issueId: null,
+    pageId: null,
+    type: "commented",
+    message: "Test notification",
+    readAt: null,
+    createdAt: new Date(),
+    ...overrides,
+  };
+  stores.notifications.push(notification);
+  return notification;
+}
+
+/**
+ * Create a test favorite directly in the store.
+ */
+export function createTestFavorite(
+  overrides: Partial<TestFavorite> = {},
+): TestFavorite {
+  const favorite: TestFavorite = {
+    id: randomUUID(),
+    userId: "",
+    projectId: null,
+    issueId: null,
+    pageId: null,
+    spaceId: null,
+    sortOrder: "a0",
+    createdAt: new Date(),
+    ...overrides,
+  };
+  stores.favorites.push(favorite);
+  return favorite;
+}
+
+/**
  * Create a session cookie value for a user, simulating a logged-in session.
  */
 export function loginAsUser(user: TestUser): string {
@@ -734,6 +864,10 @@ export function cleanup(): void {
   stores.wikiPages.length = 0;
   stores.files.length = 0;
   stores.issueMentions.length = 0;
+  stores.comments.length = 0;
+  stores.reactions.length = 0;
+  stores.notifications.length = 0;
+  stores.favorites.length = 0;
   stores.sessions.clear();
 }
 
@@ -886,6 +1020,10 @@ function getStoreForTable(tableName: string): unknown[] | null {
     wiki_pages: stores.wikiPages,
     files: stores.files,
     issue_mentions: stores.issueMentions,
+    comments: stores.comments,
+    reactions: stores.reactions,
+    notifications: stores.notifications,
+    favorites: stores.favorites,
   };
   return map[tableName] ?? null;
 }
@@ -984,6 +1122,27 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       uploadedBy: null,
     },
     issue_mentions: {},
+    comments: {
+      issueId: null,
+      pageId: null,
+      parentId: null,
+      authorId: null,
+      resolvedAt: null,
+      deletedAt: null,
+    },
+    reactions: {},
+    notifications: {
+      issueId: null,
+      pageId: null,
+      readAt: null,
+    },
+    favorites: {
+      projectId: null,
+      issueId: null,
+      pageId: null,
+      spaceId: null,
+      sortOrder: "a0",
+    },
   };
   return defaults[tableName] ?? {};
 }
@@ -1008,7 +1167,12 @@ function getColumnName(col: unknown): string | null {
 
 /**
  * Evaluate a Drizzle `where` condition against a row from our in-memory store.
- * Supports `eq`, `and`, `isNull`, `lt`, `ilike`, `inArray`.
+ * Supports `eq`, `ne`, `and`, `or`, `not`, `isNull`, `isNotNull`, `lt`, `gt`,
+ * `ilike`, `inArray`, `notInArray`.
+ *
+ * Handles both the legacy node-type format (type: "binary" / "unary") and the
+ * real Drizzle SQL AST (queryChunks arrays) so the mock works with actual
+ * Drizzle operator functions.
  */
 function evaluateCondition(condition: unknown, row: Record<string, unknown>): boolean {
   if (!condition) return true;
@@ -1016,7 +1180,7 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
 
   const cond = condition as Record<string, unknown>;
 
-  // BinaryOperator (eq, lt, ilike)
+  // BinaryOperator (eq, ne, lt, ilike)
   if (cond.type === "binary") {
     const left = cond.left as Record<string, unknown>;
     const right = cond.right as unknown;
@@ -1030,6 +1194,9 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     switch (op) {
       case "=":
         return value === rightValue;
+      case "!=":
+      case "<>":
+        return value !== rightValue;
       case "<":
         if (value instanceof Date && rightValue instanceof Date) {
           return value.getTime() < rightValue.getTime();
@@ -1040,9 +1207,19 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
           return value.getTime() > rightValue.getTime();
         }
         return (value as number) > (rightValue as number);
+      case ">=":
+        if (value instanceof Date && rightValue instanceof Date) {
+          return value.getTime() >= rightValue.getTime();
+        }
+        return (value as number) >= (rightValue as number);
+      case "<=":
+        if (value instanceof Date && rightValue instanceof Date) {
+          return value.getTime() <= rightValue.getTime();
+        }
+        return (value as number) <= (rightValue as number);
       case "ilike": {
         if (typeof value !== "string" || typeof rightValue !== "string") return false;
-        const pattern = rightValue.replace(/%/g, ".*");
+        const pattern = escapeRegex(rightValue).replace(/%/g, ".*");
         return new RegExp(pattern, "i").test(value);
       }
       default:
@@ -1050,20 +1227,28 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     }
   }
 
-  // Unary (isNull)
+  // Unary (isNull, isNotNull, not)
   if (cond.type === "unary") {
     const operand = cond.operand as Record<string, unknown>;
     const op = cond.operator as string;
-    const colName = getColumnName(operand);
-    if (!colName) return true;
-    const fieldName = snakeToCamel(colName);
-    const value = row[fieldName];
 
     switch (op) {
-      case "is null":
+      case "is null": {
+        const colName = getColumnName(operand);
+        if (!colName) return true;
+        const fieldName = snakeToCamel(colName);
+        const value = row[fieldName];
         return value === null || value === undefined;
-      case "is not null":
+      }
+      case "is not null": {
+        const colName = getColumnName(operand);
+        if (!colName) return true;
+        const fieldName = snakeToCamel(colName);
+        const value = row[fieldName];
         return value !== null && value !== undefined;
+      }
+      case "not":
+        return !evaluateCondition(operand, row);
       default:
         return true;
     }
@@ -1072,6 +1257,11 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
   // And
   if (Array.isArray((cond as { conditions?: unknown[] }).conditions)) {
     const conditions = (cond as { conditions: unknown[] }).conditions;
+    // Detect Or vs And by checking for an `operator` hint
+    const op = (cond as { operator?: string }).operator;
+    if (op === "or") {
+      return conditions.some((c) => evaluateCondition(c, row));
+    }
     return conditions.every((c) => evaluateCondition(c, row));
   }
 
@@ -1095,6 +1285,215 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     const fieldName = snakeToCamel(colName);
     const value = row[fieldName];
     return !values.includes(value);
+  }
+
+  // ── Drizzle SQL AST (queryChunks) fallback ───────────────────────────
+  // Drizzle's eq/ne/and/or/isNull produce SQL objects with a queryChunks array.
+  // Walk queryChunks to interpret the condition at runtime.
+  const queryChunks = (cond as { queryChunks?: unknown[] }).queryChunks;
+  if (Array.isArray(queryChunks)) {
+    return evaluateQueryChunks(queryChunks, row);
+  }
+
+  return true;
+}
+
+/**
+ * Escape special regex characters in a string so it can be used as a literal
+ * inside a RegExp.
+ */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Extract sub-conditions from a Drizzle SQL queryChunks array that represents
+ * an and/or expression.  The structure is:
+ *   [StringChunk("("), SQL([cond1, StringChunk(" and "|" or "), cond2, ...]), StringChunk(")")]
+ * Returns { mode, conditions } if detected, or null otherwise.
+ */
+function extractLogicalConditions(
+  chunks: unknown[],
+): { mode: "and" | "or"; conditions: unknown[] } | null {
+  // and/or with multiple conditions: [StringChunk("("), SQL(joined), StringChunk(")")]
+  // and/or with a single condition:  [singleCondition]
+  if (chunks.length === 1) {
+    // Single-condition and/or: just evaluate the inner condition
+    return null;
+  }
+
+  // Look for the middle SQL chunk produced by sql.join
+  const innerChunks = findInnerChunks(chunks);
+  if (!innerChunks) return null;
+
+  // Determine mode by scanning for StringChunk separators
+  let mode: "and" | "or" = "and";
+  const conditions: unknown[] = [];
+
+  for (const chunk of innerChunks) {
+    if (isStringChunk(chunk)) {
+      const text = getStringChunkValue(chunk);
+      if (text === " and ") mode = "and";
+      else if (text === " or ") mode = "or";
+      // Skip StringChunk separators (including parens)
+      continue;
+    }
+    conditions.push(chunk);
+  }
+
+  if (conditions.length > 0) {
+    return { mode, conditions };
+  }
+  return null;
+}
+
+/** Check if value is a Drizzle StringChunk. */
+function isStringChunk(v: unknown): boolean {
+  if (!v || typeof v !== "object") return false;
+  const entitySym = Symbol.for("drizzle:entityKind");
+  const obj = v as Record<string | symbol, unknown>;
+  if (obj[entitySym] === "StringChunk") return true;
+  // Fallback: duck-type check (string[] value, no queryChunks)
+  return (
+    Array.isArray(obj.value) &&
+    (obj.value as unknown[]).every((x: unknown) => typeof x === "string") &&
+    !Array.isArray((obj as { queryChunks?: unknown }).queryChunks)
+  );
+}
+
+/** Get the joined string value from a StringChunk. */
+function getStringChunkValue(v: unknown): string {
+  const obj = v as { value: string[] };
+  return obj.value.join("");
+}
+
+/** Find the inner queryChunks of a nested SQL object (e.g. from sql.join). */
+function findInnerChunks(chunks: unknown[]): unknown[] | null {
+  for (const chunk of chunks) {
+    if (chunk && typeof chunk === "object" && !isStringChunk(chunk)) {
+      const inner = (chunk as { queryChunks?: unknown[] }).queryChunks;
+      if (Array.isArray(inner)) {
+        return inner;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Evaluate a Drizzle SQL queryChunks array against an in-memory row.
+ * Handles binary operators (=, <>, <, >, ilike), unary (is null, is not null, not),
+ * logical (and, or), inArray, and notInArray.
+ */
+function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): boolean {
+  // Filter out empty StringChunks to simplify pattern matching
+  const significant = chunks.filter((c) => {
+    if (isStringChunk(c)) {
+      const text = getStringChunkValue(c);
+      return text.trim() !== "";
+    }
+    return true;
+  });
+
+  // ── Logical operators (and / or) ───────────────────────────────────
+  const logical = extractLogicalConditions(chunks);
+  if (logical) {
+    if (logical.mode === "or") {
+      return logical.conditions.some((c) => evaluateCondition(c, row));
+    }
+    return logical.conditions.every((c) => evaluateCondition(c, row));
+  }
+
+  // Single-element queryChunks (e.g. single-condition and/or wrapper)
+  if (chunks.length === 1 && !isStringChunk(chunks[0])) {
+    return evaluateCondition(chunks[0], row);
+  }
+
+  // ── Binary operators: [Column, StringChunk(" op "), Param] ─────────
+  // significant should be [Column, StringChunk(" op "), Param/value]
+  if (significant.length === 2) {
+    // Could be unary: [Column, StringChunk(" is null")] or [StringChunk("not "), SubCondition]
+    const first = significant[0];
+    const second = significant[1];
+
+    // Unary: column is null / is not null
+    if (isStringChunk(second)) {
+      const op = getStringChunkValue(second).trim().toLowerCase();
+      const colName = getColumnName(first);
+      if (colName) {
+        const fieldName = snakeToCamel(colName);
+        const value = row[fieldName];
+        if (op === "is null") return value === null || value === undefined;
+        if (op === "is not null") return value !== null && value !== undefined;
+      }
+    }
+
+    // not <condition>: StringChunk("not ") followed by a sub-condition
+    if (isStringChunk(first)) {
+      const text = getStringChunkValue(first).trim().toLowerCase();
+      if (text === "not") {
+        return !evaluateCondition(second, row);
+      }
+    }
+  }
+
+  if (significant.length === 3) {
+    const [left, middle, right] = significant;
+    if (isStringChunk(middle)) {
+      const op = getStringChunkValue(middle).trim().toLowerCase();
+      const colName = getColumnName(left);
+      if (colName) {
+        const fieldName = snakeToCamel(colName);
+        const value = row[fieldName];
+
+        // Handle inArray: column in (values...)
+        if (op === "in" && right && typeof right === "object" && Array.isArray(right)) {
+          const vals = (right as unknown[]).map(extractValue);
+          return vals.includes(value);
+        }
+        if (op === "not in" && right && typeof right === "object" && Array.isArray(right)) {
+          const vals = (right as unknown[]).map(extractValue);
+          return !vals.includes(value);
+        }
+
+        const rightValue = extractValue(right);
+
+        switch (op) {
+          case "=":
+            return value === rightValue;
+          case "!=":
+          case "<>":
+            return value !== rightValue;
+          case "<":
+            if (value instanceof Date && rightValue instanceof Date) {
+              return value.getTime() < rightValue.getTime();
+            }
+            return (value as number) < (rightValue as number);
+          case ">":
+            if (value instanceof Date && rightValue instanceof Date) {
+              return value.getTime() > rightValue.getTime();
+            }
+            return (value as number) > (rightValue as number);
+          case ">=":
+            if (value instanceof Date && rightValue instanceof Date) {
+              return value.getTime() >= rightValue.getTime();
+            }
+            return (value as number) >= (rightValue as number);
+          case "<=":
+            if (value instanceof Date && rightValue instanceof Date) {
+              return value.getTime() <= rightValue.getTime();
+            }
+            return (value as number) <= (rightValue as number);
+          case "ilike": {
+            if (typeof value !== "string" || typeof rightValue !== "string") return false;
+            const escaped = escapeRegex(rightValue).replace(/%/g, ".*");
+            return new RegExp(escaped, "i").test(value);
+          }
+          default:
+            return true;
+        }
+      }
+    }
   }
 
   return true;
@@ -1241,6 +1640,22 @@ export function createInMemoryDb(): unknown {
         let results = store.filter((row) =>
           evaluateCondition(_where, row as Record<string, unknown>),
         );
+
+        // Detect aggregate selection (e.g. select({ count: count() }))
+        if (selection && typeof selection === "object" && !joins.length) {
+          const sel = selection as Record<string, unknown>;
+          const hasAggregate = Object.values(sel).some((v) => isSqlExpression(v));
+          if (hasAggregate) {
+            const aggResult: Record<string, unknown> = {};
+            for (const [key, v] of Object.entries(sel)) {
+              if (isSqlExpression(v)) {
+                // Assume count() aggregate
+                aggResult[key] = results.length;
+              }
+            }
+            return Promise.resolve([aggResult]).then(resolve, reject);
+          }
+        }
 
         // Handle joins for enrichment
         if (joins.length > 0) {
@@ -1614,21 +2029,51 @@ export function createInMemoryDb(): unknown {
     return {
       where: (cond: unknown) => {
         const store = tableName ? getStoreForTable(tableName) : null;
-        if (!store) return Promise.resolve();
 
-        // Remove matching rows
-        const toRemove: number[] = [];
-        for (let i = 0; i < store.length; i++) {
-          if (evaluateCondition(cond, store[i] as Record<string, unknown>)) {
-            toRemove.push(i);
+        const deleteChain: Record<string, unknown> = {};
+
+        deleteChain.returning = (returnSelection?: unknown) => {
+          if (!store) return Promise.resolve([]);
+
+          const removed: unknown[] = [];
+          const toRemove: number[] = [];
+          for (let i = 0; i < store.length; i++) {
+            if (evaluateCondition(cond, store[i] as Record<string, unknown>)) {
+              toRemove.push(i);
+              if (returnSelection) {
+                removed.push(projectRow(store[i] as Record<string, unknown>, returnSelection));
+              } else {
+                removed.push({ ...store[i] });
+              }
+            }
           }
-        }
-        // Remove in reverse order to maintain indices
-        for (let i = toRemove.length - 1; i >= 0; i--) {
-          store.splice(toRemove[i]!, 1);
-        }
+          for (let i = toRemove.length - 1; i >= 0; i--) {
+            store.splice(toRemove[i]!, 1);
+          }
+          return Promise.resolve(removed);
+        };
 
-        return Promise.resolve();
+        deleteChain.then = (
+          resolve: (val: unknown) => unknown,
+          reject?: (err: unknown) => unknown,
+        ) => {
+          if (!store) return Promise.resolve(undefined).then(resolve, reject);
+
+          // Remove matching rows
+          const toRemove: number[] = [];
+          for (let i = 0; i < store.length; i++) {
+            if (evaluateCondition(cond, store[i] as Record<string, unknown>)) {
+              toRemove.push(i);
+            }
+          }
+          for (let i = toRemove.length - 1; i >= 0; i--) {
+            store.splice(toRemove[i]!, 1);
+          }
+
+          return Promise.resolve(undefined).then(resolve, reject);
+        };
+
+        return deleteChain;
       },
     };
   };

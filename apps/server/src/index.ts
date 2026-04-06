@@ -33,6 +33,11 @@ import { cycleRoutes } from "./routes/cycles";
 import { wikiSpaceRoutes } from "./routes/wiki-spaces";
 import { wikiPageRoutes } from "./routes/wiki-pages";
 import { fileRoutes } from "./routes/files";
+import { searchRoutes } from "./routes/search";
+import { commentRoutes } from "./routes/comments";
+import { notificationRoutes } from "./routes/notifications";
+import { myWorkRoutes } from "./routes/my-work";
+import { favoriteRoutes } from "./routes/favorites";
 
 // WebSocket
 import { websocketHandler } from "./websocket/handler";
@@ -136,6 +141,11 @@ async function main() {
   await wikiSpaceRoutes(app, { auth, db });
   await wikiPageRoutes(app, { auth, db });
   await fileRoutes(app, { auth, db });
+  await searchRoutes(app, { auth, db });
+  await commentRoutes(app, { auth, db });
+  await notificationRoutes(app, { auth, db });
+  await myWorkRoutes(app, { auth, db });
+  await favoriteRoutes(app, { auth, db });
   await websocketHandler(app, { auth, db });
 
   // ── Graceful Shutdown ────────────────────────────────────────────

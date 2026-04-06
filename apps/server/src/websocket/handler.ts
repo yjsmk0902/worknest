@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
 import { eq, and } from "drizzle-orm";
-import { projectMembers, type Database } from "@worknest/db";
+import { projectMembers, wikiPages, wikiSpaceMembers, type Database } from "@worknest/db";
 import type { Auth } from "../lib/auth";
 import {
   subscribe,
@@ -194,6 +194,61 @@ export async function websocketHandler(
                 }
               } catch (err) {
                 request.log.error({ err, channel: msg.channel }, "Failed to verify project membership");
+                socket.send(
+                  JSON.stringify({
+                    type: "error",
+                    payload: { message: "Authorization check failed" },
+                  }),
+                );
+                return;
+              }
+            }
+
+            // Verify wiki space membership before subscribing to a page channel
+            if (parsed.type === "page") {
+              try {
+                // Look up the page to find its wiki space
+                const page = await db
+                  .select({ wikiSpaceId: wikiPages.wikiSpaceId })
+                  .from(wikiPages)
+                  .where(eq(wikiPages.id, parsed.id))
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!page) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Page not found" },
+                    }),
+                  );
+                  return;
+                }
+
+                // Verify user is a member of the wiki space
+                const member = await db
+                  .select({ id: wikiSpaceMembers.id })
+                  .from(wikiSpaceMembers)
+                  .where(
+                    and(
+                      eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
+                      eq(wikiSpaceMembers.userId, userId),
+                    ),
+                  )
+                  .limit(1)
+                  .then((rows) => rows[0]);
+
+                if (!member) {
+                  socket.send(
+                    JSON.stringify({
+                      type: "error",
+                      payload: { message: "Not a member of this wiki space" },
+                    }),
+                  );
+                  return;
+                }
+              } catch (err) {
+                request.log.error({ err, channel: msg.channel }, "Failed to verify wiki space membership");
                 socket.send(
                   JSON.stringify({
                     type: "error",

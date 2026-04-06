@@ -9,3 +9,7 @@ export * from "./views";
 export * from "./cycles";
 export * from "./wiki";
 export * from "./files";
+export * from "./comments";
+export * from "./notifications";
+export * from "./favorites";
+export * from "./search";
