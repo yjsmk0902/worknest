@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FileText, Plus, ChevronRight } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { cn } from '@worknest/ui';
-import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared/schemas/wiki';
+import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
 import { NavItem, CollapsedNavItem, SectionLabel } from './sidebar-nav';
 

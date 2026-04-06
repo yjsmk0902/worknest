@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronRight, FileText, GripVertical } from 'lucide-react';
 import { cn } from '@worknest/ui';
-import type { WikiPageOutput } from '@worknest/shared/schemas/wiki';
+import type { WikiPageOutput } from '@worknest/shared';
 
 interface PageTreeItemProps {
   page: WikiPageOutput;

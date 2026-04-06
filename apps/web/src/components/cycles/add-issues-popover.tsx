@@ -63,7 +63,7 @@ export function AddIssuesPopover({
         issue.title.toLowerCase().includes(q) || key.includes(q)
       );
     });
-  }, [issuesQuery.data, existingIssueIds, searchQuery]);
+  }, [issuesQuery.data, existingIssueIds, searchQuery, projectPrefix]);
 
   // Add issues mutation
   const addMutation = useMutation({

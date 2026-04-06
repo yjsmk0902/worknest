@@ -58,9 +58,16 @@ function sanitizeAttrs(
     // Skip event handlers
     if (DANGEROUS_ATTRS.has(key.toLowerCase())) continue;
 
-    // Skip javascript: URLs
-    if (typeof value === "string" && value.trim().toLowerCase().startsWith("javascript:")) {
-      continue;
+    // Skip dangerous URI schemes (javascript:, data:, vbscript:)
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (
+        normalized.startsWith("javascript:") ||
+        normalized.startsWith("data:") ||
+        normalized.startsWith("vbscript:")
+      ) {
+        continue;
+      }
     }
 
     cleaned[key] = value;

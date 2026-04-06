@@ -1,4 +1,4 @@
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, count } from "drizzle-orm";
 import {
   wikiSpaces,
   wikiSpaceMembers,
@@ -348,6 +348,26 @@ export class WikiSpaceService {
       throw AppError.notFound("member");
     }
 
+    // Prevent downgrading the last editor to viewer
+    if (existing.role === "editor" && role === "viewer") {
+      const [editorCount] = await this.db
+        .select({ count: count() })
+        .from(wikiSpaceMembers)
+        .where(
+          and(
+            eq(wikiSpaceMembers.wikiSpaceId, spaceId),
+            eq(wikiSpaceMembers.role, "editor"),
+          ),
+        );
+
+      if (editorCount!.count <= 1) {
+        throw AppError.badRequest(
+          ErrorCode.VALIDATION_ERROR,
+          "Cannot downgrade the last editor",
+        );
+      }
+    }
+
     const [updated] = await this.db
       .update(wikiSpaceMembers)
       .set({ role })
@@ -380,6 +400,26 @@ export class WikiSpaceService {
 
     if (!existing) {
       throw AppError.notFound("member");
+    }
+
+    // Prevent removing the last editor
+    if (existing.role === "editor") {
+      const [editorCount] = await this.db
+        .select({ count: count() })
+        .from(wikiSpaceMembers)
+        .where(
+          and(
+            eq(wikiSpaceMembers.wikiSpaceId, spaceId),
+            eq(wikiSpaceMembers.role, "editor"),
+          ),
+        );
+
+      if (editorCount!.count <= 1) {
+        throw AppError.badRequest(
+          ErrorCode.VALIDATION_ERROR,
+          "Cannot remove the last editor",
+        );
+      }
     }
 
     await this.db

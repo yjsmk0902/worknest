@@ -12,7 +12,7 @@ import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import type { WikiSpaceOutput } from '@worknest/shared/schemas/wiki';
+import type { WikiSpaceOutput } from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
 
 interface SpaceFormModalProps {

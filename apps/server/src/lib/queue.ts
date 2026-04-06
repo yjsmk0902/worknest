@@ -98,7 +98,11 @@ export function startWorker(): Worker {
 export async function addJob<T>(
   name: string,
   data: T,
-  opts?: { delay?: number; priority?: number },
+  opts?: {
+    delay?: number;
+    priority?: number;
+    repeat?: { every: number } | { pattern: string };
+  },
 ): Promise<void> {
   const q = initQueue();
   await q.add(name, data, opts);

@@ -18,7 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from '@worknest/ui';
-import type { WikiPageOutput } from '@worknest/shared/schemas/wiki';
+import type { WikiPageOutput } from '@worknest/shared';
 import { apiClient } from '../../../lib/api-client';
 import { PageTreeItem } from './page-tree-item';
 

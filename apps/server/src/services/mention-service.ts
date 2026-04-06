@@ -76,31 +76,25 @@ export class MentionService {
       (m) => !issueIds.has(m.issueId),
     );
 
-    // Perform inserts and deletes
-    const operations: Promise<unknown>[] = [];
+    // Perform inserts and deletes in a transaction for consistency
+    if (toAdd.length > 0 || toRemove.length > 0) {
+      await this.db.transaction(async (tx) => {
+        if (toAdd.length > 0) {
+          await tx.insert(issueMentions).values(
+            toAdd.map((issueId) => ({
+              issueId,
+              pageId,
+            })),
+          );
+        }
 
-    if (toAdd.length > 0) {
-      operations.push(
-        this.db.insert(issueMentions).values(
-          toAdd.map((issueId) => ({
-            issueId,
-            pageId,
-          })),
-        ),
-      );
-    }
-
-    if (toRemove.length > 0) {
-      const removeIds = toRemove.map((m) => m.id);
-      operations.push(
-        this.db
-          .delete(issueMentions)
-          .where(inArray(issueMentions.id, removeIds)),
-      );
-    }
-
-    if (operations.length > 0) {
-      await Promise.all(operations);
+        if (toRemove.length > 0) {
+          const removeIds = toRemove.map((m) => m.id);
+          await tx
+            .delete(issueMentions)
+            .where(inArray(issueMentions.id, removeIds));
+        }
+      });
     }
   }
 }

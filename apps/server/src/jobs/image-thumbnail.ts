@@ -41,7 +41,6 @@ export function createImageThumbnailProcessor() {
         `Failed to generate thumbnail for ${filePath}:`,
         error,
       );
-      throw error;
     }
   };
 }

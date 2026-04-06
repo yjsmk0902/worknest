@@ -3,7 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Plus, BookOpen } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
-import type { WikiSpaceOutput } from '@worknest/shared/schemas/wiki';
+import type { WikiSpaceOutput } from '@worknest/shared';
 import { apiClient } from '../../../../../lib/api-client';
 import { AppHeader } from '../../../../../components/layout/app-header';
 import { SpaceFormModal } from '../../../../../components/wiki/space-form-modal';

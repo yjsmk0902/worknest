@@ -38,7 +38,7 @@ export async function fileRoutes(
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
-      const result = await service.listByPageId(pageId);
+      const result = await service.listByPageId(pageId, request.user!.id);
       return reply.status(200).send(result);
     },
   );
@@ -79,10 +79,16 @@ export async function fileRoutes(
         string,
         { value?: string } | undefined
       >;
-      const entityType = fields.entityType?.value as
-        | "issue"
-        | "page"
-        | undefined;
+      const rawEntityType = fields.entityType?.value;
+      if (rawEntityType && rawEntityType !== "issue" && rawEntityType !== "page") {
+        return reply.status(400).send({
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid entityType. Must be 'issue' or 'page'.",
+          },
+        });
+      }
+      const entityType = rawEntityType as "issue" | "page" | undefined;
       const entityId = fields.entityId?.value;
 
       const file = await service.upload(
@@ -114,7 +120,7 @@ export async function fileRoutes(
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
-      const file = await service.getById(fileId);
+      const file = await service.getById(fileId, request.user!.id);
       return reply.status(200).send({ data: file });
     },
   );
@@ -133,7 +139,7 @@ export async function fileRoutes(
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
-      const file = await service.getFileRecord(fileId);
+      const file = await service.getFileRecord(fileId, request.user!.id);
 
       if (!fs.existsSync(file.path)) {
         return reply.status(404).send({

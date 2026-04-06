@@ -21,6 +21,7 @@ export const fileOutput = z.object({
   issueId: z.string().uuid().nullable(),
   pageId: z.string().uuid().nullable(),
   name: z.string(),
+  /** Download URL for the file (e.g. /api/v1/files/:id/download) */
   path: z.string(),
   mimeType: z.string(),
   size: z.number(),

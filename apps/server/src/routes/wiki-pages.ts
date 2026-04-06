@@ -1,7 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
+import { wikiSpaces, type Database } from "@worknest/db";
 import { createRequireAuth } from "../middleware/auth";
 import { WikiPageService } from "../services/wiki-page-service";
 import { MentionService } from "../services/mention-service";
@@ -9,6 +10,11 @@ import {
   createWikiPageInput,
   updateWikiPageInput,
 } from "@worknest/shared";
+import {
+  broadcastWikiPageCreated,
+  broadcastWikiPageUpdated,
+  broadcastWikiPageDeleted,
+} from "../websocket/wiki-events";
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -19,6 +25,20 @@ const movePageBody = z.object({
   parentId: z.string().uuid().nullable(),
   sortOrder: z.string().min(1),
 });
+
+/**
+ * Look up the workspaceId for a wiki space.
+ */
+async function getWorkspaceId(db: Database, spaceId: string): Promise<string> {
+  const space = await db
+    .select({ workspaceId: wikiSpaces.workspaceId })
+    .from(wikiSpaces)
+    .where(eq(wikiSpaces.id, spaceId))
+    .limit(1)
+    .then((rows) => rows[0]);
+
+  return space!.workspaceId;
+}
 
 /**
  * Wiki page routes.
@@ -33,6 +53,25 @@ export async function wikiPageRoutes(
   const requireAuth = createRequireAuth(auth);
   const pageService = new WikiPageService(db);
   const mentionService = new MentionService(db);
+
+  // ── GET /api/v1/wiki-spaces/:spaceId/pages/tree ─────────────────
+
+  app.get(
+    "/api/v1/wiki-spaces/:spaceId/pages/tree",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Wiki Pages"],
+        summary: "Get page tree for a wiki space",
+        params: spaceIdParam,
+      },
+    },
+    async (request, reply) => {
+      const { spaceId } = spaceIdParam.parse(request.params);
+      const result = await pageService.getTree(spaceId, request.user!.id);
+      return reply.status(200).send(result);
+    },
+  );
 
   // ── GET /api/v1/wiki-spaces/:spaceId/pages ──────────────────────
 
@@ -79,6 +118,10 @@ export async function wikiPageRoutes(
       if (body.content) {
         await mentionService.syncMentions(page.id, body.content);
       }
+
+      // Broadcast wiki page created event
+      const workspaceId = await getWorkspaceId(db, spaceId);
+      broadcastWikiPageCreated(workspaceId, { pageId: page.id, title: page.title });
 
       return reply.status(201).send({ data: page });
     },
@@ -130,6 +173,10 @@ export async function wikiPageRoutes(
         await mentionService.syncMentions(pageId, body.content);
       }
 
+      // Broadcast wiki page updated event
+      const workspaceId = await getWorkspaceId(db, page.wikiSpaceId);
+      broadcastWikiPageUpdated(workspaceId, { pageId: page.id });
+
       return reply.status(200).send({ data: page });
     },
   );
@@ -148,8 +195,43 @@ export async function wikiPageRoutes(
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
+
+      // Look up the page before deletion to get the spaceId for broadcasting
+      const page = await pageService.getById(pageId, request.user!.id);
+
       await pageService.delete(pageId, request.user!.id);
+
+      // Broadcast wiki page deleted event
+      const workspaceId = await getWorkspaceId(db, page.wikiSpaceId);
+      broadcastWikiPageDeleted(workspaceId, { pageId });
+
       return reply.status(204).send();
+    },
+  );
+
+  // ── POST /api/v1/wiki-pages/:pageId/move ──────────────────────
+
+  app.post(
+    "/api/v1/wiki-pages/:pageId/move",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Wiki Pages"],
+        summary: "Move a wiki page to a new parent and/or position",
+        params: pageIdParam,
+        body: movePageBody,
+      },
+    },
+    async (request, reply) => {
+      const { pageId } = pageIdParam.parse(request.params);
+      const { parentId, sortOrder } = movePageBody.parse(request.body);
+      const page = await pageService.move(
+        pageId,
+        request.user!.id,
+        parentId,
+        sortOrder,
+      );
+      return reply.status(200).send({ data: page });
     },
   );
 }

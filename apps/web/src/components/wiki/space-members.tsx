@@ -18,7 +18,7 @@ import { toast } from '@worknest/ui';
 import type {
   WikiSpaceMemberOutput,
   WikiSpaceRole,
-} from '@worknest/shared/schemas/wiki';
+} from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
 
 interface MemberWithUser extends WikiSpaceMemberOutput {

@@ -357,10 +357,21 @@ export class WikiPageService {
     const page = await getPageWithSpaceId(this.db, pageId);
     await requireEditorRole(this.db, page.wikiSpaceId, callerUserId);
 
-    await this.db
-      .update(wikiPages)
-      .set({ deletedAt: new Date() })
-      .where(eq(wikiPages.id, pageId));
+    await this.db.transaction(async (tx) => {
+      // Re-parent direct children to the deleted page's parent (promote up one level)
+      await tx
+        .update(wikiPages)
+        .set({ parentId: page.parentId ?? null, updatedAt: new Date() })
+        .where(
+          and(eq(wikiPages.parentId, pageId), isNull(wikiPages.deletedAt)),
+        );
+
+      // Soft-delete the page
+      await tx
+        .update(wikiPages)
+        .set({ deletedAt: new Date() })
+        .where(eq(wikiPages.id, pageId));
+    });
   }
 
   // ── Get Tree ────────────────────────────────────────────────────

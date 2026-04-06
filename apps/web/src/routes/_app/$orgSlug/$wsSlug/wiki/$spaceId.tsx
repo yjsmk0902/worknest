@@ -1,7 +1,9 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared/schemas/wiki';
+import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, AlertTriangle, FileText, Plus } from 'lucide-react';
+import { Button } from '@worknest/ui';
+import { toast } from '@worknest/ui';
+import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
 import { apiClient } from '../../../../../lib/api-client';
 import { PageTree } from '../../../../../components/wiki/page-tree/page-tree';
 import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
@@ -16,6 +18,9 @@ function WikiSpaceLayout() {
   const { orgSlug, wsSlug, spaceId } = Route.useParams();
   const { wsId } = useWorkspaceContext();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const params = useParams({ strict: false }) as { pageId?: string };
+  const hasSelectedPage = !!params.pageId;
 
   const spaceQuery = useQuery<WikiSpaceOutput>({
     queryKey: ['wiki-spaces', spaceId],
@@ -53,6 +58,26 @@ function WikiSpaceLayout() {
 
   const space = spaceQuery.data!;
   const pages = pagesQuery.data?.data ?? [];
+
+  const createPageMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`, {
+        title: '새 페이지',
+        slug: `page-${Date.now()}`,
+      }),
+    onSuccess: (newPage) => {
+      queryClient.invalidateQueries({
+        queryKey: ['wiki-spaces', spaceId, 'pages'],
+      });
+      navigate({
+        to: '/$orgSlug/$wsSlug/wiki/$spaceId/$pageId',
+        params: { orgSlug, wsSlug, spaceId, pageId: newPage.id },
+      });
+    },
+    onError: () => {
+      toast('페이지 생성에 실패했습니다.');
+    },
+  });
 
   const handlePageSelect = (pageId: string) => {
     navigate({
@@ -92,7 +117,28 @@ function WikiSpaceLayout() {
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto">
-        <Outlet />
+        {hasSelectedPage ? (
+          <Outlet />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center">
+            <FileText className="h-12 w-12 text-muted-foreground" />
+            <p className="mt-4 text-base font-medium text-foreground">
+              페이지를 선택하거나 새 페이지를 만들어보세요
+            </p>
+            <Button
+              className="mt-4"
+              onClick={() => createPageMutation.mutate()}
+              disabled={createPageMutation.isPending}
+            >
+              {createPageMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              새 페이지 만들기
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -45,9 +45,9 @@ export function CycleFormModal({
   const [nameError, setNameError] = useState('');
   const [dateError, setDateError] = useState('');
 
-  // Fetch existing cycles for overlap check
+  // Fetch existing cycles for overlap check (distinct key to avoid shape collision)
   const cyclesQuery = useQuery<CycleOutput[]>({
-    queryKey: ['projects', projectId, 'cycles'],
+    queryKey: ['projects', projectId, 'cycles', 'overlap-check'],
     queryFn: async () => {
       const res = await apiClient.getList<CycleOutput>(
         `/projects/${projectId}/cycles`,

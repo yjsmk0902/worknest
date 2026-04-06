@@ -104,28 +104,35 @@ export function IssueProperties({
   });
 
   // Fetch cycles for this issue
+  // TODO: Replace with a dedicated backend endpoint (e.g. GET /issues/:issueId/cycles)
+  // to avoid fetching issues for every cycle.
   const issueCyclesQuery = useQuery<CycleOutput[]>({
     queryKey: ['issues', issue.id, 'cycles'],
     queryFn: async () => {
-      // Fetch all cycles, then filter to those containing this issue
+      // Fetch all non-completed cycles, then check membership in parallel
       const cyclesRes = await apiClient.getList<CycleOutput>(
         `/projects/${projectId}/cycles`,
       );
-      const cycles = cyclesRes.data;
-      const results: CycleOutput[] = [];
-      for (const cycle of cycles) {
-        try {
-          const issuesRes = await apiClient.getList<IssueOutput>(
-            `/projects/${projectId}/cycles/${cycle.id}/issues`,
-          );
-          if (issuesRes.data.some((i) => i.id === issue.id)) {
-            results.push(cycle);
+      const activeCycles = cyclesRes.data.filter(
+        (c) => c.status !== 'completed',
+      );
+
+      const checks = await Promise.all(
+        activeCycles.map(async (cycle) => {
+          try {
+            const issuesRes = await apiClient.getList<IssueOutput>(
+              `/cycles/${cycle.id}/issues`,
+            );
+            return issuesRes.data.some((i) => i.id === issue.id)
+              ? cycle
+              : null;
+          } catch {
+            return null;
           }
-        } catch {
-          // Skip cycles we can't access
-        }
-      }
-      return results;
+        }),
+      );
+
+      return checks.filter((c): c is CycleOutput => c !== null);
     },
     staleTime: 60 * 1000,
   });

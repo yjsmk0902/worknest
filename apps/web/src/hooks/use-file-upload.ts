@@ -39,13 +39,17 @@ export function useFileUpload(
   const [uploadedFile, setUploadedFile] = useState<FileOutput | null>(null);
   const abortRef = useRef<XMLHttpRequest | null>(null);
 
+  // Hold options in a ref so the upload callback has a stable identity
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   const upload = useCallback(
     async (file: File): Promise<FileOutput | null> => {
       // Client-side validation
       if (file.size > MAX_FILE_SIZE) {
         const msg = '파일 크기는 25MB를 초과할 수 없습니다';
         setError(msg);
-        options.onError?.(msg);
+        optionsRef.current.onError?.(msg);
         return null;
       }
 
@@ -53,7 +57,7 @@ export function useFileUpload(
       if (BLOCKED_EXTENSIONS.includes(ext)) {
         const msg = '이 파일 형식은 업로드할 수 없습니다';
         setError(msg);
-        options.onError?.(msg);
+        optionsRef.current.onError?.(msg);
         return null;
       }
 
@@ -85,12 +89,12 @@ export function useFileUpload(
               const fileData = response.data ?? response;
               setUploadedFile(fileData);
               setProgress(100);
-              options.onSuccess?.(fileData);
+              optionsRef.current.onSuccess?.(fileData);
               resolve(fileData);
             } catch {
               const msg = '서버 응답을 처리할 수 없습니다';
               setError(msg);
-              options.onError?.(msg);
+              optionsRef.current.onError?.(msg);
               resolve(null);
             }
           } else {
@@ -102,7 +106,7 @@ export function useFileUpload(
               // Use default message
             }
             setError(msg);
-            options.onError?.(msg);
+            optionsRef.current.onError?.(msg);
             resolve(null);
           }
         });
@@ -112,7 +116,7 @@ export function useFileUpload(
           abortRef.current = null;
           const msg = '네트워크 오류가 발생했습니다';
           setError(msg);
-          options.onError?.(msg);
+          optionsRef.current.onError?.(msg);
           resolve(null);
         });
 
@@ -128,7 +132,7 @@ export function useFileUpload(
         xhr.send(formData);
       });
     },
-    [options],
+    [],
   );
 
   return { upload, progress, uploading, error, uploadedFile };

@@ -14,7 +14,7 @@ import { createAuth } from "./lib/auth";
 import { createRedis } from "./lib/redis";
 import { errorHandler } from "./lib/errors";
 import { globalRateLimit } from "./middleware/rate-limit";
-import { initQueue, startWorker, closeQueue } from "./lib/queue";
+import { initQueue, startWorker, closeQueue, addJob } from "./lib/queue";
 import { registerAllJobs } from "./jobs/index";
 
 // Routes
@@ -115,6 +115,9 @@ async function main() {
   initQueue();
   registerAllJobs(db);
   startWorker();
+
+  // Schedule orphan file cleanup (runs every hour)
+  await addJob("orphan-cleanup", {}, { repeat: { every: 60 * 60 * 1000 } });
 
   // ── Register Routes ──────────────────────────────────────────────
 

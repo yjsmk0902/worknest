@@ -236,33 +236,45 @@ export class CycleService {
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
 
-    // Check no other active cycle exists in the same project
-    const activeCycle = await this.db
-      .select({ id: cycles.id })
-      .from(cycles)
-      .where(
-        and(
-          eq(cycles.projectId, existing.projectId),
-          eq(cycles.status, "active"),
-        ),
-      )
-      .limit(1)
-      .then((rows) => rows[0]);
-
-    if (activeCycle) {
-      throw AppError.conflict(
-        ErrorCode.ACTIVE_CYCLE_EXISTS,
-        "An active cycle already exists in this project",
+    // Only draft cycles can be activated
+    if (existing.status !== "draft") {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        "Only draft cycles can be activated",
       );
     }
 
-    const [updated] = await this.db
-      .update(cycles)
-      .set({ status: "active", updatedAt: new Date() })
-      .where(eq(cycles.id, cycleId))
-      .returning();
+    // Check + activate in a transaction to prevent TOCTOU race condition
+    const updated = await this.db.transaction(async (tx) => {
+      const activeCycle = await tx
+        .select({ id: cycles.id })
+        .from(cycles)
+        .where(
+          and(
+            eq(cycles.projectId, existing.projectId),
+            eq(cycles.status, "active"),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows[0]);
 
-    const result = formatCycle(updated!);
+      if (activeCycle) {
+        throw AppError.conflict(
+          ErrorCode.ACTIVE_CYCLE_EXISTS,
+          "An active cycle already exists in this project",
+        );
+      }
+
+      const [row] = await tx
+        .update(cycles)
+        .set({ status: "active", updatedAt: new Date() })
+        .where(eq(cycles.id, cycleId))
+        .returning();
+
+      return row!;
+    });
+
+    const result = formatCycle(updated);
 
     broadcastCycleUpdated(existing.projectId, {
       action: "activated",
@@ -290,7 +302,7 @@ export class CycleService {
 
     // Verify issue exists
     const issue = await this.db
-      .select({ id: issues.id })
+      .select({ id: issues.id, projectId: issues.projectId })
       .from(issues)
       .where(and(eq(issues.id, issueId), isNull(issues.deletedAt)))
       .limit(1)
@@ -298,6 +310,14 @@ export class CycleService {
 
     if (!issue) {
       throw AppError.notFound("issue");
+    }
+
+    // Verify issue belongs to the same project as the cycle
+    if (issue.projectId !== cycle.projectId) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        "Issue does not belong to this project",
+      );
     }
 
     // Check not already active in cycle
@@ -472,6 +492,14 @@ export class CycleService {
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
+
+    // Only active cycles can be completed
+    if (cycle.status !== "active") {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        "Only active cycles can be completed",
+      );
+    }
 
     // Validate target cycle if provided
     if (input.targetCycleId) {

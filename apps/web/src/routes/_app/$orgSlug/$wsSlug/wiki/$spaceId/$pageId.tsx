@@ -3,8 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import type { JSONContent } from '@tiptap/core';
-import type { WikiPageOutput, WikiSpaceOutput } from '@worknest/shared/schemas/wiki';
-import type { FileOutput } from '@worknest/shared/schemas/files';
+import type { WikiPageOutput, WikiSpaceOutput, FileOutput } from '@worknest/shared';
 import { EditorWithAutosave, SlashCommand, IssueLink, ImageUpload } from '@worknest/editor';
 import {
   Breadcrumb,
@@ -119,7 +118,7 @@ function WikiPageEditor() {
   // ── Auto-save ───────────────────────────────────────────────────────
 
   const handleSave = useCallback(
-    async (json: JSONContent, text: string) => {
+    async (json: JSONContent, _text: string) => {
       await apiClient.patch(`/wiki-pages/${pageId}`, {
         content: json,
       });

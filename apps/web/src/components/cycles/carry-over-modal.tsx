@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
@@ -74,11 +74,11 @@ export function CarryOverModal({
   const availableCycles = cyclesQuery.data ?? [];
 
   // Set default target when cycles load
-  useState(() => {
+  useEffect(() => {
     if (availableCycles.length > 0 && !targetCycleId) {
       setTargetCycleId(availableCycles[0].id);
     }
-  });
+  }, [availableCycles, targetCycleId]);
 
   // Complete cycle mutation
   const completeMutation = useMutation({

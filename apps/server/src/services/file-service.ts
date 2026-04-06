@@ -1,5 +1,12 @@
-import { eq } from "drizzle-orm";
-import { files, type Database } from "@worknest/db";
+import { eq, and, isNull } from "drizzle-orm";
+import {
+  files,
+  wikiPages,
+  wikiSpaceMembers,
+  issues,
+  projectMembers,
+  type Database,
+} from "@worknest/db";
 import { AppError, ErrorCode } from "../lib/errors";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -47,7 +54,7 @@ function toFileOutput(row: typeof files.$inferSelect) {
     issueId: row.issueId ?? null,
     pageId: row.pageId ?? null,
     name: row.name,
-    path: row.path,
+    path: `/api/v1/files/${row.id}/download`,
     mimeType: row.mimeType,
     size: row.size,
     uploadedBy: row.uploadedBy ?? null,
@@ -59,6 +66,102 @@ function toFileOutput(row: typeof files.$inferSelect) {
 
 export class FileService {
   constructor(private db: Database) {}
+
+  // ── Auth Helpers ────────────────────────────────────────────────
+
+  /**
+   * Verify that the caller has access to the file's parent entity.
+   * - If file is attached to a page: verify wiki space membership.
+   * - If file is attached to an issue: verify project membership.
+   * - Otherwise: verify uploader.
+   */
+  private async requireFileAccess(
+    file: typeof files.$inferSelect,
+    callerUserId: string,
+  ): Promise<void> {
+    if (file.pageId) {
+      await this.requirePageAccess(file.pageId, callerUserId);
+    } else if (file.issueId) {
+      await this.requireIssueAccess(file.issueId, callerUserId);
+    } else {
+      // No parent entity — only the uploader can access
+      if (file.uploadedBy !== callerUserId) {
+        throw AppError.forbidden(
+          "You do not have permission to access this file",
+        );
+      }
+    }
+  }
+
+  /**
+   * Verify the caller is a member of the wiki space that owns this page.
+   */
+  private async requirePageAccess(
+    pageId: string,
+    callerUserId: string,
+  ): Promise<void> {
+    const page = await this.db
+      .select({ wikiSpaceId: wikiPages.wikiSpaceId })
+      .from(wikiPages)
+      .where(eq(wikiPages.id, pageId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!page) {
+      throw AppError.notFound("wiki_page");
+    }
+
+    const member = await this.db
+      .select({ id: wikiSpaceMembers.id })
+      .from(wikiSpaceMembers)
+      .where(
+        and(
+          eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
+          eq(wikiSpaceMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!member) {
+      throw AppError.forbidden("You are not a member of this wiki space");
+    }
+  }
+
+  /**
+   * Verify the caller is a member of the project that owns this issue.
+   */
+  private async requireIssueAccess(
+    issueId: string,
+    callerUserId: string,
+  ): Promise<void> {
+    const issue = await this.db
+      .select({ projectId: issues.projectId })
+      .from(issues)
+      .where(eq(issues.id, issueId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!issue) {
+      throw AppError.notFound("issue");
+    }
+
+    const member = await this.db
+      .select({ id: projectMembers.id })
+      .from(projectMembers)
+      .where(
+        and(
+          eq(projectMembers.projectId, issue.projectId),
+          eq(projectMembers.userId, callerUserId),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!member) {
+      throw AppError.forbidden("You are not a member of this project");
+    }
+  }
 
   // ── Upload File ──────────────────────────────────────────────────
 
@@ -87,6 +190,31 @@ export class FileService {
         ErrorCode.FILE_TYPE_BLOCKED,
         `File type ${ext} is not allowed`,
       );
+    }
+
+    // Validate that the referenced entity exists
+    if (entityType === "issue" && entityId) {
+      const issue = await this.db
+        .select({ id: issues.id })
+        .from(issues)
+        .where(and(eq(issues.id, entityId), isNull(issues.deletedAt)))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!issue) {
+        throw AppError.notFound("issue");
+      }
+    } else if (entityType === "page" && entityId) {
+      const page = await this.db
+        .select({ id: wikiPages.id })
+        .from(wikiPages)
+        .where(and(eq(wikiPages.id, entityId), isNull(wikiPages.deletedAt)))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!page) {
+        throw AppError.notFound("wiki_page");
+      }
     }
 
     // Write file to disk
@@ -125,7 +253,9 @@ export class FileService {
 
   // ── List Files by Page ──────────────────────────────────────
 
-  async listByPageId(pageId: string) {
+  async listByPageId(pageId: string, callerUserId: string) {
+    await this.requirePageAccess(pageId, callerUserId);
+
     const rows = await this.db
       .select()
       .from(files)
@@ -142,7 +272,7 @@ export class FileService {
 
   // ── Get File by ID ──────────────────────────────────────────────
 
-  async getById(fileId: string) {
+  async getById(fileId: string, callerUserId: string) {
     const file = await this.db
       .select()
       .from(files)
@@ -153,13 +283,15 @@ export class FileService {
     if (!file) {
       throw AppError.notFound("file");
     }
+
+    await this.requireFileAccess(file, callerUserId);
 
     return toFileOutput(file);
   }
 
   // ── Get File record (internal, includes raw path) ───────────────
 
-  async getFileRecord(fileId: string) {
+  async getFileRecord(fileId: string, callerUserId: string) {
     const file = await this.db
       .select()
       .from(files)
@@ -170,6 +302,8 @@ export class FileService {
     if (!file) {
       throw AppError.notFound("file");
     }
+
+    await this.requireFileAccess(file, callerUserId);
 
     return file;
   }
