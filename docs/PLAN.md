@@ -318,44 +318,86 @@
 ## CP-6: 공통 기능
 
 > Cmd+K 검색, My Work, 댓글/리액션/활동, 알림
+>
+> **6-에이전트 사전 검토 완료** (2026-04-06): DBA, Backend, Frontend, Design, QA, Tech Lead 전원 검토. 아래는 검토 결과를 반영한 수정 계획.
+
+### 사전 검토에서 식별된 주요 조정사항
+
+| # | 변경 | 이유 |
+|---|------|------|
+| 1 | `wiki_pages`에 `search_vector` TSVECTOR + GIN 인덱스 + 트리거 추가 (CP6-DBA-3 신규) | 검색 API 품질에 필수. CP-5에서 누락된 숨겨진 의존성. |
+| 2 | WebSocket `channels.ts`에 `page` 채널 타입 추가 (Phase 0) | 위키 페이지 댓글 실시간 이벤트 전달에 필요 |
+| 3 | `cmdk` 패키지 설치 (Phase 0) | Cmd+K 명령 팔레트 구현에 필수 |
+| 4 | `activities` 테이블에 `page_id` 컬럼 추가 → **v1.0으로 연기** | Wiki 활동 로그는 댓글만으로 충분. 스키마 변경 최소화. |
+| 5 | 이모지 피커 → **커스텀 20개 이모지 Popover** (무거운 라이브러리 대신) | 번들 크기 절약 (~160KB→~2KB) |
+| 6 | 댓글 스레딩 → **flat (1단계)** | MVP 단순화. parent_id 1레벨만 허용. |
+| 7 | `pg_trgm` GIN 인덱스 추가 (issues.title, wiki_pages.title, projects.name) | ILIKE 쿼리 성능 보장 |
+| 8 | Notification: Redis Pub/Sub 언급 제거 → `sendToUser()` 직접 호출 (MVP 단일 인스턴스) | 불필요한 복잡도 제거 |
+| 9 | 테스트 mock DB에 `or()` 연산자 지원 추가 (Phase 0) | 검색 테스트 블로커 |
+
+### 기술 결정 사항
+
+| 결정 | 내용 | 근거 |
+|------|------|------|
+| 이모지 피커 | 커스텀 20개 이모지 Popover (👍❤️😄👀🚀🎉😕👎✅❌🔥💯🙏😱💡🤔😂🥳👏🙌) | @emoji-mart/react ~160KB 절약, MVP에 충분 |
+| 댓글 스레딩 | flat 1단계 (parent_id 허용, 중첩 불가) | 깊은 스레드는 UX 복잡도 증가. Linear/GitHub 패턴. |
+| 댓글 에디터 | TipTap MiniEditor (StarterKit + Placeholder + Link + Mention만) | 풀 에디터 대비 번들 경량화. 테이블/코드블록 불필요. |
+| Notification 전달 | BullMQ job → DB INSERT → `sendToUser()` in-process | Redis Pub/Sub는 v1.0 멀티 인스턴스에서. |
+| Wiki 활동 로그 | 댓글만 표시 (field-change activity는 v1.0) | activities.page_id 추가 없이 구현 가능 |
+| 검색 | search_vector (full-text) + ILIKE (pg_trgm GIN) 병용 | 정확도(tsvector) + 부분 매칭(trigram) 양립 |
+| 이슈 ID 검색 | 클라이언트 패턴 감지 → 즉시 라우팅 + 서버 API에서도 지원 | 빠른 UX + API 완전성 |
 
 ### 실행 순서
 
-1. **[Phase 1 — 병렬]** DBA: 댓글, 리액션, 알림, 즐겨찾기 스키마 (Activity 스키마는 CP2-DBA-3에서 이미 생성됨)
-2. **[Phase 2 — 병렬]** Backend: 검색 API + 댓글 API + 알림 API + My Work API | Design: Cmd+K + My Work + 댓글 UI 스펙
-3. **[Phase 3 — 병렬]** Frontend: Cmd+K 구현 | Frontend: 댓글/리액션 UI | Frontend: My Work UI
-4. **[Phase 4]** Frontend: 알림 시스템 (WebSocket 실시간)
-5. **[Phase 5]** Tech Lead: 통합 검증
-6. **[Phase 6]** QA: 테스트 작성
+1. **[Phase 0 — Pre-flight]** `cmdk` 패키지 설치, WebSocket `page` 채널 추가, mock DB `or()` 지원 추가
+2. **[Phase 1]** DBA: 댓글, 리액션, 알림, 즐겨찾기 스키마 + wiki_pages search_vector + pg_trgm 인덱스
+3. **[Phase 2 — 병렬]** Backend: 공유 스키마 + 검색 API + 댓글 API + 알림 API + My Work API | Design: 4개 스펙
+4. **[Phase 3 — 병렬]** Frontend: Cmd+K | Frontend: 댓글/리액션 UI | Frontend: My Work (Inbox + My Issues + Favorites)
+5. **[Phase 4]** Frontend: 알림 벨 (WebSocket 실시간)
+6. **[Phase 5]** Tech Lead: 통합 검증
+7. **[Phase 6]** QA: 테스트 작성
 
 ### 상세 태스크
 
-| Task ID | Agent | 설명 | 의존성 | 핵심 산출물 |
-|---------|-------|------|--------|------------|
-| CP6-DBA-1* | DBA | 댓글 + 리액션 스키마: `comments`(다형적 — issue_id/page_id 중 하나, CHECK 제약(**raw SQL 마이그레이션 필요**), parent_id 스레드, content jsonb, soft delete), `reactions`(comment_id, user_id, emoji, UNIQUE). 마이그레이션. | CP5-DBA-1 | `packages/db/src/schema/comments.ts`, `reactions.ts` |
-| CP6-DBA-2 | DBA | 알림 + 즐겨찾기 스키마: `notifications`(user_id, issue_id/page_id 다형적 CHECK(**raw SQL 마이그레이션 필요**), type enum, message, read_at), `favorites`(user_id, project_id/issue_id/page_id/space_id 다형적 CHECK(**raw SQL 마이그레이션 필요**), sort_order). 마이그레이션. | CP5-DBA-1 | `packages/db/src/schema/notifications.ts`, `favorites.ts` |
-| CP6-DS-1 | Design | Cmd+K 명령 팔레트 스펙: 640px 너비 중앙 상단, 반투명 백드롭, 입력 auto-focus, 최근 항목(기본 5개), 검색 결과 카테고리(이슈/Wiki/프로젝트/명령어), 이슈 ID 즉시 이동, `>` prefix 명령어 모드, ↑↓ Enter Esc 네비게이션, 디바운스 300ms. | 없음 | `docs/design/command-palette.md` |
-| CP6-DS-2 | Design | 댓글/활동 UI 스펙: 통합 타임라인(시간순 혼합, 필터 분리), 댓글 입력 필드(TipTap 미니 에디터 — @멘션 포함), 리액션(이모지 피커 + 카운트), 댓글 수정/삭제. | 없음 | `docs/design/comments-activity.md` |
-| CP6-DS-3 | Design | My Work 스펙: Inbox(알림 목록, 읽음/안읽음, 벨 아이콘 뱃지), My Issues(할당된 이슈 상태별 그룹), Favorites(즐겨찾기 목록 DnD 정렬). 각 Empty State. | 없음 | `docs/design/my-work.md` |
-| CP6-DS-4 | Design | 알림 스펙: 벨 아이콘 + 미읽음 카운트 뱃지, 알림 드롭다운(최근 알림 목록, 전체 읽음 처리), 알림 클릭 → 해당 엔티티로 네비게이션. | 없음 | `docs/design/notifications.md` |
-| CP6-BE-1* | Backend | 검색 API: `GET /workspaces/:wsId/search?q=...&type=issue,page,project`. PostgreSQL `ILIKE` + `pg_trgm` GIN. 이슈 ID 패턴 감지 → `(prefix, sequence_id)` 직접 조회. 결과 카테고리별 그룹(이슈/페이지/프로젝트). 커서 페이지네이션. | CP5-DBA-1, CP2-DBA-2 | `apps/server/src/routes/search.ts`, `apps/server/src/services/search-service.ts` |
-| CP6-BE-2 | Backend | Comment API: 이슈 댓글 CRUD(`POST/GET /issues/:id/comments`), Wiki 댓글 CRUD(`POST/GET /wiki-pages/:id/comments`). `PATCH/DELETE /comments/:id`(entity_type 검증). 스레드(parent_id). @멘션 추출. WebSocket **`comment.created`/`comment.updated`/`comment.deleted`** 이벤트(`issue:{id}` 채널). | CP6-DBA-1, CP1-BE-6 | `apps/server/src/routes/comments.ts`, `apps/server/src/services/comment-service.ts`, `apps/server/src/websocket/comment-events.ts` |
-| CP6-BE-3 | Backend | Reaction API: `POST /comments/:id/reactions`, `DELETE /comments/:id/reactions/:emoji`. 토글 동작(이미 있으면 제거). | CP6-DBA-1 | `apps/server/src/routes/comments.ts`(확장) |
-| CP6-BE-4 | Backend | Notification 서비스: 이벤트(이슈 할당/멘션/댓글/상태 변경/WS 초대) → DB INSERT + Redis Pub/Sub → WebSocket `user:{id}` 채널. 자기 이벤트 제외. 중복 방지. BullMQ 비동기 처리(CP1-BE-8 인프라 사용). WebSocket **`notification.new`** 이벤트. | CP6-DBA-2, CP1-BE-6, CP1-BE-8 | `apps/server/src/services/notification-service.ts`, `apps/server/src/jobs/notification-job.ts` |
-| CP6-BE-5 | Backend | Notification API: `GET /my/notifications`, `GET /my/notifications/unread-count`, `PATCH /notifications/:id`(읽음), `PATCH /my/notifications/read-all`, `DELETE /notifications/:id`. | CP6-BE-4 | `apps/server/src/routes/notifications.ts` |
-| CP6-BE-6 | Backend | My Issues API: `GET /my/issues?workspace_id=...`. IssueAssignee JOIN + 상태별 그룹. | CP2-BE-2 | `apps/server/src/routes/my-work.ts`(확장) |
-| CP6-BE-7 | Backend | Favorite API: CRUD(`POST/GET/PATCH/DELETE /my/favorites`). 다형적 엔티티(project/issue/page/space). sort_order fractional indexing. | CP6-DBA-2 | `apps/server/src/routes/favorites.ts`, `apps/server/src/services/favorite-service.ts` |
-| CP6-BE-8 | Backend | 검색/댓글/알림/즐겨찾기 Zod 공유 스키마. | CP6-DBA-1 | `packages/shared/src/schemas/search.ts`, `comments.ts`, `notifications.ts`, `favorites.ts` |
-| CP6-FE-1* | Frontend | Cmd+K 명령 팔레트(cmdk 라이브러리): 640px 중앙, 검색 입력(디바운스 300ms), 최근 항목(localStorage 최대 20개, 표시 5개), 검색 결과 카테고리, 이슈 ID 즉시 라우팅, `>` 명령어 모드(이슈 생성/프로젝트 이동/페이지 생성/내 이슈/설정/로그아웃), ↑↓ Enter Esc, 백드롭. Cmd+K 항상 활성. | CP6-DS-1, CP6-BE-1 | `apps/web/src/components/command-palette/` |
-| CP6-FE-2 | Frontend | 댓글/활동 통합 타임라인: 시간순 혼합 표시, 활동/댓글 필터, 댓글 입력(TipTap 미니 에디터 + @멘션), 댓글 수정/삭제, 낙관적 업데이트. 이슈 상세 + Wiki 페이지 공용. WebSocket `comment.*` 이벤트 수신. | CP6-DS-2, CP6-BE-2 | `apps/web/src/components/comments/`, `apps/web/src/components/activity-timeline/` |
-| CP6-FE-3 | Frontend | 리액션 컴포넌트: 이모지 피커(Popover), 리액션 카운트 표시, 토글(클릭 추가/제거), 낙관적 업데이트. | CP6-FE-2, CP6-BE-3 | `apps/web/src/components/comments/reactions.tsx` |
-| CP6-FE-4 | Frontend | My Work — Inbox 페이지: 알림 목록(읽음/안읽음 스타일), 전체 읽음 처리, 알림 클릭 → 엔티티 네비게이션, Empty State. | CP6-DS-3, CP6-BE-5 | `apps/web/src/pages/my-work/inbox.tsx` |
-| CP6-FE-5 | Frontend | My Work — My Issues 페이지: 할당된 이슈 상태별 그룹(accordions), 이슈 클릭 → Side Panel, Empty State. | CP6-DS-3, CP6-BE-6 | `apps/web/src/pages/my-work/my-issues.tsx` |
-| CP6-FE-6 | Frontend | My Work — Favorites 페이지: 즐겨찾기 목록(프로젝트/이슈/페이지/스페이스 아이콘 구분), DnD 정렬, 즐겨찾기 추가/제거(별 아이콘 토글, 각 엔티티에 배치), Empty State. 사이드바 Favorites 섹션 연동. | CP6-DS-3, CP6-BE-7 | `apps/web/src/pages/my-work/favorites.tsx`, `apps/web/src/components/favorite-button.tsx` |
-| CP6-FE-7 | Frontend | 알림 실시간 수신: WebSocket `notification.new` → 벨 아이콘 미읽음 카운트 업데이트 + TanStack Query 캐시 추가. 벨 아이콘 드롭다운(최근 알림 5개). | CP6-DS-4, CP6-BE-4 | `apps/web/src/components/notification-bell.tsx` |
-| CP6-TL-1 | Tech Lead | 통합 검증: Cmd+K 검색(이슈/페이지/프로젝트/명령어), 댓글 작성 → 알림 수신 → Inbox 표시, My Issues/Favorites 동작, WebSocket 알림 실시간 수신, comment WebSocket 이벤트. | CP6-FE-7 | 리뷰 코멘트 |
-| CP6-QA-1 | QA | 서버 테스트: 검색(ILIKE + 이슈 ID 패턴 + 빈 결과 + 권한 필터), Comment CRUD + entity_type 검증 + 스레드, Reaction 토글, Notification 트리거(각 이벤트 + 자기 제외 + 중복 방지), Favorite CRUD + 다형적 CHECK, My Issues 조회. | CP6-TL-1 | `apps/server/test/search.test.ts`, `comments.test.ts`, `notifications.test.ts`, `favorites.test.ts` |
-| CP6-QA-2 | QA | 프론트엔드 테스트: Cmd+K 렌더링 + 키보드 네비게이션 + 명령어 모드, 댓글 입력 + 수정 + 삭제, 리액션 토글, Inbox/My Issues/Favorites 렌더링 + Empty State, 알림 벨 뱃지 업데이트. | CP6-TL-1 | `apps/web/test/command-palette/`, `apps/web/test/comments/`, `apps/web/test/my-work/` |
+| Task ID | Phase | Agent | 설명 | 의존성 | 핵심 산출물 |
+|---------|-------|-------|------|--------|------------|
+| CP6-PRE-1 | 0 | Frontend | `cmdk` 패키지 설치 (`pnpm add cmdk --filter @worknest/web`). | 없음 | `apps/web/package.json` |
+| CP6-PRE-2 | 0 | Backend | WebSocket `channels.ts`에 `page` 채널 타입 추가. `handler.ts`에 wiki space 멤버십 체크 추가 (page subscribe 시). | 없음 | `apps/server/src/websocket/channels.ts`, `handler.ts` |
+| CP6-PRE-3 | 0 | QA | 테스트 mock DB `evaluateCondition`에 `or()` 연산자 지원 추가. `ne` (!=) 연산자 추가. | 없음 | `apps/server/test/setup.ts` |
+| CP6-DBA-1 | 1 | DBA | 댓글 + 리액션 스키마: `comments`(다형적 exactly-one CHECK, parent_id **1단계만**, content jsonb, soft delete, resolved_at nullable), `reactions`(comment_id, user_id, emoji, UNIQUE 3컬럼). 인덱스: issue_id, page_id, parent_id, author_id. | CP5-DBA-1 | `packages/db/src/schema/comments.ts` |
+| CP6-DBA-2 | 1 | DBA | 알림 + 즐겨찾기 스키마: `notifications`(다형적 at-most-one CHECK, type enum, read_at), `favorites`(다형적 exactly-one-of-4 CHECK, sort_order text, 부분 유니크 인덱스 4개). 인덱스: (user_id, read_at), (user_id, created_at), (user_id, sort_order). | CP5-DBA-1 | `packages/db/src/schema/notifications.ts`, `favorites.ts` |
+| CP6-DBA-3 | 1 | DBA | **검색 인프라 (신규)**: `wiki_pages`에 `search_vector` TSVECTOR 컬럼 + GIN 인덱스 + 트리거 (title + content_text → tsvector 자동 갱신, issues 패턴과 동일). `pg_trgm` GIN 인덱스: `issues.title`, `wiki_pages.title`, `projects.name`. 모두 `0005_cp6_common.sql`에 포함. | CP5-DBA-1 | `packages/db/src/schema/wiki.ts`(확장), `0005_cp6_common.sql` |
+| CP6-BE-8 | 1 | Backend | **공유 Zod 스키마 (Phase 1 승격)**: 검색/댓글/리액션/알림/즐겨찾기 스키마. `createCommentInput`(content, parentId optional), `commentOutput`, `reactionOutput`, `toggleReactionInput`, `notificationType` enum, `notificationOutput`, `createFavoriteInput`(entityType + entityId), `favoriteOutput`, `searchQuery`, `searchResultOutput`. | 없음 | `packages/shared/src/schemas/search.ts`, `comments.ts`, `notifications.ts`, `favorites.ts` |
+| CP6-DS-1 | 2 | Design | Cmd+K 명령 팔레트 스펙: 640px, 상단 중앙, 반투명 백드롭, auto-focus, 최근 항목 5개, 카테고리별 결과, 이슈 ID 즉시 이동, `>` 명령어 모드, ↑↓ Enter Esc. | 없음 | `docs/design/command-palette.md` |
+| CP6-DS-2 | 2 | Design | 댓글/활동 UI 스펙: 통합 타임라인, 댓글 입력(TipTap MiniEditor + @멘션), **커스텀 20개 이모지 Popover**, 댓글 수정/삭제, **flat 1단계 스레딩** (답글 1레벨). | 없음 | `docs/design/comments-activity.md` |
+| CP6-DS-3 | 2 | Design | My Work 스펙: Inbox(알림 목록, 읽음/안읽음, 필터), My Issues(상태별 그룹), Favorites(DnD 정렬, 별 토글). | 없음 | `docs/design/my-work.md` |
+| CP6-DS-4 | 2 | Design | 알림 스펙: 벨 아이콘 + 미읽음 카운트 뱃지, 알림 드롭다운(최근 10개, 전체 읽음), WebSocket 실시간 toast. | 없음 | `docs/design/notifications.md` |
+| CP6-BE-1* | 2 | Backend | 검색 API: `GET /workspaces/:wsId/search?q=&type=issue,page,project`. `search_vector @@ plainto_tsquery` (full-text) + `ILIKE` + `pg_trgm` GIN. 이슈 ID 패턴 서버측 지원. 카테고리별 그룹. 워크스페이스 스코프 권한 필터. | CP6-DBA-3, CP6-BE-8 | `apps/server/src/routes/search.ts`, `apps/server/src/services/search-service.ts` |
+| CP6-BE-2 | 2 | Backend | Comment API: 이슈 댓글(`POST/GET /issues/:id/comments`), Wiki 댓글(`POST/GET /wiki-pages/:id/comments`). `PATCH/DELETE /comments/:id`. **flat 스레딩**(parent_id 1단계, 중첩 불가 검증). @멘션 추출. WebSocket: `comment.*` 이벤트 — 이슈는 `issue:{id}` 채널, Wiki는 `page:{id}` 채널. | CP6-DBA-1, CP6-BE-8, CP6-PRE-2 | `apps/server/src/routes/comments.ts`, `apps/server/src/services/comment-service.ts`, `apps/server/src/websocket/comment-events.ts` |
+| CP6-BE-3 | 2 | Backend | Reaction API: `POST /comments/:id/reactions`, `DELETE /comments/:id/reactions/:emoji`. 토글 동작. **커스텀 20개 이모지 허용 목록 검증**. | CP6-DBA-1, CP6-BE-8 | `apps/server/src/routes/comments.ts`(확장) |
+| CP6-BE-4 | 2 | Backend | Notification 서비스: 이벤트(이슈 할당/멘션/댓글/상태 변경/WS 초대) → **BullMQ 비동기** → DB INSERT → `sendToUser()` in-process 전달. 자기 이벤트 제외. 5분 내 중복 방지(`user_id + type + entity` 복합 체크). WebSocket `notification.new` 이벤트. | CP6-DBA-2, CP6-BE-8, CP1-BE-8 | `apps/server/src/services/notification-service.ts`, `apps/server/src/jobs/notification-job.ts` |
+| CP6-BE-5 | 2 | Backend | Notification API: `GET /my/notifications`, `GET /my/notifications/unread-count`, `PATCH /notifications/:id`(읽음), `PATCH /my/notifications/read-all`, `DELETE /notifications/:id`. | CP6-BE-4 | `apps/server/src/routes/notifications.ts` |
+| CP6-BE-6 | 2 | Backend | My Issues API: `GET /workspaces/:wsId/my-issues`. IssueAssignee JOIN + projects.workspace_id 필터 + 상태 카테고리별 그룹. | CP2-BE-2 | `apps/server/src/routes/my-work.ts` |
+| CP6-BE-7 | 2 | Backend | Favorite API: CRUD(`POST/GET/PATCH/DELETE /my/favorites`). 다형적(project/issue/page/space). sort_order fractional indexing(`generateKeyBetween` 재사용). | CP6-DBA-2, CP6-BE-8 | `apps/server/src/routes/favorites.ts`, `apps/server/src/services/favorite-service.ts` |
+| CP6-FE-1* | 3 | Frontend | Cmd+K 명령 팔레트(`cmdk`): 640px 중앙, 디바운스 300ms, 최근 항목(localStorage 20개, 표시 5개), 카테고리별 결과, **이슈 ID 클라이언트 패턴 감지 → 즉시 라우팅**, `>` 명령어 모드, ↑↓ Enter Esc. 기존 `commandPaletteOpen` 스토어 + `useGlobalShortcuts` Cmd+K 연동. | CP6-DS-1, CP6-BE-1, CP6-PRE-1 | `apps/web/src/components/command-palette/` |
+| CP6-FE-2 | 3 | Frontend | 댓글/활동 통합 타임라인: 시간순 혼합, 필터(전체/댓글/활동), **TipTap MiniEditor**(StarterKit+Placeholder+Link+Mention, Cmd+Enter 제출), **flat 1단계 답글**, 수정/삭제, 낙관적 업데이트. 이슈+Wiki 공용. WebSocket `comment.*` 수신(`issue:{id}` or `page:{id}` 채널). | CP6-DS-2, CP6-BE-2 | `apps/web/src/components/comments/`, `apps/web/src/components/activity-timeline/` |
+| CP6-FE-3 | 3 | Frontend | 리액션 컴포넌트: **커스텀 20개 이모지 Popover**, 리액션 pill(이모지 + 카운트), 토글(클릭 추가/제거), 낙관적 업데이트. | CP6-FE-2, CP6-BE-3 | `apps/web/src/components/comments/reactions.tsx` |
+| CP6-FE-4 | 3 | Frontend | My Work — Inbox: 알림 목록(읽음/안읽음), 전체 읽음, 클릭 → 엔티티 네비게이션, Empty State. 라우트: `/$orgSlug/$wsSlug/my/inbox`. | CP6-DS-3, CP6-BE-5 | `apps/web/src/routes/_app/$orgSlug/$wsSlug/my/inbox.tsx` |
+| CP6-FE-5 | 3 | Frontend | My Work — My Issues: 할당된 이슈 상태 카테고리별 그룹(accordion), 이슈 클릭 → Side Panel, Empty State. 라우트: `/$orgSlug/$wsSlug/my/issues`. | CP6-DS-3, CP6-BE-6 | `apps/web/src/routes/_app/$orgSlug/$wsSlug/my/issues.tsx` |
+| CP6-FE-6 | 3 | Frontend | My Work — Favorites: 즐겨찾기 목록(엔티티 타입별 아이콘), DnD 정렬, 별 토글, Empty State. 사이드바 연동. 라우트: `/$orgSlug/$wsSlug/my/favorites`. | CP6-DS-3, CP6-BE-7 | `apps/web/src/routes/_app/$orgSlug/$wsSlug/my/favorites.tsx`, `apps/web/src/components/favorite-button.tsx` |
+| CP6-FE-7 | 4 | Frontend | 알림 벨: WebSocket `notification.new` → 미읽음 카운트 업데이트(사이드바 Inbox 뱃지 연동) + TanStack Query 캐시. 벨 아이콘 드롭다운(최근 10개). Sonner toast on new notification. | CP6-DS-4, CP6-BE-4 | `apps/web/src/components/notification-bell.tsx` |
+| CP6-TL-1 | 5 | Tech Lead | 통합 검증: Cmd+K 전체 플로우, 댓글 → 알림 → Inbox, My Issues/Favorites, WebSocket 실시간 알림, comment 실시간 업데이트. | CP6-FE-7 | 리뷰 코멘트 |
+| CP6-QA-1 | 6 | QA | 서버 테스트: 검색(full-text + ILIKE + 이슈 ID 패턴 + 권한), Comment CRUD(이슈+Wiki, flat 스레딩, entity 검증), Reaction 토글(이모지 허용 목록), Notification(5개 트리거, 자기 제외, 5분 중복 방지), Favorite CRUD(다형적, fractional sort), My Issues. ~50개. | CP6-TL-1 | `apps/server/test/search.test.ts`, `comments.test.ts`, `notifications.test.ts`, `favorites.test.ts` |
+| CP6-QA-2 | 6 | QA | 프론트엔드 테스트: Cmd+K(렌더링, 키보드, 명령어 모드, 이슈 ID 라우팅), 댓글(입력, 수정, 삭제, 답글), 리액션(이모지 Popover, 토글), Inbox/My Issues/Favorites(렌더링, Empty State), 알림 벨(뱃지 업데이트). ~40개. | CP6-TL-1 | `apps/web/test/command-palette/`, `apps/web/test/comments/`, `apps/web/test/my-work/` |
+
+### 위험 요소
+
+| 위험 | 심각도 | 대응 |
+|------|--------|------|
+| Notification 서비스 복잡도 (5개 트리거 + 자기 제외 + 중복 방지) | **HIGH** | BullMQ job으로 격리, 트리거별 단위 테스트, 5분 중복 윈도우 |
+| 댓글 MiniEditor (@mention + Cmd+Enter) | **MEDIUM** | StarterKit 최소 확장만 사용, @mention은 기존 createMentionExtension 재사용 |
+| 검색 API 정확도 (full-text + ILIKE 병용) | **MEDIUM** | search_vector + pg_trgm GIN 인덱스 Phase 1에서 선행 |
+| Cmd+K cmdk 라이브러리 통합 | **LOW** | 검증된 라이브러리 (~5KB), 기존 commandPaletteOpen 스토어 활용 |
 
 ---
 
