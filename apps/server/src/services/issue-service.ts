@@ -1,47 +1,49 @@
 import {
-  eq,
-  and,
-  isNull,
-  lt,
-  gt,
-  desc,
-  asc,
-  ilike,
-  sql,
-  inArray,
-  notInArray,
-  count,
-  type SQL,
-} from "drizzle-orm";
-import {
-  issues,
-  issueStatuses,
-  issueTypes,
+  type Database,
+  cycleIssues,
   issueAssignees,
   issueLabels,
+  issueStatuses,
+  issueTypes,
+  issues,
   labels,
-  users,
-  projects,
   projectMembers,
-  cycleIssues,
-  type Database,
-} from "@worknest/db";
+  projects,
+  users,
+} from '@worknest/db';
 import type {
-  CreateIssueInput,
-  UpdateIssueInput,
-  IssueListQuery,
   BulkUpdateInput,
-} from "@worknest/shared";
-import { isValidSortKey } from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import { ActivityService } from "./activity-service";
-import { addJob } from "../lib/queue";
+  CreateIssueInput,
+  IssueListQuery,
+  UpdateIssueInput,
+} from '@worknest/shared';
+import { isValidSortKey } from '@worknest/shared';
 import {
-  broadcastIssueCreated,
-  broadcastIssueUpdated,
-  broadcastIssueDeleted,
+  type SQL,
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  isNull,
+  lt,
+  notInArray,
+  sql,
+} from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
+import { escapeLikePattern } from '../lib/escape-like';
+import { addJob } from '../lib/queue';
+import { sanitizeContent } from '../lib/sanitize';
+import {
   broadcastIssueBulkUpdated,
-} from "../websocket/issue-events";
+  broadcastIssueCreated,
+  broadcastIssueDeleted,
+  broadcastIssueUpdated,
+} from '../websocket/issue-events';
+import { ActivityService } from './activity-service';
 
 // ── Constants ───────────────────────────────────────────────────────────
 
@@ -62,14 +64,14 @@ interface CursorPayload {
 }
 
 function encodeCursor(sortValue: string | number, issueId: string): string {
-  return Buffer.from(JSON.stringify({ v: sortValue, id: issueId })).toString("base64");
+  return Buffer.from(JSON.stringify({ v: sortValue, id: issueId })).toString('base64');
 }
 
 function decodeCursor(cursor: string): CursorPayload | null {
   try {
-    const json = Buffer.from(cursor, "base64").toString("utf-8");
+    const json = Buffer.from(cursor, 'base64').toString('utf-8');
     const parsed = JSON.parse(json);
-    if (parsed && typeof parsed.id === "string" && parsed.v !== undefined) {
+    if (parsed && typeof parsed.id === 'string' && parsed.v !== undefined) {
       return parsed as CursorPayload;
     }
     return null;
@@ -83,7 +85,10 @@ function decodeCursor(cursor: string): CursorPayload | null {
  */
 function parseMultiValue(val: string | undefined): string[] {
   if (!val) return [];
-  return val.split(",").map((v) => v.trim()).filter(Boolean);
+  return val
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 // ── Service ──────────────────────────────────────────────────────────────
@@ -104,17 +109,12 @@ export class IssueService {
     const member = await this.db
       .select({ id: projectMembers.id, role: projectMembers.role })
       .from(projectMembers)
-      .where(
-        and(
-          eq(projectMembers.projectId, projectId),
-          eq(projectMembers.userId, userId),
-        ),
-      )
+      .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.forbidden("You are not a member of this project");
+      throw AppError.forbidden('You are not a member of this project');
     }
 
     return member;
@@ -296,7 +296,7 @@ export class IssueService {
         .returning({ issueCounter: projects.issueCounter });
 
       if (!updated) {
-        throw AppError.notFound("project");
+        throw AppError.notFound('project');
       }
 
       const sequenceId = updated.issueCounter;
@@ -308,18 +308,18 @@ export class IssueService {
           projectId,
           sequenceId,
           title: input.title,
-          description: input.description ?? null,
+          description: input.description ? sanitizeContent(input.description) : null,
           descriptionText: input.descriptionText ?? null,
           statusId: input.statusId ?? null,
           typeId: input.typeId ?? null,
-          priority: input.priority ?? "none",
+          priority: input.priority ?? 'none',
           parentId: input.parentId ?? null,
           creatorId: callerUserId,
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
         })
         .returning();
 
-      const issueId = created!.id;
+      const issueId = created?.id;
 
       // Create assignee rows
       if (input.assigneeIds && input.assigneeIds.length > 0) {
@@ -349,7 +349,7 @@ export class IssueService {
       actorId: callerUserId,
       issueId: issue.id,
       projectId,
-      action: "created",
+      action: 'created',
     });
 
     // Fetch full issue with relations
@@ -367,7 +367,7 @@ export class IssueService {
     const issue = await this.getIssueWithRelations(issueId);
 
     if (!issue) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(issue.projectId, callerUserId);
@@ -386,10 +386,7 @@ export class IssueService {
     query: IssueListQuery,
     opts?: { skipStatus?: boolean },
   ): SQL[] {
-    const conditions: SQL[] = [
-      eq(issues.projectId, projectId),
-      isNull(issues.deletedAt),
-    ];
+    const conditions: SQL[] = [eq(issues.projectId, projectId), isNull(issues.deletedAt)];
 
     // ── Status ──────────────────────────────────────────────────────────
     if (!opts?.skipStatus) {
@@ -470,10 +467,10 @@ export class IssueService {
 
     // ── Title / Search ──────────────────────────────────────────────────
     if (query.title) {
-      conditions.push(ilike(issues.title, `%${query.title}%`));
+      conditions.push(ilike(issues.title, `%${escapeLikePattern(query.title)}%`));
     }
     if (query.search) {
-      conditions.push(ilike(issues.title, `%${query.search}%`));
+      conditions.push(ilike(issues.title, `%${escapeLikePattern(query.search)}%`));
     }
 
     // ── Parent ──────────────────────────────────────────────────────────
@@ -507,7 +504,7 @@ export class IssueService {
   async list(projectId: string, callerUserId: string, query: IssueListQuery) {
     await this.verifyProjectMember(projectId, callerUserId);
 
-    const { cursor, limit, sort = "created_at", order = "desc" } = query;
+    const { cursor, limit, sort = 'created_at', order = 'desc' } = query;
 
     // Build where conditions
     const conditions = this.buildFilterConditions(projectId, query);
@@ -517,16 +514,16 @@ export class IssueService {
     if (cursor) {
       cursorData = decodeCursor(cursor);
       if (!cursorData) {
-        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, "Invalid cursor format");
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Invalid cursor format');
       }
     }
 
     // ── Build sort & cursor clause ──────────────────────────────────────
-    const dir = order === "asc" ? asc : desc;
-    const dirOp = order === "asc" ? gt : lt;
+    const dir = order === 'asc' ? asc : desc;
+    const _dirOp = order === 'asc' ? gt : lt;
     let orderByClause: SQL;
 
-    if (sort === "priority") {
+    if (sort === 'priority') {
       // Custom priority ordering: urgent=1, high=2, medium=3, low=4, none=5
       const priorityExpr = sql`CASE ${issues.priority}
         WHEN 'urgent' THEN 1
@@ -540,52 +537,53 @@ export class IssueService {
         const cursorPriority = Number(cursorData.v);
         // Keyset pagination on (priority_order, id)
         conditions.push(
-          sql`(${priorityExpr}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorPriority}, ${cursorData.id})`,
+          sql`(${priorityExpr}, ${issues.id}) ${order === 'asc' ? sql`>` : sql`<`} (${cursorPriority}, ${cursorData.id})`,
         );
       }
 
       orderByClause = sql`${dir(priorityExpr)}, ${dir(issues.id)}`;
-    } else if (sort === "manual") {
+    } else if (sort === 'manual') {
       // Fractional indexing sort_order with created_at tie-breaker
       if (cursorData) {
         const cursorSort = String(cursorData.v);
         conditions.push(
-          sql`(${issues.sortOrder}, ${issues.createdAt}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorSort}, (SELECT ${issues.createdAt} FROM ${issues} WHERE ${issues.id} = ${cursorData.id}), ${cursorData.id})`,
+          sql`(${issues.sortOrder}, ${issues.createdAt}, ${issues.id}) ${order === 'asc' ? sql`>` : sql`<`} (${cursorSort}, (SELECT ${issues.createdAt} FROM ${issues} WHERE ${issues.id} = ${cursorData.id}), ${cursorData.id})`,
         );
       }
 
       orderByClause = sql`${dir(issues.sortOrder)}, ${dir(issues.createdAt)}, ${dir(issues.id)}`;
-    } else if (sort === "due_date") {
+    } else if (sort === 'due_date') {
       // NULLs last for ascending, NULLs first for descending
       const col = issues.dueDate;
       if (cursorData) {
         const cursorVal = String(cursorData.v);
-        if (cursorVal === "null") {
+        if (cursorVal === 'null') {
           // After all non-null due dates
           conditions.push(
-            sql`(${col} IS NULL AND ${issues.id} ${order === "asc" ? sql`>` : sql`<`} ${cursorData.id})`,
+            sql`(${col} IS NULL AND ${issues.id} ${order === 'asc' ? sql`>` : sql`<`} ${cursorData.id})`,
           );
         } else {
           conditions.push(
             sql`(
-              (${col} IS NOT NULL AND (${col}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorVal}, ${cursorData.id}))
+              (${col} IS NOT NULL AND (${col}, ${issues.id}) ${order === 'asc' ? sql`>` : sql`<`} (${cursorVal}, ${cursorData.id}))
               OR ${col} IS NULL
             )`,
           );
         }
       }
 
-      orderByClause = order === "asc"
-        ? sql`${col} ASC NULLS LAST, ${issues.id} ASC`
-        : sql`${col} DESC NULLS LAST, ${issues.id} DESC`;
+      orderByClause =
+        order === 'asc'
+          ? sql`${col} ASC NULLS LAST, ${issues.id} ASC`
+          : sql`${col} DESC NULLS LAST, ${issues.id} DESC`;
     } else {
       // created_at or updated_at
-      const col = sort === "updated_at" ? issues.updatedAt : issues.createdAt;
+      const col = sort === 'updated_at' ? issues.updatedAt : issues.createdAt;
 
       if (cursorData) {
         const cursorDate = new Date(String(cursorData.v));
         conditions.push(
-          sql`(${col}, ${issues.id}) ${order === "asc" ? sql`>` : sql`<`} (${cursorDate}, ${cursorData.id})`,
+          sql`(${col}, ${issues.id}) ${order === 'asc' ? sql`>` : sql`<`} (${cursorDate}, ${cursorData.id})`,
         );
       }
 
@@ -630,11 +628,17 @@ export class IssueService {
 
     const assigneeMap = new Map<
       string,
-      { assignee: { id: string; userId: string }; user: { id: string; name: string; email: string; avatarUrl: string | null } }[]
+      {
+        assignee: { id: string; userId: string };
+        user: { id: string; name: string; email: string; avatarUrl: string | null };
+      }[]
     >();
     const labelMap = new Map<
       string,
-      { issueLabel: { id: string; labelId: string }; label: { id: string; name: string; color: string } }[]
+      {
+        issueLabel: { id: string; labelId: string };
+        label: { id: string; name: string; color: string };
+      }[]
     >();
 
     if (issueIds.length > 0) {
@@ -690,16 +694,16 @@ export class IssueService {
     // Build next cursor from the last item
     let nextCursor: string | null = null;
     if (hasMore && items.length > 0) {
-      const lastIssue = items[items.length - 1]!.issue;
-      if (sort === "priority") {
+      const lastIssue = items[items.length - 1]?.issue;
+      if (sort === 'priority') {
         const numericPriority = PRIORITY_ORDER[lastIssue.priority] ?? 5;
         nextCursor = encodeCursor(numericPriority, lastIssue.id);
-      } else if (sort === "manual") {
+      } else if (sort === 'manual') {
         nextCursor = encodeCursor(lastIssue.sortOrder, lastIssue.id);
-      } else if (sort === "due_date") {
-        const dueVal = lastIssue.dueDate ? lastIssue.dueDate.toISOString() : "null";
+      } else if (sort === 'due_date') {
+        const dueVal = lastIssue.dueDate ? lastIssue.dueDate.toISOString() : 'null';
         nextCursor = encodeCursor(dueVal, lastIssue.id);
-      } else if (sort === "updated_at") {
+      } else if (sort === 'updated_at') {
         nextCursor = encodeCursor(lastIssue.updatedAt.toISOString(), lastIssue.id);
       } else {
         nextCursor = encodeCursor(lastIssue.createdAt.toISOString(), lastIssue.id);
@@ -733,7 +737,7 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(existing.projectId, callerUserId);
@@ -744,11 +748,13 @@ export class IssueService {
 
     if (input.title !== undefined && input.title !== existing.title) {
       updates.title = input.title;
-      changedFields.push({ field: "title", oldValue: existing.title, newValue: input.title });
+      changedFields.push({ field: 'title', oldValue: existing.title, newValue: input.title });
     }
     if (input.description !== undefined) {
-      updates.description = input.description;
-      changedFields.push({ field: "description", oldValue: null, newValue: null });
+      updates.description = input.description
+        ? sanitizeContent(input.description)
+        : input.description;
+      changedFields.push({ field: 'description', oldValue: null, newValue: null });
     }
     if (input.descriptionText !== undefined) {
       updates.descriptionText = input.descriptionText;
@@ -756,7 +762,7 @@ export class IssueService {
     if (input.statusId !== undefined && input.statusId !== existing.statusId) {
       updates.statusId = input.statusId;
       changedFields.push({
-        field: "status",
+        field: 'status',
         oldValue: existing.statusId,
         newValue: input.statusId,
       });
@@ -764,7 +770,7 @@ export class IssueService {
     if (input.typeId !== undefined && input.typeId !== existing.typeId) {
       updates.typeId = input.typeId;
       changedFields.push({
-        field: "type",
+        field: 'type',
         oldValue: existing.typeId,
         newValue: input.typeId,
       });
@@ -772,7 +778,7 @@ export class IssueService {
     if (input.priority !== undefined && input.priority !== existing.priority) {
       updates.priority = input.priority;
       changedFields.push({
-        field: "priority",
+        field: 'priority',
         oldValue: existing.priority,
         newValue: input.priority,
       });
@@ -780,14 +786,14 @@ export class IssueService {
     if (input.parentId !== undefined && input.parentId !== existing.parentId) {
       updates.parentId = input.parentId;
       changedFields.push({
-        field: "parent",
+        field: 'parent',
         oldValue: existing.parentId,
         newValue: input.parentId,
       });
     }
     if (input.sortOrder !== undefined && input.sortOrder !== existing.sortOrder) {
       if (!isValidSortKey(input.sortOrder)) {
-        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, "Invalid sort order format");
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Invalid sort order format');
       }
       updates.sortOrder = input.sortOrder;
     }
@@ -795,17 +801,14 @@ export class IssueService {
       const newDueDate = input.dueDate ? new Date(input.dueDate) : null;
       updates.dueDate = newDueDate;
       changedFields.push({
-        field: "dueDate",
+        field: 'dueDate',
         oldValue: existing.dueDate?.toISOString() ?? null,
         newValue: newDueDate?.toISOString() ?? null,
       });
     }
 
     // Perform update
-    await this.db
-      .update(issues)
-      .set(updates)
-      .where(eq(issues.id, issueId));
+    await this.db.update(issues).set(updates).where(eq(issues.id, issueId));
 
     // Record activities for each changed field
     for (const change of changedFields) {
@@ -813,7 +816,7 @@ export class IssueService {
         actorId: callerUserId,
         issueId,
         projectId: existing.projectId,
-        action: "updated",
+        action: 'updated',
         field: change.field,
         oldValue: change.oldValue ?? undefined,
         newValue: change.newValue ?? undefined,
@@ -840,22 +843,19 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     const member = await this.verifyProjectMember(existing.projectId, callerUserId);
 
     // Only admin or member can delete (not viewer)
-    if (!["admin", "member"].includes(member.role)) {
-      throw AppError.forbidden("Only project admin or member can delete issues");
+    if (!['admin', 'member'].includes(member.role)) {
+      throw AppError.forbidden('Only project admin or member can delete issues');
     }
 
     // Soft delete the issue and promote sub-issues
     await this.db.transaction(async (tx) => {
-      await tx
-        .update(issues)
-        .set({ deletedAt: new Date() })
-        .where(eq(issues.id, issueId));
+      await tx.update(issues).set({ deletedAt: new Date() }).where(eq(issues.id, issueId));
 
       // Promote sub-issues: set parentId = null
       await tx
@@ -869,7 +869,7 @@ export class IssueService {
       actorId: callerUserId,
       issueId,
       projectId: existing.projectId,
-      action: "deleted",
+      action: 'deleted',
     });
 
     // Broadcast WebSocket event
@@ -887,7 +887,7 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(existing.projectId, callerUserId);
@@ -901,7 +901,7 @@ export class IssueService {
     if (!assignee) {
       throw AppError.conflict(
         ErrorCode.ALREADY_A_MEMBER,
-        "User is already an assignee of this issue",
+        'User is already an assignee of this issue',
       );
     }
 
@@ -910,7 +910,7 @@ export class IssueService {
       actorId: callerUserId,
       issueId,
       projectId: existing.projectId,
-      action: "assignee_added",
+      action: 'assignee_added',
       newValue: userId,
     });
 
@@ -932,26 +932,21 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(existing.projectId, callerUserId);
 
     await this.db
       .delete(issueAssignees)
-      .where(
-        and(
-          eq(issueAssignees.issueId, issueId),
-          eq(issueAssignees.userId, userId),
-        ),
-      );
+      .where(and(eq(issueAssignees.issueId, issueId), eq(issueAssignees.userId, userId)));
 
     // Record activity
     await this.activityService.record({
       actorId: callerUserId,
       issueId,
       projectId: existing.projectId,
-      action: "assignee_removed",
+      action: 'assignee_removed',
       oldValue: userId,
     });
 
@@ -971,7 +966,7 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(existing.projectId, callerUserId);
@@ -985,7 +980,7 @@ export class IssueService {
     if (!issueLabel) {
       throw AppError.conflict(
         ErrorCode.ALREADY_A_MEMBER,
-        "Label is already attached to this issue",
+        'Label is already attached to this issue',
       );
     }
 
@@ -994,7 +989,7 @@ export class IssueService {
       actorId: callerUserId,
       issueId,
       projectId: existing.projectId,
-      action: "label_added",
+      action: 'label_added',
       newValue: labelId,
     });
 
@@ -1016,26 +1011,21 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(existing.projectId, callerUserId);
 
     await this.db
       .delete(issueLabels)
-      .where(
-        and(
-          eq(issueLabels.issueId, issueId),
-          eq(issueLabels.labelId, labelId),
-        ),
-      );
+      .where(and(eq(issueLabels.issueId, issueId), eq(issueLabels.labelId, labelId)));
 
     // Record activity
     await this.activityService.record({
       actorId: callerUserId,
       issueId,
       projectId: existing.projectId,
-      action: "label_removed",
+      action: 'label_removed',
       oldValue: labelId,
     });
 
@@ -1056,7 +1046,7 @@ export class IssueService {
       .then((rows) => rows[0]);
 
     if (!parent) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     await this.verifyProjectMember(parent.projectId, callerUserId);
@@ -1091,13 +1081,19 @@ export class IssueService {
 
     // Batch-fetch assignees and labels
     const issueIds = rows.map((r) => r.issue.id);
-    let assigneeMap = new Map<
+    const assigneeMap = new Map<
       string,
-      { assignee: { id: string; userId: string }; user: { id: string; name: string; email: string; avatarUrl: string | null } }[]
+      {
+        assignee: { id: string; userId: string };
+        user: { id: string; name: string; email: string; avatarUrl: string | null };
+      }[]
     >();
-    let labelMap = new Map<
+    const labelMap = new Map<
       string,
-      { issueLabel: { id: string; labelId: string }; label: { id: string; name: string; color: string } }[]
+      {
+        issueLabel: { id: string; labelId: string };
+        label: { id: string; name: string; color: string };
+      }[]
     >();
 
     if (issueIds.length > 0) {
@@ -1203,11 +1199,7 @@ export class IssueService {
    * Update multiple issues in a single transaction (all-or-nothing).
    * Enqueues an async bulk-activity job after success.
    */
-  async bulkUpdate(
-    projectId: string,
-    callerUserId: string,
-    input: BulkUpdateInput,
-  ) {
+  async bulkUpdate(projectId: string, callerUserId: string, input: BulkUpdateInput) {
     await this.verifyProjectMember(projectId, callerUserId);
 
     const { issueIds, changes } = input;
@@ -1217,19 +1209,14 @@ export class IssueService {
     const existingIssues = await this.db
       .select({ id: issues.id, projectId: issues.projectId })
       .from(issues)
-      .where(
-        and(
-          inArray(issues.id, issueIds),
-          isNull(issues.deletedAt),
-        ),
-      );
+      .where(and(inArray(issues.id, issueIds), isNull(issues.deletedAt)));
 
     const existingIds = new Set(existingIssues.map((i) => i.id));
     const missingIds = issueIds.filter((id) => !existingIds.has(id));
     if (missingIds.length > 0) {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        `Issues not found or deleted: ${missingIds.join(", ")}`,
+        `Issues not found or deleted: ${missingIds.join(', ')}`,
       );
     }
 
@@ -1237,7 +1224,7 @@ export class IssueService {
     if (wrongProject.length > 0) {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        `Issues do not belong to this project: ${wrongProject.map((i) => i.id).join(", ")}`,
+        `Issues do not belong to this project: ${wrongProject.map((i) => i.id).join(', ')}`,
       );
     }
 
@@ -1247,17 +1234,12 @@ export class IssueService {
       const status = await this.db
         .select({ id: issueStatuses.id })
         .from(issueStatuses)
-        .where(
-          and(
-            eq(issueStatuses.id, changes.statusId),
-            eq(issueStatuses.projectId, projectId),
-          ),
-        )
+        .where(and(eq(issueStatuses.id, changes.statusId), eq(issueStatuses.projectId, projectId)))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!status) {
-        throw AppError.notFound("issue status");
+        throw AppError.notFound('issue status');
       }
     }
 
@@ -1265,17 +1247,12 @@ export class IssueService {
       const type = await this.db
         .select({ id: issueTypes.id })
         .from(issueTypes)
-        .where(
-          and(
-            eq(issueTypes.id, changes.typeId),
-            eq(issueTypes.projectId, projectId),
-          ),
-        )
+        .where(and(eq(issueTypes.id, changes.typeId), eq(issueTypes.projectId, projectId)))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!type) {
-        throw AppError.notFound("issue type");
+        throw AppError.notFound('issue type');
       }
     }
 
@@ -1291,27 +1268,19 @@ export class IssueService {
       // Update issue columns
       if (Object.keys(columnUpdates).length > 1) {
         // more than just updatedAt
-        await tx
-          .update(issues)
-          .set(columnUpdates)
-          .where(inArray(issues.id, issueIds));
+        await tx.update(issues).set(columnUpdates).where(inArray(issues.id, issueIds));
       } else {
         // Still touch updatedAt
-        await tx
-          .update(issues)
-          .set({ updatedAt: new Date() })
-          .where(inArray(issues.id, issueIds));
+        await tx.update(issues).set({ updatedAt: new Date() }).where(inArray(issues.id, issueIds));
       }
 
       // Handle assignees: clear existing + insert new (replace strategy)
       if (changes.assigneeIds !== undefined) {
-        await tx
-          .delete(issueAssignees)
-          .where(inArray(issueAssignees.issueId, issueIds));
+        await tx.delete(issueAssignees).where(inArray(issueAssignees.issueId, issueIds));
 
         if (changes.assigneeIds.length > 0) {
           const assigneeRows = issueIds.flatMap((issueId) =>
-            changes.assigneeIds!.map((userId) => ({
+            changes.assigneeIds?.map((userId) => ({
               issueId,
               userId,
             })),
@@ -1322,13 +1291,11 @@ export class IssueService {
 
       // Handle labels: clear existing + insert new (replace strategy)
       if (changes.labelIds !== undefined) {
-        await tx
-          .delete(issueLabels)
-          .where(inArray(issueLabels.issueId, issueIds));
+        await tx.delete(issueLabels).where(inArray(issueLabels.issueId, issueIds));
 
         if (changes.labelIds.length > 0) {
           const labelRows = issueIds.flatMap((issueId) =>
-            changes.labelIds!.map((labelId) => ({
+            changes.labelIds?.map((labelId) => ({
               issueId,
               labelId,
             })),
@@ -1342,7 +1309,7 @@ export class IssueService {
     broadcastIssueBulkUpdated(projectId, { actorId: callerUserId, issueIds, changes });
 
     // ── Enqueue async activity recording ───────────────────────────────
-    await addJob("bulk-activity", {
+    await addJob('bulk-activity', {
       actorId: callerUserId,
       projectId,
       issueIds,

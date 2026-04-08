@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2, Search } from 'lucide-react';
+import type { BulkUpdateInput, IssueStatusOutput } from '@worknest/shared';
 import {
   Avatar,
   Button,
@@ -21,13 +20,11 @@ import {
   toast,
 } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../lib/api-client';
-import {
-  PRIORITY_CONFIG,
-  type Priority,
-} from '../../lib/issue-constants';
+import { Check, Loader2, Search } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { type ListResponse, apiClient } from '../../lib/api-client';
+import { PRIORITY_CONFIG, type Priority } from '../../lib/issue-constants';
 import { useUIStore } from '../../stores/ui-store';
-import type { BulkUpdateInput, IssueStatusOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -52,11 +49,7 @@ interface BulkActionBarProps {
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export function BulkActionBar({
-  projectId,
-  selectedIds,
-  onClearSelection,
-}: BulkActionBarProps) {
+export function BulkActionBar({ projectId, selectedIds, onClearSelection }: BulkActionBarProps) {
   const queryClient = useQueryClient();
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
   const count = selectedIds.length;
@@ -86,9 +79,7 @@ export function BulkActionBar({
 
   const bulkDelete = useMutation({
     mutationFn: () =>
-      apiClient.post(`/projects/${projectId}/issues/bulk-delete`, {
-        issueIds: selectedIds,
-      }),
+      Promise.all(selectedIds.map((id) => apiClient.delete(`/projects/${projectId}/issues/${id}`))),
     onSuccess: () => {
       toast(`${count}건 삭제 완료`);
       onClearSelection();
@@ -142,32 +133,24 @@ export function BulkActionBar({
             projectId={projectId}
             disabled={isPending}
             isLoading={activeMutation === 'status'}
-            onSelect={(statusId) =>
-              handleBulkChange('status', { statusId })
-            }
+            onSelect={(statusId) => handleBulkChange('status', { statusId })}
           />
           <PriorityChangeButton
             disabled={isPending}
             isLoading={activeMutation === 'priority'}
-            onSelect={(priority) =>
-              handleBulkChange('priority', { priority })
-            }
+            onSelect={(priority) => handleBulkChange('priority', { priority })}
           />
           <AssigneeChangeButton
             projectId={projectId}
             disabled={isPending}
             isLoading={activeMutation === 'assignee'}
-            onApply={(assigneeIds) =>
-              handleBulkChange('assignee', { assigneeIds })
-            }
+            onApply={(assigneeIds) => handleBulkChange('assignee', { assigneeIds })}
           />
           <LabelChangeButton
             projectId={projectId}
             disabled={isPending}
             isLoading={activeMutation === 'label'}
-            onApply={(labelIds) =>
-              handleBulkChange('label', { labelIds })
-            }
+            onApply={(labelIds) => handleBulkChange('label', { labelIds })}
           />
         </div>
 
@@ -251,20 +234,12 @@ interface StatusChangeButtonProps {
   onSelect: (statusId: string) => void;
 }
 
-function StatusChangeButton({
-  projectId,
-  disabled,
-  isLoading,
-  onSelect,
-}: StatusChangeButtonProps) {
+function StatusChangeButton({ projectId, disabled, isLoading, onSelect }: StatusChangeButtonProps) {
   const [open, setOpen] = useState(false);
 
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -274,12 +249,7 @@ function StatusChangeButton({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={disabled}
-          aria-label="선택된 이슈 상태 변경"
-        >
+        <Button variant="outline" size="sm" disabled={disabled} aria-label="선택된 이슈 상태 변경">
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -320,11 +290,7 @@ interface PriorityChangeButtonProps {
   onSelect: (priority: Priority) => void;
 }
 
-function PriorityChangeButton({
-  disabled,
-  isLoading,
-  onSelect,
-}: PriorityChangeButtonProps) {
+function PriorityChangeButton({ disabled, isLoading, onSelect }: PriorityChangeButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -390,8 +356,7 @@ function AssigneeChangeButton({
 
   const membersQuery = useQuery<ListResponse<MemberOutput>>({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
+    queryFn: () => apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -457,7 +422,6 @@ function AssigneeChangeButton({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="멤버 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -481,14 +445,8 @@ function AssigneeChangeButton({
                 >
                   {isChecked && <Check className="h-3 w-3" />}
                 </div>
-                <Avatar
-                  src={member.user.avatarUrl}
-                  fallback={member.user.name}
-                  size="sm"
-                />
-                <span className="flex-1 truncate text-left">
-                  {member.user.name}
-                </span>
+                <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="sm" />
+                <span className="flex-1 truncate text-left">{member.user.name}</span>
               </button>
             );
           })}
@@ -511,12 +469,7 @@ interface LabelChangeButtonProps {
   onApply: (labelIds: string[]) => void;
 }
 
-function LabelChangeButton({
-  projectId,
-  disabled,
-  isLoading,
-  onApply,
-}: LabelChangeButtonProps) {
+function LabelChangeButton({ projectId, disabled, isLoading, onApply }: LabelChangeButtonProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -524,16 +477,13 @@ function LabelChangeButton({
 
   const labelsQuery = useQuery<LabelOutput[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
   const labels = labelsQuery.data ?? [];
-  const filtered = labels.filter((l) =>
-    l.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = labels.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
 
   const handleToggle = (labelId: string) => {
     setSelected((prev) => {
@@ -569,12 +519,7 @@ function LabelChangeButton({
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={disabled}
-          aria-label="선택된 이슈 라벨 변경"
-        >
+        <Button variant="outline" size="sm" disabled={disabled} aria-label="선택된 이슈 라벨 변경">
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -593,7 +538,6 @@ function LabelChangeButton({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="라벨 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -621,9 +565,7 @@ function LabelChangeButton({
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: label.color }}
                 />
-                <span className="flex-1 truncate text-left">
-                  {label.name}
-                </span>
+                <span className="flex-1 truncate text-left">{label.name}</span>
               </button>
             );
           })}

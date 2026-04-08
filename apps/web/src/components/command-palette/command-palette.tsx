@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import type { SearchResultOutput } from '@worknest/shared';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   ArrowRight,
@@ -13,10 +13,10 @@ import {
   Search,
   Settings,
 } from 'lucide-react';
-import type { SearchResultOutput } from '@worknest/shared';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
-import { useUIStore } from '../../stores/ui-store';
 import { useAuthStore } from '../../stores/auth-store';
+import { useUIStore } from '../../stores/ui-store';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -59,10 +59,7 @@ function addRecentItem(item: RecentItem): void {
   try {
     const items = getRecentItems().filter((i) => i.id !== item.id);
     items.unshift(item);
-    localStorage.setItem(
-      RECENT_STORAGE_KEY,
-      JSON.stringify(items.slice(0, MAX_RECENT_STORED)),
-    );
+    localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(items.slice(0, MAX_RECENT_STORED)));
   } catch {
     // localStorage unavailable
   }
@@ -110,9 +107,7 @@ export function CommandPalette() {
   const debouncedSearch = useDebouncedValue(searchText, DEBOUNCE_MS);
 
   // Issue ID pattern detection
-  const issueIdMatch = ISSUE_ID_PATTERN.test(searchText)
-    ? searchText.toUpperCase()
-    : null;
+  const issueIdMatch = ISSUE_ID_PATTERN.test(searchText) ? searchText.toUpperCase() : null;
 
   // ── Search query ──────────────────────────────────────────────────────
 
@@ -121,10 +116,7 @@ export function CommandPalette() {
   const searchQuery = useQuery<SearchResultOutput>({
     queryKey: ['command-palette-search', wsId, debouncedSearch],
     queryFn: () =>
-      apiClient.get<SearchResultOutput>(
-        `/workspaces/${wsId}/search`,
-        { q: debouncedSearch },
-      ),
+      apiClient.get<SearchResultOutput>(`/workspaces/${wsId}/search`, { q: debouncedSearch }),
     enabled: shouldSearch,
     staleTime: 30_000,
   });
@@ -133,9 +125,7 @@ export function CommandPalette() {
   const categories = searchQuery.data?.categories;
   const hasResults =
     categories &&
-    (categories.issues.length > 0 ||
-      categories.pages.length > 0 ||
-      categories.projects.length > 0);
+    (categories.issues.length > 0 || categories.pages.length > 0 || categories.projects.length > 0);
 
   // ── Recent items ──────────────────────────────────────────────────────
 
@@ -214,7 +204,7 @@ export function CommandPalette() {
       keywords: ['로그아웃', 'logout', 'signout'],
       action: () => {
         close();
-        apiClient.post('/auth/sign-out').then(() => {
+        apiClient.post('/auth/logout').then(() => {
           navigate({ to: '/login' });
         });
       },
@@ -225,9 +215,7 @@ export function CommandPalette() {
     ? commands.filter(
         (cmd) =>
           cmd.label.toLowerCase().includes(commandFilter.toLowerCase()) ||
-          cmd.keywords.some((kw) =>
-            kw.toLowerCase().includes(commandFilter.toLowerCase()),
-          ),
+          cmd.keywords.some((kw) => kw.toLowerCase().includes(commandFilter.toLowerCase())),
       )
     : commands;
 
@@ -237,10 +225,12 @@ export function CommandPalette() {
     (key: string) => {
       const parts = key.split('-');
       const prefix = parts[0];
-      navigateTo(
-        `/${orgSlug}/${wsSlug}/projects/${prefix.toLowerCase()}/issues/${key}`,
-        { type: 'issue', id: key, title: key, url: '' },
-      );
+      navigateTo(`/${orgSlug}/${wsSlug}/projects/${prefix.toLowerCase()}/issues/${key}`, {
+        type: 'issue',
+        id: key,
+        title: key,
+        url: '',
+      });
     },
     [orgSlug, wsSlug, navigateTo],
   );
@@ -249,11 +239,9 @@ export function CommandPalette() {
 
   if (!open) return null;
 
-  const showRecentItems =
-    !isCommandMode && searchText.length === 0 && recentItems.length > 0;
+  const showRecentItems = !isCommandMode && searchText.length === 0 && recentItems.length > 0;
   const showSearchResults = !isCommandMode && debouncedSearch.length > 0;
-  const showEmptySearch =
-    showSearchResults && !isSearching && !hasResults && !issueIdMatch;
+  const showEmptySearch = showSearchResults && !isSearching && !hasResults && !issueIdMatch;
 
   return (
     <div className="fixed inset-0 z-50">
@@ -300,40 +288,33 @@ export function CommandPalette() {
           {/* Results area */}
           <CommandPrimitive.List className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             {/* ── Command mode ───────────────────────────────── */}
-            {isCommandMode && (
-              <>
-                {filteredCommands.length > 0 ? (
-                  <CommandPrimitive.Group
-                    heading={
-                      <span className="px-4 py-1.5 text-xs font-medium text-muted-foreground">
-                        명령어
-                      </span>
-                    }
-                  >
-                    {filteredCommands.map((cmd) => (
-                      <CommandPrimitive.Item
-                        key={cmd.id}
-                        value={cmd.id}
-                        onSelect={() => cmd.action()}
-                        className="mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-md px-4 transition-colors duration-150 aria-selected:bg-accent"
-                      >
-                        {cmd.icon}
-                        <span className="text-sm text-foreground">
-                          {cmd.label}
-                        </span>
-                      </CommandPrimitive.Item>
-                    ))}
-                  </CommandPrimitive.Group>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-10">
-                    <Search className="h-8 w-8 text-muted-foreground/50" />
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      일치하는 명령어가 없습니다
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
+            {isCommandMode &&
+              (filteredCommands.length > 0 ? (
+                <CommandPrimitive.Group
+                  heading={
+                    <span className="px-4 py-1.5 text-xs font-medium text-muted-foreground">
+                      명령어
+                    </span>
+                  }
+                >
+                  {filteredCommands.map((cmd) => (
+                    <CommandPrimitive.Item
+                      key={cmd.id}
+                      value={cmd.id}
+                      onSelect={() => cmd.action()}
+                      className="mx-2 flex h-10 cursor-pointer items-center gap-3 rounded-md px-4 transition-colors duration-150 aria-selected:bg-accent"
+                    >
+                      {cmd.icon}
+                      <span className="text-sm text-foreground">{cmd.label}</span>
+                    </CommandPrimitive.Item>
+                  ))}
+                </CommandPrimitive.Group>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">일치하는 명령어가 없습니다</p>
+                </div>
+              ))}
 
             {/* ── Search mode ────────────────────────────────── */}
             {!isCommandMode && (
@@ -499,9 +480,7 @@ export function CommandPalette() {
                 {showEmptySearch && (
                   <div className="flex flex-col items-center justify-center py-10">
                     <Search className="h-8 w-8 text-muted-foreground/50" />
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      결과가 없습니다
-                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">결과가 없습니다</p>
                   </div>
                 )}
               </>
@@ -520,12 +499,8 @@ function RecentItemIcon({ type }: { type: RecentItem['type'] }) {
     case 'issue':
       return <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />;
     case 'page':
-      return (
-        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-      );
+      return <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />;
     case 'project':
-      return (
-        <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
-      );
+      return <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />;
   }
 }

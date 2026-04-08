@@ -1,14 +1,15 @@
-import { eq, and, isNull, ilike, sql, inArray } from "drizzle-orm";
 import {
-  issues,
-  projects,
-  projectMembers,
-  wikiPages,
-  wikiSpaces,
-  wikiSpaceMembers,
   type Database,
-} from "@worknest/db";
-import type { SearchQuery, SearchResultItem } from "@worknest/shared";
+  issues,
+  projectMembers,
+  projects,
+  wikiPages,
+  wikiSpaceMembers,
+  wikiSpaces,
+} from '@worknest/db';
+import type { SearchQuery, SearchResultItem } from '@worknest/shared';
+import { and, eq, ilike, inArray, isNull, sql } from 'drizzle-orm';
+import { escapeLikePattern } from '../lib/escape-like';
 
 // ── Constants ──────────────────────────────────────────────────────────
 
@@ -17,13 +18,6 @@ const ISSUE_KEY_PATTERN = /^([A-Z]{2,5})-(\d+)$/;
 
 /** Default per-category limit */
 const DEFAULT_LIMIT = 20;
-
-// ── Helpers ───────────────────────────────────────────────────────────
-
-/** Escape special ILIKE characters so they are matched literally. */
-function escapeLikePattern(s: string): string {
-  return s.replace(/[%_\\]/g, "\\$&");
-}
 
 // ── Service ────────────────────────────────────────────────────────────
 
@@ -45,8 +39,8 @@ export class SearchService {
     const q = query.q.trim();
     const limit = query.limit ?? DEFAULT_LIMIT;
     const requestedTypes = query.type
-      ? query.type.split(",").map((t) => t.trim())
-      : ["issue", "page", "project"];
+      ? query.type.split(',').map((t) => t.trim())
+      : ['issue', 'page', 'project'];
 
     const issueResults: SearchResultItem[] = [];
     const pageResults: SearchResultItem[] = [];
@@ -55,7 +49,7 @@ export class SearchService {
     // ── 1. Issue-key direct lookup ─────────────────────────────────────
 
     const keyMatch = q.match(ISSUE_KEY_PATTERN);
-    if (keyMatch && requestedTypes.includes("issue")) {
+    if (keyMatch && requestedTypes.includes('issue')) {
       const [, prefix, seqStr] = keyMatch;
       const sequenceId = Number.parseInt(seqStr, 10);
 
@@ -70,10 +64,7 @@ export class SearchService {
         .innerJoin(projects, eq(issues.projectId, projects.id))
         .innerJoin(
           projectMembers,
-          and(
-            eq(projectMembers.projectId, projects.id),
-            eq(projectMembers.userId, callerUserId),
-          ),
+          and(eq(projectMembers.projectId, projects.id), eq(projectMembers.userId, callerUserId)),
         )
         .where(
           and(
@@ -89,7 +80,7 @@ export class SearchService {
       for (const row of directRows) {
         issueResults.push({
           id: row.id,
-          type: "issue",
+          type: 'issue',
           title: row.title,
           subtitle: `${row.projectPrefix}-${row.sequenceId}`,
           url: `/issues/${row.id}`,
@@ -105,7 +96,7 @@ export class SearchService {
 
     const searches: Promise<void>[] = [];
 
-    if (requestedTypes.includes("issue") && !skipIssueSearch) {
+    if (requestedTypes.includes('issue') && !skipIssueSearch) {
       searches.push(
         this.searchIssues(q, workspaceId, callerUserId, limit).then((rows) => {
           issueResults.push(...rows);
@@ -113,7 +104,7 @@ export class SearchService {
       );
     }
 
-    if (requestedTypes.includes("page")) {
+    if (requestedTypes.includes('page')) {
       searches.push(
         this.searchPages(q, workspaceId, callerUserId, limit).then((rows) => {
           pageResults.push(...rows);
@@ -121,13 +112,11 @@ export class SearchService {
       );
     }
 
-    if (requestedTypes.includes("project")) {
+    if (requestedTypes.includes('project')) {
       searches.push(
-        this.searchProjects(q, workspaceId, callerUserId, limit).then(
-          (rows) => {
-            projectResults.push(...rows);
-          },
-        ),
+        this.searchProjects(q, workspaceId, callerUserId, limit).then((rows) => {
+          projectResults.push(...rows);
+        }),
       );
     }
 
@@ -164,14 +153,9 @@ export class SearchService {
       .from(projects)
       .innerJoin(
         projectMembers,
-        and(
-          eq(projectMembers.projectId, projects.id),
-          eq(projectMembers.userId, callerUserId),
-        ),
+        and(eq(projectMembers.projectId, projects.id), eq(projectMembers.userId, callerUserId)),
       )
-      .where(
-        and(eq(projects.workspaceId, workspaceId), isNull(projects.deletedAt)),
-      );
+      .where(and(eq(projects.workspaceId, workspaceId), isNull(projects.deletedAt)));
     return rows.map((r) => r.id);
   }
 
@@ -217,7 +201,7 @@ export class SearchService {
         sequenceId: issues.sequenceId,
         projectPrefix: projects.prefix,
         rank: sql<number>`ts_rank(${issues}.search_vector, plainto_tsquery('english', ${q}))`.as(
-          "rank",
+          'rank',
         ),
       })
       .from(issues)
@@ -229,15 +213,13 @@ export class SearchService {
           isNull(issues.deletedAt),
         ),
       )
-      .orderBy(
-        sql`ts_rank(${issues}.search_vector, plainto_tsquery('english', ${q})) DESC`,
-      )
+      .orderBy(sql`ts_rank(${issues}.search_vector, plainto_tsquery('english', ${q})) DESC`)
       .limit(limit);
 
     if (ftsRows.length > 0) {
       return ftsRows.map((row) => ({
         id: row.id,
-        type: "issue" as const,
+        type: 'issue' as const,
         title: row.title,
         subtitle: `${row.projectPrefix}-${row.sequenceId}`,
         url: `/issues/${row.id}`,
@@ -265,7 +247,7 @@ export class SearchService {
 
     return ilikeRows.map((row) => ({
       id: row.id,
-      type: "issue" as const,
+      type: 'issue' as const,
       title: row.title,
       subtitle: `${row.projectPrefix}-${row.sequenceId}`,
       url: `/issues/${row.id}`,
@@ -303,7 +285,7 @@ export class SearchService {
 
     return rows.map((row) => ({
       id: row.id,
-      type: "page" as const,
+      type: 'page' as const,
       title: row.title,
       subtitle: row.spaceName,
       url: `/pages/${row.id}`,
@@ -328,10 +310,7 @@ export class SearchService {
       .from(projects)
       .innerJoin(
         projectMembers,
-        and(
-          eq(projectMembers.projectId, projects.id),
-          eq(projectMembers.userId, callerUserId),
-        ),
+        and(eq(projectMembers.projectId, projects.id), eq(projectMembers.userId, callerUserId)),
       )
       .where(
         and(
@@ -344,7 +323,7 @@ export class SearchService {
 
     return rows.map((row) => ({
       id: row.id,
-      type: "project" as const,
+      type: 'project' as const,
       title: row.name,
       subtitle: row.prefix,
       url: `/projects/${row.id}`,
