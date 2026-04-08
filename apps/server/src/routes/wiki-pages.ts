@@ -63,7 +63,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Get page tree for a wiki space",
-        params: spaceIdParam,
       },
     },
     async (request, reply) => {
@@ -82,7 +81,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "List all pages in a wiki space",
-        params: spaceIdParam,
       },
     },
     async (request, reply) => {
@@ -101,8 +99,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Create a new wiki page",
-        params: spaceIdParam,
-        body: createWikiPageInput,
       },
     },
     async (request, reply) => {
@@ -136,7 +132,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Get a wiki page by ID",
-        params: pageIdParam,
       },
     },
     async (request, reply) => {
@@ -155,8 +150,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Update a wiki page",
-        params: pageIdParam,
-        body: updateWikiPageInput,
       },
     },
     async (request, reply) => {
@@ -190,7 +183,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Delete a wiki page (soft delete)",
-        params: pageIdParam,
       },
     },
     async (request, reply) => {
@@ -218,8 +210,6 @@ export async function wikiPageRoutes(
       schema: {
         tags: ["Wiki Pages"],
         summary: "Move a wiki page to a new parent and/or position",
-        params: pageIdParam,
-        body: movePageBody,
       },
     },
     async (request, reply) => {

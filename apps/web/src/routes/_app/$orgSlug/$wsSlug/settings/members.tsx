@@ -15,10 +15,10 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '../../../../lib/api-client';
-import { SettingsLayout } from '../../../../components/settings/settings-layout';
-import { InvitationList } from '../../../../components/settings/invitation-list';
-import { useWorkspaceContext } from '../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { InvitationList } from '@/components/settings/invitation-list';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/members',

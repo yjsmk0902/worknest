@@ -66,7 +66,6 @@ export async function commentRoutes(
       schema: {
         tags: ["Comments"],
         summary: "Create a comment on an issue",
-        body: createCommentInput,
       },
     },
     async (request, reply) => {
@@ -113,7 +112,6 @@ export async function commentRoutes(
       schema: {
         tags: ["Comments"],
         summary: "Create a comment on a wiki page",
-        body: createCommentInput,
       },
     },
     async (request, reply) => {
@@ -160,7 +158,6 @@ export async function commentRoutes(
       schema: {
         tags: ["Comments"],
         summary: "Update a comment (author only)",
-        body: updateCommentInput,
       },
     },
     async (request, reply) => {
@@ -212,7 +209,6 @@ export async function commentRoutes(
       schema: {
         tags: ["Reactions"],
         summary: "Toggle a reaction on a comment",
-        body: toggleReactionInput,
       },
     },
     async (request, reply) => {

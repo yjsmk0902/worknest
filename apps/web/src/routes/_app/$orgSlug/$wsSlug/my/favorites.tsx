@@ -33,9 +33,9 @@ import {
   type FavoriteOutput,
   type FavoriteEntityType,
 } from '@worknest/shared';
-import { apiClient } from '../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
-import { EmptyState } from '../../../../../components/empty-state';
+import { apiClient } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { EmptyState } from '@/components/empty-state';
 
 // ── Route ──────────────────────────────────────────────────────────────
 

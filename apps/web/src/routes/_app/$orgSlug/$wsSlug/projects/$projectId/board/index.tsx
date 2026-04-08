@@ -5,17 +5,17 @@ import { AlertTriangle, Plus } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
 import { z } from 'zod';
 import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
-import { apiClient, type ListResponse } from '../../../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../../../contexts/workspace-context';
-import { AppHeader } from '../../../../../../../components/layout/app-header';
-import { KanbanBoard } from '../../../../../../../components/issues/board-view/kanban-board';
-import { IssueDetailPanel } from '../../../../../../../components/issues/issue-detail/issue-detail-panel';
-import { QuickAdd } from '../../../../../../../components/issues/quick-add';
-import { ViewToolbar } from '../../../../../../../components/issues/view-toolbar';
-import { FilterBar } from '../../../../../../../components/issues/filter-builder/filter-bar';
-import { useIssueFilters } from '../../../../../../../components/issues/filter-builder/use-issue-filters';
-import { useHotkeyStore } from '../../../../../../../stores/hotkey-store';
-import { useHotkey } from '../../../../../../../hooks/use-hotkey';
+import { apiClient, type ListResponse } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { AppHeader } from '@/components/layout/app-header';
+import { KanbanBoard } from '@/components/issues/board-view/kanban-board';
+import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
+import { QuickAdd } from '@/components/issues/quick-add';
+import { ViewToolbar } from '@/components/issues/view-toolbar';
+import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
+import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
+import { useHotkeyStore } from '@/stores/hotkey-store';
+import { useHotkey } from '@/hooks/use-hotkey';
 
 // ── Search param validation ─────────────────────────────────────────────
 

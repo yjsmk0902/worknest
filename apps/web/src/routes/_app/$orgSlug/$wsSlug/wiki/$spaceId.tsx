@@ -4,9 +4,9 @@ import { Loader2, AlertTriangle, FileText, Plus } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { toast } from '@worknest/ui';
 import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
-import { apiClient } from '../../../../../lib/api-client';
-import { PageTree } from '../../../../../components/wiki/page-tree/page-tree';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { PageTree } from '@/components/wiki/page-tree/page-tree';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/wiki/$spaceId',

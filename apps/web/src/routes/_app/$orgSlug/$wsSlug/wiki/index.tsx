@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { FileText, Plus, BookOpen } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
 import type { WikiSpaceOutput } from '@worknest/shared';
-import { apiClient } from '../../../../../lib/api-client';
-import { AppHeader } from '../../../../../components/layout/app-header';
-import { SpaceFormModal } from '../../../../../components/wiki/space-form-modal';
-import { EmptyState } from '../../../../../components/empty-state';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { AppHeader } from '@/components/layout/app-header';
+import { SpaceFormModal } from '@/components/wiki/space-form-modal';
+import { EmptyState } from '@/components/empty-state';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/wiki/',

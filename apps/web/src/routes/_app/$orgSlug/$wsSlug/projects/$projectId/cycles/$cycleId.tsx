@@ -24,18 +24,18 @@ import {
   DialogFooter,
   toast,
 } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../../../contexts/workspace-context';
-import { AppHeader } from '../../../../../../../components/layout/app-header';
+import { apiClient, type ListResponse } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { AppHeader } from '@/components/layout/app-header';
 import {
   CycleStatusBadge,
   CycleProgressBar,
   CycleProgressText,
   formatCycleDateRange,
-} from '../../../../../../../components/cycles/cycle-list';
-import { CycleFormModal } from '../../../../../../../components/cycles/cycle-form-modal';
-import { AddIssuesPopover } from '../../../../../../../components/cycles/add-issues-popover';
-import { CarryOverModal } from '../../../../../../../components/cycles/carry-over-modal';
+} from '@/components/cycles/cycle-list';
+import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
+import { AddIssuesPopover } from '@/components/cycles/add-issues-popover';
+import { CarryOverModal } from '@/components/cycles/carry-over-modal';
 import type {
   CycleOutput,
   CycleProgressOutput,

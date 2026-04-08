@@ -42,7 +42,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "List wiki spaces for a workspace",
-        params: workspaceIdParam,
       },
     },
     async (request, reply) => {
@@ -61,8 +60,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Create a new wiki space",
-        params: workspaceIdParam,
-        body: createWikiSpaceInput,
       },
     },
     async (request, reply) => {
@@ -86,7 +83,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Get a wiki space by ID",
-        params: spaceIdParam,
       },
     },
     async (request, reply) => {
@@ -105,8 +101,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Update a wiki space",
-        params: spaceIdParam,
-        body: updateWikiSpaceInput,
       },
     },
     async (request, reply) => {
@@ -126,7 +120,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Delete a wiki space",
-        params: spaceIdParam,
       },
     },
     async (request, reply) => {
@@ -145,7 +138,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "List members of a wiki space",
-        params: spaceIdParam,
       },
     },
     async (request, reply) => {
@@ -164,8 +156,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Add a member to a wiki space",
-        params: spaceIdParam,
-        body: addWikiSpaceMemberInput,
       },
     },
     async (request, reply) => {
@@ -189,8 +179,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Update a wiki space member's role",
-        params: spaceAndMemberParam,
-        body: updateWikiSpaceMemberInput,
       },
     },
     async (request, reply) => {
@@ -217,7 +205,6 @@ export async function wikiSpaceRoutes(
       schema: {
         tags: ["Wiki Spaces"],
         summary: "Remove a member from a wiki space",
-        params: spaceAndMemberParam,
       },
     },
     async (request, reply) => {

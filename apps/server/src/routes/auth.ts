@@ -39,7 +39,6 @@ export async function authRoutes(
       schema: {
         tags: ["Auth"],
         summary: "Register a new account",
-        body: registerInput,
       },
     },
     async (request, reply) => {
@@ -86,7 +85,6 @@ export async function authRoutes(
       schema: {
         tags: ["Auth"],
         summary: "Log in with email and password",
-        body: loginInput,
       },
     },
     async (request, reply) => {
@@ -147,7 +145,6 @@ export async function authRoutes(
       schema: {
         tags: ["Auth"],
         summary: "Get invitation info by token (no auth required)",
-        params: acceptInvitationParams,
       },
     },
     async (_request, reply) => {
@@ -220,7 +217,6 @@ export async function authRoutes(
       schema: {
         tags: ["Auth"],
         summary: "Accept an invitation by token",
-        params: acceptInvitationParams,
       },
     },
     async (request, reply) => {

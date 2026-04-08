@@ -4,10 +4,10 @@ import type { NotificationOutput, NotificationType } from '@worknest/shared';
 import { Button, Skeleton, toast } from '@worknest/ui';
 import { AtSign, Bell, CheckCheck, Mail, MessageSquare, RefreshCw, UserPlus } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { EmptyState } from '../../../../../components/empty-state';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
-import { type ListResponse, apiClient } from '../../../../../lib/api-client';
-import { formatRelativeTime } from '../../../../../lib/format-time';
+import { EmptyState } from '@/components/empty-state';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { formatRelativeTime } from '@/lib/format-time';
 
 // ── Route ──────────────────────────────────────────────────────────────
 

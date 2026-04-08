@@ -3,14 +3,14 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Plus } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../../../contexts/workspace-context';
-import { AppHeader } from '../../../../../../../components/layout/app-header';
+import { apiClient, type ListResponse } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { AppHeader } from '@/components/layout/app-header';
 import {
   CycleList,
   CycleEmptyState,
-} from '../../../../../../../components/cycles/cycle-list';
-import { CycleFormModal } from '../../../../../../../components/cycles/cycle-form-modal';
+} from '@/components/cycles/cycle-list';
+import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
 import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
 
 // ── Route ──────────────────────────────────────────────────────────────

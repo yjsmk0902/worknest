@@ -47,7 +47,6 @@ export async function issueStatusRoutes(
       schema: {
         tags: ["Issue Statuses"],
         summary: "List issue statuses for a project",
-        params: projectIdParam,
       },
     },
     async (request, reply) => {
@@ -99,8 +98,6 @@ export async function issueStatusRoutes(
       schema: {
         tags: ["Issue Statuses"],
         summary: "Update an issue status (admin only)",
-        params: statusIdParam,
-        body: updateIssueStatusInput,
       },
     },
     async (request, reply) => {

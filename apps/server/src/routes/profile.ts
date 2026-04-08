@@ -66,7 +66,6 @@ export async function profileRoutes(
       schema: {
         tags: ["Profile"],
         summary: "Update current user profile",
-        body: updateProfileInput,
       },
     },
     async (request, reply) => {

@@ -3,12 +3,12 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Folder, Plus } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
-import { apiClient } from '../../../../../lib/api-client';
-import { AppHeader } from '../../../../../components/layout/app-header';
-import { ProjectCard } from '../../../../../components/projects/project-card';
-import { CreateProjectModal } from '../../../../../components/projects/create-project-modal';
-import { EmptyState } from '../../../../../components/empty-state';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { AppHeader } from '@/components/layout/app-header';
+import { ProjectCard } from '@/components/projects/project-card';
+import { CreateProjectModal } from '@/components/projects/create-project-modal';
+import { EmptyState } from '@/components/empty-state';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/projects/',

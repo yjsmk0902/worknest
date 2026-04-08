@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import type { ViewOutput } from '@worknest/shared';
-import { apiClient } from '../../../../../../../lib/api-client';
-import { viewToSearchParams } from '../../../../../../../lib/view-utils';
+import { apiClient } from '@/lib/api-client';
+import { viewToSearchParams } from '@/lib/view-utils';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId',

@@ -34,7 +34,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "List organizations the current user belongs to",
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -53,7 +52,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Create a new organization (creator becomes owner)",
-        body: createOrganizationInput,
       },
     },
     async (request, reply) => {
@@ -90,7 +88,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Get organization details",
-        params: uuidParam,
       },
     },
     async (request, reply) => {
@@ -109,8 +106,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Update organization (admin+)",
-        params: uuidParam,
-        body: updateOrganizationInput,
       },
     },
     async (request, reply) => {
@@ -131,7 +126,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Soft delete organization (owner only)",
-        params: uuidParam,
       },
     },
     async (request, reply) => {
@@ -150,8 +144,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "List organization members",
-        params: uuidParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -171,8 +163,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Create an invitation to the organization",
-        params: uuidParam,
-        body: createOrgInvitationInput,
       },
     },
     async (request, reply) => {
@@ -192,8 +182,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "List pending invitations for the organization",
-        params: uuidParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -213,7 +201,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Resend a pending invitation (refreshes token and expiry)",
-        params: uuidParam,
       },
     },
     async (request, reply) => {
@@ -232,7 +219,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Cancel a pending invitation",
-        params: uuidParam,
       },
     },
     async (request, reply) => {
@@ -251,8 +237,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Change an organization member's role",
-        params: uuidParam,
-        body: updateOrgMemberInput,
       },
     },
     async (request, reply) => {
@@ -272,7 +256,6 @@ export async function organizationRoutes(
       schema: {
         tags: ["Organizations"],
         summary: "Remove a member from the organization",
-        params: uuidParam,
       },
     },
     async (request, reply) => {

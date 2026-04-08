@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import { Button, Skeleton } from '@worknest/ui';
 import type { StatusCategory } from '@worknest/shared';
-import { apiClient } from '../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
-import { PRIORITY_CONFIG, type Priority } from '../../../../../lib/issue-constants';
+import { apiClient } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { PRIORITY_CONFIG, type Priority } from '@/lib/issue-constants';
 
 // ── Route ──────────────────────────────────────────────────────────────
 

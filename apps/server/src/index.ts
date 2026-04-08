@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { resolve } from 'node:path';
+
+config({ path: resolve(import.meta.dirname, '../../../.env') });
 
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';

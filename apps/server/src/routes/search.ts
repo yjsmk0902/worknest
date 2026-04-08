@@ -34,8 +34,6 @@ export async function searchRoutes(
       schema: {
         tags: ["Search"],
         summary: "Search issues, wiki pages, and projects in a workspace",
-        params: workspaceIdParam,
-        querystring: searchQuery,
       },
     },
     async (request, reply) => {

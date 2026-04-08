@@ -40,8 +40,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "List workspaces in an organization",
-        params: orgIdParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -61,8 +59,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Create a new workspace (org admin+ required)",
-        params: orgIdParam,
-        body: createWorkspaceInput,
       },
     },
     async (request, reply) => {
@@ -103,7 +99,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Get workspace details",
-        params: wsIdParam,
       },
     },
     async (request, reply) => {
@@ -122,8 +117,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Update workspace (admin only)",
-        params: wsIdParam,
-        body: updateWorkspaceInput,
       },
     },
     async (request, reply) => {
@@ -143,7 +136,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Soft delete workspace (admin only)",
-        params: wsIdParam,
       },
     },
     async (request, reply) => {
@@ -162,8 +154,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "List workspace members",
-        params: wsIdParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -183,8 +173,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Create a workspace invitation",
-        params: wsIdParam,
-        body: createWsInvitationInput,
       },
     },
     async (request, reply) => {
@@ -204,8 +192,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "List pending workspace invitations",
-        params: wsIdParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -225,8 +211,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Change a workspace member's role",
-        params: uuidParam,
-        body: updateWsMemberInput,
       },
     },
     async (request, reply) => {
@@ -246,7 +230,6 @@ export async function workspaceRoutes(
       schema: {
         tags: ["Workspaces"],
         summary: "Remove a member from the workspace",
-        params: uuidParam,
       },
     },
     async (request, reply) => {

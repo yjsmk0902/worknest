@@ -14,10 +14,10 @@ import {
   BreadcrumbSeparator,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '../../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../../contexts/workspace-context';
-import { FileAttachment } from '../../../../../../components/file-upload/file-attachment';
-import { useFileUpload } from '../../../../../../hooks/use-file-upload';
+import { apiClient } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { FileAttachment } from '@/components/file-upload/file-attachment';
+import { useFileUpload } from '@/hooks/use-file-upload';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId',

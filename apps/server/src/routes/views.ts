@@ -36,7 +36,6 @@ export async function viewRoutes(
       schema: {
         tags: ["Views"],
         summary: "List views for a project",
-        params: projectIdParam,
       },
     },
     async (request, reply) => {
@@ -55,8 +54,6 @@ export async function viewRoutes(
       schema: {
         tags: ["Views"],
         summary: "Create a new view",
-        params: projectIdParam,
-        body: createViewInput,
       },
     },
     async (request, reply) => {
@@ -76,7 +73,6 @@ export async function viewRoutes(
       schema: {
         tags: ["Views"],
         summary: "Get a view by ID",
-        params: viewIdParam,
       },
     },
     async (request, reply) => {
@@ -95,8 +91,6 @@ export async function viewRoutes(
       schema: {
         tags: ["Views"],
         summary: "Update a view",
-        params: viewIdParam,
-        body: updateViewInput,
       },
     },
     async (request, reply) => {
@@ -116,7 +110,6 @@ export async function viewRoutes(
       schema: {
         tags: ["Views"],
         summary: "Delete a view",
-        params: viewIdParam,
       },
     },
     async (request, reply) => {

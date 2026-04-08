@@ -39,7 +39,6 @@ export async function notificationRoutes(
       schema: {
         tags: ["Notifications"],
         summary: "List notifications for current user",
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {

@@ -33,7 +33,6 @@ export async function fileRoutes(
       schema: {
         tags: ["Files"],
         summary: "List files attached to a wiki page",
-        params: pageIdParam,
       },
     },
     async (request, reply) => {
@@ -115,7 +114,6 @@ export async function fileRoutes(
       schema: {
         tags: ["Files"],
         summary: "Get file info",
-        params: fileIdParam,
       },
     },
     async (request, reply) => {
@@ -134,7 +132,6 @@ export async function fileRoutes(
       schema: {
         tags: ["Files"],
         summary: "Download a file",
-        params: fileIdParam,
       },
     },
     async (request, reply) => {
@@ -170,7 +167,6 @@ export async function fileRoutes(
       schema: {
         tags: ["Files"],
         summary: "Delete a file",
-        params: fileIdParam,
       },
     },
     async (request, reply) => {

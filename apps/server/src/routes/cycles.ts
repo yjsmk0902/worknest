@@ -75,7 +75,6 @@ export async function cycleRoutes(
       schema: {
         tags: ["Cycles"],
         summary: "Create a new cycle in a project",
-        body: createCycleInput,
       },
     },
     async (request, reply) => {
@@ -113,7 +112,6 @@ export async function cycleRoutes(
       schema: {
         tags: ["Cycles"],
         summary: "Update a cycle",
-        body: updateCycleInput,
       },
     },
     async (request, reply) => {
@@ -169,7 +167,6 @@ export async function cycleRoutes(
       schema: {
         tags: ["Cycles"],
         summary: "Complete a cycle with optional carryover to target cycle",
-        body: completeCycleInput,
       },
     },
     async (request, reply) => {
@@ -207,7 +204,6 @@ export async function cycleRoutes(
       schema: {
         tags: ["Cycles"],
         summary: "Add an issue to a cycle",
-        body: addCycleIssueInput,
       },
     },
     async (request, reply) => {

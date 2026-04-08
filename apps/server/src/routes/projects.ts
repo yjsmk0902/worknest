@@ -42,8 +42,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Create a new project in a workspace",
-        params: workspaceIdParam,
-        body: createProjectInput,
       },
     },
     async (request, reply) => {
@@ -63,8 +61,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "List projects the caller is a member of in this workspace",
-        params: workspaceIdParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -88,8 +84,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Check if a project prefix is available",
-        params: workspaceIdParam,
-        querystring: checkPrefixQuery,
       },
     },
     async (request, reply) => {
@@ -109,7 +103,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Lightweight project list for sidebar",
-        params: workspaceIdParam,
       },
     },
     async (request, reply) => {
@@ -131,10 +124,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Get project details",
-        params: z.object({
-          workspaceId: z.string().uuid(),
-          projectId: z.string().uuid(),
-        }),
       },
     },
     async (request, reply) => {
@@ -153,11 +142,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Update project (admin only)",
-        params: z.object({
-          workspaceId: z.string().uuid(),
-          projectId: z.string().uuid(),
-        }),
-        body: updateProjectInput,
       },
     },
     async (request, reply) => {
@@ -181,10 +165,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Soft delete project (admin only)",
-        params: z.object({
-          workspaceId: z.string().uuid(),
-          projectId: z.string().uuid(),
-        }),
       },
     },
     async (request, reply) => {
@@ -203,8 +183,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "List project members",
-        params: projectIdParam,
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {
@@ -228,8 +206,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Add a member to a project (admin only)",
-        params: projectIdParam,
-        body: addProjectMemberInput,
       },
     },
     async (request, reply) => {
@@ -253,8 +229,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Update a project member's role (admin only)",
-        params: projectMemberIdParam,
-        body: updateProjectMemberInput,
       },
     },
     async (request, reply) => {
@@ -281,7 +255,6 @@ export async function projectRoutes(
       schema: {
         tags: ["Projects"],
         summary: "Remove a member from a project (admin only)",
-        params: projectMemberIdParam,
       },
     },
     async (request, reply) => {

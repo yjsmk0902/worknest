@@ -15,9 +15,9 @@ import {
   DialogFooter,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '../../../../lib/api-client';
-import { SettingsLayout } from '../../../../components/settings/settings-layout';
-import { useWorkspaceContext } from '../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/',

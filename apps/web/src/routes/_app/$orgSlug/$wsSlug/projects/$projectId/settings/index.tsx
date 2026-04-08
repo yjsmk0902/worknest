@@ -15,10 +15,10 @@ import {
   DialogFooter,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '../../../../../../lib/api-client';
-import { ProjectSettingsLayout } from '../../../../../../components/projects/settings-layout';
-import { useWorkspaceContext } from '../../../../../../contexts/workspace-context';
-import { useProjectContext } from '../../../../../../contexts/project-context';
+import { apiClient } from '@/lib/api-client';
+import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { useProjectContext } from '@/contexts/project-context';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/',

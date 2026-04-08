@@ -86,7 +86,6 @@ export async function myWorkRoutes(
       schema: {
         tags: ["My Work"],
         summary: "List issues assigned to the current user grouped by status category",
-        params: workspaceIdParam,
       },
     },
     async (request, reply) => {

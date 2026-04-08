@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AlertTriangle, Loader2, ShieldAlert } from 'lucide-react';
 import { useEffect } from 'react';
-import { ErrorPage } from '../../../components/error-page';
-import { WorkspaceContext, type WorkspaceContextValue } from '../../../contexts/workspace-context';
-import { ApiError, apiClient } from '../../../lib/api-client';
-import { useAuthStore } from '../../../stores/auth-store';
+import { ErrorPage } from '@/components/error-page';
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { ApiError, apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
 
 interface OrgBySlugResponse {
   id: string;

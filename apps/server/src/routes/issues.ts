@@ -59,7 +59,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "Create a new issue in a project",
-        body: createIssueInput,
       },
     },
     async (request, reply) => {
@@ -79,7 +78,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "List issues in a project with optional filters, sorting, and cursor pagination",
-        querystring: issueListQuery,
       },
     },
     async (request, reply) => {
@@ -99,7 +97,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "Get issue count stats grouped by status",
-        querystring: issueListQuery,
       },
     },
     async (request, reply) => {
@@ -119,7 +116,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "Bulk update multiple issues",
-        body: bulkUpdateInput,
       },
     },
     async (request, reply) => {
@@ -157,7 +153,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "Update an issue",
-        body: updateIssueInput,
       },
     },
     async (request, reply) => {
@@ -287,7 +282,6 @@ export async function issueRoutes(
       schema: {
         tags: ["Issues"],
         summary: "List activities for an issue",
-        querystring: cursorPaginationQuery,
       },
     },
     async (request, reply) => {

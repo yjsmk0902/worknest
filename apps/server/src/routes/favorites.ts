@@ -50,7 +50,6 @@ export async function favoriteRoutes(
       schema: {
         tags: ["Favorites"],
         summary: "Add an item to favorites",
-        body: createFavoriteInput,
       },
     },
     async (request, reply) => {
@@ -69,8 +68,6 @@ export async function favoriteRoutes(
       schema: {
         tags: ["Favorites"],
         summary: "Update a favorite's sort order (for drag-and-drop reorder)",
-        params: favoriteIdParam,
-        body: updateFavoriteInput,
       },
     },
     async (request, reply) => {
@@ -94,7 +91,6 @@ export async function favoriteRoutes(
       schema: {
         tags: ["Favorites"],
         summary: "Remove an item from favorites",
-        params: favoriteIdParam,
       },
     },
     async (request, reply) => {

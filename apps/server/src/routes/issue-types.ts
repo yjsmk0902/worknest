@@ -48,7 +48,6 @@ export async function issueTypeRoutes(
       schema: {
         tags: ["Issue Types"],
         summary: "List issue types for a project",
-        params: projectIdParam,
       },
     },
     async (request, reply) => {
@@ -100,8 +99,6 @@ export async function issueTypeRoutes(
       schema: {
         tags: ["Issue Types"],
         summary: "Update an issue type (admin only)",
-        params: typeIdParam,
-        body: updateIssueTypeInput,
       },
     },
     async (request, reply) => {

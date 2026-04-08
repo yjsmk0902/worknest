@@ -37,7 +37,6 @@ export async function labelRoutes(
       schema: {
         tags: ["Labels"],
         summary: "List labels for a project",
-        params: projectIdParam,
       },
     },
     async (request, reply) => {
@@ -56,8 +55,6 @@ export async function labelRoutes(
       schema: {
         tags: ["Labels"],
         summary: "Create a label (admin/member only)",
-        params: projectIdParam,
-        body: createLabelInput,
       },
     },
     async (request, reply) => {
@@ -77,8 +74,6 @@ export async function labelRoutes(
       schema: {
         tags: ["Labels"],
         summary: "Update a label (admin/member only)",
-        params: labelIdParam,
-        body: updateLabelInput,
       },
     },
     async (request, reply) => {
@@ -98,7 +93,6 @@ export async function labelRoutes(
       schema: {
         tags: ["Labels"],
         summary: "Delete a label (admin only)",
-        params: labelIdParam,
       },
     },
     async (request, reply) => {

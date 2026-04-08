@@ -2,13 +2,13 @@ import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@worknest/ui';
-import { apiClient } from '../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 import {
   ProjectContext,
   type ProjectContextValue,
-} from '../../../../../contexts/project-context';
-import { useIssueRealtime } from '../../../../../hooks/use-issue-realtime';
+} from '@/contexts/project-context';
+import { useIssueRealtime } from '@/hooks/use-issue-realtime';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/projects/$projectId',
