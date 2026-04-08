@@ -1,10 +1,10 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ErrorPage } from './error-page';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: ReactNode;
+  fallback?: ReactNode | ((error: Error, retry: () => void) => ReactNode);
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
@@ -13,10 +13,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -37,7 +34,11 @@ export class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
+      const error = this.state.error ?? new Error('Unknown error');
       if (this.props.fallback) {
+        if (typeof this.props.fallback === 'function') {
+          return this.props.fallback(error, this.handleRetry);
+        }
         return this.props.fallback;
       }
 

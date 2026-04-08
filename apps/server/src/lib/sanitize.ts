@@ -6,29 +6,16 @@
  */
 
 // Node types that are never allowed
-const DANGEROUS_NODE_TYPES = new Set([
-  "script",
-  "iframe",
-  "embed",
-  "object",
-  "applet",
-  "form",
-]);
+const DANGEROUS_NODE_TYPES = new Set(['script', 'iframe', 'embed', 'object', 'applet', 'form']);
 
-// Attribute names that may contain dangerous values
-const DANGEROUS_ATTRS = new Set([
-  "onerror",
-  "onload",
-  "onclick",
-  "onmouseover",
-  "onfocus",
-  "onblur",
-  "oninput",
-  "onsubmit",
-  "onkeydown",
-  "onkeyup",
-  "onkeypress",
-]);
+/**
+ * Check whether an attribute name is a DOM event handler (e.g. onclick,
+ * onerror, onmouseover, …).  Using a prefix check instead of an explicit
+ * set so that *all* current and future "on*" handlers are blocked.
+ */
+function isDangerousAttr(name: string): boolean {
+  return name.toLowerCase().startsWith('on');
+}
 
 interface TipTapNode {
   type?: string;
@@ -56,15 +43,15 @@ function sanitizeAttrs(
 
   for (const [key, value] of Object.entries(attrs)) {
     // Skip event handlers
-    if (DANGEROUS_ATTRS.has(key.toLowerCase())) continue;
+    if (isDangerousAttr(key)) continue;
 
     // Skip dangerous URI schemes (javascript:, data:, vbscript:)
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase();
       if (
-        normalized.startsWith("javascript:") ||
-        normalized.startsWith("data:") ||
-        normalized.startsWith("vbscript:")
+        normalized.startsWith('javascript:') ||
+        normalized.startsWith('data:') ||
+        normalized.startsWith('vbscript:')
       ) {
         continue;
       }
@@ -122,7 +109,7 @@ export function sanitizeContent(content: unknown): unknown {
   if (content === null || content === undefined) return null;
 
   // If it's not an object, return as-is (likely invalid content)
-  if (typeof content !== "object") return content;
+  if (typeof content !== 'object') return content;
 
   return sanitizeNode(content as TipTapNode);
 }

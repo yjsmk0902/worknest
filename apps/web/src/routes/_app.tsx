@@ -1,17 +1,17 @@
-import { useEffect, useMemo } from 'react';
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Skeleton } from '@worknest/ui';
-import { apiClient, ApiError } from '../lib/api-client';
-import { useAuthStore, type User } from '../stores/auth-store';
-import { Sidebar } from '../components/layout/sidebar';
-import { useUIStore } from '../stores/ui-store';
-import { useGlobalShortcuts } from '../hooks/use-global-shortcuts';
-import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
+import { useEffect, useMemo } from 'react';
 import { CommandPalette } from '../components/command-palette/command-palette';
-import { connect, disconnect } from '../lib/websocket';
-import { useWebSocket } from '../hooks/use-websocket';
+import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
+import { Sidebar } from '../components/layout/sidebar';
+import { useGlobalShortcuts } from '../hooks/use-global-shortcuts';
 import { useMediaQuery } from '../hooks/use-media-query';
+import { useWebSocket } from '../hooks/use-websocket';
+import { ApiError, apiClient } from '../lib/api-client';
+import { connect, disconnect } from '../lib/websocket';
+import { type User, useAuthStore } from '../stores/auth-store';
+import { useUIStore } from '../stores/ui-store';
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
@@ -23,16 +23,35 @@ function AppLayout() {
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed);
 
-  // Auto-collapse sidebar at 1024-1279px
-  const isMediumViewport = useMediaQuery(
-    '(min-width: 1024px) and (max-width: 1279px)',
-  );
+  // Auto-collapse sidebar at 1024-1279px, auto-expand above 1280px
+  const isMediumViewport = useMediaQuery('(min-width: 1024px) and (max-width: 1279px)');
+  const isLargeViewport = useMediaQuery('(min-width: 1280px)');
 
   useEffect(() => {
     if (isMediumViewport && !sidebarCollapsed) {
       setSidebarCollapsed(true);
+      // Track that the collapse was system-initiated
+      try {
+        sessionStorage.setItem('sidebar-system-collapsed', 'true');
+      } catch {
+        // sessionStorage unavailable
+      }
     }
   }, [isMediumViewport, sidebarCollapsed, setSidebarCollapsed]);
+
+  useEffect(() => {
+    if (isLargeViewport && sidebarCollapsed) {
+      // Only auto-expand if the collapse was system-initiated, not user-initiated
+      try {
+        if (sessionStorage.getItem('sidebar-system-collapsed') === 'true') {
+          sessionStorage.removeItem('sidebar-system-collapsed');
+          setSidebarCollapsed(false);
+        }
+      } catch {
+        // sessionStorage unavailable
+      }
+    }
+  }, [isLargeViewport, sidebarCollapsed, setSidebarCollapsed]);
 
   const profileQuery = useQuery<User>({
     queryKey: ['my', 'profile'],
@@ -42,10 +61,7 @@ function AppLayout() {
 
   // Auth guard: redirect to login on 401
   useEffect(() => {
-    if (
-      profileQuery.error instanceof ApiError &&
-      profileQuery.error.status === 401
-    ) {
+    if (profileQuery.error instanceof ApiError && profileQuery.error.status === 401) {
       navigate({ to: '/login' });
     }
   }, [profileQuery.error, navigate]);
@@ -73,10 +89,7 @@ function AppLayout() {
   }, [userId]);
 
   // Subscribe to personal user channel
-  const userChannels = useMemo(
-    () => (userId ? [`user:${userId}`] : []),
-    [userId],
-  );
+  const userChannels = useMemo(() => (userId ? [`user:${userId}`] : []), [userId]);
   useWebSocket(userChannels);
 
   // Show loading while checking auth
@@ -107,10 +120,7 @@ function AppLayout() {
       >
         <Outlet />
       </main>
-      <KeyboardShortcutsSheet
-        open={shortcutsSheetOpen}
-        onOpenChange={setShortcutsSheetOpen}
-      />
+      <KeyboardShortcutsSheet open={shortcutsSheetOpen} onOpenChange={setShortcutsSheetOpen} />
       <CommandPalette />
     </div>
   );

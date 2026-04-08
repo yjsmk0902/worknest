@@ -1,31 +1,17 @@
-import { useState, useCallback } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
-import {
-  Bell,
-  CheckCheck,
-  UserPlus,
-  AtSign,
-  MessageSquare,
-  RefreshCw,
-  Mail,
-} from 'lucide-react';
-import { Button, Skeleton, toast } from '@worknest/ui';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 import type { NotificationOutput, NotificationType } from '@worknest/shared';
-import { apiClient, type ListResponse } from '../../../../../lib/api-client';
-import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
-import { formatRelativeTime } from '../../../../../lib/format-time';
+import { Button, Skeleton, toast } from '@worknest/ui';
+import { AtSign, Bell, CheckCheck, Mail, MessageSquare, RefreshCw, UserPlus } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { EmptyState } from '../../../../../components/empty-state';
+import { useWorkspaceContext } from '../../../../../contexts/workspace-context';
+import { type ListResponse, apiClient } from '../../../../../lib/api-client';
+import { formatRelativeTime } from '../../../../../lib/format-time';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/my/inbox',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/my/inbox')({
   component: InboxPage,
 });
 
@@ -49,34 +35,26 @@ type FilterMode = 'all' | 'unread';
 // ── Main Component ─────────────────────────────────────────────────────
 
 function InboxPage() {
-  const { orgSlug, wsSlug } = Route.useParams();
+  Route.useParams();
   useWorkspaceContext(); // Ensure workspace context is available
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const [filter, setFilter] = useState<FilterMode>('all');
 
   // Fetch notifications
-  const notificationsQuery = useInfiniteQuery<ListResponse<NotificationOutput>>(
-    {
-      queryKey: ['my', 'notifications'],
-      queryFn: ({ pageParam }) => {
-        const params: Record<string, string> = { limit: '30' };
-        if (pageParam) {
-          params.cursor = pageParam as string;
-        }
-        return apiClient.getList<NotificationOutput>(
-          '/my/notifications',
-          params,
-        );
-      },
-      initialPageParam: undefined as string | undefined,
-      getNextPageParam: (lastPage) =>
-        lastPage.pagination.has_more
-          ? lastPage.pagination.next_cursor ?? undefined
-          : undefined,
+  const notificationsQuery = useInfiniteQuery<ListResponse<NotificationOutput>>({
+    queryKey: ['my', 'notifications'],
+    queryFn: ({ pageParam }) => {
+      const params: Record<string, string> = { limit: '30' };
+      if (pageParam) {
+        params.cursor = pageParam as string;
+      }
+      return apiClient.getList<NotificationOutput>('/my/notifications', params);
     },
-  );
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.has_more ? (lastPage.pagination.next_cursor ?? undefined) : undefined,
+  });
 
   // Mark single notification as read
   const markReadMutation = useMutation({
@@ -97,9 +75,7 @@ function InboxPage() {
             pages: old.pages.map((page: ListResponse<NotificationOutput>) => ({
               ...page,
               data: page.data.map((n: NotificationOutput) =>
-                n.id === notificationId
-                  ? { ...n, readAt: new Date().toISOString() }
-                  : n,
+                n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n,
               ),
             })),
           };
@@ -109,18 +85,14 @@ function InboxPage() {
       // Also update unread count
       queryClient.setQueryData(
         ['my', 'notifications', 'unread-count'],
-        (old: { count: number } | undefined) =>
-          old ? { count: Math.max(0, old.count - 1) } : old,
+        (old: { count: number } | undefined) => (old ? { count: Math.max(0, old.count - 1) } : old),
       );
 
       return { previousData };
     },
     onError: (_err, _id, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(
-          ['my', 'notifications'],
-          context.previousData,
-        );
+        queryClient.setQueryData(['my', 'notifications'], context.previousData);
       }
     },
     onSettled: () => {
@@ -157,19 +129,13 @@ function InboxPage() {
         },
       );
 
-      queryClient.setQueryData(
-        ['my', 'notifications', 'unread-count'],
-        { count: 0 },
-      );
+      queryClient.setQueryData(['my', 'notifications', 'unread-count'], { count: 0 });
 
       return { previousData };
     },
     onError: (_err, _vars, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(
-          ['my', 'notifications'],
-          context.previousData,
-        );
+        queryClient.setQueryData(['my', 'notifications'], context.previousData);
       }
       toast.error('읽음 처리에 실패했습니다.');
     },
@@ -184,44 +150,24 @@ function InboxPage() {
     },
   });
 
-  // Navigate to entity on click
+  // Handle notification click: mark as read.
+  // TODO (v1.0): Add navigation to the related entity once the notification
+  // payload includes entity_url or project routing info (e.g. project prefix).
   const handleNotificationClick = useCallback(
     (notification: NotificationOutput) => {
-      // Mark as read if unread
       if (!notification.readAt) {
         markReadMutation.mutate(notification.id);
       }
-
-      // Navigate to the entity
-      if (notification.issueId) {
-        // Navigate to issue — we don't have the project prefix info here,
-        // so we navigate via a search-based approach or let the backend
-        // provide a link. For now, the notification message contains the key.
-        // We'll just navigate to the workspace and let the user find it.
-        // In a real implementation, the notification would include routing info.
-        navigate({
-          to: '/$orgSlug/$wsSlug/my/inbox',
-          params: { orgSlug, wsSlug },
-        });
-      } else if (notification.pageId) {
-        navigate({
-          to: '/$orgSlug/$wsSlug/my/inbox',
-          params: { orgSlug, wsSlug },
-        });
-      }
     },
-    [markReadMutation, navigate, orgSlug, wsSlug],
+    [markReadMutation],
   );
 
   // Flatten pages
-  const allNotifications =
-    notificationsQuery.data?.pages.flatMap((page) => page.data) ?? [];
+  const allNotifications = notificationsQuery.data?.pages.flatMap((page) => page.data) ?? [];
 
   // Apply filter
   const filteredNotifications =
-    filter === 'unread'
-      ? allNotifications.filter((n) => !n.readAt)
-      : allNotifications;
+    filter === 'unread' ? allNotifications.filter((n) => !n.readAt) : allNotifications;
 
   // Loading state
   if (notificationsQuery.isLoading) {
@@ -238,11 +184,7 @@ function InboxPage() {
           <Skeleton className="h-8 w-20 rounded-md" />
         </div>
         {/* Notification skeletons */}
-        <div
-          className="px-6"
-          aria-busy="true"
-          aria-label="알림 로딩 중"
-        >
+        <div className="px-6" aria-busy="true" aria-label="알림 로딩 중">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={`skeleton-${i}`}
@@ -269,9 +211,7 @@ function InboxPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <Bell className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              알림을 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">알림을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -338,11 +278,7 @@ function InboxPage() {
           description="알림이 도착하면 여기에 표시됩니다"
         />
       ) : (
-        <div
-          className="flex-1 overflow-y-auto px-6"
-          role="list"
-          aria-label="알림 목록"
-        >
+        <div className="flex-1 overflow-y-auto px-6" role="list" aria-label="알림 목록">
           {filteredNotifications.map((notification) => {
             const iconConfig = NOTIFICATION_ICON_MAP[notification.type];
             const IconComponent = iconConfig.icon;
@@ -352,15 +288,12 @@ function InboxPage() {
               <button
                 key={notification.id}
                 type="button"
-                role="listitem"
                 aria-label={notification.message}
                 className="flex h-14 w-full cursor-pointer items-center gap-3 border-b border-border/50 px-4 transition-colors duration-150 hover:bg-accent/50"
                 onClick={() => handleNotificationClick(notification)}
               >
                 {/* Type icon */}
-                <IconComponent
-                  className={`h-[18px] w-[18px] shrink-0 ${iconConfig.color}`}
-                />
+                <IconComponent className={`h-[18px] w-[18px] shrink-0 ${iconConfig.color}`} />
 
                 {/* Message */}
                 <div className="min-w-0 flex-1">
@@ -394,9 +327,7 @@ function InboxPage() {
                 onClick={() => notificationsQuery.fetchNextPage()}
                 disabled={notificationsQuery.isFetchingNextPage}
               >
-                {notificationsQuery.isFetchingNextPage
-                  ? '불러오는 중...'
-                  : '더 보기'}
+                {notificationsQuery.isFetchingNextPage ? '불러오는 중...' : '더 보기'}
               </Button>
             </div>
           )}

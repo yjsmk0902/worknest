@@ -1,3 +1,4 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Edge case tests.
  *
@@ -8,108 +9,98 @@
  * - Wiki circular reference: page A -> parent B -> parent A should fail
  * - Comment flat threading: reply to a reply should be rejected (400)
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  addIssueToCycle,
+  addWikiSpaceMember,
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
-  createTestOrg,
-  createTestProject,
-  createTestIssue,
   createTestComment,
   createTestCycle,
-  createTestWikiSpace,
+  createTestIssue,
+  createTestOrg,
+  createTestProject,
+  createTestUser,
   createTestWikiPage,
-  addIssueToCycle,
-  addProjectMember,
-  addWikiSpaceMember,
+  createTestWikiSpace,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
   stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock WebSocket broadcasts ───────────────────────────────────────────
 
-vi.mock("../src/websocket/issue-events", () => ({
+vi.mock('../src/websocket/issue-events', () => ({
   broadcastIssueCreated: vi.fn(),
   broadcastIssueUpdated: vi.fn(),
   broadcastIssueDeleted: vi.fn(),
 }));
 
-vi.mock("../src/websocket/comment-events", () => ({
+vi.mock('../src/websocket/comment-events', () => ({
   broadcastCommentCreated: vi.fn(),
   broadcastCommentUpdated: vi.fn(),
   broadcastCommentDeleted: vi.fn(),
   broadcastReactionToggled: vi.fn(),
 }));
 
-vi.mock("../src/websocket/wiki-events", () => ({
+vi.mock('../src/websocket/wiki-events', () => ({
   broadcastWikiPageCreated: vi.fn(),
   broadcastWikiPageUpdated: vi.fn(),
   broadcastWikiPageDeleted: vi.fn(),
 }));
 
-vi.mock("../src/lib/sanitize", () => ({
+vi.mock('../src/lib/queue', () => ({
+  addJob: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('../src/lib/sanitize', () => ({
   sanitizeContent: vi.fn((content: unknown) => content),
 }));
 
-vi.mock("../src/lib/extract-text", () => ({
-  extractPlainText: vi.fn((_content: unknown) => "extracted text"),
+vi.mock('../src/lib/extract-text', () => ({
+  extractPlainText: vi.fn((_content: unknown) => 'extracted text'),
 }));
 
 // ── App builders ─────────────────────────────────────────────────────────
 
 async function buildIssueApp() {
-  const { issueRoutes } = await import("../src/routes/issues");
+  const { issueRoutes } = await import('../src/routes/issues');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await issueRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await issueRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
 
 async function buildProjectApp() {
-  const { projectRoutes } = await import("../src/routes/projects");
+  const { projectRoutes } = await import('../src/routes/projects');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await projectRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await projectRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
 
 async function buildWikiApp() {
-  const { wikiSpaceRoutes } = await import("../src/routes/wiki-spaces");
-  const { wikiPageRoutes } = await import("../src/routes/wiki-pages");
+  const { wikiSpaceRoutes } = await import('../src/routes/wiki-spaces');
+  const { wikiPageRoutes } = await import('../src/routes/wiki-pages');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await wikiSpaceRoutes(app, { auth: auth as never, db: db as never });
-      await wikiPageRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await wikiSpaceRoutes(app, { auth: auth as never, db: db as never });
+    await wikiPageRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
 
 async function buildCommentApp() {
-  const { commentRoutes } = await import("../src/routes/comments");
+  const { commentRoutes } = await import('../src/routes/comments');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await commentRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await commentRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
@@ -117,29 +108,27 @@ async function buildCommentApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupProjectWithUser() {
-  const user = createTestUser({ name: "Edge Case Admin" });
+  const user = createTestUser({ name: 'Edge Case Admin' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const project = createTestProject(ws.id, user.id, {
-    name: "Edge Project",
-    prefix: "EP",
+    name: 'Edge Project',
+    prefix: 'EP',
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
 }
 
 const sampleContent = {
-  type: "doc",
-  content: [
-    { type: "paragraph", content: [{ type: "text", text: "Test comment" }] },
-  ],
+  type: 'doc',
+  content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Test comment' }] }],
 };
 
 // ══════════════════════════════════════════════════════════════════════════
 // 1. Issue delete cascade: sub-issues get promoted (parentId -> null)
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Issue delete cascade: sub-issue promotion", () => {
+describe('Issue delete cascade: sub-issue promotion', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -153,21 +142,21 @@ describe("Issue delete cascade: sub-issue promotion", () => {
     cleanup();
   });
 
-  it("promotes sub-issues to top-level when parent is deleted", async () => {
+  it('promotes sub-issues to top-level when parent is deleted', async () => {
     const { project, user, cookie } = setupProjectWithUser();
 
     // Create parent issue
     const parent = createTestIssue(project.id, user.id, {
-      title: "Parent Issue",
+      title: 'Parent Issue',
     });
 
     // Create sub-issues with parentId pointing to parent
     const child1 = createTestIssue(project.id, user.id, {
-      title: "Child Issue 1",
+      title: 'Child Issue 1',
       parentId: parent.id,
     });
     const child2 = createTestIssue(project.id, user.id, {
-      title: "Child Issue 2",
+      title: 'Child Issue 2',
       parentId: parent.id,
     });
 
@@ -177,7 +166,7 @@ describe("Issue delete cascade: sub-issue promotion", () => {
 
     // Delete the parent issue
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/projects/${project.id}/issues/${parent.id}`,
       headers: { cookie },
     });
@@ -189,35 +178,35 @@ describe("Issue delete cascade: sub-issue promotion", () => {
     const updatedChild2 = stores.issues.find((i) => i.id === child2.id);
 
     expect(updatedChild1).toBeDefined();
-    expect(updatedChild1!.parentId).toBeNull();
-    expect(updatedChild1!.deletedAt).toBeNull();
+    expect(updatedChild1?.parentId).toBeNull();
+    expect(updatedChild1?.deletedAt).toBeNull();
 
     expect(updatedChild2).toBeDefined();
-    expect(updatedChild2!.parentId).toBeNull();
-    expect(updatedChild2!.deletedAt).toBeNull();
+    expect(updatedChild2?.parentId).toBeNull();
+    expect(updatedChild2?.deletedAt).toBeNull();
   });
 
-  it("does not promote already-deleted sub-issues", async () => {
+  it('does not promote already-deleted sub-issues', async () => {
     const { project, user, cookie } = setupProjectWithUser();
 
     const parent = createTestIssue(project.id, user.id, {
-      title: "Parent",
+      title: 'Parent',
     });
 
     const deletedChild = createTestIssue(project.id, user.id, {
-      title: "Deleted Child",
+      title: 'Deleted Child',
       parentId: parent.id,
       deletedAt: new Date(), // already soft-deleted
     });
 
     const activeChild = createTestIssue(project.id, user.id, {
-      title: "Active Child",
+      title: 'Active Child',
       parentId: parent.id,
     });
 
     // Delete parent
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/projects/${project.id}/issues/${parent.id}`,
       headers: { cookie },
     });
@@ -226,12 +215,12 @@ describe("Issue delete cascade: sub-issue promotion", () => {
 
     // Active child should be promoted
     const updatedActive = stores.issues.find((i) => i.id === activeChild.id);
-    expect(updatedActive!.parentId).toBeNull();
+    expect(updatedActive?.parentId).toBeNull();
 
     // Deleted child should keep its parentId (it was already deleted, so the
     // WHERE clause `deletedAt IS NULL` should skip it)
     const updatedDeleted = stores.issues.find((i) => i.id === deletedChild.id);
-    expect(updatedDeleted!.parentId).toBe(parent.id);
+    expect(updatedDeleted?.parentId).toBe(parent.id);
   });
 });
 
@@ -239,7 +228,7 @@ describe("Issue delete cascade: sub-issue promotion", () => {
 // 2. Issue delete cascade: cycleIssues references
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Issue delete cascade: cycleIssues behavior", () => {
+describe('Issue delete cascade: cycleIssues behavior', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -253,23 +242,23 @@ describe("Issue delete cascade: cycleIssues behavior", () => {
     cleanup();
   });
 
-  it("soft-deleted issue still has cycleIssue references in store", async () => {
+  it('soft-deleted issue still has cycleIssue references in store', async () => {
     const { project, user, cookie } = setupProjectWithUser();
 
     // Create issue and add it to a cycle
     const issue = createTestIssue(project.id, user.id, {
-      title: "Cycle Issue",
+      title: 'Cycle Issue',
     });
-    const cycle = createTestCycle(project.id, { name: "Sprint 1" });
-    const cycleIssue = addIssueToCycle(cycle.id, issue.id);
+    const cycle = createTestCycle(project.id, { name: 'Sprint 1' });
+    const _cycleIssue = addIssueToCycle(cycle.id, issue.id);
 
     // Verify cycle-issue link exists
     expect(stores.cycleIssues).toHaveLength(1);
-    expect(stores.cycleIssues[0]!.issueId).toBe(issue.id);
+    expect(stores.cycleIssues[0]?.issueId).toBe(issue.id);
 
     // Delete the issue
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/projects/${project.id}/issues/${issue.id}`,
       headers: { cookie },
     });
@@ -280,13 +269,11 @@ describe("Issue delete cascade: cycleIssues behavior", () => {
     // cycleIssues entries. Verify the issue is soft-deleted.
     const deletedIssue = stores.issues.find((i) => i.id === issue.id);
     expect(deletedIssue).toBeDefined();
-    expect(deletedIssue!.deletedAt).not.toBeNull();
+    expect(deletedIssue?.deletedAt).not.toBeNull();
 
     // The cycleIssue record still exists (it references a soft-deleted issue).
     // This is expected behavior -- the cycle history is preserved.
-    const cycleIssueRef = stores.cycleIssues.find(
-      (ci) => ci.issueId === issue.id,
-    );
+    const cycleIssueRef = stores.cycleIssues.find((ci) => ci.issueId === issue.id);
     expect(cycleIssueRef).toBeDefined();
   });
 });
@@ -295,7 +282,7 @@ describe("Issue delete cascade: cycleIssues behavior", () => {
 // 3. Project prefix: soft-deleted project's prefix is still reserved
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Project prefix: soft-deleted project prefix reservation", () => {
+describe('Project prefix: soft-deleted project prefix reservation', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -309,18 +296,18 @@ describe("Project prefix: soft-deleted project prefix reservation", () => {
     cleanup();
   });
 
-  it("allows creating a project with the same prefix as a soft-deleted project", async () => {
-    const user = createTestUser({ name: "Prefix User" });
+  it('allows creating a project with the same prefix as a soft-deleted project', async () => {
+    const user = createTestUser({ name: 'Prefix User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const cookie = loginAsUser(user);
 
     // Create a project with prefix "PFX"
     const res1 = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/projects`,
       headers: { cookie },
-      payload: { name: "Project One", prefix: "PFX" },
+      payload: { name: 'Project One', prefix: 'PFX' },
     });
 
     expect(res1.statusCode).toBe(201);
@@ -328,7 +315,7 @@ describe("Project prefix: soft-deleted project prefix reservation", () => {
 
     // Soft-delete the project (route requires workspaceId in the path)
     const deleteRes = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/workspaces/${ws.id}/projects/${project1.id}`,
       headers: { cookie },
     });
@@ -340,44 +327,44 @@ describe("Project prefix: soft-deleted project prefix reservation", () => {
     // uniqueness check. So creating a new project with the same prefix
     // should succeed because the old one is soft-deleted.
     const res2 = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/projects`,
       headers: { cookie },
-      payload: { name: "Project Two", prefix: "PFX" },
+      payload: { name: 'Project Two', prefix: 'PFX' },
     });
 
     // If the prefix uniqueness check correctly ignores soft-deleted projects,
     // this should succeed. This documents the current behavior.
     expect(res2.statusCode).toBe(201);
     const project2 = JSON.parse(res2.body).data;
-    expect(project2.prefix).toBe("PFX");
+    expect(project2.prefix).toBe('PFX');
   });
 
-  it("rejects duplicate prefix for active projects", async () => {
-    const user = createTestUser({ name: "Dup Prefix User" });
+  it('rejects duplicate prefix for active projects', async () => {
+    const user = createTestUser({ name: 'Dup Prefix User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const cookie = loginAsUser(user);
 
     // Create first project
     const res1 = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/projects`,
       headers: { cookie },
-      payload: { name: "Project A", prefix: "DUP" },
+      payload: { name: 'Project A', prefix: 'DUP' },
     });
     expect(res1.statusCode).toBe(201);
 
     // Try to create second project with same prefix
     const res2 = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/projects`,
       headers: { cookie },
-      payload: { name: "Project B", prefix: "DUP" },
+      payload: { name: 'Project B', prefix: 'DUP' },
     });
     expect(res2.statusCode).toBe(409);
     const body = JSON.parse(res2.body);
-    expect(body.error.code).toBe("PREFIX_ALREADY_EXISTS");
+    expect(body.error.code).toBe('PREFIX_ALREADY_EXISTS');
   });
 });
 
@@ -385,7 +372,7 @@ describe("Project prefix: soft-deleted project prefix reservation", () => {
 // 4. Wiki circular reference: page A -> parent B -> parent A should fail
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Wiki circular reference prevention", () => {
+describe('Wiki circular reference prevention', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -399,20 +386,20 @@ describe("Wiki circular reference prevention", () => {
     cleanup();
   });
 
-  it("rejects setting a page as its own parent", async () => {
-    const user = createTestUser({ name: "Wiki User" });
+  it('rejects setting a page as its own parent', async () => {
+    const user = createTestUser({ name: 'Wiki User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const space = createTestWikiSpace(ws.id, { createdBy: user.id });
-    addWikiSpaceMember(space.id, user.id, "admin");
+    addWikiSpaceMember(space.id, user.id, 'admin');
     const page = createTestWikiPage(space.id, {
-      title: "Self-ref Page",
+      title: 'Self-ref Page',
       createdBy: user.id,
     });
     const cookie = loginAsUser(user);
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
       payload: { parentId: page.id },
@@ -420,23 +407,23 @@ describe("Wiki circular reference prevention", () => {
 
     expect(res.statusCode).toBe(400);
     const body = JSON.parse(res.body);
-    expect(body.error.code).toBe("CIRCULAR_REFERENCE");
+    expect(body.error.code).toBe('CIRCULAR_REFERENCE');
   });
 
-  it("rejects circular reference A -> B -> A via update", async () => {
-    const user = createTestUser({ name: "Wiki Circular User" });
+  it('rejects circular reference A -> B -> A via update', async () => {
+    const user = createTestUser({ name: 'Wiki Circular User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const space = createTestWikiSpace(ws.id, { createdBy: user.id });
-    addWikiSpaceMember(space.id, user.id, "admin");
+    addWikiSpaceMember(space.id, user.id, 'admin');
 
     // Create two pages: A and B, where B's parent is A
     const pageA = createTestWikiPage(space.id, {
-      title: "Page A",
+      title: 'Page A',
       createdBy: user.id,
     });
     const pageB = createTestWikiPage(space.id, {
-      title: "Page B",
+      title: 'Page B',
       parentId: pageA.id,
       createdBy: user.id,
     });
@@ -452,34 +439,34 @@ describe("Wiki circular reference prevention", () => {
     // Since our mock db doesn't support execute(), this test verifies that
     // the validation path at least checks for parent existence.
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${pageA.id}`,
       headers: { cookie },
       payload: { parentId: pageB.id },
     });
 
-    // In the mock environment, the db.execute() for the CTE will throw
-    // because it's not implemented. We expect either a 400 (circular detected)
-    // or a 500 (unimplemented execute). Either way, the update should NOT succeed.
-    expect(res.statusCode).not.toBe(200);
+    // The circular reference check uses a recursive CTE via db.execute().
+    // In the mock environment, db.execute() is not implemented and falls
+    // through to the validation layer which returns 400 for detected cycles.
+    expect(res.statusCode).toBe(400);
   });
 
-  it("rejects parent that does not exist in the same space", async () => {
-    const user = createTestUser({ name: "Wiki Missing Parent User" });
+  it('rejects parent that does not exist in the same space', async () => {
+    const user = createTestUser({ name: 'Wiki Missing Parent User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const space = createTestWikiSpace(ws.id, { createdBy: user.id });
-    addWikiSpaceMember(space.id, user.id, "admin");
+    addWikiSpaceMember(space.id, user.id, 'admin');
     const page = createTestWikiPage(space.id, {
-      title: "Orphan Page",
+      title: 'Orphan Page',
       createdBy: user.id,
     });
     const cookie = loginAsUser(user);
 
-    const fakeParentId = "00000000-0000-0000-0000-000000000000";
+    const fakeParentId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
       payload: { parentId: fakeParentId },
@@ -493,7 +480,7 @@ describe("Wiki circular reference prevention", () => {
 // 5. Comment flat threading: reply to a reply should be rejected (400)
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Comment flat threading enforcement", () => {
+describe('Comment flat threading enforcement', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -507,16 +494,16 @@ describe("Comment flat threading enforcement", () => {
     cleanup();
   });
 
-  it("allows reply to a top-level comment", async () => {
-    const user = createTestUser({ name: "Thread User" });
+  it('allows reply to a top-level comment', async () => {
+    const user = createTestUser({ name: 'Thread User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const project = createTestProject(ws.id, user.id, {
-      name: "Thread Project",
-      prefix: "TH",
+      name: 'Thread Project',
+      prefix: 'TH',
     });
     const issue = createTestIssue(project.id, user.id, {
-      title: "Thread Issue",
+      title: 'Thread Issue',
     });
     const cookie = loginAsUser(user);
 
@@ -529,7 +516,7 @@ describe("Comment flat threading enforcement", () => {
 
     // Reply to the top-level comment (this should succeed)
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/issues/${issue.id}/comments`,
       headers: { cookie },
       payload: {
@@ -543,16 +530,16 @@ describe("Comment flat threading enforcement", () => {
     expect(body.data.parentId).toBe(topLevel.id);
   });
 
-  it("rejects reply to a reply (nested threading)", async () => {
-    const user = createTestUser({ name: "Nested Thread User" });
+  it('rejects reply to a reply (nested threading)', async () => {
+    const user = createTestUser({ name: 'Nested Thread User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const project = createTestProject(ws.id, user.id, {
-      name: "Nested Project",
-      prefix: "NP",
+      name: 'Nested Project',
+      prefix: 'NP',
     });
     const issue = createTestIssue(project.id, user.id, {
-      title: "Nested Issue",
+      title: 'Nested Issue',
     });
     const cookie = loginAsUser(user);
 
@@ -572,7 +559,7 @@ describe("Comment flat threading enforcement", () => {
 
     // Try to reply to the reply (nested) -- this should be rejected
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/issues/${issue.id}/comments`,
       headers: { cookie },
       payload: {
@@ -583,27 +570,27 @@ describe("Comment flat threading enforcement", () => {
 
     expect(res.statusCode).toBe(400);
     const body = JSON.parse(res.body);
-    expect(body.error.code).toBe("VALIDATION_ERROR");
-    expect(body.error.message).toContain("Nested replies are not allowed");
+    expect(body.error.code).toBe('VALIDATION_ERROR');
+    expect(body.error.message).toContain('Nested replies are not allowed');
   });
 
-  it("rejects reply with non-existent parent comment", async () => {
-    const user = createTestUser({ name: "Missing Parent User" });
+  it('rejects reply with non-existent parent comment', async () => {
+    const user = createTestUser({ name: 'Missing Parent User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const project = createTestProject(ws.id, user.id, {
-      name: "Missing Parent Project",
-      prefix: "MP",
+      name: 'Missing Parent Project',
+      prefix: 'MP',
     });
     const issue = createTestIssue(project.id, user.id, {
-      title: "Missing Parent Issue",
+      title: 'Missing Parent Issue',
     });
     const cookie = loginAsUser(user);
 
-    const fakeCommentId = "00000000-0000-0000-0000-000000000000";
+    const fakeCommentId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/issues/${issue.id}/comments`,
       headers: { cookie },
       payload: {
@@ -615,16 +602,16 @@ describe("Comment flat threading enforcement", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("rejects reply to a deleted parent comment", async () => {
-    const user = createTestUser({ name: "Deleted Parent User" });
+  it('rejects reply to a deleted parent comment', async () => {
+    const user = createTestUser({ name: 'Deleted Parent User' });
     const org = createTestOrg(user.id);
     const ws = createTestWorkspace(org.id, user.id);
     const project = createTestProject(ws.id, user.id, {
-      name: "Deleted Parent Project",
-      prefix: "DP",
+      name: 'Deleted Parent Project',
+      prefix: 'DP',
     });
     const issue = createTestIssue(project.id, user.id, {
-      title: "Deleted Parent Issue",
+      title: 'Deleted Parent Issue',
     });
     const cookie = loginAsUser(user);
 
@@ -638,7 +625,7 @@ describe("Comment flat threading enforcement", () => {
 
     // Try to reply to the deleted comment
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/issues/${issue.id}/comments`,
       headers: { cookie },
       payload: {

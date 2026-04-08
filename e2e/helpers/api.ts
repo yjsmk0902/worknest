@@ -1,4 +1,4 @@
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext } from '@playwright/test';
 
 // ── Response helpers ──────────────────────────────────────────────────
 
@@ -10,9 +10,7 @@ async function unwrap<T>(response: {
 }): Promise<T> {
   if (!response.ok()) {
     const body = await response.text();
-    throw new Error(
-      `API request failed (${response.status()}): ${body}`,
-    );
+    throw new Error(`API request failed (${response.status()}): ${body}`);
   }
   const json = (await response.json()) as { data: T };
   return json.data;
@@ -61,10 +59,10 @@ export async function createOrg(
   name: string,
   slug?: string,
 ): Promise<Organization> {
-  const res = await request.post("/api/v1/organizations", {
+  const res = await request.post('/api/v1/organizations', {
     data: {
       name,
-      slug: slug ?? name.toLowerCase().replace(/\s+/g, "-"),
+      slug: slug ?? name.toLowerCase().replace(/\s+/g, '-'),
     },
   });
   return unwrap<Organization>(res);
@@ -84,15 +82,12 @@ export async function createWorkspace(
   name: string,
   slug?: string,
 ): Promise<Workspace> {
-  const res = await request.post(
-    `/api/v1/organizations/${orgId}/workspaces`,
-    {
-      data: {
-        name,
-        slug: slug ?? name.toLowerCase().replace(/\s+/g, "-"),
-      },
+  const res = await request.post(`/api/v1/organizations/${orgId}/workspaces`, {
+    data: {
+      name,
+      slug: slug ?? name.toLowerCase().replace(/\s+/g, '-'),
     },
-  );
+  });
   return unwrap<Workspace>(res);
 }
 
@@ -110,12 +105,9 @@ export async function createProject(
   name: string,
   prefix: string,
 ): Promise<Project> {
-  const res = await request.post(
-    `/api/v1/workspaces/${workspaceId}/projects`,
-    {
-      data: { name, prefix },
-    },
-  );
+  const res = await request.post(`/api/v1/workspaces/${workspaceId}/projects`, {
+    data: { name, prefix },
+  });
   return unwrap<Project>(res);
 }
 
@@ -131,12 +123,9 @@ export async function createIssue(
   projectId: string,
   title: string,
 ): Promise<Issue> {
-  const res = await request.post(
-    `/api/v1/projects/${projectId}/issues`,
-    {
-      data: { title },
-    },
-  );
+  const res = await request.post(`/api/v1/projects/${projectId}/issues`, {
+    data: { title },
+  });
   return unwrap<Issue>(res);
 }
 
@@ -156,11 +145,7 @@ export async function seedProjectHierarchy(
   } = {},
 ) {
   const suffix = Date.now().toString(36);
-  const org = await createOrg(
-    request,
-    opts.orgName ?? `Test Org ${suffix}`,
-    `test-org-${suffix}`,
-  );
+  const org = await createOrg(request, opts.orgName ?? `Test Org ${suffix}`, `test-org-${suffix}`);
   const workspace = await createWorkspace(
     request,
     org.id,
@@ -171,7 +156,7 @@ export async function seedProjectHierarchy(
     request,
     workspace.id,
     opts.projectName ?? `Test Project ${suffix}`,
-    opts.projectPrefix ?? "TST",
+    opts.projectPrefix ?? `T${suffix.slice(0, 2).toUpperCase()}`,
   );
 
   return { org, workspace, project };
@@ -181,10 +166,7 @@ export async function seedProjectHierarchy(
  * Delete an organization (and cascade its children).
  * Silently ignores 404 (already deleted).
  */
-export async function cleanup(
-  request: APIRequestContext,
-  orgId: string,
-): Promise<void> {
+export async function cleanup(request: APIRequestContext, orgId: string): Promise<void> {
   const res = await request.delete(`/api/v1/organizations/${orgId}`);
   if (!res.ok() && res.status() !== 404) {
     const body = await res.text();

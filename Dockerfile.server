@@ -50,8 +50,11 @@ RUN pnpm turbo run build --filter=@worknest/server...
 # ---------------------------------------------------------------------------
 FROM node:20-alpine AS runtime
 
-# Install wget for healthcheck + native deps for sharp on alpine
+# Install wget for healthcheck
 RUN apk add --no-cache wget
+
+# Create non-root user
+RUN addgroup -S worknest && adduser -S worknest -G worknest
 
 WORKDIR /app
 
@@ -74,8 +77,9 @@ COPY --from=build /app/packages/db/dist packages/db/dist
 COPY --from=build /app/packages/db/src/migrations packages/db/src/migrations
 COPY --from=build /app/packages/db/drizzle.config.ts packages/db/
 
-# Create uploads directory
-RUN mkdir -p /app/uploads
+# Create uploads directory and set ownership
+RUN mkdir -p /app/uploads \
+    && chown -R worknest:worknest /app /app/uploads
 
 ENV NODE_ENV=production
 ENV PORT=4000
@@ -84,6 +88,8 @@ EXPOSE 4000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/healthz || exit 1
+
+USER worknest
 
 WORKDIR /app/apps/server
 

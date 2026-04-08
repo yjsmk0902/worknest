@@ -1,55 +1,55 @@
-import "dotenv/config";
+import 'dotenv/config';
 
-import Fastify from "fastify";
-import cors from "@fastify/cors";
-import cookie from "@fastify/cookie";
-import multipart from "@fastify/multipart";
-import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
-import websocket from "@fastify/websocket";
-import pino from "pino";
+import cookie from '@fastify/cookie';
+import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import websocket from '@fastify/websocket';
+import Fastify from 'fastify';
+import pino from 'pino';
 
-import { createDb } from "@worknest/db";
-import { runMigrations } from "@worknest/db/migrate";
-import { createAuth } from "./lib/auth";
-import { createRedis } from "./lib/redis";
-import { errorHandler } from "./lib/errors";
-import { globalRateLimit } from "./middleware/rate-limit";
-import { registerSecurityHeaders } from "./middleware/security-headers";
-import { initQueue, startWorker, closeQueue, addJob } from "./lib/queue";
-import { registerAllJobs } from "./jobs/index";
+import { createDb } from '@worknest/db';
+import { runMigrations } from '@worknest/db/migrate';
+import { registerAllJobs } from './jobs/index';
+import { createAuth } from './lib/auth';
+import { errorHandler } from './lib/errors';
+import { addJob, closeQueue, initQueue, startWorker } from './lib/queue';
+import { createRedis } from './lib/redis';
+import { globalRateLimit } from './middleware/rate-limit';
+import { registerSecurityHeaders } from './middleware/security-headers';
 
+import { authRoutes } from './routes/auth';
+import { commentRoutes } from './routes/comments';
+import { cycleRoutes } from './routes/cycles';
+import { favoriteRoutes } from './routes/favorites';
+import { fileRoutes } from './routes/files';
 // Routes
-import { healthRoutes } from "./routes/health";
-import { authRoutes } from "./routes/auth";
-import { profileRoutes } from "./routes/profile";
-import { organizationRoutes } from "./routes/organizations";
-import { workspaceRoutes } from "./routes/workspaces";
-import { projectRoutes } from "./routes/projects";
-import { issueStatusRoutes } from "./routes/issue-statuses";
-import { issueTypeRoutes } from "./routes/issue-types";
-import { labelRoutes } from "./routes/labels";
-import { issueRoutes } from "./routes/issues";
-import { viewRoutes } from "./routes/views";
-import { cycleRoutes } from "./routes/cycles";
-import { wikiSpaceRoutes } from "./routes/wiki-spaces";
-import { wikiPageRoutes } from "./routes/wiki-pages";
-import { fileRoutes } from "./routes/files";
-import { searchRoutes } from "./routes/search";
-import { commentRoutes } from "./routes/comments";
-import { notificationRoutes } from "./routes/notifications";
-import { myWorkRoutes } from "./routes/my-work";
-import { favoriteRoutes } from "./routes/favorites";
+import { healthRoutes } from './routes/health';
+import { issueStatusRoutes } from './routes/issue-statuses';
+import { issueTypeRoutes } from './routes/issue-types';
+import { issueRoutes } from './routes/issues';
+import { labelRoutes } from './routes/labels';
+import { myWorkRoutes } from './routes/my-work';
+import { notificationRoutes } from './routes/notifications';
+import { organizationRoutes } from './routes/organizations';
+import { profileRoutes } from './routes/profile';
+import { projectRoutes } from './routes/projects';
+import { searchRoutes } from './routes/search';
+import { viewRoutes } from './routes/views';
+import { wikiPageRoutes } from './routes/wiki-pages';
+import { wikiSpaceRoutes } from './routes/wiki-spaces';
+import { workspaceRoutes } from './routes/workspaces';
 
 // WebSocket
-import { websocketHandler } from "./websocket/handler";
+import { websocketHandler } from './websocket/handler';
 
 // ── Bootstrap ──────────────────────────────────────────────────────────
 
-const isWorkerOnly = process.env.WORKER_ONLY === "true";
+const isWorkerOnly = process.env.WORKER_ONLY === 'true';
 
 async function main() {
-  const logLevel = process.env.LOG_LEVEL ?? "info";
+  const logLevel = process.env.LOG_LEVEL ?? 'info';
 
   // ── Worker-only mode ─────────────────────────────────────────────
   // Starts DB + Redis + BullMQ worker without the HTTP server.
@@ -59,12 +59,12 @@ async function main() {
     const logger = pino({
       level: logLevel,
       transport:
-        process.env.NODE_ENV !== "production"
-          ? { target: "pino-pretty", options: { colorize: true } }
+        process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { colorize: true } }
           : undefined,
     });
 
-    logger.info("Starting in worker-only mode...");
+    logger.info('Starting in worker-only mode...');
 
     // ── Infrastructure ───────────────────────────────────────────
 
@@ -73,7 +73,7 @@ async function main() {
     try {
       await runMigrations(db);
     } catch (err) {
-      logger.error(err, "Database migration failed — aborting startup.");
+      logger.error(err, 'Database migration failed — aborting startup.');
       process.exit(1);
     }
 
@@ -86,14 +86,10 @@ async function main() {
     startWorker();
 
     // Schedule orphan file cleanup (runs every hour)
-    await addJob("orphan-cleanup", {}, { repeat: { every: 60 * 60 * 1000 } });
+    await addJob('orphan-cleanup', {}, { repeat: { every: 60 * 60 * 1000 } });
 
     // Schedule hard-delete cleanup (runs every 24 hours)
-    await addJob(
-      "hard-delete-cleanup",
-      {},
-      { repeat: { every: 24 * 60 * 60 * 1000 } },
-    );
+    await addJob('hard-delete-cleanup', {}, { repeat: { every: 24 * 60 * 60 * 1000 } });
 
     // ── Graceful Shutdown ────────────────────────────────────────
 
@@ -105,17 +101,20 @@ async function main() {
       process.exit(0);
     };
 
-    process.on("SIGINT", () => shutdown("SIGINT"));
-    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
 
-    logger.info("Worker started (worker-only mode)");
+    // NOTE: In worker-only mode, real-time WebSocket notifications (sendToUser)
+    // are not delivered because there is no HTTP/WebSocket server running.
+    // v1.0: Use Redis Pub/Sub to forward notifications to the API server.
+    logger.info('Worker started (worker-only mode)');
     return;
   }
 
   // ── Full server mode (default) ───────────────────────────────────
 
   const port = Number(process.env.PORT ?? 3000);
-  const host = process.env.HOST ?? "0.0.0.0";
+  const host = process.env.HOST ?? '0.0.0.0';
 
   // ── Fastify Instance ─────────────────────────────────────────────
 
@@ -123,8 +122,8 @@ async function main() {
     logger: {
       level: logLevel,
       transport:
-        process.env.NODE_ENV !== "production"
-          ? { target: "pino-pretty", options: { colorize: true } }
+        process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { colorize: true } }
           : undefined,
     },
   });
@@ -137,8 +136,8 @@ async function main() {
 
   // Parse comma-separated CORS origins; default to localhost in development
   const corsOrigin = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
-    : ["http://localhost:3000"];
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['http://localhost:3000'];
 
   await app.register(cors, {
     origin: corsOrigin,
@@ -153,20 +152,22 @@ async function main() {
     },
   });
 
-  await app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Worknest API",
-        description: "Worknest — project management and knowledge platform",
-        version: "0.1.0",
+  if (process.env.NODE_ENV !== 'production') {
+    await app.register(swagger, {
+      openapi: {
+        info: {
+          title: 'Worknest API',
+          description: 'Worknest — project management and knowledge platform',
+          version: '0.1.0',
+        },
+        servers: [{ url: `http://localhost:${port}` }],
       },
-      servers: [{ url: `http://localhost:${port}` }],
-    },
-  });
+    });
 
-  await app.register(swaggerUi, {
-    routePrefix: "/api/v1/docs",
-  });
+    await app.register(swaggerUi, {
+      routePrefix: '/api/v1/docs',
+    });
+  }
 
   await app.register(websocket);
 
@@ -176,7 +177,7 @@ async function main() {
 
   // ── Global Rate Limit ────────────────────────────────────────────
 
-  app.addHook("preHandler", globalRateLimit);
+  app.addHook('preHandler', globalRateLimit);
 
   // ── Infrastructure ───────────────────────────────────────────────
 
@@ -186,7 +187,7 @@ async function main() {
   try {
     await runMigrations(db);
   } catch (err) {
-    console.error("Database migration failed — aborting startup.", err);
+    console.error('Database migration failed — aborting startup.', err);
     process.exit(1);
   }
 
@@ -199,14 +200,10 @@ async function main() {
   startWorker();
 
   // Schedule orphan file cleanup (runs every hour)
-  await addJob("orphan-cleanup", {}, { repeat: { every: 60 * 60 * 1000 } });
+  await addJob('orphan-cleanup', {}, { repeat: { every: 60 * 60 * 1000 } });
 
   // Schedule hard-delete cleanup (runs every 24 hours)
-  await addJob(
-    "hard-delete-cleanup",
-    {},
-    { repeat: { every: 24 * 60 * 60 * 1000 } },
-  );
+  await addJob('hard-delete-cleanup', {}, { repeat: { every: 24 * 60 * 60 * 1000 } });
 
   // ── Register Routes ──────────────────────────────────────────────
 
@@ -243,17 +240,19 @@ async function main() {
     process.exit(0);
   };
 
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 
   // ── Start ────────────────────────────────────────────────────────
 
   await app.listen({ port, host });
   app.log.info(`Worknest server listening on http://${host}:${port}`);
-  app.log.info(`API docs available at http://${host}:${port}/api/v1/docs`);
+  if (process.env.NODE_ENV !== 'production') {
+    app.log.info(`API docs available at http://${host}:${port}/api/v1/docs`);
+  }
 }
 
 main().catch((err) => {
-  console.error("Failed to start server:", err);
+  console.error('Failed to start server:', err);
   process.exit(1);
 });

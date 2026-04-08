@@ -1,3 +1,6 @@
+import { randomUUID } from 'node:crypto';
+import cookie from '@fastify/cookie';
+import Fastify, { type FastifyInstance } from 'fastify';
 /**
  * Server test setup — helpers for building a testable Fastify app
  * and creating test entities (users, orgs, workspaces, projects, issues, labels).
@@ -6,10 +9,7 @@
  * with the actual route handlers so we can test the full HTTP path
  * (middleware -> handler -> service -> mock DB).
  */
-import { describe, expect, it, vi, beforeEach, afterEach, type Mock } from "vitest";
-import Fastify, { type FastifyInstance } from "fastify";
-import cookie from "@fastify/cookie";
-import { randomUUID } from "node:crypto";
+import { vi } from 'vitest';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -341,7 +341,7 @@ export function createTestUser(overrides: Partial<TestUser> = {}): TestUser {
   const user: TestUser = {
     id: randomUUID(),
     email: `user-${randomUUID().slice(0, 8)}@test.com`,
-    name: "Test User",
+    name: 'Test User',
     avatarUrl: null,
     emailVerified: false,
     createdAt: new Date(),
@@ -352,13 +352,10 @@ export function createTestUser(overrides: Partial<TestUser> = {}): TestUser {
   return user;
 }
 
-export function createTestOrg(
-  ownerId: string,
-  overrides: Partial<TestOrg> = {},
-): TestOrg {
+export function createTestOrg(ownerId: string, overrides: Partial<TestOrg> = {}): TestOrg {
   const org: TestOrg = {
     id: randomUUID(),
-    name: "Test Org",
+    name: 'Test Org',
     slug: `org-${randomUUID().slice(0, 8)}`,
     logo: null,
     createdAt: new Date(),
@@ -373,7 +370,7 @@ export function createTestOrg(
     id: randomUUID(),
     orgId: org.id,
     userId: ownerId,
-    role: "owner",
+    role: 'owner',
     joinedAt: new Date(),
   });
 
@@ -388,7 +385,7 @@ export function createTestWorkspace(
   const ws: TestWorkspace = {
     id: randomUUID(),
     orgId,
-    name: "Test Workspace",
+    name: 'Test Workspace',
     slug: `ws-${randomUUID().slice(0, 8)}`,
     logo: null,
     description: null,
@@ -404,7 +401,7 @@ export function createTestWorkspace(
     id: randomUUID(),
     workspaceId: ws.id,
     userId: creatorId,
-    role: "admin",
+    role: 'admin',
     invitedBy: null,
     joinedAt: new Date(),
   });
@@ -412,11 +409,7 @@ export function createTestWorkspace(
   return ws;
 }
 
-export function addOrgMember(
-  orgId: string,
-  userId: string,
-  role: string,
-): TestOrgMember {
+export function addOrgMember(orgId: string, userId: string, role: string): TestOrgMember {
   const member: TestOrgMember = {
     id: randomUUID(),
     orgId,
@@ -428,11 +421,7 @@ export function addOrgMember(
   return member;
 }
 
-export function addWsMember(
-  workspaceId: string,
-  userId: string,
-  role: string,
-): TestWsMember {
+export function addWsMember(workspaceId: string, userId: string, role: string): TestWsMember {
   const member: TestWsMember = {
     id: randomUUID(),
     workspaceId,
@@ -456,7 +445,7 @@ export function createTestProject(
   const project: TestProject = {
     id: randomUUID(),
     workspaceId: wsId,
-    name: "Test Project",
+    name: 'Test Project',
     description: null,
     prefix: `P${randomUUID().slice(0, 2).toUpperCase()}`,
     iconUrl: null,
@@ -473,17 +462,17 @@ export function createTestProject(
     id: randomUUID(),
     projectId: project.id,
     userId: creatorId,
-    role: "admin",
+    role: 'admin',
     joinedAt: new Date(),
   });
 
   // Seed default statuses
   const defaultStatuses = [
-    { name: "Backlog", color: "#6b7280", sortOrder: 0, category: "backlog", isDefault: true },
-    { name: "Todo", color: "#3b82f6", sortOrder: 1, category: "unstarted", isDefault: false },
-    { name: "In Progress", color: "#f59e0b", sortOrder: 2, category: "started", isDefault: false },
-    { name: "Done", color: "#22c55e", sortOrder: 3, category: "completed", isDefault: false },
-    { name: "Cancelled", color: "#ef4444", sortOrder: 4, category: "cancelled", isDefault: false },
+    { name: 'Backlog', color: '#6b7280', sortOrder: 0, category: 'backlog', isDefault: true },
+    { name: 'Todo', color: '#3b82f6', sortOrder: 1, category: 'unstarted', isDefault: false },
+    { name: 'In Progress', color: '#f59e0b', sortOrder: 2, category: 'started', isDefault: false },
+    { name: 'Done', color: '#22c55e', sortOrder: 3, category: 'completed', isDefault: false },
+    { name: 'Cancelled', color: '#ef4444', sortOrder: 4, category: 'cancelled', isDefault: false },
   ];
   for (const s of defaultStatuses) {
     stores.issueStatuses.push({
@@ -495,10 +484,10 @@ export function createTestProject(
 
   // Seed default types
   const defaultTypes = [
-    { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0, isDefault: true },
-    { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1, isDefault: false },
-    { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2, isDefault: false },
-    { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3, isDefault: false },
+    { name: 'Task', icon: 'check-circle', color: '#3b82f6', sortOrder: 0, isDefault: true },
+    { name: 'Bug', icon: 'bug', color: '#ef4444', sortOrder: 1, isDefault: false },
+    { name: 'Story', icon: 'book-open', color: '#8b5cf6', sortOrder: 2, isDefault: false },
+    { name: 'Epic', icon: 'rocket', color: '#f59e0b', sortOrder: 3, isDefault: false },
   ];
   for (const t of defaultTypes) {
     stores.issueTypes.push({
@@ -547,15 +536,15 @@ export function createTestIssue(
     id: randomUUID(),
     projectId,
     sequenceId: project ? project.issueCounter : 1,
-    title: "Test Issue",
+    title: 'Test Issue',
     description: null,
     descriptionText: null,
     statusId: null,
     typeId: null,
-    priority: "none",
+    priority: 'none',
     parentId: null,
     creatorId,
-    sortOrder: "a0",
+    sortOrder: 'a0',
     dueDate: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -569,15 +558,12 @@ export function createTestIssue(
 /**
  * Create a test label directly in the store.
  */
-export function createTestLabel(
-  projectId: string,
-  overrides: Partial<TestLabel> = {},
-): TestLabel {
+export function createTestLabel(projectId: string, overrides: Partial<TestLabel> = {}): TestLabel {
   const label: TestLabel = {
     id: randomUUID(),
     projectId,
-    name: "Test Label",
-    color: "#000000",
+    name: 'Test Label',
+    color: '#000000',
     description: null,
     createdAt: new Date(),
     ...overrides,
@@ -597,12 +583,12 @@ export function createTestView(
   const view: TestView = {
     id: randomUUID(),
     projectId,
-    name: "Test View",
+    name: 'Test View',
     createdBy,
     filters: [],
     sort: null,
     groupBy: null,
-    type: "list",
+    type: 'list',
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -614,18 +600,15 @@ export function createTestView(
 /**
  * Create a test cycle directly in the store.
  */
-export function createTestCycle(
-  projectId: string,
-  overrides: Partial<TestCycle> = {},
-): TestCycle {
+export function createTestCycle(projectId: string, overrides: Partial<TestCycle> = {}): TestCycle {
   const cycle: TestCycle = {
     id: randomUUID(),
     projectId,
-    name: "Test Cycle",
+    name: 'Test Cycle',
     description: null,
     startDate: null,
     endDate: null,
-    status: "draft",
+    status: 'draft',
     createdBy: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -666,7 +649,7 @@ export function createTestWikiSpace(
   const space: TestWikiSpace = {
     id: randomUUID(),
     workspaceId,
-    name: "Test Wiki Space",
+    name: 'Test Wiki Space',
     description: null,
     slug: `wiki-${randomUUID().slice(0, 8)}`,
     createdBy: null,
@@ -684,7 +667,7 @@ export function createTestWikiSpace(
 export function addWikiSpaceMember(
   spaceId: string,
   userId: string,
-  role = "editor",
+  role = 'editor',
 ): TestWikiSpaceMember {
   const member: TestWikiSpaceMember = {
     id: randomUUID(),
@@ -707,13 +690,13 @@ export function createTestWikiPage(
   const page: TestWikiPage = {
     id: randomUUID(),
     wikiSpaceId: spaceId,
-    title: "Test Page",
+    title: 'Test Page',
     slug: `page-${randomUUID().slice(0, 8)}`,
     content: null,
-    contentFormat: "json",
+    contentFormat: 'json',
     contentText: null,
     parentId: null,
-    sortOrder: "a0",
+    sortOrder: 'a0',
     createdBy: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -727,16 +710,14 @@ export function createTestWikiPage(
 /**
  * Create a test file directly in the store.
  */
-export function createTestFile(
-  overrides: Partial<TestFile> = {},
-): TestFile {
+export function createTestFile(overrides: Partial<TestFile> = {}): TestFile {
   const file: TestFile = {
     id: randomUUID(),
     issueId: null,
     pageId: null,
-    name: "test-file.txt",
+    name: 'test-file.txt',
     path: `/tmp/uploads/${randomUUID()}.txt`,
-    mimeType: "text/plain",
+    mimeType: 'text/plain',
     size: 1024,
     uploadedBy: null,
     createdAt: new Date(),
@@ -749,14 +730,15 @@ export function createTestFile(
 /**
  * Create a test comment directly in the store.
  */
-export function createTestComment(
-  overrides: Partial<TestComment> = {},
-): TestComment {
+export function createTestComment(overrides: Partial<TestComment> = {}): TestComment {
   const comment: TestComment = {
     id: randomUUID(),
     issueId: null,
     pageId: null,
-    content: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Test comment" }] }] },
+    content: {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Test comment' }] }],
+    },
     parentId: null,
     authorId: null,
     resolvedAt: null,
@@ -772,14 +754,12 @@ export function createTestComment(
 /**
  * Create a test reaction directly in the store.
  */
-export function createTestReaction(
-  overrides: Partial<TestReaction> = {},
-): TestReaction {
+export function createTestReaction(overrides: Partial<TestReaction> = {}): TestReaction {
   const reaction: TestReaction = {
     id: randomUUID(),
-    commentId: "",
-    userId: "",
-    emoji: "👍",
+    commentId: '',
+    userId: '',
+    emoji: '👍',
     createdAt: new Date(),
     ...overrides,
   };
@@ -795,11 +775,11 @@ export function createTestNotification(
 ): TestNotification {
   const notification: TestNotification = {
     id: randomUUID(),
-    userId: "",
+    userId: '',
     issueId: null,
     pageId: null,
-    type: "commented",
-    message: "Test notification",
+    type: 'commented',
+    message: 'Test notification',
     readAt: null,
     createdAt: new Date(),
     ...overrides,
@@ -811,17 +791,15 @@ export function createTestNotification(
 /**
  * Create a test favorite directly in the store.
  */
-export function createTestFavorite(
-  overrides: Partial<TestFavorite> = {},
-): TestFavorite {
+export function createTestFavorite(overrides: Partial<TestFavorite> = {}): TestFavorite {
   const favorite: TestFavorite = {
     id: randomUUID(),
-    userId: "",
+    userId: '',
     projectId: null,
     issueId: null,
     pageId: null,
     spaceId: null,
-    sortOrder: "a0",
+    sortOrder: 'a0',
     createdAt: new Date(),
     ...overrides,
   };
@@ -880,58 +858,62 @@ export function cleanup(): void {
 export function createMockAuth() {
   return {
     api: {
-      getSession: vi.fn(async ({ headers }: { headers: Headers | Record<string, string | undefined> }) => {
-        let cookieValue: string | undefined | null;
+      getSession: vi.fn(
+        async ({ headers }: { headers: Headers | Record<string, string | undefined> }) => {
+          let cookieValue: string | undefined | null;
 
-        if (headers instanceof Headers) {
-          cookieValue = headers.get("cookie");
-        } else {
-          cookieValue = headers?.cookie as string | undefined;
-        }
+          if (headers instanceof Headers) {
+            cookieValue = headers.get('cookie');
+          } else {
+            cookieValue = headers?.cookie as string | undefined;
+          }
 
-        if (!cookieValue) return null;
+          if (!cookieValue) return null;
 
-        // Extract session token from cookie string
-        const match = cookieValue.match(/worknest\.session_token=([^;]+)/);
-        if (!match) return null;
+          // Extract session token from cookie string
+          const match = cookieValue.match(/worknest\.session_token=([^;]+)/);
+          if (!match) return null;
 
-        const sessionId = match[1];
-        const user = stores.sessions.get(sessionId!);
-        if (!user) return null;
+          const sessionId = match[1];
+          const user = stores.sessions.get(sessionId!);
+          if (!user) return null;
 
-        return {
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-          session: { id: sessionId },
-        };
-      }),
+          return {
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            },
+            session: { id: sessionId },
+          };
+        },
+      ),
 
-      signUpEmail: vi.fn(async ({ body }: { body: { email: string; password: string; name: string } }) => {
-        const existing = stores.users.find((u) => u.email === body.email);
-        if (existing) return null;
+      signUpEmail: vi.fn(
+        async ({ body }: { body: { email: string; password: string; name: string } }) => {
+          const existing = stores.users.find((u) => u.email === body.email);
+          if (existing) return null;
 
-        const user = createTestUser({
-          email: body.email,
-          name: body.name,
-        });
+          const user = createTestUser({
+            email: body.email,
+            name: body.name,
+          });
 
-        const sessionId = randomUUID();
-        stores.sessions.set(sessionId, user);
+          const sessionId = randomUUID();
+          stores.sessions.set(sessionId, user);
 
-        return {
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          },
-          headers: new Headers({
-            "set-cookie": `worknest.session_token=${sessionId}; Path=/; HttpOnly`,
-          }),
-        };
-      }),
+          return {
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            },
+            headers: new Headers({
+              'set-cookie': `worknest.session_token=${sessionId}; Path=/; HttpOnly`,
+            }),
+          };
+        },
+      ),
 
       signInEmail: vi.fn(async ({ body }: { body: { email: string; password: string } }) => {
         const user = stores.users.find((u) => u.email === body.email);
@@ -948,26 +930,28 @@ export function createMockAuth() {
             name: user.name,
           },
           headers: new Headers({
-            "set-cookie": `worknest.session_token=${sessionId}; Path=/; HttpOnly`,
+            'set-cookie': `worknest.session_token=${sessionId}; Path=/; HttpOnly`,
           }),
         };
       }),
 
-      signOut: vi.fn(async ({ headers }: { headers: Headers | Record<string, string | undefined> }) => {
-        let cookieValue: string | undefined | null;
-        if (headers instanceof Headers) {
-          cookieValue = headers.get("cookie");
-        } else {
-          cookieValue = headers?.cookie as string | undefined;
-        }
-
-        if (cookieValue) {
-          const match = cookieValue.match(/worknest\.session_token=([^;]+)/);
-          if (match?.[1]) {
-            stores.sessions.delete(match[1]);
+      signOut: vi.fn(
+        async ({ headers }: { headers: Headers | Record<string, string | undefined> }) => {
+          let cookieValue: string | undefined | null;
+          if (headers instanceof Headers) {
+            cookieValue = headers.get('cookie');
+          } else {
+            cookieValue = headers?.cookie as string | undefined;
           }
-        }
-      }),
+
+          if (cookieValue) {
+            const match = cookieValue.match(/worknest\.session_token=([^;]+)/);
+            if (match?.[1]) {
+              stores.sessions.delete(match[1]);
+            }
+          }
+        },
+      ),
     },
   };
 }
@@ -981,10 +965,10 @@ export function createMockAuth() {
 function resolveTableName(table: unknown): string | null {
   // Drizzle pgTable objects have a Symbol property that stores the table name,
   // but the simplest way is to check for a known shape.
-  if (table && typeof table === "object") {
+  if (table && typeof table === 'object') {
     // Drizzle tables have a [Symbol.for("drizzle:Name")] property
-    const drizzleNameSym = Symbol.for("drizzle:Name");
-    const entitySym = Symbol.for("drizzle:IsDrizzleEntity");
+    const drizzleNameSym = Symbol.for('drizzle:Name');
+    const _entitySym = Symbol.for('drizzle:IsDrizzleEntity');
     // Also check for a `_` property with `name`
     const t = table as Record<string | symbol, unknown>;
     if (t[drizzleNameSym]) {
@@ -994,7 +978,7 @@ function resolveTableName(table: unknown): string | null {
     const internal = (t as { _?: { name?: string } })?._;
     if (internal?.name) return internal.name;
     // Fallback: check Symbol.for("drizzle:Name") on the Table config
-    const tableConfig = Symbol.for("drizzle:BaseName");
+    const tableConfig = Symbol.for('drizzle:BaseName');
     if (t[tableConfig]) return t[tableConfig] as string;
   }
   return null;
@@ -1002,6 +986,10 @@ function resolveTableName(table: unknown): string | null {
 
 function getStoreForTable(tableName: string): unknown[] | null {
   const map: Record<string, unknown[]> = {
+    organizations: stores.organizations,
+    org_members: stores.orgMembers,
+    workspaces: stores.workspaces,
+    workspace_members: stores.workspaceMembers,
     projects: stores.projects,
     project_members: stores.projectMembers,
     issue_statuses: stores.issueStatuses,
@@ -1047,16 +1035,16 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       descriptionText: null,
       statusId: null,
       typeId: null,
-      priority: "none",
+      priority: 'none',
       parentId: null,
       creatorId: null,
-      sortOrder: "a0",
+      sortOrder: 'a0',
       dueDate: null,
       deletedAt: null,
     },
     issue_statuses: {
       sortOrder: 0,
-      category: "backlog",
+      category: 'backlog',
       isDefault: false,
     },
     issue_types: {
@@ -1092,7 +1080,7 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       description: null,
       startDate: null,
       endDate: null,
-      status: "draft",
+      status: 'draft',
       createdBy: null,
     },
     cycle_issues: {
@@ -1105,14 +1093,14 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       createdBy: null,
     },
     wiki_space_members: {
-      role: "editor",
+      role: 'editor',
     },
     wiki_pages: {
       content: null,
-      contentFormat: "json",
+      contentFormat: 'json',
       contentText: null,
       parentId: null,
-      sortOrder: "a0",
+      sortOrder: 'a0',
       createdBy: null,
       deletedAt: null,
     },
@@ -1141,7 +1129,7 @@ function getTableDefaults(tableName: string): Record<string, unknown> {
       issueId: null,
       pageId: null,
       spaceId: null,
-      sortOrder: "a0",
+      sortOrder: 'a0',
     },
   };
   return defaults[tableName] ?? {};
@@ -1158,9 +1146,9 @@ function snakeToCamel(s: string): string {
  * Extract column name from a Drizzle column reference.
  */
 function getColumnName(col: unknown): string | null {
-  if (col && typeof col === "object") {
+  if (col && typeof col === 'object') {
     const c = col as Record<string, unknown>;
-    if (typeof c.name === "string") return c.name;
+    if (typeof c.name === 'string') return c.name;
   }
   return null;
 }
@@ -1176,12 +1164,12 @@ function getColumnName(col: unknown): string | null {
  */
 function evaluateCondition(condition: unknown, row: Record<string, unknown>): boolean {
   if (!condition) return true;
-  if (typeof condition !== "object") return true;
+  if (typeof condition !== 'object') return true;
 
   const cond = condition as Record<string, unknown>;
 
   // BinaryOperator (eq, ne, lt, ilike)
-  if (cond.type === "binary") {
+  if (cond.type === 'binary') {
     const left = cond.left as Record<string, unknown>;
     const right = cond.right as unknown;
     const op = cond.operator as string;
@@ -1192,35 +1180,35 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     const rightValue = extractValue(right);
 
     switch (op) {
-      case "=":
+      case '=':
         return value === rightValue;
-      case "!=":
-      case "<>":
+      case '!=':
+      case '<>':
         return value !== rightValue;
-      case "<":
+      case '<':
         if (value instanceof Date && rightValue instanceof Date) {
           return value.getTime() < rightValue.getTime();
         }
         return (value as number) < (rightValue as number);
-      case ">":
+      case '>':
         if (value instanceof Date && rightValue instanceof Date) {
           return value.getTime() > rightValue.getTime();
         }
         return (value as number) > (rightValue as number);
-      case ">=":
+      case '>=':
         if (value instanceof Date && rightValue instanceof Date) {
           return value.getTime() >= rightValue.getTime();
         }
         return (value as number) >= (rightValue as number);
-      case "<=":
+      case '<=':
         if (value instanceof Date && rightValue instanceof Date) {
           return value.getTime() <= rightValue.getTime();
         }
         return (value as number) <= (rightValue as number);
-      case "ilike": {
-        if (typeof value !== "string" || typeof rightValue !== "string") return false;
-        const pattern = escapeRegex(rightValue).replace(/%/g, ".*");
-        return new RegExp(pattern, "i").test(value);
+      case 'ilike': {
+        if (typeof value !== 'string' || typeof rightValue !== 'string') return false;
+        const pattern = escapeRegex(rightValue).replace(/%/g, '.*');
+        return new RegExp(pattern, 'i').test(value);
       }
       default:
         return true;
@@ -1228,26 +1216,26 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
   }
 
   // Unary (isNull, isNotNull, not)
-  if (cond.type === "unary") {
+  if (cond.type === 'unary') {
     const operand = cond.operand as Record<string, unknown>;
     const op = cond.operator as string;
 
     switch (op) {
-      case "is null": {
+      case 'is null': {
         const colName = getColumnName(operand);
         if (!colName) return true;
         const fieldName = snakeToCamel(colName);
         const value = row[fieldName];
         return value === null || value === undefined;
       }
-      case "is not null": {
+      case 'is not null': {
         const colName = getColumnName(operand);
         if (!colName) return true;
         const fieldName = snakeToCamel(colName);
         const value = row[fieldName];
         return value !== null && value !== undefined;
       }
-      case "not":
+      case 'not':
         return !evaluateCondition(operand, row);
       default:
         return true;
@@ -1259,14 +1247,14 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
     const conditions = (cond as { conditions: unknown[] }).conditions;
     // Detect Or vs And by checking for an `operator` hint
     const op = (cond as { operator?: string }).operator;
-    if (op === "or") {
+    if (op === 'or') {
       return conditions.some((c) => evaluateCondition(c, row));
     }
     return conditions.every((c) => evaluateCondition(c, row));
   }
 
   // InArray
-  if (cond.type === "in_array") {
+  if (cond.type === 'in_array') {
     const left = cond.left as Record<string, unknown>;
     const values = cond.values as unknown[];
     const colName = getColumnName(left);
@@ -1277,7 +1265,7 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
   }
 
   // NotInArray
-  if (cond.type === "not_in_array") {
+  if (cond.type === 'not_in_array') {
     const left = cond.left as Record<string, unknown>;
     const values = cond.values as unknown[];
     const colName = getColumnName(left);
@@ -1303,7 +1291,7 @@ function evaluateCondition(condition: unknown, row: Record<string, unknown>): bo
  * inside a RegExp.
  */
 function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -1314,7 +1302,7 @@ function escapeRegex(s: string): string {
  */
 function extractLogicalConditions(
   chunks: unknown[],
-): { mode: "and" | "or"; conditions: unknown[] } | null {
+): { mode: 'and' | 'or'; conditions: unknown[] } | null {
   // and/or with multiple conditions: [StringChunk("("), SQL(joined), StringChunk(")")]
   // and/or with a single condition:  [singleCondition]
   if (chunks.length === 1) {
@@ -1327,14 +1315,14 @@ function extractLogicalConditions(
   if (!innerChunks) return null;
 
   // Determine mode by scanning for StringChunk separators
-  let mode: "and" | "or" = "and";
+  let mode: 'and' | 'or' = 'and';
   const conditions: unknown[] = [];
 
   for (const chunk of innerChunks) {
     if (isStringChunk(chunk)) {
       const text = getStringChunkValue(chunk);
-      if (text === " and ") mode = "and";
-      else if (text === " or ") mode = "or";
+      if (text === ' and ') mode = 'and';
+      else if (text === ' or ') mode = 'or';
       // Skip StringChunk separators (including parens)
       continue;
     }
@@ -1349,14 +1337,14 @@ function extractLogicalConditions(
 
 /** Check if value is a Drizzle StringChunk. */
 function isStringChunk(v: unknown): boolean {
-  if (!v || typeof v !== "object") return false;
-  const entitySym = Symbol.for("drizzle:entityKind");
+  if (!v || typeof v !== 'object') return false;
+  const entitySym = Symbol.for('drizzle:entityKind');
   const obj = v as Record<string | symbol, unknown>;
-  if (obj[entitySym] === "StringChunk") return true;
+  if (obj[entitySym] === 'StringChunk') return true;
   // Fallback: duck-type check (string[] value, no queryChunks)
   return (
     Array.isArray(obj.value) &&
-    (obj.value as unknown[]).every((x: unknown) => typeof x === "string") &&
+    (obj.value as unknown[]).every((x: unknown) => typeof x === 'string') &&
     !Array.isArray((obj as { queryChunks?: unknown }).queryChunks)
   );
 }
@@ -1364,13 +1352,13 @@ function isStringChunk(v: unknown): boolean {
 /** Get the joined string value from a StringChunk. */
 function getStringChunkValue(v: unknown): string {
   const obj = v as { value: string[] };
-  return obj.value.join("");
+  return obj.value.join('');
 }
 
 /** Find the inner queryChunks of a nested SQL object (e.g. from sql.join). */
 function findInnerChunks(chunks: unknown[]): unknown[] | null {
   for (const chunk of chunks) {
-    if (chunk && typeof chunk === "object" && !isStringChunk(chunk)) {
+    if (chunk && typeof chunk === 'object' && !isStringChunk(chunk)) {
       const inner = (chunk as { queryChunks?: unknown[] }).queryChunks;
       if (Array.isArray(inner)) {
         return inner;
@@ -1390,7 +1378,7 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
   const significant = chunks.filter((c) => {
     if (isStringChunk(c)) {
       const text = getStringChunkValue(c);
-      return text.trim() !== "";
+      return text.trim() !== '';
     }
     return true;
   });
@@ -1398,7 +1386,7 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
   // ── Logical operators (and / or) ───────────────────────────────────
   const logical = extractLogicalConditions(chunks);
   if (logical) {
-    if (logical.mode === "or") {
+    if (logical.mode === 'or') {
       return logical.conditions.some((c) => evaluateCondition(c, row));
     }
     return logical.conditions.every((c) => evaluateCondition(c, row));
@@ -1423,15 +1411,15 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
       if (colName) {
         const fieldName = snakeToCamel(colName);
         const value = row[fieldName];
-        if (op === "is null") return value === null || value === undefined;
-        if (op === "is not null") return value !== null && value !== undefined;
+        if (op === 'is null') return value === null || value === undefined;
+        if (op === 'is not null') return value !== null && value !== undefined;
       }
     }
 
     // not <condition>: StringChunk("not ") followed by a sub-condition
     if (isStringChunk(first)) {
       const text = getStringChunkValue(first).trim().toLowerCase();
-      if (text === "not") {
+      if (text === 'not') {
         return !evaluateCondition(second, row);
       }
     }
@@ -1447,11 +1435,11 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
         const value = row[fieldName];
 
         // Handle inArray: column in (values...)
-        if (op === "in" && right && typeof right === "object" && Array.isArray(right)) {
+        if (op === 'in' && right && typeof right === 'object' && Array.isArray(right)) {
           const vals = (right as unknown[]).map(extractValue);
           return vals.includes(value);
         }
-        if (op === "not in" && right && typeof right === "object" && Array.isArray(right)) {
+        if (op === 'not in' && right && typeof right === 'object' && Array.isArray(right)) {
           const vals = (right as unknown[]).map(extractValue);
           return !vals.includes(value);
         }
@@ -1459,35 +1447,35 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
         const rightValue = extractValue(right);
 
         switch (op) {
-          case "=":
+          case '=':
             return value === rightValue;
-          case "!=":
-          case "<>":
+          case '!=':
+          case '<>':
             return value !== rightValue;
-          case "<":
+          case '<':
             if (value instanceof Date && rightValue instanceof Date) {
               return value.getTime() < rightValue.getTime();
             }
             return (value as number) < (rightValue as number);
-          case ">":
+          case '>':
             if (value instanceof Date && rightValue instanceof Date) {
               return value.getTime() > rightValue.getTime();
             }
             return (value as number) > (rightValue as number);
-          case ">=":
+          case '>=':
             if (value instanceof Date && rightValue instanceof Date) {
               return value.getTime() >= rightValue.getTime();
             }
             return (value as number) >= (rightValue as number);
-          case "<=":
+          case '<=':
             if (value instanceof Date && rightValue instanceof Date) {
               return value.getTime() <= rightValue.getTime();
             }
             return (value as number) <= (rightValue as number);
-          case "ilike": {
-            if (typeof value !== "string" || typeof rightValue !== "string") return false;
-            const escaped = escapeRegex(rightValue).replace(/%/g, ".*");
-            return new RegExp(escaped, "i").test(value);
+          case 'ilike': {
+            if (typeof value !== 'string' || typeof rightValue !== 'string') return false;
+            const escaped = escapeRegex(rightValue).replace(/%/g, '.*');
+            return new RegExp(escaped, 'i').test(value);
           }
           default:
             return true;
@@ -1504,27 +1492,27 @@ function evaluateQueryChunks(chunks: unknown[], row: Record<string, unknown>): b
  * Drizzle SQL objects can be detected by their internal symbols or properties.
  */
 function isSqlExpression(val: unknown): boolean {
-  if (!val || typeof val !== "object") return false;
+  if (!val || typeof val !== 'object') return false;
   const v = val as Record<string | symbol, unknown>;
   // Check for Drizzle SQL type marker
-  if (v.type === "sql") return true;
+  if (v.type === 'sql') return true;
   // Check for queryChunks property (Drizzle SQL tagged template)
   if (Array.isArray((v as { queryChunks?: unknown }).queryChunks)) return true;
   // Check for Drizzle entity symbol
-  const entitySym = Symbol.for("drizzle:IsDrizzleEntity");
+  const entitySym = Symbol.for('drizzle:IsDrizzleEntity');
   if (v[entitySym] === true) {
     // It's a Drizzle entity but not a column/table -- likely SQL expression
-    const nameSym = Symbol.for("drizzle:Name");
+    const nameSym = Symbol.for('drizzle:Name');
     if (!v[nameSym]) return true;
   }
   return false;
 }
 
 function extractValue(val: unknown): unknown {
-  if (val && typeof val === "object") {
+  if (val && typeof val === 'object') {
     const v = val as Record<string, unknown>;
     // Drizzle wraps literal values in a Param node
-    if (v.type === "param" && v.value !== undefined) {
+    if (v.type === 'param' && v.value !== undefined) {
       return v.value;
     }
     if (v.value !== undefined && !v.type) {
@@ -1539,19 +1527,19 @@ function extractValue(val: unknown): unknown {
  * Handles both simple column selections and nested object selections.
  */
 function projectRow(row: Record<string, unknown>, selection: unknown): Record<string, unknown> {
-  if (!selection || typeof selection !== "object") return { ...row };
+  if (!selection || typeof selection !== 'object') return { ...row };
 
   const result: Record<string, unknown> = {};
   const sel = selection as Record<string, unknown>;
 
   for (const [key, colOrObj] of Object.entries(sel)) {
-    if (colOrObj && typeof colOrObj === "object") {
+    if (colOrObj && typeof colOrObj === 'object') {
       const col = colOrObj as Record<string, unknown>;
       const colName = getColumnName(col);
       if (colName) {
         // Simple column reference
         result[key] = row[snakeToCamel(colName)];
-      } else if (col.type === "sql") {
+      } else if (col.type === 'sql') {
         // SQL expression (e.g., counter + 1) -- handle incrementing
         result[key] = row[key];
       } else {
@@ -1595,7 +1583,7 @@ export function createInMemoryDb(): unknown {
     chain.innerJoin = (table: unknown, condition: unknown) => {
       const name = resolveTableName(table);
       if (name) {
-        joins.push({ tableName: name, joinType: "inner", condition });
+        joins.push({ tableName: name, joinType: 'inner', condition });
       }
       return chain;
     };
@@ -1603,7 +1591,7 @@ export function createInMemoryDb(): unknown {
     chain.leftJoin = (table: unknown, condition: unknown) => {
       const name = resolveTableName(table);
       if (name) {
-        joins.push({ tableName: name, joinType: "left", condition });
+        joins.push({ tableName: name, joinType: 'left', condition });
       }
       return chain;
     };
@@ -1642,7 +1630,7 @@ export function createInMemoryDb(): unknown {
         );
 
         // Detect aggregate selection (e.g. select({ count: count() }))
-        if (selection && typeof selection === "object" && !joins.length) {
+        if (selection && typeof selection === 'object' && !joins.length) {
           const sel = selection as Record<string, unknown>;
           const hasAggregate = Object.values(sel).some((v) => isSqlExpression(v));
           if (hasAggregate) {
@@ -1667,9 +1655,7 @@ export function createInMemoryDb(): unknown {
           );
         } else if (selection) {
           // Project columns if a specific selection was given
-          results = results.map((row) =>
-            projectRow(row as Record<string, unknown>, selection),
-          );
+          results = results.map((row) => projectRow(row as Record<string, unknown>, selection));
         }
 
         if (_limit !== null) {
@@ -1684,7 +1670,7 @@ export function createInMemoryDb(): unknown {
     };
 
     // Make chain thenable
-    (chain as { [Symbol.toStringTag]?: string })[Symbol.toStringTag] = "Promise";
+    (chain as { [Symbol.toStringTag]?: string })[Symbol.toStringTag] = 'Promise';
 
     return chain;
   }
@@ -1694,7 +1680,7 @@ export function createInMemoryDb(): unknown {
    * the column's `table` property for a table name symbol.
    */
   function getColumnTableName(col: unknown): string | null {
-    if (col && typeof col === "object") {
+    if (col && typeof col === 'object') {
       const c = col as Record<string, unknown>;
       if (c.table) {
         return resolveTableName(c.table);
@@ -1738,7 +1724,7 @@ export function createInMemoryDb(): unknown {
           for (const jr of matchingJoinRows) {
             enriched.push({ ...row, [join.tableName]: { ...jr } });
           }
-        } else if (join.joinType === "left") {
+        } else if (join.joinType === 'left') {
           enriched.push({ ...row, [join.tableName]: {} });
         }
         // inner join: skip row if no matches
@@ -1768,10 +1754,10 @@ export function createInMemoryDb(): unknown {
     leftRow: Record<string, unknown>,
     rightRow: Record<string, unknown>,
   ): boolean {
-    if (!condition || typeof condition !== "object") return true;
+    if (!condition || typeof condition !== 'object') return true;
     const cond = condition as Record<string, unknown>;
 
-    if (cond.type === "binary" && cond.operator === "=") {
+    if (cond.type === 'binary' && cond.operator === '=') {
       const left = cond.left as Record<string, unknown>;
       const right = cond.right as Record<string, unknown>;
       const leftCol = getColumnName(left);
@@ -1808,21 +1794,21 @@ export function createInMemoryDb(): unknown {
     joinedRow: JoinedRow,
     selection: unknown,
   ): Record<string, unknown> {
-    if (!selection || typeof selection !== "object") return flattenJoinedRow(joinedRow);
+    if (!selection || typeof selection !== 'object') return flattenJoinedRow(joinedRow);
 
     const result: Record<string, unknown> = {};
     const sel = selection as Record<string, unknown>;
     const flatRow = flattenJoinedRow(joinedRow);
 
     for (const [key, colOrObj] of Object.entries(sel)) {
-      if (colOrObj && typeof colOrObj === "object") {
+      if (colOrObj && typeof colOrObj === 'object') {
         const col = colOrObj as Record<string, unknown>;
         const colName = getColumnName(col);
         if (colName) {
           // Simple column reference - resolve from the right table
           const colTable = getColumnTableName(col);
           if (colTable && joinedRow[colTable]) {
-            result[key] = joinedRow[colTable]![snakeToCamel(colName)];
+            result[key] = joinedRow[colTable]?.[snakeToCamel(colName)];
           } else {
             result[key] = flatRow[snakeToCamel(colName)];
           }
@@ -1842,7 +1828,7 @@ export function createInMemoryDb(): unknown {
                 const ncTable = getColumnTableName(nv);
                 let val: unknown;
                 if (ncTable && joinedRow[ncTable]) {
-                  val = joinedRow[ncTable]![snakeToCamel(nc)];
+                  val = joinedRow[ncTable]?.[snakeToCamel(nc)];
                 } else {
                   val = flatRow[snakeToCamel(nc)];
                 }
@@ -1984,9 +1970,7 @@ export function createInMemoryDb(): unknown {
 
           if (returnSelection) {
             return Promise.resolve(
-              updated.map((row) =>
-                projectRow(row as Record<string, unknown>, returnSelection),
-              ),
+              updated.map((row) => projectRow(row as Record<string, unknown>, returnSelection)),
             );
           }
 
@@ -2105,7 +2089,10 @@ export function createMockDb(): unknown {
  * Callers pass in route registration functions.
  */
 export async function buildTestApp(
-  registerRoutes: (app: FastifyInstance, opts: { auth: ReturnType<typeof createMockAuth>; db: unknown }) => Promise<void>,
+  registerRoutes: (
+    app: FastifyInstance,
+    opts: { auth: ReturnType<typeof createMockAuth>; db: unknown },
+  ) => Promise<void>,
   useInMemoryDb = false,
 ): Promise<{ app: FastifyInstance; auth: ReturnType<typeof createMockAuth>; db: unknown }> {
   const app = Fastify({ logger: false });
@@ -2116,7 +2103,7 @@ export async function buildTestApp(
   const db = useInMemoryDb ? createInMemoryDb() : createMockDb();
 
   // Import and set error handler
-  const { errorHandler } = await import("../src/lib/errors");
+  const { errorHandler } = await import('../src/lib/errors');
   app.setErrorHandler(errorHandler);
 
   await registerRoutes(app, { auth, db });

@@ -43,6 +43,13 @@
       "when": 1743980400000,
       "tag": "0005_cp6_common",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744066800000,
+      "tag": "0006_cp7_cleanup_indexes",
+      "breakpoints": true
     }
   ]
 }

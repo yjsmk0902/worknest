@@ -1,13 +1,11 @@
-import type { Job } from "bullmq";
-import { and, isNotNull, lt, inArray } from "drizzle-orm";
-import { issues, wikiPages, comments, files, type Database } from "@worknest/db";
-import * as fs from "node:fs";
+import * as fs from 'node:fs';
+import { type Database, comments, files, issues, wikiPages } from '@worknest/db';
+import type { Job } from 'bullmq';
+import { and, inArray, isNotNull, lt } from 'drizzle-orm';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
-interface HardDeleteCleanupJobData {
-  // No data needed — runs on schedule
-}
+type HardDeleteCleanupJobData = Record<string, never>;
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -32,10 +30,7 @@ function safeUnlink(filePath: string): void {
 /**
  * Collect file paths for a batch of issue IDs and delete them from disk.
  */
-async function deleteIssueFiles(
-  db: Database,
-  issueIds: string[],
-): Promise<void> {
+async function deleteIssueFiles(db: Database, issueIds: string[]): Promise<void> {
   const attachedFiles = await db
     .select({ path: files.path })
     .from(files)
@@ -44,7 +39,7 @@ async function deleteIssueFiles(
   for (const file of attachedFiles) {
     safeUnlink(file.path);
     // Also try to delete thumbnail
-    const thumbnailPath = file.path.replace(/(\.[^.]+)$/, ".thumb.webp");
+    const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '.thumb.webp');
     safeUnlink(thumbnailPath);
   }
 }
@@ -52,10 +47,7 @@ async function deleteIssueFiles(
 /**
  * Collect file paths for a batch of wiki page IDs and delete them from disk.
  */
-async function deletePageFiles(
-  db: Database,
-  pageIds: string[],
-): Promise<void> {
+async function deletePageFiles(db: Database, pageIds: string[]): Promise<void> {
   const attachedFiles = await db
     .select({ path: files.path })
     .from(files)
@@ -63,7 +55,7 @@ async function deletePageFiles(
 
   for (const file of attachedFiles) {
     safeUnlink(file.path);
-    const thumbnailPath = file.path.replace(/(\.[^.]+)$/, ".thumb.webp");
+    const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '.thumb.webp');
     safeUnlink(thumbnailPath);
   }
 }
@@ -99,9 +91,7 @@ export function createHardDeleteCleanupProcessor(db: Database) {
       const batch = await db
         .select({ id: issues.id })
         .from(issues)
-        .where(
-          and(isNotNull(issues.deletedAt), lt(issues.deletedAt, cutoff)),
-        )
+        .where(and(isNotNull(issues.deletedAt), lt(issues.deletedAt, cutoff)))
         .limit(BATCH_SIZE);
 
       if (batch.length === 0) {
@@ -132,12 +122,7 @@ export function createHardDeleteCleanupProcessor(db: Database) {
       const batch = await db
         .select({ id: wikiPages.id })
         .from(wikiPages)
-        .where(
-          and(
-            isNotNull(wikiPages.deletedAt),
-            lt(wikiPages.deletedAt, cutoff),
-          ),
-        )
+        .where(and(isNotNull(wikiPages.deletedAt), lt(wikiPages.deletedAt, cutoff)))
         .limit(BATCH_SIZE);
 
       if (batch.length === 0) {
@@ -167,12 +152,7 @@ export function createHardDeleteCleanupProcessor(db: Database) {
       const batch = await db
         .select({ id: comments.id })
         .from(comments)
-        .where(
-          and(
-            isNotNull(comments.deletedAt),
-            lt(comments.deletedAt, cutoff),
-          ),
-        )
+        .where(and(isNotNull(comments.deletedAt), lt(comments.deletedAt, cutoff)))
         .limit(BATCH_SIZE);
 
       if (batch.length === 0) {
@@ -193,6 +173,9 @@ export function createHardDeleteCleanupProcessor(db: Database) {
     }
 
     // ── Log summary ────────────────────────────────────────────────
+    // TODO(CP-7): console.log is used here because BullMQ job processors
+    // don't have access to the Fastify logger. Consider injecting a pino
+    // logger instance when refactoring the job system.
 
     if (totalIssues > 0 || totalPages > 0 || totalComments > 0) {
       console.log(

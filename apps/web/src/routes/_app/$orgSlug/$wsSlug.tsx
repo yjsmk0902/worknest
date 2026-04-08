@@ -1,12 +1,10 @@
-import { useEffect } from 'react';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { apiClient } from '../../../lib/api-client';
-import {
-  WorkspaceContext,
-  type WorkspaceContextValue,
-} from '../../../contexts/workspace-context';
+import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router';
+import { AlertTriangle, Loader2, ShieldAlert } from 'lucide-react';
+import { useEffect } from 'react';
+import { ErrorPage } from '../../../components/error-page';
+import { WorkspaceContext, type WorkspaceContextValue } from '../../../contexts/workspace-context';
+import { ApiError, apiClient } from '../../../lib/api-client';
 import { useAuthStore } from '../../../stores/auth-store';
 
 interface OrgBySlugResponse {
@@ -29,6 +27,7 @@ export const Route = createFileRoute('/_app/$orgSlug/$wsSlug')({
 
 function WorkspaceLayout() {
   const { orgSlug, wsSlug } = Route.useParams();
+  const navigate = useNavigate();
   const { setCurrentOrg, setCurrentWorkspace } = useAuthStore();
 
   const orgQuery = useQuery<OrgBySlugResponse>({
@@ -39,8 +38,7 @@ function WorkspaceLayout() {
 
   const wsQuery = useQuery<WsBySlugResponse>({
     queryKey: ['ws-by-slug', orgSlug, wsSlug],
-    queryFn: () =>
-      apiClient.get(`/workspaces/by-slug/${orgSlug}/${wsSlug}`),
+    queryFn: () => apiClient.get(`/workspaces/by-slug/${orgSlug}/${wsSlug}`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -69,25 +67,41 @@ function WorkspaceLayout() {
   }
 
   if (orgQuery.isError || wsQuery.isError) {
+    const error = orgQuery.error ?? wsQuery.error;
+    const is403 = error instanceof ApiError && error.status === 403;
+
+    if (is403) {
+      return (
+        <ErrorPage
+          code="403"
+          icon={ShieldAlert}
+          title="접근 권한이 없습니다"
+          description="이 워크스페이스에 접근할 수 있는 권한이 없습니다. 관리자에게 초대를 요청해주세요."
+          primaryAction={{
+            label: '홈으로 이동',
+            onClick: () => navigate({ to: '/' }),
+          }}
+        />
+      );
+    }
+
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            워크스페이스를 불러올 수 없습니다.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">워크스페이스를 불러올 수 없습니다.</p>
         </div>
       </div>
     );
   }
 
   const contextValue: WorkspaceContextValue = {
-    orgId: org!.id,
-    orgSlug: org!.slug,
-    orgName: org!.name,
-    wsId: ws!.id,
-    wsSlug: ws!.slug,
-    wsName: ws!.name,
+    orgId: org?.id,
+    orgSlug: org?.slug,
+    orgName: org?.name,
+    wsId: ws?.id,
+    wsSlug: ws?.slug,
+    wsName: ws?.name,
   };
 
   return (

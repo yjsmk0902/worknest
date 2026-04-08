@@ -1,12 +1,12 @@
-import type { FastifyInstance } from "fastify";
-import type { Database } from "@worknest/db";
-import type Redis from "ioredis";
-import { sql } from "drizzle-orm";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import type { Database } from '@worknest/db';
+import { sql } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import type Redis from 'ioredis';
 
-const APP_VERSION = process.env.APP_VERSION ?? "0.0.0";
-const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "uploads";
+const APP_VERSION = process.env.APP_VERSION ?? '0.0.0';
+const UPLOADS_DIR = process.env.UPLOADS_DIR ?? 'uploads';
 
 /**
  * Health-check routes.
@@ -21,63 +21,62 @@ export async function healthRoutes(
   const { db, redis } = opts;
 
   app.get(
-    "/healthz",
+    '/healthz',
     {
       schema: {
-        tags: ["Health"],
-        summary: "Liveness probe",
+        tags: ['Health'],
+        summary: 'Liveness probe',
         response: {
           200: {
-            type: "object",
-            properties: { status: { type: "string" } },
+            type: 'object',
+            properties: { status: { type: 'string' } },
           },
         },
       },
     },
     async (_request, reply) => {
-      return reply.status(200).send({ status: "ok" });
+      return reply.status(200).send({ status: 'ok' });
     },
   );
 
   app.get(
-    "/readyz",
+    '/readyz',
     {
       schema: {
-        tags: ["Health"],
-        summary:
-          "Readiness probe — checks DB, Redis, and disk with latency info",
+        tags: ['Health'],
+        summary: 'Readiness probe — checks DB, Redis, and disk with latency info',
         response: {
           200: {
-            type: "object",
+            type: 'object',
             properties: {
-              status: { type: "string" },
-              version: { type: "string" },
-              uptime: { type: "number" },
+              status: { type: 'string' },
+              version: { type: 'string' },
+              uptime: { type: 'number' },
               services: {
-                type: "object",
+                type: 'object',
                 additionalProperties: {
-                  type: "object",
+                  type: 'object',
                   properties: {
-                    status: { type: "string" },
-                    latency_ms: { type: "number" },
+                    status: { type: 'string' },
+                    latency_ms: { type: 'number' },
                   },
                 },
               },
             },
           },
           503: {
-            type: "object",
+            type: 'object',
             properties: {
-              status: { type: "string" },
-              version: { type: "string" },
-              uptime: { type: "number" },
+              status: { type: 'string' },
+              version: { type: 'string' },
+              uptime: { type: 'number' },
               services: {
-                type: "object",
+                type: 'object',
                 additionalProperties: {
-                  type: "object",
+                  type: 'object',
                   properties: {
-                    status: { type: "string" },
-                    latency_ms: { type: "number" },
+                    status: { type: 'string' },
+                    latency_ms: { type: 'number' },
                   },
                 },
               },
@@ -87,10 +86,7 @@ export async function healthRoutes(
       },
     },
     async (_request, reply) => {
-      const services: Record<
-        string,
-        { status: string; latency_ms?: number }
-      > = {};
+      const services: Record<string, { status: string; latency_ms?: number }> = {};
       let healthy = true;
 
       // Check Postgres
@@ -99,12 +95,12 @@ export async function healthRoutes(
         try {
           await db.execute(sql`SELECT 1`);
           services.database = {
-            status: "ok",
+            status: 'ok',
             latency_ms: Math.round(performance.now() - start),
           };
         } catch {
           services.database = {
-            status: "error",
+            status: 'error',
             latency_ms: Math.round(performance.now() - start),
           };
           healthy = false;
@@ -117,13 +113,13 @@ export async function healthRoutes(
         try {
           const pong = await redis.ping();
           services.redis = {
-            status: pong === "PONG" ? "ok" : "error",
+            status: pong === 'PONG' ? 'ok' : 'error',
             latency_ms: Math.round(performance.now() - start),
           };
-          if (pong !== "PONG") healthy = false;
+          if (pong !== 'PONG') healthy = false;
         } catch {
           services.redis = {
-            status: "error",
+            status: 'error',
             latency_ms: Math.round(performance.now() - start),
           };
           healthy = false;
@@ -133,20 +129,17 @@ export async function healthRoutes(
       // Check disk — verify uploads directory is writable
       {
         const start = performance.now();
-        const tempFile = path.join(
-          UPLOADS_DIR,
-          `.healthcheck-${Date.now()}.tmp`,
-        );
+        const tempFile = path.join(UPLOADS_DIR, `.healthcheck-${Date.now()}.tmp`);
         try {
-          fs.writeFileSync(tempFile, "ok");
-          fs.unlinkSync(tempFile);
+          await fs.writeFile(tempFile, 'ok');
+          await fs.unlink(tempFile);
           services.disk = {
-            status: "ok",
+            status: 'ok',
             latency_ms: Math.round(performance.now() - start),
           };
         } catch {
           services.disk = {
-            status: "error",
+            status: 'error',
             latency_ms: Math.round(performance.now() - start),
           };
           healthy = false;
@@ -155,7 +148,7 @@ export async function healthRoutes(
 
       const statusCode = healthy ? 200 : 503;
       return reply.status(statusCode).send({
-        status: healthy ? "ok" : "degraded",
+        status: healthy ? 'ok' : 'degraded',
         version: APP_VERSION,
         uptime: Math.round(process.uptime()),
         services,
