@@ -1,5 +1,6 @@
 // ── Tables ──────────────────────────────────────────────────────────────
 export { users } from "./users";
+export { sessions, accounts, verifications } from "./auth";
 export { organizations, orgMembers } from "./organizations";
 export { workspaces, workspaceMembers } from "./workspaces";
 export { invitations } from "./invitations";

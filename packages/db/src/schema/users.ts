@@ -16,7 +16,7 @@ import { favorites } from "./favorites";
  * This table stores profile information only.
  */
 export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey(),
   email: text("email").unique().notNull(),
   name: text("name").notNull(),
   avatarUrl: text("avatar_url"),

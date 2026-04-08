@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { Database } from "@worknest/db";
+import { users, sessions, accounts, verifications } from "@worknest/db";
 
 /**
  * Create the Better Auth instance.
@@ -13,6 +14,12 @@ export function createAuth(db: Database) {
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "pg",
+      schema: {
+        user: users,
+        session: sessions,
+        account: accounts,
+        verification: verifications,
+      },
     }),
 
     emailAndPassword: {
@@ -32,12 +39,11 @@ export function createAuth(db: Database) {
 
     advanced: {
       cookiePrefix: "worknest",
-      generateId: undefined, // use default (cuid2)
     },
 
     trustedOrigins: process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(",")
-      : ["http://localhost:5173"],
+      : ["http://localhost:3000"],
   });
 }
 
