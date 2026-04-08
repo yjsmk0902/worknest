@@ -40,7 +40,8 @@ const BASE = BASE_62_DIGITS.length; // 62
  */
 const CHAR_TO_INDEX: Record<string, number> = {};
 for (let i = 0; i < BASE; i++) {
-  CHAR_TO_INDEX[BASE_62_DIGITS[i]] = i;
+  const ch = BASE_62_DIGITS[i] as string;
+  CHAR_TO_INDEX[ch] = i;
 }
 
 // ── Integer part helpers ──────────────────────────────────────────────
@@ -124,9 +125,10 @@ function fractionalMidpoint(a: string, b: string | undefined): string {
     }
 
     // Replace digit at i with midpoint between digits[i] and BASE-1, trim after
-    const mid = Math.floor((digits[i] + (BASE - 1)) / 2);
+    const digitAtI = digits[i] as number;
+    const mid = Math.floor((digitAtI + (BASE - 1)) / 2);
     // If mid === digits[i], we need to go deeper
-    if (mid === digits[i]) {
+    if (mid === digitAtI) {
       return a.slice(0, i + 1) + BASE_62_DIGITS[Math.floor(BASE / 2)];
     }
     return a.slice(0, i) + BASE_62_DIGITS[mid];
@@ -166,8 +168,8 @@ function fractionalMidpoint(a: string, b: string | undefined): string {
     throw new Error('Fractional parts are equal after padding');
   }
 
-  const aDigit = aDigits[commonPrefixLen];
-  const bDigit = bDigits[commonPrefixLen];
+  const aDigit = aDigits[commonPrefixLen] as number;
+  const bDigit = bDigits[commonPrefixLen] as number;
   const gap = bDigit - aDigit;
 
   if (gap > 1) {
@@ -202,7 +204,7 @@ function fractionalMidpoint(a: string, b: string | undefined): string {
 function fractionalDigits(s: string): number[] {
   const result: number[] = [];
   for (const c of s) {
-    result.push(CHAR_TO_INDEX[c]);
+    result.push(CHAR_TO_INDEX[c] as number);
   }
   return result;
 }
@@ -213,7 +215,7 @@ function fractionalDigits(s: string): number[] {
 function digitString(digits: number[], len: number): string {
   let s = '';
   for (let i = 0; i < len; i++) {
-    s += BASE_62_DIGITS[digits[i]];
+    s += BASE_62_DIGITS[digits[i] as number];
   }
   return s;
 }
@@ -259,7 +261,7 @@ export function generateKeyBetween(
   // ── Prepend: generate a key before b ──
   if (a == null) {
     const bKey = b as string;
-    const intB = bKey[0];
+    const intB = bKey[0] as string;
     const fracB = bKey.slice(1);
 
     // If the fractional part allows a midpoint between "0" and fracB,
@@ -280,7 +282,7 @@ export function generateKeyBetween(
   // ── Append: generate a key after a ──
   if (b == null) {
     const aKey = a as string;
-    const intA = aKey[0];
+    const intA = aKey[0] as string;
     const fracA = aKey.slice(1);
 
     // If fractional part is just '0', increment the integer part
@@ -306,8 +308,8 @@ export function generateKeyBetween(
   // ── Between: generate a key between a and b ──
   const aKey = a as string;
   const bKey = b as string;
-  const intA = aKey[0];
-  const intB = bKey[0];
+  const intA = aKey[0] as string;
+  const intB = bKey[0] as string;
   const fracA = aKey.slice(1);
   const fracB = bKey.slice(1);
 
@@ -396,13 +398,13 @@ export function isValidSortKey(key: string): boolean {
   }
 
   // First character must be a valid integer part (A-Z or a-z)
-  if (!isValidIntegerPart(key[0])) {
+  if (!isValidIntegerPart(key[0] as string)) {
     return false;
   }
 
   // Remaining characters must be valid base-62 digits
   for (let i = 1; i < key.length; i++) {
-    if (CHAR_TO_INDEX[key[i]] === undefined) {
+    if (CHAR_TO_INDEX[key[i] as string] === undefined) {
       return false;
     }
   }

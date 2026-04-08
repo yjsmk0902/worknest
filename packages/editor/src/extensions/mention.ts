@@ -103,7 +103,7 @@ export function createMentionExtension(queryFn: MentionQueryFn) {
 
             return (
               component?.ref?.onKeyDown(
-                props as { event: React.KeyboardEvent },
+                props as unknown as { event: React.KeyboardEvent },
               ) ?? false
             );
           },

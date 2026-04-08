@@ -4,7 +4,9 @@
     "rootDir": "src",
     "outDir": "dist",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "noEmit": false,
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
