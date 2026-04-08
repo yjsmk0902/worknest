@@ -50,10 +50,11 @@ export async function authRoutes(
           password: body.password,
           name: body.name,
         },
+        asResponse: true,
         headers: request.headers as unknown as Headers,
       });
 
-      if (!response?.user) {
+      if (!response.ok) {
         throw AppError.badRequest(
           ErrorCode.EMAIL_ALREADY_EXISTS,
           "An account with this email already exists",
@@ -61,16 +62,18 @@ export async function authRoutes(
       }
 
       // Copy set-cookie headers from Better Auth response
-      const setCookieHeader = (response as unknown as { headers?: Headers })?.headers?.get?.("set-cookie");
-      if (setCookieHeader) {
-        reply.header("set-cookie", setCookieHeader);
+      const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
+      for (const cookie of setCookieHeaders) {
+        reply.header("set-cookie", cookie);
       }
+
+      const responseBody = await response.json();
 
       return reply.status(201).send({
         data: {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
+          id: responseBody.user?.id ?? responseBody.id,
+          email: responseBody.user?.email ?? responseBody.email,
+          name: responseBody.user?.name ?? responseBody.name,
         },
       });
     },
@@ -95,23 +98,26 @@ export async function authRoutes(
           email: body.email,
           password: body.password,
         },
+        asResponse: true,
         headers: request.headers as unknown as Headers,
       });
 
-      if (!response?.user) {
+      if (!response.ok) {
         throw AppError.unauthorized("Invalid email or password");
       }
 
-      const setCookieHeader = (response as unknown as { headers?: Headers })?.headers?.get?.("set-cookie");
-      if (setCookieHeader) {
-        reply.header("set-cookie", setCookieHeader);
+      const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
+      for (const cookie of setCookieHeaders) {
+        reply.header("set-cookie", cookie);
       }
+
+      const responseBody = await response.json();
 
       return reply.status(200).send({
         data: {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
+          id: responseBody.user?.id ?? responseBody.id,
+          email: responseBody.user?.email ?? responseBody.email,
+          name: responseBody.user?.name ?? responseBody.name,
         },
       });
     },
@@ -129,9 +135,15 @@ export async function authRoutes(
       },
     },
     async (request, reply) => {
-      await auth.api.signOut({
+      const response = await auth.api.signOut({
         headers: request.headers as unknown as Headers,
+        asResponse: true,
       });
+
+      const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
+      for (const cookie of setCookieHeaders) {
+        reply.header("set-cookie", cookie);
+      }
 
       return reply.status(200).send({ data: { success: true } });
     },

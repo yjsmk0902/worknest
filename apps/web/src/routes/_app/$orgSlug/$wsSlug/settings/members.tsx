@@ -47,7 +47,7 @@ function WorkspaceSettingsMembers() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const membersQuery = useQuery({
-    queryKey: ['workspace', wsId, 'members'],
+    queryKey: ['workspaces', wsId, 'members'],
     queryFn: () => apiClient.getList<Member>(`/workspaces/${wsId}/members`),
   });
 
@@ -61,7 +61,7 @@ function WorkspaceSettingsMembers() {
     }) => apiClient.patch(`/workspace-members/${memberId}`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['workspace', wsId, 'members'],
+        queryKey: ['workspaces', wsId, 'members'],
       });
       toast('역할이 변경되었습니다.');
     },
@@ -75,7 +75,7 @@ function WorkspaceSettingsMembers() {
       apiClient.delete(`/workspace-members/${memberId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['workspace', wsId, 'members'],
+        queryKey: ['workspaces', wsId, 'members'],
       });
       toast('멤버가 제거되었습니다.');
     },

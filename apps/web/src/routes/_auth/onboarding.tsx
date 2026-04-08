@@ -152,12 +152,10 @@ function OnboardingPage() {
 
   function handleFinish() {
     if (createdOrgSlug && createdWsSlug) {
-      navigate({
-        to: '/$orgSlug/$wsSlug',
-        params: { orgSlug: createdOrgSlug, wsSlug: createdWsSlug },
-      });
+      // Use window.location for a clean navigation that goes through the _app layout
+      window.location.href = `/${createdOrgSlug}/${createdWsSlug}`;
     } else {
-      navigate({ to: '/_app/orgs' });
+      window.location.href = '/orgs';
     }
   }
 

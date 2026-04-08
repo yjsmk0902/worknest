@@ -59,12 +59,50 @@ function AppLayout() {
     retry: false,
   });
 
+  // Check if user has any organizations
+  const orgsQuery = useQuery({
+    queryKey: ['organizations'],
+    queryFn: () => apiClient.getList<{ id: string; slug: string }>('/organizations'),
+    enabled: !!profileQuery.data,
+    retry: false,
+  });
+
   // Auth guard: redirect to login on 401
   useEffect(() => {
     if (profileQuery.error instanceof ApiError && profileQuery.error.status === 401) {
       navigate({ to: '/login' });
     }
   }, [profileQuery.error, navigate]);
+
+  // Onboarding guard: redirect to onboarding if no organizations
+  useEffect(() => {
+    if (orgsQuery.data && orgsQuery.data.data?.length === 0) {
+      navigate({ to: '/onboarding' });
+    }
+  }, [orgsQuery.data, navigate]);
+
+  // Auto-redirect to first workspace when user has orgs but is on a non-workspace route
+  useEffect(() => {
+    const orgs = orgsQuery.data?.data;
+    if (!orgs || orgs.length === 0) return;
+    // Only redirect if we're at a generic route (no orgSlug/wsSlug in path)
+    if (window.location.pathname === '/' || window.location.pathname === '/orgs') {
+      const firstOrg = orgs[0];
+      apiClient
+        .getList<{ id: string; slug: string }>(
+          `/organizations/${firstOrg.id}/workspaces`,
+        )
+        .then((res) => {
+          if (res.data.length > 0) {
+            const ws = res.data[0];
+            window.location.href = `/${firstOrg.slug}/${ws.slug}`;
+          }
+        })
+        .catch(() => {
+          // If workspace fetch fails, stay on current page
+        });
+    }
+  }, [orgsQuery.data]);
 
   // Sync user to auth store
   useEffect(() => {
@@ -92,8 +130,8 @@ function AppLayout() {
   const userChannels = useMemo(() => (userId ? [`user:${userId}`] : []), [userId]);
   useWebSocket(userChannels);
 
-  // Show loading while checking auth
-  if (profileQuery.isLoading) {
+  // Show loading while checking auth and onboarding status
+  if (profileQuery.isLoading || (profileQuery.data && orgsQuery.isLoading)) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="space-y-4 text-center">

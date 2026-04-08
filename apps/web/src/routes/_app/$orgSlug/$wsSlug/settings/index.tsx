@@ -39,7 +39,7 @@ function WorkspaceSettingsGeneral() {
   const queryClient = useQueryClient();
 
   const wsQuery = useQuery<WorkspaceDetails>({
-    queryKey: ['workspace', wsId],
+    queryKey: ['workspaces', wsId],
     queryFn: () => apiClient.get(`/workspaces/${wsId}`),
   });
 
@@ -88,7 +88,7 @@ function WorkspaceSettingsGeneral() {
       <GeneralSettingsForm
         workspace={wsQuery.data!}
         onSaved={() =>
-          queryClient.invalidateQueries({ queryKey: ['workspace', wsId] })
+          queryClient.invalidateQueries({ queryKey: ['workspaces', wsId] })
         }
       />
     </SettingsLayout>

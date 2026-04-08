@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Plus, ChevronRight } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
+import { Link, useParams } from '@tanstack/react-router';
 import { cn } from '@worknest/ui';
 import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
@@ -182,11 +182,19 @@ function SpaceSidebarItem({
 }
 
 export function CollapsedSidebarWiki() {
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
+
   return (
     <>
       <CollapsedNavItem
         icon={<FileText className="h-5 w-5" />}
         label="Wiki"
+        href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/wiki` : undefined}
       />
     </>
   );

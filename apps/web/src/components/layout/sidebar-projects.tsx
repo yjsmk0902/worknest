@@ -20,6 +20,7 @@ import { useAuthStore } from '../../stores/auth-store';
 import { apiClient } from '../../lib/api-client';
 import { CreateProjectModal } from '../projects/create-project-modal';
 import { CollapsedNavItem } from './sidebar-nav';
+import { toast } from '@worknest/ui';
 
 export interface SidebarProject {
   id: string;
@@ -191,6 +192,7 @@ export function SidebarProjects({
 export function CollapsedSidebarProjects() {
   const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
   const wsId = currentWorkspace?.id;
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const params = useParams({ strict: false }) as {
     orgSlug?: string;
     wsSlug?: string;
@@ -236,7 +238,21 @@ export function CollapsedSidebarProjects() {
       <CollapsedNavItem
         icon={<Plus className="h-5 w-5" />}
         label="프로젝트 추가"
+        onClick={() => {
+          if (wsId) {
+            setCreateModalOpen(true);
+          } else {
+            toast('Workspace not loaded yet');
+          }
+        }}
       />
+      {wsId && (
+        <CreateProjectModal
+          workspaceId={wsId}
+          open={createModalOpen}
+          onOpenChange={setCreateModalOpen}
+        />
+      )}
     </>
   );
 }

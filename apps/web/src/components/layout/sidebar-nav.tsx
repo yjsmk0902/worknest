@@ -57,20 +57,34 @@ export function NavItem({
 export function CollapsedNavItem({
   icon,
   label,
+  href,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
+  href?: string;
+  onClick?: () => void;
 }) {
+  const content = href ? (
+    <Link
+      to={href}
+      className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+    >
+      {icon}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+    >
+      {icon}
+    </button>
+  );
+
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
-        >
-          {icon}
-        </button>
-      </TooltipTrigger>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
   );

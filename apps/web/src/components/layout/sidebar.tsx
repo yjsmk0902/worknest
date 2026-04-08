@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Avatar } from '@worknest/ui';
 import { Separator } from '@worknest/ui';
+import { toast } from '@worknest/ui';
 import {
   Tooltip,
   TooltipContent,
@@ -124,6 +125,13 @@ export function Sidebar() {
 }
 
 function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
+
   return (
     <TooltipProvider delayDuration={200}>
       <nav
@@ -137,14 +145,20 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
         <div className="my-1 w-8 border-t border-sidebar-border" />
 
         {/* My Work icons */}
-        <CollapsedNavItem icon={<Bell className="h-5 w-5" />} label="Inbox" />
+        <CollapsedNavItem
+          icon={<Bell className="h-5 w-5" />}
+          label="Inbox"
+          href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : undefined}
+        />
         <CollapsedNavItem
           icon={<CircleUser className="h-5 w-5" />}
           label="My Issues"
+          href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/issues` : undefined}
         />
         <CollapsedNavItem
           icon={<Star className="h-5 w-5" />}
           label="Favorites"
+          href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/favorites` : undefined}
         />
 
         <div className="my-1 w-8 border-t border-sidebar-border" />
@@ -205,6 +219,12 @@ function InboxNavItem({ orgSlug, wsSlug }: { orgSlug: string; wsSlug: string }) 
 function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
   const currentOrg = useAuthStore((s) => s.currentOrg);
   const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
 
   const orgName = currentOrg?.name ?? 'Organization';
   const wsName = currentWorkspace?.name ?? 'Workspace';
@@ -260,6 +280,7 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
         <Separator className="my-2" />
         <button
           type="button"
+          onClick={() => toast('Coming soon')}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Plus className="h-4 w-4" />
@@ -267,6 +288,11 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
         </button>
         <button
           type="button"
+          onClick={() => {
+            if (orgSlug && wsSlug) {
+              window.location.href = `/${orgSlug}/${wsSlug}/settings`;
+            }
+          }}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Settings className="h-4 w-4" />
@@ -280,6 +306,12 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
 function UserMenu({ collapsed }: { collapsed: boolean }) {
   const currentUser = useAuthStore((s) => s.currentUser);
   const name = currentUser?.name ?? 'User';
+  const params = useParams({ strict: false }) as {
+    orgSlug?: string;
+    wsSlug?: string;
+  };
+  const orgSlug = params.orgSlug ?? '';
+  const wsSlug = params.wsSlug ?? '';
 
   if (collapsed) {
     return (
@@ -319,6 +351,11 @@ function UserMenu({ collapsed }: { collapsed: boolean }) {
       <PopoverContent align="start" className="w-[200px] p-1">
         <button
           type="button"
+          onClick={() => {
+            if (orgSlug && wsSlug) {
+              window.location.href = `/${orgSlug}/${wsSlug}/settings`;
+            }
+          }}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
         >
           <User className="h-4 w-4" />
@@ -326,6 +363,11 @@ function UserMenu({ collapsed }: { collapsed: boolean }) {
         </button>
         <button
           type="button"
+          onClick={() => {
+            if (orgSlug && wsSlug) {
+              window.location.href = `/${orgSlug}/${wsSlug}/settings`;
+            }
+          }}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
         >
           <Settings className="h-4 w-4" />
@@ -334,6 +376,10 @@ function UserMenu({ collapsed }: { collapsed: boolean }) {
         <Separator className="my-1" />
         <button
           type="button"
+          onClick={async () => {
+            await apiClient.post('/auth/logout');
+            window.location.href = '/login';
+          }}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-accent"
         >
           <LogOut className="h-4 w-4" />

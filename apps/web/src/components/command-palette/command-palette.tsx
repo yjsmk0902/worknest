@@ -223,16 +223,13 @@ export function CommandPalette() {
 
   const handleIssueIdNavigate = useCallback(
     (key: string) => {
-      const parts = key.split('-');
-      const prefix = parts[0];
-      navigateTo(`/${orgSlug}/${wsSlug}/projects/${prefix.toLowerCase()}/issues/${key}`, {
-        type: 'issue',
-        id: key,
-        title: key,
-        url: '',
-      });
+      // Issue key (e.g., "PROJ-123") cannot be used directly as a URL because
+      // routes expect project UUID, not the prefix. Instead, search for the
+      // issue and let the user click the search result.
+      setInputValue(key);
+      // The debounced search will trigger automatically and show the matching issue
     },
-    [orgSlug, wsSlug, navigateTo],
+    [],
   );
 
   // ── Render ────────────────────────────────────────────────────────────
