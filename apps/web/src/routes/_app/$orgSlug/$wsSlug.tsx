@@ -11,6 +11,7 @@ interface OrgBySlugResponse {
   id: string;
   name: string;
   slug: string;
+  logo: string | null;
 }
 
 interface WsBySlugResponse {
@@ -19,6 +20,8 @@ interface WsBySlugResponse {
   orgSlug: string;
   name: string;
   slug: string;
+  logo: string | null;
+  description: string | null;
 }
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug')({
@@ -47,14 +50,14 @@ function WorkspaceLayout() {
 
   useEffect(() => {
     if (!org || !ws) return;
-    setCurrentOrg({ id: org.id, name: org.name, slug: org.slug, logo: null });
+    setCurrentOrg({ id: org.id, name: org.name, slug: org.slug, logo: org.logo });
     setCurrentWorkspace({
       id: ws.id,
       orgId: ws.orgId,
       name: ws.name,
       slug: ws.slug,
-      logo: null,
-      description: null,
+      logo: ws.logo,
+      description: ws.description,
     });
   }, [org, ws, setCurrentOrg, setCurrentWorkspace]);
 
@@ -90,6 +93,11 @@ function WorkspaceLayout() {
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
           <p className="mt-2 text-sm text-muted-foreground">워크스페이스를 불러올 수 없습니다.</p>
+          {error && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {error instanceof ApiError ? `${error.status}: ${error.message}` : String(error)}
+            </p>
+          )}
         </div>
       </div>
     );

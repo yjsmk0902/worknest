@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Outlet, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Skeleton } from '@worknest/ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CommandPalette } from '../components/command-palette/command-palette';
 import { KeyboardShortcutsSheet } from '../components/keyboard-shortcuts-sheet';
 import { Sidebar } from '../components/layout/sidebar';
@@ -82,26 +82,34 @@ function AppLayout() {
   }, [orgsQuery.data, navigate]);
 
   // Auto-redirect to first workspace when user has orgs but is on a non-workspace route
+  const [autoRedirecting, setAutoRedirecting] = useState(false);
+  const redirectingRef = useRef(false);
   useEffect(() => {
+    if (redirectingRef.current) return;
     const orgs = orgsQuery.data?.data;
     if (!orgs || orgs.length === 0) return;
-    // Only redirect if we're at a generic route (no orgSlug/wsSlug in path)
-    if (window.location.pathname === '/' || window.location.pathname === '/orgs') {
-      const firstOrg = orgs[0];
-      apiClient
-        .getList<{ id: string; slug: string }>(
-          `/organizations/${firstOrg.id}/workspaces`,
-        )
-        .then((res) => {
-          if (res.data.length > 0) {
-            const ws = res.data[0];
-            window.location.href = `/${firstOrg.slug}/${ws.slug}`;
-          }
-        })
-        .catch(() => {
-          // If workspace fetch fails, stay on current page
-        });
-    }
+    const path = window.location.pathname;
+    if (path !== '/' && path !== '/orgs') return;
+    redirectingRef.current = true;
+    setAutoRedirecting(true);
+    const firstOrg = orgs[0];
+    apiClient
+      .getList<{ id: string; slug: string }>(
+        `/organizations/${firstOrg.id}/workspaces`,
+      )
+      .then((res) => {
+        if (res.data.length > 0) {
+          const ws = res.data[0];
+          window.location.href = `/${firstOrg.slug}/${ws.slug}`;
+        } else {
+          redirectingRef.current = false;
+          setAutoRedirecting(false);
+        }
+      })
+      .catch(() => {
+        redirectingRef.current = false;
+        setAutoRedirecting(false);
+      });
   }, [orgsQuery.data]);
 
   // Sync user to auth store
@@ -130,8 +138,8 @@ function AppLayout() {
   const userChannels = useMemo(() => (userId ? [`user:${userId}`] : []), [userId]);
   useWebSocket(userChannels);
 
-  // Show loading while checking auth and onboarding status
-  if (profileQuery.isLoading || (profileQuery.data && orgsQuery.isLoading)) {
+  // Show loading while checking auth, onboarding status, or auto-redirecting
+  if (profileQuery.isLoading || (profileQuery.data && orgsQuery.isLoading) || autoRedirecting) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="space-y-4 text-center">

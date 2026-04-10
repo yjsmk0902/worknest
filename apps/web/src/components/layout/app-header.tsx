@@ -16,7 +16,7 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        'flex h-14 shrink-0 items-center justify-between border-b border-border px-6',
+        'flex h-14 shrink-0 items-center justify-between border-b border-border/50 px-6',
         className,
       )}
     >
@@ -45,7 +45,7 @@ export function AppHeader({
             <span className="text-muted-foreground">/</span>
           </nav>
         )}
-        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-foreground">{title}</h1>
       </div>
 
       {actions && <div className="flex items-center gap-2">{actions}</div>}

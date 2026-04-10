@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Plus, ChevronRight } from 'lucide-react';
+import { FileText, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
 import { cn } from '@worknest/ui';
 import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
 import { apiClient } from '../../lib/api-client';
-import { NavItem, CollapsedNavItem, SectionLabel } from './sidebar-nav';
+import { CollapsedNavItem } from './sidebar-nav';
 
 interface SidebarWikiProps {
   orgSlug: string;
@@ -13,27 +13,14 @@ interface SidebarWikiProps {
   wsId?: string;
 }
 
-/**
- * Wiki section in the sidebar.
- *
- * Fetches wiki spaces from the API and renders them as expandable items.
- * Each space can be expanded to show its top-level page titles.
- */
-export function SidebarWiki({
-  orgSlug,
-  wsSlug,
-  wsId,
-}: SidebarWikiProps) {
-  const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(
-    new Set(),
-  );
+export function SidebarWiki({ orgSlug, wsSlug, wsId }: SidebarWikiProps) {
+  const [sectionOpen, setSectionOpen] = useState(true);
+  const [expandedSpaces, setExpandedSpaces] = useState<Set<string>>(new Set());
 
   const spacesQuery = useQuery({
     queryKey: ['workspaces', wsId, 'wiki-spaces'],
     queryFn: () =>
-      apiClient.getList<WikiSpaceOutput>(
-        `/workspaces/${wsId}/wiki-spaces`,
-      ),
+      apiClient.getList<WikiSpaceOutput>(`/workspaces/${wsId}/wiki-spaces`),
     enabled: !!wsId,
   });
 
@@ -53,49 +40,64 @@ export function SidebarWiki({
 
   return (
     <>
-      <SectionLabel>Wiki</SectionLabel>
+      {/* Section header */}
+      <div className="flex items-center mb-1 px-2.5">
+        <button
+          type="button"
+          onClick={() => setSectionOpen((v) => !v)}
+          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
+        >
+          {sectionOpen ? (
+            <ChevronDown className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
+          )}
+          Wiki
+        </button>
+        <Link
+          to="/$orgSlug/$wsSlug/wiki"
+          params={{ orgSlug, wsSlug }}
+          className="ml-auto flex h-5 w-5 items-center justify-center rounded text-sidebar-foreground/30 hover:text-sidebar-foreground/60 hover:bg-sidebar-accent transition-colors"
+          aria-label="스페이스 추가"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Link>
+      </div>
 
-      {/* Loading skeleton */}
-      {spacesQuery.isLoading && (
-        <div className="space-y-1 px-3">
-          <div className="h-8 w-full animate-pulse rounded-md bg-muted" />
-          <div className="h-8 w-full animate-pulse rounded-md bg-muted" />
-        </div>
+      {sectionOpen && (
+        <>
+          {spacesQuery.isLoading && (
+            <div className="space-y-1 px-2">
+              <div className="h-[34px] w-full animate-pulse rounded-lg bg-sidebar-accent" />
+              <div className="h-[34px] w-full animate-pulse rounded-lg bg-sidebar-accent" />
+            </div>
+          )}
+
+          {spaces.map((space) => (
+            <SpaceSidebarItem
+              key={space.id}
+              space={space}
+              orgSlug={orgSlug}
+              wsSlug={wsSlug}
+              expanded={expandedSpaces.has(space.id)}
+              onToggle={() => toggleExpand(space.id)}
+            />
+          ))}
+
+          {spaces.length === 0 && (
+            <Link
+              to="/$orgSlug/$wsSlug/wiki"
+              params={{ orgSlug, wsSlug }}
+              className="flex h-[34px] w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>스페이스 추가</span>
+            </Link>
+          )}
+        </>
       )}
-
-      {/* Space list */}
-      {spaces.map((space) => (
-        <SpaceSidebarItem
-          key={space.id}
-          space={space}
-          orgSlug={orgSlug}
-          wsSlug={wsSlug}
-          expanded={expandedSpaces.has(space.id)}
-          onToggle={() => toggleExpand(space.id)}
-        />
-      ))}
-
-      {/* Add space button */}
-      <Link
-        to="/$orgSlug/$wsSlug/wiki"
-        params={{ orgSlug, wsSlug }}
-        className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <Plus className="h-4 w-4" />
-        <span>스페이스 추가</span>
-      </Link>
     </>
   );
-}
-
-// ── Space sidebar item with expandable pages ────────────────────────────
-
-interface SpaceSidebarItemProps {
-  space: WikiSpaceOutput;
-  orgSlug: string;
-  wsSlug: string;
-  expanded: boolean;
-  onToggle: () => void;
 }
 
 function SpaceSidebarItem({
@@ -104,74 +106,66 @@ function SpaceSidebarItem({
   wsSlug,
   expanded,
   onToggle,
-}: SpaceSidebarItemProps) {
-  // Only fetch pages when expanded
+}: {
+  space: WikiSpaceOutput;
+  orgSlug: string;
+  wsSlug: string;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
   const pagesQuery = useQuery({
     queryKey: ['wiki-spaces', space.id, 'pages'],
     queryFn: () =>
-      apiClient.getList<WikiPageOutput>(
-        `/wiki-spaces/${space.id}/pages`,
-      ),
+      apiClient.getList<WikiPageOutput>(`/wiki-spaces/${space.id}/pages`),
     enabled: expanded,
   });
 
-  const rootPages = (pagesQuery.data?.data ?? []).filter(
-    (p) => !p.parentId,
-  );
+  const rootPages = (pagesQuery.data?.data ?? []).filter((p) => !p.parentId);
 
   return (
     <div>
-      {/* Space item */}
       <div className="flex items-center">
         <button
           type="button"
-          className="flex h-8 w-6 items-center justify-center shrink-0 ml-1"
+          className="flex h-[34px] w-5 items-center justify-center shrink-0 ml-1 text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
           onClick={onToggle}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
         >
-          <ChevronRight
-            className={cn(
-              'h-3.5 w-3.5 text-muted-foreground transition-transform duration-150',
-              expanded && 'rotate-90',
-            )}
-          />
+          {expanded ? (
+            <ChevronDown className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
+          )}
         </button>
         <Link
           to="/$orgSlug/$wsSlug/wiki/$spaceId"
           params={{ orgSlug, wsSlug, spaceId: space.id }}
-          className="flex h-8 flex-1 items-center gap-2 rounded-md px-1 text-sm transition-colors hover:bg-sidebar-accent"
+          className="flex h-[34px] flex-1 items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent data-[status=active]:bg-primary/10 data-[status=active]:text-primary data-[status=active]:font-semibold"
         >
-          <FileText className="h-4 w-4 shrink-0" />
+          <FileText className="h-4 w-4 text-sidebar-foreground/40" />
           <span className="flex-1 truncate">{space.name}</span>
         </Link>
       </div>
 
-      {/* Expanded page list */}
       {expanded && (
-        <div className="ml-2">
+        <div className="ml-7 border-l border-sidebar-border pl-2 py-0.5">
           {pagesQuery.isLoading && (
-            <div className="pl-6 py-1">
-              <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+            <div className="py-1 px-2">
+              <div className="h-5 w-24 animate-pulse rounded bg-sidebar-accent" />
             </div>
           )}
           {rootPages.map((page) => (
             <Link
               key={page.id}
               to="/$orgSlug/$wsSlug/wiki/$spaceId/$pageId"
-              params={{
-                orgSlug,
-                wsSlug,
-                spaceId: space.id,
-                pageId: page.id,
-              }}
-              className="flex h-7 items-center gap-2 rounded-sm pl-6 pr-2 text-sm truncate hover:bg-accent"
+              params={{ orgSlug, wsSlug, spaceId: space.id, pageId: page.id }}
+              className="flex h-[30px] items-center gap-2 rounded-md px-2 text-[12px] text-sidebar-foreground truncate hover:bg-sidebar-accent transition-colors data-[status=active]:bg-primary/10 data-[status=active]:text-primary data-[status=active]:font-semibold"
             >
-              <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <FileText className="h-3.5 w-3.5 shrink-0 text-sidebar-foreground/30" />
               <span className="truncate">{page.title}</span>
             </Link>
           ))}
-          {expanded && !pagesQuery.isLoading && rootPages.length === 0 && (
-            <p className="pl-6 py-1 text-xs text-muted-foreground">
+          {!pagesQuery.isLoading && rootPages.length === 0 && (
+            <p className="px-2 py-1 text-[11px] text-sidebar-foreground/35">
               페이지 없음
             </p>
           )}
@@ -190,12 +184,10 @@ export function CollapsedSidebarWiki() {
   const wsSlug = params.wsSlug ?? '';
 
   return (
-    <>
-      <CollapsedNavItem
-        icon={<FileText className="h-5 w-5" />}
-        label="Wiki"
-        href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/wiki` : undefined}
-      />
-    </>
+    <CollapsedNavItem
+      icon={<FileText className="h-[18px] w-[18px]" />}
+      label="Wiki"
+      href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/wiki` : undefined}
+    />
   );
 }

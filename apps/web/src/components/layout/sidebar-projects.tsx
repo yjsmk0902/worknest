@@ -16,6 +16,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@worknest/ui';
+import { cn } from '@worknest/ui';
 import { useAuthStore } from '../../stores/auth-store';
 import { apiClient } from '../../lib/api-client';
 import { CreateProjectModal } from '../projects/create-project-modal';
@@ -40,21 +41,37 @@ function ProjectSubNav({
 }) {
   const base = `/${orgSlug}/${wsSlug}/projects/${projectId}`;
 
-  const items = [
-    { icon: <List className="h-4 w-4" />, label: 'Issues', href: `${base}/issues` },
-    { icon: <Kanban className="h-4 w-4" />, label: 'Board', href: `${base}/board` },
-    { icon: <RefreshCw className="h-4 w-4" />, label: 'Cycles', href: `${base}/cycles` },
-    { icon: <Settings className="h-4 w-4" />, label: 'Settings', href: `${base}/settings` },
+  const issueSubItems = [
+    { icon: <List className="h-3.5 w-3.5" />, label: 'List', href: `${base}/issues` },
+    { icon: <Kanban className="h-3.5 w-3.5" />, label: 'Board', href: `${base}/board` },
   ];
 
+  const otherItems = [
+    { icon: <RefreshCw className="h-3.5 w-3.5" />, label: 'Cycles', href: `${base}/cycles` },
+    { icon: <Settings className="h-3.5 w-3.5" />, label: 'Settings', href: `${base}/settings` },
+  ];
+
+  const linkClass =
+    'flex h-[30px] items-center gap-2 rounded-md px-2 text-[12px] text-sidebar-foreground transition-colors hover:bg-sidebar-accent data-[status=active]:bg-primary/10 data-[status=active]:text-primary data-[status=active]:font-semibold';
+
   return (
-    <div className="ml-4 border-l border-border/50 pl-2">
-      {items.map((item) => (
-        <Link
-          key={item.label}
-          to={item.href}
-          className="flex h-7 items-center gap-2 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-        >
+    <div className="ml-7 border-l border-sidebar-border pl-2 py-0.5">
+      {/* Issues group — always expanded */}
+      <div className="flex h-[30px] items-center gap-2 px-2 text-[12px] font-medium text-sidebar-foreground/60">
+        <List className="h-3.5 w-3.5" />
+        <span>Issues</span>
+      </div>
+      <div className="ml-5 border-l border-sidebar-border/50 pl-2">
+        {issueSubItems.map((item) => (
+          <Link key={item.label} to={item.href} className={linkClass}>
+            {item.icon}
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      {otherItems.map((item) => (
+        <Link key={item.label} to={item.href} className={linkClass}>
           {item.icon}
           <span>{item.label}</span>
         </Link>
@@ -73,7 +90,7 @@ export function SidebarProjects({
   const currentWorkspace = useAuthStore((s) => s.currentWorkspace);
   const wsId = currentWorkspace?.id;
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [sectionOpen, setSectionOpen] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
     new Set(),
@@ -107,27 +124,34 @@ export function SidebarProjects({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      {/* Section header */}
+      <div className="flex items-center mb-1 px-2.5">
         <button
           type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
-          className="flex flex-1 items-center gap-1 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          onClick={() => setSectionOpen((v) => !v)}
+          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
         >
-          {collapsed ? (
-            <ChevronRight className="h-3 w-3" />
-          ) : (
+          {sectionOpen ? (
             <ChevronDown className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
           )}
           Projects
         </button>
+        <button
+          type="button"
+          onClick={() => setCreateModalOpen(true)}
+          className="ml-auto flex h-5 w-5 items-center justify-center rounded text-sidebar-foreground/30 hover:text-sidebar-foreground/60 hover:bg-sidebar-accent transition-colors"
+          aria-label="프로젝트 추가"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
       </div>
 
-      {!collapsed && (
+      {sectionOpen && (
         <>
           {projects.map((project) => {
-            const isExpanded =
-              expandedProjects.has(project.id) ||
-              params.projectId === project.id;
+            const isExpanded = expandedProjects.has(project.id);
 
             return (
               <div key={project.id}>
@@ -135,7 +159,7 @@ export function SidebarProjects({
                   <button
                     type="button"
                     onClick={() => toggleProject(project.id)}
-                    className="flex h-8 w-6 items-center justify-center shrink-0 text-muted-foreground hover:text-foreground"
+                    className="flex h-[34px] w-5 items-center justify-center shrink-0 ml-1 text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-3 w-3" />
@@ -143,17 +167,25 @@ export function SidebarProjects({
                       <ChevronRight className="h-3 w-3" />
                     )}
                   </button>
-                  <Link
-                    to={`/${orgSlug}/${wsSlug}/projects/${project.id}/issues`}
-                    className="flex flex-1 h-8 items-center gap-2 rounded-md px-1 text-sm transition-colors hover:bg-sidebar-accent"
+                  <button
+                    type="button"
+                    onClick={() => toggleProject(project.id)}
+                    className={cn(
+                      'flex flex-1 h-[34px] items-center gap-2 rounded-lg px-2 text-[13px] font-medium transition-colors text-left',
+                      params.projectId === project.id
+                        ? 'bg-primary/10 text-primary font-semibold'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent',
+                    )}
                   >
-                    {project.iconUrl ? (
-                      <span className="text-sm">{project.iconUrl}</span>
+                    {project.iconUrl && (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
+                      <img src={project.iconUrl} alt="" className="h-4 w-4 rounded object-cover shrink-0" />
+                    ) : project.iconUrl ? (
+                      <span className="text-[14px] shrink-0">{project.iconUrl}</span>
                     ) : (
-                      <Folder className="h-4 w-4" />
+                      <Folder className="h-4 w-4 text-sidebar-foreground/40 shrink-0" />
                     )}
                     <span className="truncate">{project.name}</span>
-                  </Link>
+                  </button>
                 </div>
 
                 {isExpanded && (
@@ -167,14 +199,16 @@ export function SidebarProjects({
             );
           })}
 
-          <button
-            type="button"
-            onClick={() => setCreateModalOpen(true)}
-            className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            <span>프로젝트 추가</span>
-          </button>
+          {projects.length === 0 && (
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(true)}
+              className="flex h-[34px] w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>프로젝트 추가</span>
+            </button>
+          )}
         </>
       )}
 
@@ -223,12 +257,14 @@ export function CollapsedSidebarProjects() {
                   ? `/${orgSlug}/${wsSlug}/projects/${project.id}/issues`
                   : '#'
               }
-              className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
             >
-              {project.iconUrl ? (
+              {project.iconUrl && (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
+                <img src={project.iconUrl} alt="" className="h-5 w-5 rounded object-cover" />
+              ) : project.iconUrl ? (
                 <span className="text-base">{project.iconUrl}</span>
               ) : (
-                <Folder className="h-5 w-5" />
+                <Folder className="h-[18px] w-[18px]" />
               )}
             </Link>
           </TooltipTrigger>
@@ -236,7 +272,7 @@ export function CollapsedSidebarProjects() {
         </Tooltip>
       ))}
       <CollapsedNavItem
-        icon={<Plus className="h-5 w-5" />}
+        icon={<Plus className="h-[18px] w-[18px]" />}
         label="프로젝트 추가"
         onClick={() => {
           if (wsId) {

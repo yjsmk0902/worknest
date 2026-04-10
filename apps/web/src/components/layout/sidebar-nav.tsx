@@ -7,11 +7,20 @@ import {
   TooltipTrigger,
 } from '@worknest/ui';
 
-export function SectionLabel({ children }: { children: React.ReactNode }) {
+export function SectionLabel({
+  children,
+  action,
+}: {
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
-    <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-      {children}
-    </p>
+    <div className="flex items-center justify-between mt-5 mb-1 px-3">
+      <span className="text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
+        {children}
+      </span>
+      {action}
+    </div>
   );
 }
 
@@ -36,19 +45,20 @@ export function NavItem({
     <Link
       to={href}
       className={cn(
-        'flex h-8 items-center gap-2 rounded-md px-3 text-sm transition-colors hover:bg-sidebar-accent',
-        active && 'bg-sidebar-accent font-medium',
+        'flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors',
+        'text-sidebar-foreground hover:bg-sidebar-accent',
+        'data-[status=active]:bg-primary/10 data-[status=active]:text-primary data-[status=active]:font-semibold',
       )}
     >
-      {icon}
+      <span className="flex h-4 w-4 items-center justify-center shrink-0">{icon}</span>
       <span className="flex-1 truncate">{label}</span>
       {badge != null && badge > 0 && (
-        <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+        <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
           {badge}
         </span>
       )}
       {expandable && (
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/30" />
       )}
     </Link>
   );
@@ -65,19 +75,15 @@ export function CollapsedNavItem({
   href?: string;
   onClick?: () => void;
 }) {
+  const cls =
+    'flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors';
+
   const content = href ? (
-    <Link
-      to={href}
-      className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
-    >
+    <Link to={href} className={cls}>
       {icon}
     </Link>
   ) : (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent"
-    >
+    <button type="button" onClick={onClick} className={cls}>
       {icon}
     </button>
   );
