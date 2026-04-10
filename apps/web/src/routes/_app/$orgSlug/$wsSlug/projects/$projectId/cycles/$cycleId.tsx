@@ -144,7 +144,13 @@ function CycleDetailPage() {
       });
       toast('사이클이 활성화되었습니다.');
     },
-    onError: () => toast('사이클 활성화에 실패했습니다.'),
+    onError: (err) => {
+      if (err instanceof Error && err.message.includes('active cycle already exists')) {
+        toast('이미 활성화된 사이클이 있습니다. 기존 사이클을 완료한 후 다시 시도해주세요.');
+      } else {
+        toast(err instanceof Error ? err.message : '사이클 활성화에 실패했습니다.');
+      }
+    },
   });
 
   // Delete mutation
@@ -161,7 +167,7 @@ function CycleDetailPage() {
         params: { orgSlug, wsSlug, projectId },
       });
     },
-    onError: () => toast('사이클 삭제에 실패했습니다.'),
+    onError: (err) => toast(err instanceof Error ? err.message : '사이클 삭제에 실패했습니다.'),
   });
 
   // Remove issue from cycle
@@ -206,7 +212,7 @@ function CycleDetailPage() {
           });
           toast('사이클이 완료되었습니다.');
         })
-        .catch(() => toast('사이클 완료에 실패했습니다.'));
+        .catch((err: unknown) => toast(err instanceof Error ? err.message : '사이클 완료에 실패했습니다.'));
     }
   }, [issues, statuses, cycleId, projectId, queryClient]);
 
@@ -454,7 +460,9 @@ function CycleDetailPage() {
           <DialogHeader>
             <DialogTitle>사이클 삭제</DialogTitle>
             <DialogDescription>
-              이 사이클을 삭제하시겠습니까? 이슈는 삭제되지 않습니다.
+              "{cycle.name}" 사이클을 삭제하시겠습니까?
+              {cycle.status === 'completed' && ' 완료된 사이클의 기록이 영구적으로 삭제됩니다.'}
+              {' '}이슈는 삭제되지 않습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

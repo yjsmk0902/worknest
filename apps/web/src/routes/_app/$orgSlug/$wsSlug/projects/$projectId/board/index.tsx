@@ -72,6 +72,8 @@ function BoardPage() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const { apiParams } = useIssueFilters();
+  const currentSort = apiParams.sort;
+  const currentOrder = apiParams.order ?? 'asc';
 
   // Set active context for hotkey system
   const setActiveContext = useHotkeyStore((s) => s.setActiveContext);
@@ -121,7 +123,7 @@ function BoardPage() {
 
   // Fetch issues with active filters applied
   const issuesQuery = useQuery<ListResponse<IssueOutput>>({
-    queryKey: ['projects', projectId, 'issues', apiParams],
+    queryKey: ['projects', projectId, 'board-issues', apiParams],
     queryFn: () =>
       apiClient.getList<IssueOutput>(
         `/projects/${projectId}/issues`,
@@ -242,6 +244,8 @@ function BoardPage() {
           stats={stats}
           projectId={projectId}
           projectPrefix={projectPrefix}
+          sortField={currentSort}
+          sortOrder={currentOrder}
           onCardClick={(issueId) => setSelectedIssueId(issueId)}
           onCreateClick={() => setShowQuickAdd(true)}
         />
@@ -271,7 +275,7 @@ function BoardSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="flex flex-col min-w-[280px] max-w-[320px] w-[280px] rounded-lg bg-muted/30"
+          className="flex flex-col min-w-[360px] max-w-[420px] w-[360px] rounded-lg bg-muted/30"
         >
           {/* Column header skeleton */}
           <div className="flex h-10 items-center gap-2 px-3">

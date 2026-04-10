@@ -45,7 +45,7 @@ export function AddIssuesPopover({
     queryFn: () =>
       apiClient.getList<IssueOutput>(
         `/projects/${projectId}/issues`,
-        { limit: '200' },
+        { limit: '100' },
       ),
     staleTime: 30 * 1000,
     enabled: open,

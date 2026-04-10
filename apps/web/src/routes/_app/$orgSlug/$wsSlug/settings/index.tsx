@@ -17,7 +17,9 @@ import {
 import { toast } from '@worknest/ui';
 import { apiClient } from '@/lib/api-client';
 import { SettingsLayout } from '@/components/settings/settings-layout';
+import { ImageUpload } from '@/components/settings/image-upload';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { useAuthStore } from '@/stores/auth-store';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/',
@@ -104,7 +106,6 @@ function GeneralSettingsForm({
 }) {
   const [formData, setFormData] = useState({
     name: workspace.name,
-    slug: workspace.slug,
     description: workspace.description ?? '',
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -112,7 +113,6 @@ function GeneralSettingsForm({
 
   const hasChanges =
     formData.name !== workspace.name ||
-    formData.slug !== workspace.slug ||
     formData.description !== (workspace.description ?? '');
 
   const updateMutation = useMutation({
@@ -158,22 +158,22 @@ function GeneralSettingsForm({
 
       <Separator />
 
-      {/* Logo upload placeholder */}
       <div className="space-y-2">
         <Label>로고</Label>
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary text-lg font-semibold text-primary-foreground">
-            {workspace.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm">
-              변경
-            </Button>
-            <Button variant="ghost" size="sm">
-              제거
-            </Button>
-          </div>
-        </div>
+        <ImageUpload
+          currentUrl={workspace.logo}
+          fallback={workspace.name}
+          shape="logo"
+          onUpdate={(url) => {
+            apiClient.patch(`/workspaces/${workspace.id}`, { logo: url }).then(() => {
+              const store = useAuthStore.getState();
+              if (store.currentWorkspace) {
+                store.setCurrentWorkspace({ ...store.currentWorkspace, logo: url });
+              }
+              onSaved();
+            });
+          }}
+        />
       </div>
 
       <Separator />
@@ -195,17 +195,12 @@ function GeneralSettingsForm({
           <Label htmlFor="ws-slug">워크스페이스 URL (slug)</Label>
           <Input
             id="ws-slug"
-            value={formData.slug}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, slug: e.target.value }))
-            }
-            disabled={updateMutation.isPending}
+            value={workspace.slug}
+            disabled
           />
-          {formData.slug && (
-            <p className="text-xs text-muted-foreground">
-              worknest.app/.../{formData.slug}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            slug는 자동 생성되며 변경할 수 없습니다.
+          </p>
         </div>
 
         <div className="space-y-2">

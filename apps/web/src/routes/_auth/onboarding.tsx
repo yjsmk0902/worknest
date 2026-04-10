@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
 import {
   Loader2,
@@ -15,10 +15,6 @@ import { z } from 'zod';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import {
-  createOrganizationInput,
-  createWorkspaceInput,
-} from '@worknest/shared';
 import { apiClient, ApiError } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/onboarding')({
@@ -27,73 +23,32 @@ export const Route = createFileRoute('/_auth/onboarding')({
 
 const TOTAL_STEPS = 3;
 
-// Re-use shared schemas with Korean error messages via superRefine
-const orgSchema = createOrganizationInput
-  .pick({ name: true, slug: true })
-  .superRefine((data, ctx) => {
-    if (!data.name || data.name.length < 1) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['name'],
-        message: '조직 이름을 입력해주세요.',
-      });
-    }
-    if (data.name && data.name.length > 100) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['name'],
-        message: '100자 이하여야 합니다.',
-      });
-    }
-  });
+const orgSchema = z.object({
+  name: z.string().min(1, '조직 이름을 입력해주세요.').max(100, '100자 이하여야 합니다.'),
+});
 
-const wsSchema = createWorkspaceInput
-  .pick({ name: true, slug: true })
-  .superRefine((data, ctx) => {
-    if (!data.name || data.name.length < 1) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['name'],
-        message: '워크스페이스 이름을 입력해주세요.',
-      });
-    }
-    if (data.name && data.name.length > 100) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['name'],
-        message: '100자 이하여야 합니다.',
-      });
-    }
-  });
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, '')
-    .replace(/[\s가-힣]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+const wsSchema = z.object({
+  name: z.string().min(1, '워크스페이스 이름을 입력해주세요.').max(100, '100자 이하여야 합니다.'),
+});
 
 function OnboardingPage() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   // Step 1: Org
-  const [orgData, setOrgData] = useState({ name: '', slug: '' });
+  const [orgData, setOrgData] = useState({ name: '' });
   const [orgErrors, setOrgErrors] =
     useState<Partial<Record<string, string>>>();
   const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
 
   // Step 2: Workspace
-  const [wsData, setWsData] = useState({ name: '', slug: '' });
+  const [wsData, setWsData] = useState({ name: '' });
   const [wsErrors, setWsErrors] =
     useState<Partial<Record<string, string>>>();
   const [createdWsSlug, setCreatedWsSlug] = useState('');
 
   const createOrgMutation = useMutation({
-    mutationFn: (data: { name: string; slug: string }) =>
+    mutationFn: (data: { name: string }) =>
       apiClient.post<{ id: string; slug: string }>('/organizations', data),
     onSuccess: (result) => {
       setCreatedOrgId(result.id);
@@ -103,7 +58,7 @@ function OnboardingPage() {
   });
 
   const createWsMutation = useMutation({
-    mutationFn: (data: { name: string; slug: string }) =>
+    mutationFn: (data: { name: string }) =>
       apiClient.post<{ id: string; slug: string }>(
         `/organizations/${createdOrgId}/workspaces`,
         data,
@@ -161,7 +116,7 @@ function OnboardingPage() {
 
   function handleSkip() {
     if (step === 1) {
-      navigate({ to: '/_app/orgs' });
+      window.location.href = '/orgs';
     } else if (step === 2) {
       setStep(3);
     } else {
@@ -236,39 +191,11 @@ function OnboardingPage() {
                   value={orgData.name}
                   onChange={(e) => {
                     const name = e.target.value;
-                    setOrgData((prev) => ({
-                      ...prev,
-                      name,
-                      slug: prev.slug === slugify(prev.name) ? slugify(name) : prev.slug,
-                    }));
+                    setOrgData({ name });
                   }}
                 />
                 {orgErrors?.name && (
                   <p className="text-sm text-destructive">{orgErrors.name}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="org-slug" error={!!orgErrors?.slug}>
-                  조직 URL (slug)
-                </Label>
-                <Input
-                  id="org-slug"
-                  placeholder="acme-corp"
-                  disabled={createOrgMutation.isPending}
-                  error={!!orgErrors?.slug}
-                  value={orgData.slug}
-                  onChange={(e) =>
-                    setOrgData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                />
-                {orgData.slug && (
-                  <p className="text-xs text-muted-foreground">
-                    worknest.app/{orgData.slug}
-                  </p>
-                )}
-                {orgErrors?.slug && (
-                  <p className="text-sm text-destructive">{orgErrors.slug}</p>
                 )}
               </div>
 
@@ -331,40 +258,11 @@ function OnboardingPage() {
                   error={!!wsErrors?.name}
                   value={wsData.name}
                   onChange={(e) => {
-                    const name = e.target.value;
-                    setWsData((prev) => ({
-                      ...prev,
-                      name,
-                      slug: prev.slug === slugify(prev.name) ? slugify(name) : prev.slug,
-                    }));
+                    setWsData({ name: e.target.value });
                   }}
                 />
                 {wsErrors?.name && (
                   <p className="text-sm text-destructive">{wsErrors.name}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ws-slug" error={!!wsErrors?.slug}>
-                  워크스페이스 URL (slug)
-                </Label>
-                <Input
-                  id="ws-slug"
-                  placeholder="dev-team"
-                  disabled={createWsMutation.isPending}
-                  error={!!wsErrors?.slug}
-                  value={wsData.slug}
-                  onChange={(e) =>
-                    setWsData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                />
-                {wsData.slug && (
-                  <p className="text-xs text-muted-foreground">
-                    worknest.app/{createdOrgSlug}/{wsData.slug}
-                  </p>
-                )}
-                {wsErrors?.slug && (
-                  <p className="text-sm text-destructive">{wsErrors.slug}</p>
                 )}
               </div>
 

@@ -19,6 +19,7 @@ import { apiClient } from '@/lib/api-client';
 import { SettingsLayout } from '@/components/settings/settings-layout';
 import { InvitationList } from '@/components/settings/invitation-list';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { useAuthStore } from '@/stores/auth-store';
 
 export const Route = createFileRoute(
   '/_app/$orgSlug/$wsSlug/settings/members',
@@ -43,6 +44,7 @@ interface Member {
 function WorkspaceSettingsMembers() {
   const { orgSlug, wsSlug } = Route.useParams();
   const { wsId } = useWorkspaceContext();
+  const currentUser = useAuthStore((s) => s.currentUser);
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -171,58 +173,74 @@ function WorkspaceSettingsMembers() {
                 </div>
 
                 {/* Member rows */}
-                {filteredMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
-                    style={{ minHeight: '56px' }}
-                  >
-                    <div className="flex flex-1 items-center gap-3">
-                      <Avatar
-                        src={member.user.avatarUrl}
-                        fallback={member.user.name}
-                        size="md"
-                      />
-                      <span className="truncate text-sm font-medium">
-                        {member.user.name}
-                      </span>
-                    </div>
-                    <div className="w-[200px] truncate text-sm text-muted-foreground">
-                      {member.user.email}
-                    </div>
-                    <div className="w-[120px]">
-                      <RoleSelect
-                        value={member.role}
-                        onChange={(role) =>
-                          updateRoleMutation.mutate({
-                            memberId: member.id,
-                            role,
-                          })
-                        }
-                        disabled={updateRoleMutation.isPending}
-                      />
-                    </div>
-                    <div className="w-[48px] text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() =>
-                              removeMemberMutation.mutate(member.id)
+                {filteredMembers.map((member) => {
+                  const isMe = member.user.id === currentUser?.id;
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
+                      style={{ minHeight: '56px' }}
+                    >
+                      <div className="flex flex-1 items-center gap-3">
+                        <Avatar
+                          src={member.user.avatarUrl}
+                          fallback={member.user.name}
+                          size="md"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-sm font-medium">
+                            {member.user.name}
+                          </span>
+                          {isMe && (
+                            <Badge variant="outline" className="text-xs">나</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="w-[200px] truncate text-sm text-muted-foreground">
+                        {member.user.email}
+                      </div>
+                      <div className="w-[120px]">
+                        {isMe ? (
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {member.role}
+                          </Badge>
+                        ) : (
+                          <RoleSelect
+                            value={member.role}
+                            onChange={(role) =>
+                              updateRoleMutation.mutate({
+                                memberId: member.id,
+                                role,
+                              })
                             }
-                          >
-                            멤버 제거
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            disabled={updateRoleMutation.isPending}
+                          />
+                        )}
+                      </div>
+                      <div className="w-[48px] text-right">
+                        {!isMe && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() =>
+                                  removeMemberMutation.mutate(member.id)
+                                }
+                              >
+                                멤버 제거
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>

@@ -204,8 +204,8 @@ export function CommandPalette() {
       keywords: ['로그아웃', 'logout', 'signout'],
       action: () => {
         close();
-        apiClient.post('/auth/logout').then(() => {
-          navigate({ to: '/login' });
+        apiClient.post('/auth/logout').catch(() => {}).finally(() => {
+          window.location.href = '/login';
         });
       },
     },

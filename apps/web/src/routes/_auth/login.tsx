@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
 import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
 import { z } from 'zod';
@@ -19,9 +19,26 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+async function resolveRedirect(): Promise<string> {
+  try {
+    const orgsRes = await apiClient.getList<{ id: string; slug: string }>('/organizations');
+    if (orgsRes.data.length === 0) return '/onboarding';
+    const firstOrg = orgsRes.data[0];
+    const wsRes = await apiClient.getList<{ id: string; slug: string }>(
+      `/organizations/${firstOrg.id}/workspaces`,
+    );
+    if (wsRes.data.length > 0) {
+      return `/${firstOrg.slug}/${wsRes.data[0].slug}`;
+    }
+    return '/orgs';
+  } catch {
+    return '/orgs';
+  }
+}
+
 function LoginPage() {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [formData, setFormData] = useState<LoginForm>({
     email: '',
     password: '',
@@ -31,18 +48,23 @@ function LoginPage() {
   >({});
 
   const loginMutation = useMutation({
-    mutationFn: (data: LoginForm) =>
-      apiClient.post('/auth/login', data),
-    onSuccess: () => {
-      navigate({ to: '/_app/orgs' });
+    mutationFn: async (data: LoginForm) => {
+      await apiClient.post('/auth/login', data);
+      const redirect = await resolveRedirect();
+      return redirect;
+    },
+    onSuccess: (redirect) => {
+      setIsRedirecting(true);
+      window.location.href = redirect;
     },
   });
 
   const apiError = loginMutation.error;
   const isRateLimited =
     apiError instanceof ApiError && apiError.status === 429;
-  const isInvalidCredentials =
-    apiError instanceof ApiError && apiError.code === 'INVALID_CREDENTIALS';
+  const isAuthError =
+    apiError instanceof ApiError && (apiError.status === 401 || apiError.status === 422);
+  const hasError = !!apiError && !isRateLimited && !isAuthError;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,10 +86,22 @@ function LoginPage() {
     loginMutation.mutate(result.data);
   }
 
-  const isLoading = loginMutation.isPending;
+  const isLoading = loginMutation.isPending || isRedirecting;
+
+  // Full-screen loading overlay during redirect to prevent page flicker
+  if (isRedirecting) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm">이동 중...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
+    <div className="mx-auto max-w-[400px] rounded-2xl bg-card p-8 shadow-lg shadow-black/5 ring-1 ring-border/50">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-foreground">로그인</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -88,7 +122,7 @@ function LoginPage() {
         </div>
       )}
 
-      {isInvalidCredentials && (
+      {isAuthError && (
         <div
           role="alert"
           className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
@@ -96,6 +130,18 @@ function LoginPage() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <p className="text-sm text-destructive">
             이메일 또는 비밀번호가 올바르지 않습니다.
+          </p>
+        </div>
+      )}
+
+      {hasError && (
+        <div
+          role="alert"
+          className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">
+            로그인에 실패했습니다. 잠시 후 다시 시도해주세요.
           </p>
         </div>
       )}

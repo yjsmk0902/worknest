@@ -59,7 +59,7 @@ function InviteAcceptPage() {
     mutationFn: (data?: RegisterForm) =>
       apiClient.post(`/auth/invitations/${token}/accept`, data),
     onSuccess: () => {
-      navigate({ to: '/_app/orgs' });
+      window.location.href = '/orgs';
     },
   });
 

@@ -72,11 +72,12 @@ function IssueListPage() {
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-  const [focusedIndex, setFocusedIndex] = useState(0);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const { hasFilters, clearAllFilters, apiParams } =
     useIssueFilters();
+  const isManualSort = !apiParams.sort || apiParams.sort === 'manual';
 
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
@@ -151,12 +152,12 @@ function IssueListPage() {
     setRowSelection({});
   }, []);
 
-  // Esc: clear selection (when items are selected and no side panel is open)
+  // Esc: close side panel first, then clear selection
   useHotkey(
     'escape',
     useCallback(() => {
       if (selectedIssueId) {
-        // Side panel is open, let it close first (handled by the panel itself)
+        setSelectedIssueId(null);
         return;
       }
       if (Object.keys(rowSelection).length > 0) {
@@ -274,13 +275,17 @@ function IssueListPage() {
             hasNextPage={issuesQuery.hasNextPage}
             fetchNextPage={issuesQuery.fetchNextPage}
             focusedIndex={focusedIndex}
+            activeIssueId={selectedIssueId}
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
-            onRowClick={(issueId) => setSelectedIssueId(issueId)}
+            onRowClick={(issueId) =>
+              setSelectedIssueId((prev) => (prev === issueId ? null : issueId))
+            }
             onRowDoubleClick={handleOpenFullPage}
             onShowQuickAdd={() => setShowQuickAdd(true)}
             hasFilters={hasFilters}
             onClearFilters={clearAllFilters}
+            isManualSort={isManualSort}
           />
         </div>
       </div>

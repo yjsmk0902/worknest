@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle, Folder } from 'lucide-react';
+import { Loader2, AlertTriangle, Folder, ImageIcon, Smile, X } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
 import { Separator } from '@worknest/ui';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@worknest/ui';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +21,7 @@ import {
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
 import { apiClient } from '@/lib/api-client';
+import { ImageUpload } from '@/components/settings/image-upload';
 import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useProjectContext } from '@/contexts/project-context';
@@ -206,26 +212,18 @@ function GeneralSettingsForm({
       <Separator />
 
       {/* Icon */}
-      <div className="space-y-2">
-        <Label>아이콘</Label>
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-            {project.iconUrl ? (
-              <span className="text-xl">{project.iconUrl}</span>
-            ) : (
-              <Folder className="h-6 w-6 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm">
-              변경
-            </Button>
-            <Button variant="ghost" size="sm">
-              제거
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ProjectIconEditor
+        project={project}
+        onUpdate={(iconUrl) => {
+          apiClient
+            .patch(`/workspaces/${project.workspaceId}/projects/${project.id}`, { iconUrl })
+            .then(() => {
+              toast('아이콘이 변경되었습니다.');
+              onSaved();
+            })
+            .catch(() => toast('아이콘 변경에 실패했습니다.'));
+        }}
+      />
 
       <Separator />
 
@@ -376,6 +374,111 @@ function GeneralSettingsForm({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// ── Helper ─────────────────────────────────────────────────────────────
+
+function isImageUrl(value: string | null): boolean {
+  if (!value) return false;
+  return value.startsWith('/api/') || value.startsWith('http');
+}
+
+// ── Emoji grid ─────────────────────────────────────────────────────────
+
+const PROJECT_EMOJIS = [
+  '📁', '📂', '📋', '📌', '📎', '📝', '📊', '📈',
+  '🎯', '🚀', '⚡', '🔥', '💡', '🛠️', '🔧', '⚙️',
+  '🎨', '🖌️', '🎬', '🎮', '🎵', '📱', '💻', '🖥️',
+  '🌐', '🔒', '🔑', '📡', '🗂️', '📦', '🏗️', '🏠',
+  '🧪', '🔬', '📚', '✏️', '🗓️', '⏰', '💰', '🛒',
+  '❤️', '💙', '💚', '💛', '💜', '🧡', '🤍', '🖤',
+  '⭐', '🌟', '✨', '🌈', '🍀', '🌸', '🌻', '🌙',
+];
+
+// ── Project Icon Editor ────────────────────────────────────────────────
+
+function ProjectIconEditor({
+  project,
+  onUpdate,
+}: {
+  project: ProjectDetails;
+  onUpdate: (iconUrl: string | null) => void;
+}) {
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
+
+  const currentIcon = project.iconUrl;
+  const isImage = isImageUrl(currentIcon);
+
+  return (
+    <div className="space-y-2">
+      <Label>아이콘</Label>
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted overflow-hidden">
+          {isImage && currentIcon ? (
+            <img src={currentIcon} alt={project.name} className="h-12 w-12 object-cover" />
+          ) : currentIcon ? (
+            <span className="text-2xl">{currentIcon}</span>
+          ) : (
+            <Folder className="h-6 w-6 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Smile className="mr-1.5 h-3.5 w-3.5" />
+                이모지
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[296px] p-2">
+              <div className="grid grid-cols-8 gap-0.5">
+                {PROJECT_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      onUpdate(emoji);
+                      setEmojiOpen(false);
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-lg hover:bg-accent transition-colors"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Button variant="ghost" size="sm" onClick={() => setImageMode(true)}>
+            <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
+            이미지
+          </Button>
+
+          {currentIcon && (
+            <Button variant="ghost" size="sm" onClick={() => onUpdate(null)}>
+              <X className="mr-1.5 h-3.5 w-3.5" />
+              제거
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {imageMode && (
+        <div className="pt-2">
+          <ImageUpload
+            currentUrl={isImage ? currentIcon : null}
+            fallback={project.name}
+            shape="logo"
+            onUpdate={(url) => {
+              onUpdate(url);
+              setImageMode(false);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

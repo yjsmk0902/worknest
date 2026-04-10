@@ -33,3 +33,5 @@ pnpm-debug.log*
 
 # MinIO data (local dev)
 minio_data/
+apps/server/uploads/
+apps/web/.tanstack/tmp/
