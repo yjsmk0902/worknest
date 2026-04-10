@@ -1,9 +1,16 @@
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { Bug, BookOpen, CheckCircle, Rocket, type LucideIcon } from 'lucide-react';
 import { cn } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
 import type { IssueOutput } from '@worknest/shared';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
+
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  'check-circle': CheckCircle,
+  bug: Bug,
+  'book-open': BookOpen,
+  rocket: Rocket,
+};
 
 interface KanbanCardProps {
   issue: IssueOutput;
@@ -21,21 +28,28 @@ export function KanbanCard({
   const {
     attributes,
     listeners,
-    setNodeRef,
+    setNodeRef: setDragRef,
     transform,
-    transition,
     isDragging,
-  } = useSortable({
+  } = useDraggable({
     id: issue.id,
     disabled: isDragOverlay,
   });
 
-  const style = isDragOverlay
-    ? undefined
-    : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
+  const { setNodeRef: setDropRef } = useDroppable({
+    id: issue.id,
+    disabled: isDragOverlay,
+  });
+
+  // Combine both refs
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDragRef(node);
+    setDropRef(node);
+  };
+
+  // Don't apply transform to original card — it's hidden during drag
+  // and DragOverlay handles the visual feedback
+  const style = undefined;
 
   const isTemp = issue.id.startsWith('temp-');
   const issueKey = isTemp
@@ -47,7 +61,7 @@ export function KanbanCard({
   const PriorityIcon = priorityConfig.icon;
   const showPriority = issue.priority !== 'none';
 
-  // Due date logic: show only if overdue or within 3 days
+  const startInfo = formatCardDate(issue.startDate);
   const dueInfo = getDueInfo(issue.dueDate);
 
   // Label dots (max 3)
@@ -57,11 +71,7 @@ export function KanbanCard({
   const assignees = issue.assignees?.slice(0, 2) ?? [];
   const extraAssignees = (issue.assignees?.length ?? 0) - 2;
 
-  const hasMetaRow =
-    showPriority ||
-    assignees.length > 0 ||
-    labels.length > 0 ||
-    dueInfo !== null;
+  const TypeIcon = issue.type ? TYPE_ICONS[issue.type.icon] : null;
 
   return (
     <div
@@ -74,90 +84,140 @@ export function KanbanCard({
       aria-label={`${issueKey} ${issue.title}`}
       aria-roledescription="드래그 가능한 이슈 카드"
       onClick={(e) => {
-        // Only handle click if not dragging
         if (!isDragging && !isTemp) {
           e.stopPropagation();
           onClick(issue.id);
         }
       }}
       className={cn(
-        'rounded-md border border-border bg-card p-3 cursor-grab',
-        'transition-shadow hover:shadow-sm hover:border-border/80',
-        isDragging && 'opacity-50',
+        'flex flex-col rounded-xl p-3.5 h-[140px] cursor-grab',
+        'shadow-sm ring-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5',
+        issue.priority === 'urgent' && 'bg-red-50 ring-red-200/60 dark:bg-red-950/30 dark:ring-red-800/40',
+        issue.priority === 'high' && 'bg-orange-50 ring-orange-200/60 dark:bg-orange-950/30 dark:ring-orange-800/40',
+        issue.priority === 'medium' && 'bg-amber-50 ring-amber-200/60 dark:bg-yellow-950/30 dark:ring-yellow-800/40',
+        issue.priority === 'low' && 'bg-blue-50 ring-blue-200/60 dark:bg-blue-950/30 dark:ring-blue-800/40',
+        (issue.priority === 'none' || !issue.priority) && 'bg-card ring-border/50',
+        isDragging && 'opacity-0 pointer-events-none',
         isTemp && 'pointer-events-none opacity-70',
       )}
     >
-      {/* Issue key */}
-      <span className="text-xs font-mono text-muted-foreground">
-        {issueKey}
-      </span>
+      {/* Top row: key + type + labels + priority */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-mono text-muted-foreground shrink-0">
+          {issueKey}
+        </span>
+        {TypeIcon && (
+          <TypeIcon className="h-3.5 w-3.5 shrink-0" style={{ color: issue.type!.color }} />
+        )}
+        {labels.length > 0 && (
+          <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+            {labels.map((l) => (
+              <span
+                key={l.id}
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs leading-none shrink-0"
+                style={{
+                  backgroundColor: `${l.label.color}20`,
+                  color: l.label.color,
+                }}
+              >
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ backgroundColor: l.label.color }}
+                />
+                {l.label.name}
+              </span>
+            ))}
+          </div>
+        )}
+        {showPriority && (
+          <PriorityIcon className={cn('h-3.5 w-3.5 ml-auto shrink-0', priorityConfig.color)} />
+        )}
+      </div>
 
       {/* Title */}
       <p className="mt-1 text-sm font-medium line-clamp-2">
         {issue.title}
       </p>
 
-      {/* Meta row */}
-      {hasMetaRow && (
-        <div className="flex items-center gap-2 mt-2">
-          {/* Priority icon */}
-          {showPriority && (
-            <PriorityIcon
-              className={cn('w-4 h-4', priorityConfig.color)}
-            />
-          )}
+      {/* Spacer */}
+      <div className="flex-1" />
 
-          {/* Label dots */}
-          {labels.length > 0 && (
-            <div className="flex items-center gap-1">
-              {labels.map((l) => (
-                <span
-                  key={l.id}
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: l.label.color }}
-                />
-              ))}
-            </div>
+      {/* Bottom row: dates + cycle + assignees */}
+      <div className="flex items-center gap-2 mt-1.5">
+        <span
+          className={cn(
+            'text-xs shrink-0',
+            dueInfo?.isOverdue && 'text-destructive font-medium',
+            dueInfo?.isSoon && !dueInfo?.isOverdue && 'text-orange-500',
+            (!dueInfo || (!dueInfo.isOverdue && !dueInfo.isSoon)) && 'text-muted-foreground',
           )}
+        >
+          {startInfo && dueInfo
+            ? `${startInfo} → ${dueInfo.label}`
+            : startInfo
+              ? `${startInfo} →`
+              : dueInfo
+                ? `→ ${dueInfo.label}`
+                : '-'}
+        </span>
 
-          {/* Due date */}
-          {dueInfo && (
+        <div className="flex items-center gap-1.5 ml-auto min-w-0">
+          {issue.cycle && (
             <span
               className={cn(
-                'text-xs',
-                dueInfo.isOverdue && 'text-destructive font-medium',
-                !dueInfo.isOverdue && 'text-orange-500',
+                'inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] leading-none shrink-0',
+                issue.cycle.status === 'active'
+                  ? 'bg-primary/10 text-primary'
+                  : issue.cycle.status === 'completed'
+                    ? 'bg-emerald-500/10 text-emerald-600'
+                    : 'bg-muted text-muted-foreground',
               )}
             >
-              {dueInfo.label}
+              <span
+                className={cn(
+                  'h-1.5 w-1.5 rounded-full shrink-0',
+                  issue.cycle.status === 'active'
+                    ? 'bg-primary'
+                    : issue.cycle.status === 'completed'
+                      ? 'bg-emerald-500'
+                      : 'bg-muted-foreground',
+                )}
+              />
+              {issue.cycle.name}
             </span>
           )}
 
-          {/* Assignee avatars - pushed to right */}
-          {assignees.length > 0 && (
-            <div className="flex items-center ml-auto">
-              {assignees.map((a, i) => (
-                <Avatar
-                  key={a.id}
-                  src={a.user.avatarUrl}
-                  fallback={a.user.name}
-                  className={cn(
-                    'w-5 h-5 text-[10px]',
-                    i > 0 && '-ml-1',
-                  )}
-                />
-              ))}
+          {assignees.length > 0 ? (
+            <>
+              <Avatar
+                src={assignees[0].user.avatarUrl}
+                fallback={assignees[0].user.name}
+                className="w-5 h-5 text-[10px] shrink-0"
+              />
+              <span className="text-xs text-muted-foreground truncate">
+                {assignees[0].user.name}
+              </span>
               {extraAssignees > 0 && (
-                <span className="flex items-center justify-center w-5 h-5 -ml-1 rounded-full bg-muted text-xs text-muted-foreground">
+                <span className="text-[10px] text-muted-foreground shrink-0">
                   +{extraAssignees}
                 </span>
               )}
-            </div>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground/50">담당자 없음</span>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
+}
+
+// ── Date helpers ─────────────────────────────────────────────────────
+
+function formatCardDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 }
 
 // ── Due date helper ───────────────────────────────────────────────────
@@ -165,6 +225,7 @@ export function KanbanCard({
 interface DueInfo {
   label: string;
   isOverdue: boolean;
+  isSoon?: boolean;
 }
 
 function getDueInfo(dueDate: string | null): DueInfo | null {
@@ -175,25 +236,16 @@ function getDueInfo(dueDate: string | null): DueInfo | null {
   const diffMs = due.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
+  const label = due.toLocaleDateString('ko-KR', {
+    month: 'short',
+    day: 'numeric',
+  });
+
   if (diffDays < 0) {
-    return {
-      label: new Date(dueDate).toLocaleDateString('ko-KR', {
-        month: 'short',
-        day: 'numeric',
-      }),
-      isOverdue: true,
-    };
+    return { label, isOverdue: true };
   }
-
   if (diffDays <= 3) {
-    return {
-      label: new Date(dueDate).toLocaleDateString('ko-KR', {
-        month: 'short',
-        day: 'numeric',
-      }),
-      isOverdue: false,
-    };
+    return { label, isOverdue: false, isSoon: true };
   }
-
-  return null;
+  return { label, isOverdue: false };
 }

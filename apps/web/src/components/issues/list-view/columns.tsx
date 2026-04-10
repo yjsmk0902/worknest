@@ -1,12 +1,24 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import { cn } from '@worknest/ui';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@worknest/ui';
-import { StatusCell, PriorityCell, AssigneeCell } from './inline-edit-cells';
+import { StatusCell, PriorityCell, AssigneeCell, TypeCell } from './inline-edit-cells';
 import type { IssueOutput } from '@worknest/shared';
 
 const MAX_SELECTION = 50;
 
-// ── Due date formatting ─────────────────────────────────────────────────
+// ── Date formatting ─────────────────────────────────────────────────────
+
+function formatDateTime(dateStr: string | null): string {
+  if (!dateStr) return '\u2014';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const date = now.getFullYear() === d.getFullYear()
+    ? `${pad(d.getMonth() + 1)}/${pad(d.getDate())}`
+    : `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+  const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+  return hasTime ? `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}` : date;
+}
 
 function formatDueDate(dateStr: string | null): {
   text: string;
@@ -22,10 +34,7 @@ function formatDueDate(dateStr: string | null): {
     (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  const sameYear = date.getFullYear() === now.getFullYear();
-  const formatted = sameYear
-    ? `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
-    : `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+  const formatted = formatDateTime(dateStr);
 
   if (diffDays < 0) {
     return { text: formatted, className: 'text-destructive font-medium' };
@@ -170,7 +179,7 @@ export function createIssueColumns(
       },
     }),
 
-    // Title column
+    // Title column (with inline labels)
     columnHelper.accessor('title', {
       id: 'title',
       size: undefined, // flex-1
@@ -179,9 +188,39 @@ export function createIssueColumns(
           Title
         </span>
       ),
-      cell: ({ row }) => (
-        <span className="truncate text-sm">{row.original.title}</span>
-      ),
+      cell: ({ row }) => {
+        const labels = row.original.labels ?? [];
+        return (
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="truncate text-sm">{row.original.title}</span>
+            {labels.length > 0 && (
+              <div className="flex items-center gap-1 shrink-0">
+                {labels.slice(0, 3).map((l) => (
+                  <span
+                    key={l.id}
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs leading-none"
+                    style={{
+                      backgroundColor: `${l.label.color}20`,
+                      color: l.label.color,
+                    }}
+                  >
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: l.label.color }}
+                    />
+                    {l.label.name}
+                  </span>
+                ))}
+                {labels.length > 3 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{labels.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      },
     }),
 
     // Status column
@@ -198,24 +237,98 @@ export function createIssueColumns(
       ),
     }),
 
+    // Type column
+    columnHelper.display({
+      id: 'type',
+      size: 100,
+      header: () => (
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Type
+        </span>
+      ),
+      cell: ({ row }) => (
+        <TypeCell issue={row.original} projectId={projectId} />
+      ),
+    }),
+
     // Assignee column
     columnHelper.display({
       id: 'assignee',
-      size: 80,
+      size: 140,
       header: () => (
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Assignee
         </span>
       ),
       cell: ({ row }) => (
-        <AssigneeCell issue={row.original} projectId={projectId} />
+        <AssigneeCell issue={row.original} projectId={projectId} showName />
       ),
+    }),
+
+    // Cycle column
+    columnHelper.display({
+      id: 'cycle',
+      size: 120,
+      header: () => (
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Cycle
+        </span>
+      ),
+      cell: ({ row }) => {
+        const cycle = row.original.cycle;
+        if (!cycle) {
+          return <span className="text-xs text-muted-foreground/50">{'\u2014'}</span>;
+        }
+        return (
+          <span
+            className={cn(
+              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs leading-none truncate max-w-full',
+              cycle.status === 'active'
+                ? 'bg-primary/10 text-primary'
+                : cycle.status === 'completed'
+                  ? 'bg-emerald-500/10 text-emerald-600'
+                  : 'bg-muted text-muted-foreground',
+            )}
+          >
+            <span
+              className={cn(
+                'h-1.5 w-1.5 rounded-full shrink-0',
+                cycle.status === 'active'
+                  ? 'bg-primary'
+                  : cycle.status === 'completed'
+                    ? 'bg-emerald-500'
+                    : 'bg-muted-foreground',
+              )}
+            />
+            {cycle.name}
+          </span>
+        );
+      },
+    }),
+
+    // Start date column
+    columnHelper.display({
+      id: 'startDate',
+      size: 120,
+      header: () => (
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          Start
+        </span>
+      ),
+      cell: ({ row }) => {
+        const text = formatDateTime(row.original.startDate);
+        return (
+          <span className={cn('text-xs', row.original.startDate ? 'text-muted-foreground' : 'text-muted-foreground/50')}>
+            {text}
+          </span>
+        );
+      },
     }),
 
     // Due date column
     columnHelper.accessor('dueDate', {
       id: 'dueDate',
-      size: 100,
+      size: 120,
       header: () => (
         <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Due

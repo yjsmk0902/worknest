@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Search } from 'lucide-react';
+import { Bug, BookOpen, Check, CheckCircle, Rocket, Search, type LucideIcon } from 'lucide-react';
 import {
   Avatar,
   DropdownMenu,
@@ -16,7 +16,7 @@ import {
 import { cn } from '@worknest/ui';
 import { apiClient, type ListResponse } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
-import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
+import type { IssueOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -71,14 +71,19 @@ function useInlineUpdate(projectId: string, issueId: string) {
     },
     onError: () => {
       toast('변경에 실패했습니다.');
-      // Refetch to restore correct state
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
       });
     },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
       });
     },
   });
@@ -213,9 +218,10 @@ export function PriorityCell({ issue, projectId }: PriorityCellProps) {
 interface AssigneeCellProps {
   issue: IssueOutput;
   projectId: string;
+  showName?: boolean;
 }
 
-export function AssigneeCell({ issue, projectId }: AssigneeCellProps) {
+export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
@@ -228,16 +234,21 @@ export function AssigneeCell({ issue, projectId }: AssigneeCellProps) {
     enabled: open,
   });
 
+  const invalidateIssues = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'issues'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'board-issues'],
+    });
+  };
+
   const addAssignee = useMutation({
     mutationFn: (userId: string) =>
       apiClient.post(`/projects/${projectId}/issues/${issue.id}/assignees`, {
         userId,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateIssues,
     onError: () => toast('담당자 추가에 실패했습니다.'),
   });
 
@@ -246,11 +257,7 @@ export function AssigneeCell({ issue, projectId }: AssigneeCellProps) {
       apiClient.delete(
         `/projects/${projectId}/issues/${issue.id}/assignees/${userId}`,
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateIssues,
     onError: () => toast('담당자 제거에 실패했습니다.'),
   });
 
@@ -272,11 +279,29 @@ export function AssigneeCell({ issue, projectId }: AssigneeCellProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-full w-full items-center justify-center rounded-sm hover:bg-accent"
+          className={cn(
+            'flex h-full w-full items-center rounded-sm hover:bg-accent',
+            showName ? 'gap-1.5 px-1' : 'justify-center',
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           {assignees.length === 0 ? (
             <span className="text-xs text-muted-foreground">--</span>
+          ) : showName ? (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Avatar
+                src={assignees[0].user.avatarUrl}
+                fallback={assignees[0].user.name}
+                size="sm"
+                className="shrink-0"
+              />
+              <span className="truncate text-xs">{assignees[0].user.name}</span>
+              {assignees.length > 1 && (
+                <span className="shrink-0 text-[10px] text-muted-foreground">
+                  +{assignees.length - 1}
+                </span>
+              )}
+            </div>
           ) : (
             <div className="flex items-center">
               {assignees.slice(0, 2).map((a) => (
@@ -358,6 +383,242 @@ export function AssigneeCell({ issue, projectId }: AssigneeCellProps) {
             </button>
           </>
         )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ── Issue type icon mapping ─────────────────────────────────────────────
+
+const ISSUE_TYPE_ICONS: Record<string, LucideIcon> = {
+  'check-circle': CheckCircle,
+  bug: Bug,
+  'book-open': BookOpen,
+  rocket: Rocket,
+};
+
+function IssueTypeIcon({ icon, color, className }: { icon: string; color?: string; className?: string }) {
+  const IconComponent = ISSUE_TYPE_ICONS[icon];
+  if (IconComponent) {
+    return <IconComponent className={className} style={color ? { color } : undefined} />;
+  }
+  return <span className={className}>{icon}</span>;
+}
+
+// ── TypeCell ───────────────────────────────────────────────────────────
+
+interface TypeCellProps {
+  issue: IssueOutput;
+  projectId: string;
+}
+
+export function TypeCell({ issue, projectId }: TypeCellProps) {
+  const [open, setOpen] = useState(false);
+  const mutation = useInlineUpdate(projectId, issue.id);
+
+  const typesQuery = useQuery<IssueTypeOutput[]>({
+    queryKey: ['projects', projectId, 'types'],
+    queryFn: () =>
+      apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
+    staleTime: 5 * 60 * 1000,
+    enabled: open,
+  });
+
+  const types = typesQuery.data ?? [];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex h-full w-full items-center gap-1.5 rounded-sm px-1 text-xs hover:bg-accent"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {issue.type ? (
+            <>
+              <IssueTypeIcon icon={issue.type.icon} color={issue.type.color} className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{issue.type.name}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground">--</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[200px] p-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {types.map((type) => (
+          <button
+            key={type.id}
+            type="button"
+            onClick={() => {
+              mutation.mutate({ typeId: type.id });
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+          >
+            <IssueTypeIcon icon={type.icon} color={type.color} className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left">{type.name}</span>
+            {type.id === issue.typeId && (
+              <Check className="h-4 w-4 text-primary" />
+            )}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ── LabelCell ──────────────────────────────────────────────────────────
+
+interface LabelOutput {
+  id: string;
+  name: string;
+  color: string;
+  description: string | null;
+}
+
+interface LabelCellProps {
+  issue: IssueOutput;
+  projectId: string;
+}
+
+export function LabelCell({ issue, projectId }: LabelCellProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
+
+  const labelsQuery = useQuery<LabelOutput[]>({
+    queryKey: ['projects', projectId, 'labels'],
+    queryFn: () =>
+      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    staleTime: 5 * 60 * 1000,
+    enabled: open,
+  });
+
+  const addLabel = useMutation({
+    mutationFn: (labelId: string) =>
+      apiClient.post(`/projects/${projectId}/issues/${issue.id}/labels`, {
+        labelId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'issues'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
+      });
+    },
+    onError: () => toast('라벨 추가에 실패했습니다.'),
+  });
+
+  const removeLabel = useMutation({
+    mutationFn: (labelId: string) =>
+      apiClient.delete(
+        `/projects/${projectId}/issues/${issue.id}/labels/${labelId}`,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'issues'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
+      });
+    },
+    onError: () => toast('라벨 제거에 실패했습니다.'),
+  });
+
+  const labels = labelsQuery.data ?? [];
+  const issueLabelIds = new Set(
+    issue.labels?.map((l) => l.labelId) ?? [],
+  );
+  const issueLabels = issue.labels ?? [];
+
+  const filtered = labels.filter((l) =>
+    l.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex h-full w-full items-center gap-1 rounded-sm px-1 text-xs hover:bg-accent"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {issueLabels.length === 0 ? (
+            <span className="text-muted-foreground">--</span>
+          ) : (
+            <div className="flex items-center gap-1 overflow-hidden">
+              {issueLabels.slice(0, 2).map((l) => (
+                <span
+                  key={l.id}
+                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px]"
+                  style={{
+                    backgroundColor: `${l.label.color}20`,
+                    color: l.label.color,
+                  }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: l.label.color }}
+                  />
+                  <span className="truncate max-w-[48px]">{l.label.name}</span>
+                </span>
+              ))}
+              {issueLabels.length > 2 && (
+                <span className="text-[10px] text-muted-foreground">
+                  +{issueLabels.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[240px] p-2"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-2 flex items-center gap-2 rounded-md border border-border px-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="라벨 검색..."
+            autoFocus
+            className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <div className="max-h-[240px] overflow-y-auto">
+          {filtered.map((label) => {
+            const isAttached = issueLabelIds.has(label.id);
+            return (
+              <button
+                key={label.id}
+                type="button"
+                onClick={() => {
+                  if (isAttached) {
+                    removeLabel.mutate(label.id);
+                  } else {
+                    addLabel.mutate(label.id);
+                  }
+                }}
+                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+              >
+                <span
+                  className="h-2.5 w-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: label.color }}
+                />
+                <span className="flex-1 truncate text-left">{label.name}</span>
+                {isAttached && <Check className="h-4 w-4 text-primary" />}
+              </button>
+            );
+          })}
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -6,11 +6,14 @@ import {
   type RowSelectionState,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Loader2, CirclePlus, SearchX } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
+import { GripVertical, Loader2, CirclePlus, SearchX } from 'lucide-react';
+import { Button, Skeleton, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
+import { generateKeyBetween } from '@worknest/shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { EmptyState } from '../../empty-state';
 import { createIssueColumns } from './columns';
+import { apiClient } from '../../../lib/api-client';
 import type { IssueOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
@@ -28,9 +31,40 @@ interface IssueListTableProps {
   onRowSelectionChange: (selection: RowSelectionState) => void;
   onRowClick: (issueId: string) => void;
   onRowDoubleClick: (issueId: string) => void;
+  activeIssueId?: string | null;
   onShowQuickAdd: () => void;
   hasFilters: boolean;
   onClearFilters?: () => void;
+  isManualSort?: boolean;
+}
+
+function safeGenerateKey(a: string | null, b: string | null): string {
+  try {
+    if (a != null && b != null && a >= b) return generateKeyBetween(a, null);
+    return generateKeyBetween(a, b);
+  } catch {
+    return generateKeyBetween(a, null);
+  }
+}
+
+// ── Column width mapping ────────────────────────────────────────────────
+
+const COL_WIDTH: Record<string, string> = {
+  select: 'w-[40px] justify-center',
+  priority: 'w-[40px]',
+  drag: 'w-[28px]',
+  issueKey: 'w-[80px]',
+  title: 'flex-1 min-w-0 overflow-hidden',
+  status: 'w-[120px]',
+  type: 'w-[100px]',
+  assignee: 'w-[140px]',
+  cycle: 'w-[120px]',
+  startDate: 'w-[120px]',
+  dueDate: 'w-[120px]',
+};
+
+function colClass(id: string) {
+  return COL_WIDTH[id] ?? '';
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -48,12 +82,19 @@ export function IssueListTable({
   onRowSelectionChange,
   onRowClick,
   onRowDoubleClick,
+  activeIssueId,
   onShowQuickAdd,
   hasFilters,
   onClearFilters,
+  isManualSort = false,
 }: IssueListTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
+  // Drag state
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const columns = useMemo(
     () => createIssueColumns(projectPrefix, projectId),
@@ -110,6 +151,69 @@ export function IssueListTable({
     }
   }, [focusedIndex, rows.length, virtualizer]);
 
+  // Reorder mutation
+  const reorderMutation = useMutation({
+    mutationFn: (data: { issueId: string; sortOrder: string }) =>
+      apiClient.patch(`/projects/${projectId}/issues/${data.issueId}`, {
+        sortOrder: data.sortOrder,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'board-issues'] });
+    },
+    onError: () => toast('이동에 실패했습니다.'),
+  });
+
+  // Drag handlers
+  const handleDragStart = useCallback((e: React.DragEvent, issueId: string) => {
+    setDragId(issueId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Use a tiny transparent image so default ghost doesn't show
+    const img = new Image();
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(img, 0, 0);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, issueId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTargetId(issueId);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, targetIssueId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === targetIssueId) {
+      setDragId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    const otherIssues = issues.filter((i) => i.id !== dragId);
+    const targetIndex = otherIssues.findIndex((i) => i.id === targetIssueId);
+
+    if (targetIndex < 0) {
+      setDragId(null);
+      setDropTargetId(null);
+      return;
+    }
+
+    const above = targetIndex > 0 ? otherIssues[targetIndex - 1] : null;
+    const below = otherIssues[targetIndex];
+    const newSortOrder = safeGenerateKey(
+      above?.sortOrder ?? null,
+      below?.sortOrder ?? null,
+    );
+
+    reorderMutation.mutate({ issueId: dragId, sortOrder: newSortOrder });
+    setDragId(null);
+    setDropTargetId(null);
+  }, [dragId, issues, reorderMutation]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragId(null);
+    setDropTargetId(null);
+  }, []);
+
   // ── Loading state ───────────────────────────────────────────────────
 
   if (isLoading) {
@@ -150,28 +254,20 @@ export function IssueListTable({
   // ── Table render ────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-lg border border-border" role="grid" aria-label="이슈 목록">
+    <div className="rounded-xl bg-card shadow-sm ring-1 ring-border/50" role="grid" aria-label="이슈 목록">
       {/* Header */}
       <div
-        className="flex h-8 items-center border-b border-border bg-muted/50 px-3"
+        className="flex h-9 items-center border-b border-border/40 px-3"
         role="row"
         aria-rowindex={1}
       >
+        {isManualSort && <div className="w-[28px]" />}
         {table.getHeaderGroups().map((headerGroup) =>
           headerGroup.headers.map((header) => (
             <div
               key={header.id}
               role="columnheader"
-              className={cn(
-                'flex items-center',
-                header.id === 'title' ? 'flex-1 min-w-0' : '',
-                header.id === 'select' ? 'w-[40px] justify-center' : '',
-                header.id === 'priority' ? 'w-[40px]' : '',
-                header.id === 'issueKey' ? 'w-[80px]' : '',
-                header.id === 'status' ? 'w-[120px]' : '',
-                header.id === 'assignee' ? 'w-[80px]' : '',
-                header.id === 'dueDate' ? 'w-[100px]' : '',
-              )}
+              className={cn('flex items-center', colClass(header.id))}
             >
               {header.isPlaceholder
                 ? null
@@ -204,6 +300,10 @@ export function IssueListTable({
             const isTemp = row.original.id.startsWith('temp-');
             const isFocused = virtualRow.index === focusedIndex;
             const isSelected = row.getIsSelected();
+            const isActive = row.original.id === activeIssueId;
+            const priority = row.original.priority;
+            const isDragging = row.original.id === dragId;
+            const isDropTarget = row.original.id === dropTargetId && dropTargetId !== dragId;
 
             return (
               <div
@@ -215,12 +315,20 @@ export function IssueListTable({
                 aria-selected={isSelected}
                 aria-busy={isTemp}
                 className={cn(
-                  'absolute left-0 top-0 flex w-full items-center border-b border-border/50 px-3 transition-colors cursor-pointer',
-                  'hover:bg-accent/50',
+                  'absolute left-0 top-0 flex w-full items-center border-b border-border/30 px-3 transition-all duration-150 cursor-pointer',
+                  priority === 'urgent' && 'bg-red-50/50 dark:bg-red-950/15',
+                  priority === 'high' && 'bg-orange-50/50 dark:bg-orange-950/15',
+                  priority === 'medium' && 'bg-amber-50/40 dark:bg-yellow-950/15',
+                  priority === 'low' && 'bg-blue-50/40 dark:bg-blue-950/15',
+                  'hover:bg-accent/60',
                   isSelected && 'bg-primary/5',
-                  isFocused && 'ring-1 ring-primary/30 rounded-sm z-10',
+                  isActive && 'bg-primary/8 border-l-[3px] border-l-primary',
+                  isFocused && 'ring-1 ring-primary/20 rounded-md z-10',
                   isTemp && 'pointer-events-none opacity-70',
+                  isDragging && 'opacity-30',
+                  isDropTarget && 'border-t-2 border-t-primary',
                 )}
+                draggable={isManualSort && !isTemp}
                 style={{
                   height: '40px',
                   transform: `translateY(${virtualRow.start}px)`,
@@ -231,35 +339,25 @@ export function IssueListTable({
                 onDoubleClick={() => {
                   if (!isTemp) onRowDoubleClick(row.original.id);
                 }}
+                onDragStart={isManualSort ? (e) => handleDragStart(e, row.original.id) : undefined}
+                onDragEnd={isManualSort ? handleDragEnd : undefined}
+                onDragOver={isManualSort ? (e) => handleDragOver(e, row.original.id) : undefined}
+                onDrop={isManualSort ? (e) => handleDrop(e, row.original.id) : undefined}
               >
+                {/* Drag handle */}
+                {isManualSort && (
+                  <div
+                    className="w-[28px] flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground/60"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                )}
                 {row.getVisibleCells().map((cell) => (
                   <div
                     key={cell.id}
                     role="gridcell"
-                    className={cn(
-                      'flex items-center',
-                      cell.column.id === 'title'
-                        ? 'flex-1 min-w-0 overflow-hidden'
-                        : '',
-                      cell.column.id === 'select'
-                        ? 'w-[40px] justify-center'
-                        : '',
-                      cell.column.id === 'priority'
-                        ? 'w-[40px]'
-                        : '',
-                      cell.column.id === 'issueKey'
-                        ? 'w-[80px]'
-                        : '',
-                      cell.column.id === 'status'
-                        ? 'w-[120px]'
-                        : '',
-                      cell.column.id === 'assignee'
-                        ? 'w-[80px]'
-                        : '',
-                      cell.column.id === 'dueDate'
-                        ? 'w-[100px]'
-                        : '',
-                    )}
+                    className={cn('flex items-center', colClass(cell.column.id))}
                   >
                     {flexRender(
                       cell.column.columnDef.cell,
@@ -293,11 +391,11 @@ export function IssueListTable({
 function IssueListSkeleton() {
   return (
     <div
-      className="rounded-lg border border-border"
+      className="rounded-xl bg-card shadow-sm ring-1 ring-border/50"
       aria-busy="true"
       aria-label="이슈 목록 로딩 중"
     >
-      <div className="flex h-8 items-center gap-2 border-b border-border bg-muted/50 px-3">
+      <div className="flex h-9 items-center gap-2 border-b border-border/40 px-3">
         <Skeleton className="h-4 w-4" />
         <Skeleton className="h-3 w-12" />
         <Skeleton className="h-3 w-20" />
@@ -309,7 +407,7 @@ function IssueListSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="flex h-10 items-center gap-2 border-b border-border/50 px-3 last:border-b-0"
+          className="flex h-10 items-center gap-2 border-b border-border/30 px-3 last:border-b-0"
         >
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-4" />

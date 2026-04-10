@@ -30,53 +30,22 @@ export function QuickAdd({
         `/projects/${projectId}/issues`,
         data,
       ),
-    onMutate: async (newIssue) => {
-      const queryKey = parentId
-        ? ['projects', projectId, 'issues', parentId, 'sub-issues']
-        : ['projects', projectId, 'issues'];
-
-      await queryClient.cancelQueries({ queryKey });
-
-      const previousData = queryClient.getQueryData(queryKey);
-
-      const tempIssue: IssueOutput = {
-        id: `temp-${crypto.randomUUID()}`,
-        projectId,
-        sequenceId: 0,
-        title: newIssue.title,
-        description: null,
-        descriptionText: null,
-        statusId: defaultStatusId ?? null,
-        typeId: null,
-        priority: 'none',
-        parentId: parentId ?? null,
-        creatorId: null,
-        sortOrder: '',
-        dueDate: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      queryClient.setQueryData(queryKey, (old: unknown) => {
-        if (old && typeof old === 'object' && 'data' in old) {
-          const oldList = old as { data: IssueOutput[] };
-          return { ...oldList, data: [tempIssue, ...oldList.data] };
-        }
-        return old;
+    onSuccess: (created) => {
+      // Invalidate all issue queries for this project (list, board, stats, etc.)
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'issues'],
       });
-
-      return { previousData, queryKey };
-    },
-    onSuccess: (created, _variables, context) => {
-      if (context?.queryKey) {
-        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
+      });
+      if (parentId) {
+        queryClient.invalidateQueries({
+          queryKey: ['projects', projectId, 'issues', parentId, 'sub-issues'],
+        });
       }
       onCreated?.(created);
     },
-    onError: (_err, _variables, context) => {
-      if (context?.previousData && context.queryKey) {
-        queryClient.setQueryData(context.queryKey, context.previousData);
-      }
+    onError: () => {
       toast('이슈 생성에 실패했습니다. 다시 시도해주세요.');
     },
   });
@@ -101,7 +70,8 @@ export function QuickAdd({
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
+    // Ignore Enter during IME composition (e.g. Korean input)
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
       e.preventDefault();
       // Enter: create and keep Quick Add open (continuous creation)
       // Shift+Enter: create and close
@@ -126,7 +96,7 @@ export function QuickAdd({
     <div
       role="form"
       aria-label="이슈 빠른 생성"
-      className="flex h-10 items-center gap-2 rounded-md bg-card px-3 ring-2 ring-ring"
+      className="flex h-10 items-center gap-2 rounded-xl bg-card px-3 shadow-sm ring-2 ring-primary/30"
     >
       <CircleCheck className="h-4 w-4 shrink-0 text-muted-foreground" />
       <input

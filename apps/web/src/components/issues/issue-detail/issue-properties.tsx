@@ -166,8 +166,23 @@ export function IssueProperties({
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
+      });
     },
   });
+
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'issues', issue.id],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'issues'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'board-issues'],
+    });
+  };
 
   // Assignee mutations
   const addAssigneeMutation = useMutation({
@@ -175,14 +190,7 @@ export function IssueProperties({
       apiClient.post(`/projects/${projectId}/issues/${issue.id}/assignees`, {
         userId,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues', issue.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateAll,
     onError: () => toast('담당자 추가에 실패했습니다.'),
   });
 
@@ -191,14 +199,7 @@ export function IssueProperties({
       apiClient.delete(
         `/projects/${projectId}/issues/${issue.id}/assignees/${userId}`,
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues', issue.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateAll,
     onError: () => toast('담당자 제거에 실패했습니다.'),
   });
 
@@ -208,14 +209,7 @@ export function IssueProperties({
       apiClient.post(`/projects/${projectId}/issues/${issue.id}/labels`, {
         labelId,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues', issue.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateAll,
     onError: () => toast('라벨 추가에 실패했습니다.'),
   });
 
@@ -224,14 +218,7 @@ export function IssueProperties({
       apiClient.delete(
         `/projects/${projectId}/issues/${issue.id}/labels/${labelId}`,
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues', issue.id],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-    },
+    onSuccess: invalidateAll,
     onError: () => toast('라벨 제거에 실패했습니다.'),
   });
 
@@ -315,8 +302,9 @@ export function IssueProperties({
 
         {/* Cycle */}
         <PropertySection label="사이클">
-          <CycleDisplay
-            cycles={issueCycles}
+          <CyclePicker
+            issueId={issue.id}
+            issueCycles={issueCycles}
             projectId={projectId}
             orgSlug={orgSlug}
             wsSlug={wsSlug}
@@ -325,10 +313,18 @@ export function IssueProperties({
 
         <Separator />
 
+        {/* Start date */}
+        <PropertySection label="시작일">
+          <DateTimePicker
+            value={issue.startDate}
+            onChange={(startDate) => updateMutation.mutate({ startDate })}
+          />
+        </PropertySection>
+
         {/* Due date */}
         <PropertySection label="마감일">
-          <DueDatePicker
-            dueDate={issue.dueDate}
+          <DateTimePicker
+            value={issue.dueDate}
             onChange={(dueDate) => updateMutation.mutate({ dueDate })}
           />
         </PropertySection>
@@ -398,17 +394,25 @@ export function IssueProperties({
 
       {/* Cycle */}
       <span className="self-center text-sm text-muted-foreground">사이클</span>
-      <CycleDisplay
-        cycles={issueCycles}
+      <CyclePicker
+        issueId={issue.id}
+        issueCycles={issueCycles}
         projectId={projectId}
         orgSlug={orgSlug}
         wsSlug={wsSlug}
       />
 
+      {/* Start date */}
+      <span className="self-center text-sm text-muted-foreground">시작일</span>
+      <DateTimePicker
+        value={issue.startDate}
+        onChange={(startDate) => updateMutation.mutate({ startDate })}
+      />
+
       {/* Due date */}
       <span className="self-center text-sm text-muted-foreground">마감일</span>
-      <DueDatePicker
-        dueDate={issue.dueDate}
+      <DateTimePicker
+        value={issue.dueDate}
         onChange={(dueDate) => updateMutation.mutate({ dueDate })}
       />
     </div>
@@ -802,25 +806,36 @@ function LabelPicker({
   );
 }
 
-// ── Due Date Picker ─────────────────────────────────────────────────────
+// ── Date Time Picker ────────────────────────────────────────────────────
 
-function DueDatePicker({
-  dueDate,
+function DateTimePicker({
+  value,
   onChange,
 }: {
-  dueDate: string | null;
-  onChange: (dueDate: string | null) => void;
+  value: string | null;
+  onChange: (value: string | null) => void;
 }) {
+  // Convert ISO string to datetime-local format (YYYY-MM-DDTHH:mm)
+  const localValue = value ? toLocalDateTimeString(value) : '';
+
   return (
     <div className="flex items-center gap-2">
       <Calendar className="h-4 w-4 text-muted-foreground" />
       <input
-        type="date"
-        value={dueDate ?? ''}
-        onChange={(e) => onChange(e.target.value || null)}
+        type="datetime-local"
+        value={localValue}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (!v) {
+            onChange(null);
+          } else {
+            // Convert local datetime to ISO string
+            onChange(new Date(v).toISOString());
+          }
+        }}
         className="h-8 rounded-md border border-border bg-transparent px-2 text-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
       />
-      {dueDate && (
+      {value && (
         <button
           type="button"
           onClick={() => onChange(null)}
@@ -834,50 +849,147 @@ function DueDatePicker({
   );
 }
 
-// ── Cycle Display ──────────────────────────────────────────────────────
+function toLocalDateTimeString(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
-function CycleDisplay({
-  cycles,
+// ── Cycle Picker ──────────────────────────────────────────────────────
+
+function CyclePicker({
+  issueId,
+  issueCycles,
   projectId,
   orgSlug,
   wsSlug,
 }: {
-  cycles: CycleOutput[];
+  issueId: string;
+  issueCycles: CycleOutput[];
   projectId: string;
   orgSlug?: string;
   wsSlug?: string;
 }) {
-  if (cycles.length === 0) {
-    return (
-      <span className="text-sm text-muted-foreground">없음</span>
-    );
-  }
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const allCyclesQuery = useQuery<{ data: CycleOutput[] }>({
+    queryKey: ['projects', projectId, 'cycles'],
+    queryFn: () => apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
+    staleTime: 60 * 1000,
+    enabled: open,
+  });
+
+  const addToCycle = useMutation({
+    mutationFn: (cycleId: string) =>
+      apiClient.post(`/cycles/${cycleId}/issues`, { issueId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues', issueId, 'cycles'] });
+      toast('사이클에 추가되었습니다.');
+    },
+    onError: () => toast('사이클 추가에 실패했습니다.'),
+  });
+
+  const removeFromCycle = useMutation({
+    mutationFn: (cycleId: string) =>
+      apiClient.delete(`/cycles/${cycleId}/issues/${issueId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues', issueId, 'cycles'] });
+      toast('사이클에서 제거되었습니다.');
+    },
+    onError: () => toast('사이클 제거에 실패했습니다.'),
+  });
+
+  const allCycles = (allCyclesQuery.data?.data ?? []).filter(
+    (c) => c.status !== 'completed',
+  );
+  const issueCycleIds = new Set(issueCycles.map((c) => c.id));
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
-      {cycles.map((cycle) => {
-        const href =
-          orgSlug && wsSlug
-            ? `/${orgSlug}/${wsSlug}/projects/${projectId}/cycles/${cycle.id}`
-            : undefined;
+    <div>
+      {/* Current cycles */}
+      {issueCycles.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 mb-1">
+          {issueCycles.map((cycle) => {
+            const href =
+              orgSlug && wsSlug
+                ? `/${orgSlug}/${wsSlug}/projects/${projectId}/cycles/${cycle.id}`
+                : undefined;
 
-        const content = (
-          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-sm hover:bg-accent cursor-pointer">
+            return (
+              <span
+                key={cycle.id}
+                className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-0.5 text-sm"
+              >
+                <RefreshCw className="h-3 w-3 text-muted-foreground" />
+                {href ? (
+                  <Link to={href} className="hover:underline">
+                    {cycle.name}
+                  </Link>
+                ) : (
+                  cycle.name
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeFromCycle.mutate(cycle.id)}
+                  className="ml-0.5 rounded p-0.5 hover:bg-accent"
+                  aria-label={`${cycle.name} 사이클에서 제거`}
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Add to cycle */}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
             <RefreshCw className="h-3.5 w-3.5" />
-            {cycle.name}
-          </span>
-        );
-
-        if (href) {
-          return (
-            <Link key={cycle.id} to={href}>
-              {content}
-            </Link>
-          );
-        }
-
-        return <span key={cycle.id}>{content}</span>;
-      })}
+            {issueCycles.length === 0 ? '사이클 선택' : '추가'}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-[240px] p-2">
+          <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
+            사이클
+          </p>
+          {allCycles.length === 0 && (
+            <p className="px-2 py-3 text-sm text-muted-foreground text-center">
+              사이클이 없습니다
+            </p>
+          )}
+          <div className="max-h-[240px] overflow-y-auto">
+            {allCycles.map((cycle) => {
+              const isInCycle = issueCycleIds.has(cycle.id);
+              return (
+                <button
+                  key={cycle.id}
+                  type="button"
+                  onClick={() => {
+                    if (isInCycle) {
+                      removeFromCycle.mutate(cycle.id);
+                    } else {
+                      addToCycle.mutate(cycle.id);
+                    }
+                  }}
+                  disabled={addToCycle.isPending || removeFromCycle.isPending}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="flex-1 text-left truncate">{cycle.name}</span>
+                  <span className="text-[10px] text-muted-foreground capitalize">{cycle.status}</span>
+                  {isInCycle && <Check className="h-4 w-4 text-primary" />}
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

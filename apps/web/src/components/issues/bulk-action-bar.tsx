@@ -59,15 +59,22 @@ export function BulkActionBar({ projectId, selectedIds, onClearSelection }: Bulk
 
   // ── Bulk update mutation ────────────────────────────────────────────
 
+  const invalidateIssues = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'issues'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'board-issues'],
+    });
+  };
+
   const bulkUpdate = useMutation({
     mutationFn: (input: BulkUpdateInput) =>
       apiClient.patch(`/projects/${projectId}/issues/bulk`, input),
     onSuccess: () => {
       toast(`${count}건 업데이트 완료`);
       onClearSelection();
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
+      invalidateIssues();
     },
     onError: () => {
       toast('업데이트에 실패했습니다. 다시 시도해주세요.');
@@ -83,9 +90,7 @@ export function BulkActionBar({ projectId, selectedIds, onClearSelection }: Bulk
     onSuccess: () => {
       toast(`${count}건 삭제 완료`);
       onClearSelection();
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
+      invalidateIssues();
     },
     onError: () => {
       toast('삭제에 실패했습니다. 다시 시도해주세요.');
@@ -112,11 +117,12 @@ export function BulkActionBar({ projectId, selectedIds, onClearSelection }: Bulk
     <>
       <div
         className={cn(
-          'fixed bottom-0 right-0 z-50 flex h-12 items-center justify-between border-t border-border bg-background px-4 shadow-lg',
+          'fixed right-0 z-50 flex h-12 items-center justify-between bg-card px-4 shadow-md shadow-black/5 border-b border-border/30',
           'transition-transform duration-150 ease-out',
-          count > 0 ? 'translate-y-0' : 'translate-y-full',
+          count > 0 ? 'translate-y-0' : '-translate-y-full',
         )}
         style={{
+          top: '56px',
           left: sidebarCollapsed ? '48px' : '240px',
         }}
         role="toolbar"

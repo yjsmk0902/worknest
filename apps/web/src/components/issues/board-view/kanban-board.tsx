@@ -4,21 +4,112 @@ import {
   DragOverlay,
   PointerSensor,
   KeyboardSensor,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Columns3, Plus } from 'lucide-react';
 import { Button, ScrollArea, toast } from '@worknest/ui';
 import { generateKeyBetween, type IssueOutput, type IssueStatusOutput } from '@worknest/shared';
 import { apiClient } from '../../../lib/api-client';
 import { KanbanColumn } from './kanban-column';
-import { DragOverlayCard } from './drag-overlay-card';
+import { KanbanCard } from './kanban-card';
+
+// ── Safe key generation ──────────────────────────────────────────────
+
+function safeGenerateKeyBetween(a: string | null, b: string | null): string {
+  try {
+    // If a >= b (duplicate sortOrders), ignore b and just place after a
+    if (a != null && b != null && a >= b) {
+      return generateKeyBetween(a, null);
+    }
+    return generateKeyBetween(a, b);
+  } catch {
+    // Fallback: generate after a
+    return generateKeyBetween(a, null);
+  }
+}
+
+// ── Sort helpers ─────────────────────────────────────────────────────
+
+function getIssueSortValue(issue: IssueOutput, field: string | undefined): string | number {
+  switch (field) {
+    case 'priority': {
+      const order: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3, none: 4 };
+      return order[issue.priority] ?? 4;
+    }
+    case 'created_at':
+      return issue.createdAt;
+    case 'updated_at':
+      return issue.updatedAt;
+    case 'due_date':
+      return issue.dueDate ?? '\uffff';
+    case 'title':
+      return issue.title.toLowerCase();
+    case 'manual':
+    default:
+      return issue.sortOrder;
+  }
+}
+
+function sortIssues(a: IssueOutput, b: IssueOutput, field: string | undefined, order: string): number {
+  const va = getIssueSortValue(a, field);
+  const vb = getIssueSortValue(b, field);
+  let cmp: number;
+  if (typeof va === 'number' && typeof vb === 'number') {
+    cmp = va - vb;
+  } else {
+    cmp = String(va).localeCompare(String(vb));
+  }
+  return order === 'desc' ? -cmp : cmp;
+}
+
+function findSortedInsertIndex(
+  issue: IssueOutput,
+  sortedIssues: IssueOutput[],
+  field: string | undefined,
+  order: string,
+): number {
+  const val = getIssueSortValue(issue, field);
+  for (let i = 0; i < sortedIssues.length; i++) {
+    const other = getIssueSortValue(sortedIssues[i], field);
+    let cmp: number;
+    if (typeof val === 'number' && typeof other === 'number') {
+      cmp = val - other;
+    } else {
+      cmp = String(val).localeCompare(String(other));
+    }
+    if (order === 'desc') cmp = -cmp;
+    if (cmp <= 0) return i;
+  }
+  return sortedIssues.length;
+}
+
+// Custom collision detection for kanban board.
+// Prefer card-level hits for precise positioning, fall back to column for empty areas.
+const kanbanCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) {
+    // Filter out the dragged item itself
+    const activeId = args.active.id;
+    const others = pointerCollisions.filter((c) => c.id !== activeId);
+    if (others.length === 0) return pointerCollisions;
+
+    // Prefer card droppables for precise positioning within a column
+    const cardHits = others.filter(
+      (c) => !String(c.id).startsWith('column-'),
+    );
+    if (cardHits.length > 0) return cardHits;
+    return others;
+  }
+  return rectIntersection(args);
+};
 
 interface KanbanBoardProps {
   statuses: IssueStatusOutput[];
@@ -26,6 +117,8 @@ interface KanbanBoardProps {
   stats: Record<string, number>;
   projectId: string;
   projectPrefix: string;
+  sortField?: string;
+  sortOrder?: string;
   onCardClick: (issueId: string) => void;
   onCreateClick: () => void;
 }
@@ -36,12 +129,17 @@ export function KanbanBoard({
   stats,
   projectId,
   projectPrefix,
+  sortField,
+  sortOrder = 'asc',
   onCardClick,
   onCreateClick,
 }: KanbanBoardProps) {
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
+  const [overCardId, setOverCardId] = useState<string | null>(null);
+  const isManualSort = !sortField || sortField === 'manual';
+  const dragOriginalStatusRef = useRef<string | null>(null);
 
   // Local copy of issues for optimistic DnD reordering
   const [localIssues, setLocalIssues] = useState<IssueOutput[]>(issues);
@@ -59,18 +157,22 @@ export function KanbanBoard({
     for (const status of statuses) {
       grouped[status.id] = [];
     }
+    const firstStatusId = statuses[0]?.id ?? '';
     for (const issue of localIssues) {
       const sid = issue.statusId ?? '';
       if (grouped[sid]) {
         grouped[sid].push(issue);
+      } else if (firstStatusId && grouped[firstStatusId]) {
+        // Issues without a valid status go into the first column
+        grouped[firstStatusId].push(issue);
       }
     }
-    // Sort each column by sortOrder
+    // Sort each column
     for (const key of Object.keys(grouped)) {
-      grouped[key].sort((a, b) => a.sortOrder.localeCompare(b.sortOrder));
+      grouped[key].sort((a, b) => sortIssues(a, b, sortField, sortOrder));
     }
     return grouped;
-  }, [statuses, localIssues]);
+  }, [statuses, localIssues, sortField, sortOrder]);
 
   // Check if the board is completely empty
   const totalIssues = localIssues.length;
@@ -88,9 +190,7 @@ export function KanbanBoard({
         distance: 5,
       },
     }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    useSensor(KeyboardSensor),
   );
 
   // Mutation for updating issue status/sortOrder
@@ -111,11 +211,17 @@ export function KanbanBoard({
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
+      });
       toast('이슈 이동에 실패했습니다. 다시 시도해주세요.');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'board-issues'],
       });
     },
   });
@@ -141,37 +247,32 @@ export function KanbanBoard({
   // ── DnD handlers ──────────────────────────────────────────────────────
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  }, []);
+    const id = event.active.id as string;
+    setActiveId(id);
+    // Remember the original statusId before handleDragOver mutates localIssues
+    const issue = localIssues.find((i) => i.id === id);
+    dragOriginalStatusRef.current = issue?.statusId ?? null;
+  }, [localIssues]);
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
       const { active, over } = event;
       if (!over) {
         setOverColumnId(null);
+        setOverCardId(null);
         return;
       }
 
-      const activeColumnId = findColumnId(active.id as string);
-      const overColumnId = findColumnId(over.id as string);
+      const overId = over.id as string;
+      const overCol = findColumnId(overId);
+      setOverColumnId(overCol);
 
-      setOverColumnId(overColumnId);
-
-      if (!activeColumnId || !overColumnId || activeColumnId === overColumnId) {
-        return;
+      // Track which card is being hovered (for placeholder)
+      if (!overId.startsWith('column-') && overId !== active.id) {
+        setOverCardId(overId);
+      } else {
+        setOverCardId(null);
       }
-
-      // Moving between columns during drag - update local state for visual feedback
-      setLocalIssues((prev) => {
-        const activeIssue = prev.find((i) => i.id === active.id);
-        if (!activeIssue) return prev;
-
-        return prev.map((issue) =>
-          issue.id === active.id
-            ? { ...issue, statusId: overColumnId }
-            : issue,
-        );
-      });
     },
     [findColumnId],
   );
@@ -181,6 +282,7 @@ export function KanbanBoard({
       const { active, over } = event;
       setActiveId(null);
       setOverColumnId(null);
+      setOverCardId(null);
 
       if (!over) return;
 
@@ -190,57 +292,53 @@ export function KanbanBoard({
       const activeIssue = localIssues.find((i) => i.id === activeId);
       if (!activeIssue) return;
 
-      // Determine target column
-      const targetColumnId = findColumnId(overId);
+      // Use overCardId (tracked during drag) if available, fall back to over.id
+      const effectiveOverId = overCardId ?? overId;
+      const targetColumnId = findColumnId(effectiveOverId);
       if (!targetColumnId) return;
 
       const columnIssues = issuesByStatus[targetColumnId] ?? [];
-
-      // Filter out the active issue from the column
       const otherIssues = columnIssues.filter((i) => i.id !== activeId);
 
-      // Find the position in the target column
       let newSortOrder: string;
+      const droppedOnCard = overCardId && overCardId !== activeId;
 
-      if (overId.startsWith('column-')) {
-        // Dropped on the column itself (not on a specific card)
-        // Place at the end
-        const lastIssue = otherIssues[otherIssues.length - 1];
-        newSortOrder = generateKeyBetween(
-          lastIssue?.sortOrder ?? null,
-          null,
-        );
-      } else {
-        // Dropped on a specific card - find its position
-        const overIndex = otherIssues.findIndex((i) => i.id === overId);
-
-        if (overIndex < 0) {
-          // Over item not found in this column, place at end
-          const lastIssue = otherIssues[otherIssues.length - 1];
-          newSortOrder = generateKeyBetween(
-            lastIssue?.sortOrder ?? null,
-            null,
-          );
+      if (isManualSort) {
+        if (droppedOnCard) {
+          // Dropped on a specific card — insert before it
+          const overIndex = otherIssues.findIndex((i) => i.id === overCardId);
+          if (overIndex >= 0) {
+            const above = overIndex > 0 ? otherIssues[overIndex - 1] : null;
+            const below = otherIssues[overIndex];
+            newSortOrder = safeGenerateKeyBetween(
+              above?.sortOrder ?? null,
+              below?.sortOrder ?? null,
+            );
+          } else {
+            const lastIssue = otherIssues[otherIssues.length - 1];
+            newSortOrder = safeGenerateKeyBetween(lastIssue?.sortOrder ?? null, null);
+          }
         } else {
-          // Place before the over item
-          const above = overIndex > 0 ? otherIssues[overIndex - 1] : null;
-          const below = otherIssues[overIndex];
-          newSortOrder = generateKeyBetween(
-            above?.sortOrder ?? null,
-            below?.sortOrder ?? null,
-          );
+          // Dropped on column empty area — place at end
+          const lastIssue = otherIssues[otherIssues.length - 1];
+          newSortOrder = safeGenerateKeyBetween(lastIssue?.sortOrder ?? null, null);
         }
+      } else {
+        // Auto sort: find the correct position based on sort criteria
+        const insertIndex = findSortedInsertIndex(activeIssue, otherIssues, sortField, sortOrder);
+        const above = insertIndex > 0 ? otherIssues[insertIndex - 1] : null;
+        const below = insertIndex < otherIssues.length ? otherIssues[insertIndex] : null;
+        newSortOrder = safeGenerateKeyBetween(
+          above?.sortOrder ?? null,
+          below?.sortOrder ?? null,
+        );
       }
 
       // Optimistic update
       setLocalIssues((prev) =>
         prev.map((issue) =>
           issue.id === activeId
-            ? {
-                ...issue,
-                statusId: targetColumnId,
-                sortOrder: newSortOrder,
-              }
+            ? { ...issue, statusId: targetColumnId, sortOrder: newSortOrder }
             : issue,
         ),
       );
@@ -251,19 +349,20 @@ export function KanbanBoard({
         sortOrder: newSortOrder,
       };
 
-      // Only include statusId if it actually changed
-      if (activeIssue.statusId !== targetColumnId) {
+      if (dragOriginalStatusRef.current !== targetColumnId) {
         payload.statusId = targetColumnId;
       }
+      dragOriginalStatusRef.current = null;
 
       updateMutation.mutate(payload);
     },
-    [localIssues, issuesByStatus, findColumnId, updateMutation],
+    [localIssues, issuesByStatus, findColumnId, updateMutation, sortField, sortOrder],
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
     setOverColumnId(null);
+    setOverCardId(null);
     // Reset to server state
     setLocalIssues(issues);
   }, [issues]);
@@ -293,7 +392,7 @@ export function KanbanBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={kanbanCollisionDetection}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -316,17 +415,23 @@ export function KanbanBoard({
               projectPrefix={projectPrefix}
               onCardClick={onCardClick}
               isOver={overColumnId === status.id}
+              activeId={activeId}
+              overCardId={isManualSort ? overCardId : null}
             />
           ))}
         </div>
       </ScrollArea>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeIssue ? (
-          <DragOverlayCard
-            issue={activeIssue}
-            projectPrefix={projectPrefix}
-          />
+          <div className="w-[344px] opacity-90 shadow-xl rotate-[1deg] cursor-grabbing">
+            <KanbanCard
+              issue={activeIssue}
+              projectPrefix={projectPrefix}
+              onClick={() => {}}
+              isDragOverlay
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>
