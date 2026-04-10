@@ -36,7 +36,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "projects_ws_name_unique"
 CREATE TABLE IF NOT EXISTS "project_members" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "project_id" UUID        NOT NULL REFERENCES "projects" ("id") ON DELETE CASCADE,
-  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"    TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "role"       TEXT        NOT NULL,
   "joined_at"  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS "issues" (
   "type_id"          UUID        REFERENCES "issue_types" ("id") ON DELETE SET NULL,
   "priority"         TEXT        NOT NULL DEFAULT 'none',
   "parent_id"        UUID        REFERENCES "issues" ("id") ON DELETE SET NULL,
-  "creator_id"       UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "creator_id"       TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "sort_order"       TEXT        NOT NULL DEFAULT 'a0',
   "due_date"         TIMESTAMPTZ,
   "created_at"       TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -131,7 +131,7 @@ CREATE INDEX IF NOT EXISTS "issues_search_vector_idx"
 CREATE TABLE IF NOT EXISTS "issue_assignees" (
   "id"          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "issue_id"    UUID        NOT NULL REFERENCES "issues" ("id") ON DELETE CASCADE,
-  "user_id"     UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"     TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "assigned_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -153,7 +153,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "issue_labels_issue_label_unique"
 
 CREATE TABLE IF NOT EXISTS "activities" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  "actor_id"   UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "actor_id"   TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "issue_id"   UUID        REFERENCES "issues" ("id") ON DELETE CASCADE,
   "project_id" UUID        REFERENCES "projects" ("id") ON DELETE CASCADE,
   "action"     TEXT        NOT NULL,

@@ -17,6 +17,7 @@ export const createIssueInput = z.object({
   parentId: z.string().uuid().optional(),
   assigneeIds: z.array(z.string().uuid()).optional(),
   labelIds: z.array(z.string().uuid()).optional(),
+  startDate: z.string().optional(),
   dueDate: z.string().optional(),
 });
 
@@ -31,6 +32,7 @@ export const updateIssueInput = z.object({
   priority: priorityEnum.optional(),
   parentId: z.string().uuid().nullable().optional(),
   sortOrder: z.string().optional(),
+  startDate: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
 });
 
@@ -58,6 +60,7 @@ export const issueOutput = z.object({
   parentId: z.string().uuid().nullable(),
   creatorId: z.string().uuid().nullable(),
   sortOrder: z.string(),
+  startDate: z.string().nullable(),
   dueDate: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -100,6 +103,14 @@ export const issueOutput = z.object({
         }),
       }),
     )
+    .optional(),
+  cycle: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      status: z.enum(["draft", "active", "completed"]),
+    })
+    .nullable()
     .optional(),
 });
 

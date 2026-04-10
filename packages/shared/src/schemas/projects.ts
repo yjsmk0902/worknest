@@ -15,7 +15,7 @@ export const createProjectInput = z.object({
     .min(2)
     .max(5)
     .regex(/^[A-Z]{2,5}$/, "Prefix must be 2-5 uppercase letters"),
-  iconUrl: z.string().url().nullable().optional(),
+  iconUrl: z.string().max(500).nullable().optional(),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectInput>;
@@ -23,7 +23,7 @@ export type CreateProjectInput = z.infer<typeof createProjectInput>;
 export const updateProjectInput = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().max(500).nullable().optional(),
-  iconUrl: z.string().url().nullable().optional(),
+  iconUrl: z.string().max(500).nullable().optional(),
 });
 
 export type UpdateProjectInput = z.infer<typeof updateProjectInput>;

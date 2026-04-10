@@ -64,11 +64,11 @@ export const workspaceMembers = pgTable(
     workspaceId: uuid("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: text("role").notNull(), // 'admin' | 'member' | 'guest'
-    invitedBy: uuid("invited_by").references(() => users.id, {
+    invitedBy: text("invited_by").references(() => users.id, {
       onDelete: "set null",
     }),
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),

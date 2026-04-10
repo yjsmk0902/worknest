@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "wiki_spaces" (
   "name"          TEXT        NOT NULL,
   "description"   TEXT,
   "slug"          TEXT        NOT NULL,
-  "created_by"    UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "created_by"    TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "created_at"    TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at"    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -25,7 +25,7 @@ CREATE INDEX IF NOT EXISTS "wiki_spaces_workspace_id_idx"
 CREATE TABLE IF NOT EXISTS "wiki_space_members" (
   "id"            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "wiki_space_id" UUID        NOT NULL REFERENCES "wiki_spaces" ("id") ON DELETE CASCADE,
-  "user_id"       UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"       TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "role"          TEXT        NOT NULL DEFAULT 'editor',
   "created_at"    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS "wiki_pages" (
   "content_text"    TEXT,
   "parent_id"       UUID        REFERENCES "wiki_pages" ("id") ON DELETE SET NULL,
   "sort_order"      TEXT        NOT NULL DEFAULT 'a0',
-  "created_by"      UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "created_by"      TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "created_at"      TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at"      TIMESTAMPTZ NOT NULL DEFAULT now(),
   "deleted_at"      TIMESTAMPTZ
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS "files" (
   "path"        TEXT        NOT NULL,
   "mime_type"   TEXT        NOT NULL,
   "size"        INTEGER     NOT NULL,
-  "uploaded_by" UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "uploaded_by" TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "created_at"  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

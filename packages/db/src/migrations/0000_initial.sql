@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ── Users ──────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS "users" (
-  "id"             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  "id"             TEXT        PRIMARY KEY,
   "email"          TEXT        NOT NULL,
   "name"           TEXT        NOT NULL,
   "avatar_url"     TEXT,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 
 CREATE TABLE IF NOT EXISTS "sessions" (
   "id"         TEXT        PRIMARY KEY,
-  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"    TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "token"      TEXT        NOT NULL,
   "expires_at" TIMESTAMPTZ NOT NULL,
   "ip_address" TEXT,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 
 CREATE TABLE IF NOT EXISTS "accounts" (
   "id"                    TEXT        PRIMARY KEY,
-  "user_id"               UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"               TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "account_id"            TEXT        NOT NULL,
   "provider_id"           TEXT        NOT NULL,
   "access_token"          TEXT,
@@ -85,7 +85,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "organizations_slug_unique"
 CREATE TABLE IF NOT EXISTS "org_members" (
   "id"        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "org_id"    UUID        NOT NULL REFERENCES "organizations" ("id") ON DELETE CASCADE,
-  "user_id"   UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"   TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "role"      TEXT        NOT NULL,
   "joined_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -117,9 +117,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS "workspaces_org_slug_unique"
 CREATE TABLE IF NOT EXISTS "workspace_members" (
   "id"           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "workspace_id" UUID        NOT NULL REFERENCES "workspaces" ("id") ON DELETE CASCADE,
-  "user_id"      UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"      TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "role"         TEXT        NOT NULL,
-  "invited_by"   UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "invited_by"   TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "joined_at"    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS "invitations" (
   "email"        TEXT        NOT NULL,
   "role"         TEXT        NOT NULL,
   "token_hash"   TEXT        NOT NULL,
-  "invited_by"   UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "invited_by"   TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "expires_at"   TIMESTAMPTZ NOT NULL,
   "accepted_at"  TIMESTAMPTZ,
   "created_at"   TIMESTAMPTZ NOT NULL DEFAULT now(),

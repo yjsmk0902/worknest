@@ -35,7 +35,7 @@ export const comments = pgTable(
     }),
     content: jsonb("content").notNull(),
     parentId: uuid("parent_id"),
-    authorId: uuid("author_id").references(() => users.id, {
+    authorId: text("author_id").references(() => users.id, {
       onDelete: "set null",
     }),
     /** Reserved for v1.0 — marks when a comment thread was resolved */
@@ -88,7 +88,7 @@ export const reactions = pgTable(
     commentId: uuid("comment_id")
       .notNull()
       .references(() => comments.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     emoji: text("emoji").notNull(),

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { slugSchema } from "./common";
 
 // ── Roles ──────────────────────────────────────────────────────────────
 
@@ -10,16 +9,14 @@ export type OrgRole = z.infer<typeof orgRole>;
 
 export const createOrganizationInput = z.object({
   name: z.string().min(1).max(100),
-  slug: slugSchema,
-  logo: z.string().url().nullable().optional(),
+  logo: z.string().nullable().optional(),
 });
 
 export type CreateOrganizationInput = z.infer<typeof createOrganizationInput>;
 
 export const updateOrganizationInput = z.object({
   name: z.string().min(1).max(100).optional(),
-  slug: slugSchema.optional(),
-  logo: z.string().url().nullable().optional(),
+  logo: z.string().nullable().optional(),
 });
 
 export type UpdateOrganizationInput = z.infer<typeof updateOrganizationInput>;

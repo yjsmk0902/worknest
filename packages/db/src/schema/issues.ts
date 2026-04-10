@@ -119,10 +119,11 @@ export const issues = pgTable(
     }),
     priority: text("priority").notNull().default("none"), // 'urgent' | 'high' | 'medium' | 'low' | 'none'
     parentId: uuid("parent_id"),
-    creatorId: uuid("creator_id").references(() => users.id, {
+    creatorId: text("creator_id").references(() => users.id, {
       onDelete: "set null",
     }),
     sortOrder: text("sort_order").notNull().default("a0"),
+    startDate: timestamp("start_date", { withTimezone: true }),
     dueDate: timestamp("due_date", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -185,7 +186,7 @@ export const issueAssignees = pgTable(
     issueId: uuid("issue_id")
       .notNull()
       .references(() => issues.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow().notNull(),

@@ -64,7 +64,7 @@ export type ProfileOutput = z.infer<typeof profileOutput>;
 
 export const updateProfileInput = z.object({
   name: z.string().min(1).max(100).optional(),
-  avatarUrl: z.string().url().nullable().optional(),
+  avatarUrl: z.string().nullable().optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileInput>;

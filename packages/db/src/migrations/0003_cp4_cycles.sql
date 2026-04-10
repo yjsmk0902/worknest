@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS "cycles" (
   "start_date"  TIMESTAMPTZ,
   "end_date"    TIMESTAMPTZ,
   "status"      TEXT        NOT NULL DEFAULT 'draft',
-  "created_by"  UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "created_by"  TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "created_at"  TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at"  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

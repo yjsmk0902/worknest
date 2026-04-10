@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { slugSchema } from "./common";
 
 // ── Roles ──────────────────────────────────────────────────────────────
 
@@ -10,8 +9,7 @@ export type WsRole = z.infer<typeof wsRole>;
 
 export const createWorkspaceInput = z.object({
   name: z.string().min(1).max(100),
-  slug: slugSchema,
-  logo: z.string().url().nullable().optional(),
+  logo: z.string().nullable().optional(),
   description: z.string().max(500).nullable().optional(),
 });
 
@@ -19,8 +17,7 @@ export type CreateWorkspaceInput = z.infer<typeof createWorkspaceInput>;
 
 export const updateWorkspaceInput = z.object({
   name: z.string().min(1).max(100).optional(),
-  slug: slugSchema.optional(),
-  logo: z.string().url().nullable().optional(),
+  logo: z.string().nullable().optional(),
   description: z.string().max(500).nullable().optional(),
 });
 

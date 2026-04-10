@@ -36,7 +36,7 @@ export const invitations = pgTable(
     email: text("email").notNull(),
     role: text("role").notNull(), // org: 'owner' | 'admin' | 'member'; ws: 'admin' | 'member' | 'guest'
     tokenHash: text("token_hash").unique().notNull(),
-    invitedBy: uuid("invited_by").references(() => users.id, {
+    invitedBy: text("invited_by").references(() => users.id, {
       onDelete: "set null",
     }),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

@@ -31,7 +31,7 @@ export const views = pgTable(
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    createdBy: uuid("created_by").references(() => users.id, {
+    createdBy: text("created_by").references(() => users.id, {
       onDelete: "set null",
     }),
     filters: jsonb("filters"),

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "views" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "project_id" UUID        NOT NULL REFERENCES "projects" ("id") ON DELETE CASCADE,
   "name"       TEXT        NOT NULL,
-  "created_by" UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "created_by" TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "filters"    JSONB,
   "sort"       JSONB,
   "group_by"   TEXT,

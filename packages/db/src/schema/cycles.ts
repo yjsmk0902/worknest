@@ -32,7 +32,7 @@ export const cycles = pgTable(
     startDate: timestamp("start_date", { withTimezone: true }),
     endDate: timestamp("end_date", { withTimezone: true }),
     status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'completed'
-    createdBy: uuid("created_by").references(() => users.id, {
+    createdBy: text("created_by").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

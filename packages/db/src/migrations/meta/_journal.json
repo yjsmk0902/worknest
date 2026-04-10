@@ -50,6 +50,13 @@
       "when": 1744066800000,
       "tag": "0006_cp7_cleanup_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775785319581,
+      "tag": "0007_add_issue_start_date",
+      "breakpoints": true
     }
   ]
 }

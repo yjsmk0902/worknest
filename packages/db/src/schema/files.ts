@@ -33,7 +33,7 @@ export const files = pgTable(
     path: text("path").notNull(),
     mimeType: text("mime_type").notNull(),
     size: integer("size").notNull(),
-    uploadedBy: uuid("uploaded_by").references(() => users.id, {
+    uploadedBy: text("uploaded_by").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

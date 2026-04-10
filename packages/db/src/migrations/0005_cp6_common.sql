@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "comments" (
   "page_id"     UUID        REFERENCES "wiki_pages" ("id") ON DELETE CASCADE,
   "content"     JSONB       NOT NULL,
   "parent_id"   UUID        REFERENCES "comments" ("id") ON DELETE CASCADE,
-  "author_id"   UUID        REFERENCES "users" ("id") ON DELETE SET NULL,
+  "author_id"   TEXT        REFERENCES "users" ("id") ON DELETE SET NULL,
   "resolved_at" TIMESTAMPTZ,
   "created_at"  TIMESTAMPTZ NOT NULL DEFAULT now(),
   "updated_at"  TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -41,7 +41,7 @@ ALTER TABLE "comments" ADD CONSTRAINT "comments_parent_check"
 CREATE TABLE IF NOT EXISTS "reactions" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   "comment_id" UUID        NOT NULL REFERENCES "comments" ("id") ON DELETE CASCADE,
-  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"    TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "emoji"      TEXT        NOT NULL,
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -53,7 +53,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "reactions_comment_user_emoji_unique"
 
 CREATE TABLE IF NOT EXISTS "notifications" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"    TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "issue_id"   UUID        REFERENCES "issues" ("id") ON DELETE CASCADE,
   "page_id"    UUID        REFERENCES "wiki_pages" ("id") ON DELETE CASCADE,
   "type"       TEXT        NOT NULL,
@@ -77,7 +77,7 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_parent_check"
 
 CREATE TABLE IF NOT EXISTS "favorites" (
   "id"         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  "user_id"    UUID        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
+  "user_id"    TEXT        NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
   "project_id" UUID        REFERENCES "projects" ("id") ON DELETE CASCADE,
   "issue_id"   UUID        REFERENCES "issues" ("id") ON DELETE CASCADE,
   "page_id"    UUID        REFERENCES "wiki_pages" ("id") ON DELETE CASCADE,

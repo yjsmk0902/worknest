@@ -28,7 +28,7 @@ export const wikiSpaces = pgTable(
     name: text("name").notNull(),
     description: text("description"),
     slug: text("slug").notNull(),
-    createdBy: uuid("created_by").references(() => users.id, {
+    createdBy: text("created_by").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -69,7 +69,7 @@ export const wikiSpaceMembers = pgTable(
     wikiSpaceId: uuid("wiki_space_id")
       .notNull()
       .references(() => wikiSpaces.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: text("role").notNull().default("editor"), // 'editor' | 'viewer'
@@ -125,7 +125,7 @@ export const wikiPages = pgTable(
     contentText: text("content_text"),
     parentId: uuid("parent_id"),
     sortOrder: text("sort_order").notNull().default("a0"),
-    createdBy: uuid("created_by").references(() => users.id, {
+    createdBy: text("created_by").references(() => users.id, {
       onDelete: "set null",
     }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

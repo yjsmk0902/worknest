@@ -22,7 +22,7 @@ export const activities = pgTable(
   "activities",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    actorId: uuid("actor_id").references(() => users.id, {
+    actorId: text("actor_id").references(() => users.id, {
       onDelete: "set null",
     }),
     issueId: uuid("issue_id").references(() => issues.id, {
