@@ -158,6 +158,43 @@ export async function fileRoutes(
     },
   );
 
+  // ── GET /api/v1/files/:fileId/serve ──────────────────────────────
+  // Public endpoint for displaying images (logos, avatars).
+  // No auth required — file IDs are unguessable UUIDs.
+  // Only serves image files; rejects non-images for security.
+
+  app.get(
+    "/api/v1/files/:fileId/serve",
+    {
+      schema: {
+        tags: ["Files"],
+        summary: "Serve an image file publicly (for logos/avatars)",
+      },
+    },
+    async (request, reply) => {
+      const { fileId } = fileIdParam.parse(request.params);
+      const file = await service.getFileRecordPublic(fileId);
+
+      if (!file.mimeType.startsWith("image/")) {
+        return reply.status(403).send({
+          error: { code: "FORBIDDEN", message: "Only image files can be served publicly" },
+        });
+      }
+
+      if (!fs.existsSync(file.path)) {
+        return reply.status(404).send({
+          error: { code: "FILE_NOT_FOUND", message: "File not found on disk" },
+        });
+      }
+
+      const stream = fs.createReadStream(file.path);
+      return reply
+        .header("Content-Type", file.mimeType)
+        .header("Cache-Control", "public, max-age=31536000, immutable")
+        .send(stream);
+    },
+  );
+
   // ── DELETE /api/v1/files/:fileId ────────────────────────────────
 
   app.delete(

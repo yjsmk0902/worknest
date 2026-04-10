@@ -8,6 +8,8 @@ import {
 } from "drizzle-orm";
 import type { Auth } from "../lib/auth";
 import {
+  cycles,
+  cycleIssues,
   issues,
   issueStatuses,
   issueTypes,
@@ -60,6 +62,7 @@ interface MyIssue {
     labelId: string;
     label: { id: string; name: string; color: string };
   }[];
+  cycle: { id: string; name: string; status: string } | null;
 }
 
 type GroupedResult = Record<StatusCategory, MyIssue[]>;
@@ -148,8 +151,8 @@ export async function myWorkRoutes(
       // Collect unique issue IDs for batch-loading assignees and labels
       const issueIds = rows.map((r) => r.issue.id);
 
-      // Batch-load assignees and labels in parallel (skip if no issues)
-      const [assigneeRows, labelRows] = await Promise.all([
+      // Batch-load assignees, labels, and cycles in parallel (skip if no issues)
+      const [assigneeRows, labelRows, cycleRows] = await Promise.all([
         issueIds.length > 0
           ? db
               .select({
@@ -176,6 +179,23 @@ export async function myWorkRoutes(
               .from(issueLabels)
               .innerJoin(labels, eq(issueLabels.labelId, labels.id))
               .where(inArray(issueLabels.issueId, issueIds))
+          : Promise.resolve([]),
+        issueIds.length > 0
+          ? db
+              .select({
+                issueId: cycleIssues.issueId,
+                cycleId: cycles.id,
+                cycleName: cycles.name,
+                cycleStatus: cycles.status,
+              })
+              .from(cycleIssues)
+              .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
+              .where(
+                and(
+                  inArray(cycleIssues.issueId, issueIds),
+                  isNull(cycleIssues.removedAt),
+                ),
+              )
           : Promise.resolve([]),
       ]);
 
@@ -211,6 +231,17 @@ export async function myWorkRoutes(
         labelsByIssue.set(l.issueId, arr);
       }
 
+      const cycleByIssue = new Map<string, MyIssue["cycle"]>();
+      for (const c of cycleRows) {
+        if (!cycleByIssue.has(c.issueId)) {
+          cycleByIssue.set(c.issueId, {
+            id: c.cycleId,
+            name: c.cycleName,
+            status: c.cycleStatus,
+          });
+        }
+      }
+
       // Group by status category
       const grouped: GroupedResult = {
         backlog: [],
@@ -237,6 +268,7 @@ export async function myWorkRoutes(
           parentId: row.issue.parentId,
           creatorId: row.issue.creatorId,
           sortOrder: row.issue.sortOrder,
+          startDate: row.issue.startDate?.toISOString() ?? null,
           dueDate: row.issue.dueDate?.toISOString() ?? null,
           createdAt: row.issue.createdAt.toISOString(),
           updatedAt: row.issue.updatedAt.toISOString(),
@@ -263,6 +295,7 @@ export async function myWorkRoutes(
           },
           assignees: assigneesByIssue.get(row.issue.id) ?? [],
           labels: labelsByIssue.get(row.issue.id) ?? [],
+          cycle: cycleByIssue.get(row.issue.id) ?? null,
         };
 
         bucket.push(formatted);

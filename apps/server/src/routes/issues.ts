@@ -23,7 +23,7 @@ const projectIssueParams = z.object({
 const assigneeRemoveParams = z.object({
   projectId: z.string().uuid(),
   issueId: z.string().uuid(),
-  userId: z.string().uuid(),
+  userId: z.string().min(1),
 });
 const labelRemoveParams = z.object({
   projectId: z.string().uuid(),
@@ -33,7 +33,7 @@ const labelRemoveParams = z.object({
 
 // ── Body Schemas ───────────────────────────────────────────────────────
 
-const addAssigneeBody = z.object({ userId: z.string().uuid() });
+const addAssigneeBody = z.object({ userId: z.string().min(1) });
 const addLabelBody = z.object({ labelId: z.string().uuid() });
 
 /**

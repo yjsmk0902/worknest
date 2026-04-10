@@ -134,8 +134,8 @@ export function errorHandler(
     });
   }
 
-  // Fastify validation error (from schema validation)
-  if ("validation" in error && "statusCode" in error) {
+  // Fastify built-in error (validation, JSON parsing, etc.)
+  if ("statusCode" in error) {
     const statusCode = (error as { statusCode: number }).statusCode;
     return reply.status(statusCode).send({
       error: {

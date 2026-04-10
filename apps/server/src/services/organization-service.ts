@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { eq, and, isNull, lt, desc } from "drizzle-orm";
 import {
   organizations,
@@ -16,6 +17,18 @@ import type {
 } from "@worknest/shared";
 import { AppError, ErrorCode } from "../lib/errors";
 import { hashToken, generateToken } from "../lib/crypto";
+
+function generateSlug(name: string): string {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+  const suffix = randomUUID().replace(/-/g, "").slice(0, 8);
+  return base ? `${base}-${suffix}` : suffix;
+}
 
 // ── Service ────────────────────────────────────────────────────────────
 
@@ -70,21 +83,7 @@ export class OrganizationService {
   // ── Create Org ─────────────────────────────────────────────────────
 
   async create(userId: string, input: CreateOrganizationInput) {
-    // Check slug uniqueness
-    const existing = await this.db
-      .select({ id: organizations.id })
-      .from(organizations)
-      .where(
-        and(
-          eq(organizations.slug, input.slug),
-          isNull(organizations.deletedAt),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      throw AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Organization slug already taken");
-    }
+    const slug = generateSlug(input.name);
 
     // Create org + owner membership atomically
     const org = await this.db.transaction(async (tx) => {
@@ -92,7 +91,7 @@ export class OrganizationService {
         .insert(organizations)
         .values({
           name: input.name,
-          slug: input.slug,
+          slug,
           logo: input.logo ?? null,
         })
         .returning();
@@ -179,27 +178,8 @@ export class OrganizationService {
   // ── Update Org ─────────────────────────────────────────────────────
 
   async update(id: string, input: UpdateOrganizationInput) {
-    // If slug is changing, check uniqueness
-    if (input.slug) {
-      const existing = await this.db
-        .select({ id: organizations.id })
-        .from(organizations)
-        .where(
-          and(
-            eq(organizations.slug, input.slug),
-            isNull(organizations.deletedAt),
-          ),
-        )
-        .limit(1);
-
-      if (existing.length > 0 && existing[0]!.id !== id) {
-        throw AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Organization slug already taken");
-      }
-    }
-
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (input.name !== undefined) updates.name = input.name;
-    if (input.slug !== undefined) updates.slug = input.slug;
     if (input.logo !== undefined) updates.logo = input.logo;
 
     const updated = await this.db

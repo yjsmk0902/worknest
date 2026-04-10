@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { eq, and, isNull, lt, desc } from "drizzle-orm";
 import {
   workspaces,
@@ -17,6 +18,18 @@ import type {
 } from "@worknest/shared";
 import { AppError, ErrorCode } from "../lib/errors";
 import { hashToken, generateToken } from "../lib/crypto";
+
+function generateSlug(name: string): string {
+  const base = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+  const suffix = randomUUID().replace(/-/g, "").slice(0, 8);
+  return base ? `${base}-${suffix}` : suffix;
+}
 
 // ── Service ────────────────────────────────────────────────────────────
 
@@ -89,22 +102,7 @@ export class WorkspaceService {
       throw AppError.forbidden("Only org owner or admin can create workspaces");
     }
 
-    // Check slug uniqueness within org
-    const existing = await this.db
-      .select({ id: workspaces.id })
-      .from(workspaces)
-      .where(
-        and(
-          eq(workspaces.orgId, orgId),
-          eq(workspaces.slug, input.slug),
-          isNull(workspaces.deletedAt),
-        ),
-      )
-      .limit(1);
-
-    if (existing.length > 0) {
-      throw AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Workspace slug already taken in this organization");
-    }
+    const slug = generateSlug(input.name);
 
     // Create workspace + admin membership atomically
     const ws = await this.db.transaction(async (tx) => {
@@ -113,7 +111,7 @@ export class WorkspaceService {
         .values({
           orgId,
           name: input.name,
-          slug: input.slug,
+          slug,
           logo: input.logo ?? null,
           description: input.description ?? null,
         })
@@ -233,39 +231,8 @@ export class WorkspaceService {
 
   async update(id: string, input: UpdateWorkspaceInput) {
     // If slug is changing, check uniqueness within org
-    if (input.slug) {
-      const current = await this.db
-        .select({ orgId: workspaces.orgId })
-        .from(workspaces)
-        .where(eq(workspaces.id, id))
-        .limit(1)
-        .then((rows) => rows[0]);
-
-      if (current) {
-        const existing = await this.db
-          .select({ id: workspaces.id })
-          .from(workspaces)
-          .where(
-            and(
-              eq(workspaces.orgId, current.orgId),
-              eq(workspaces.slug, input.slug),
-              isNull(workspaces.deletedAt),
-            ),
-          )
-          .limit(1);
-
-        if (existing.length > 0 && existing[0]!.id !== id) {
-          throw AppError.conflict(
-            ErrorCode.SLUG_ALREADY_EXISTS,
-            "Workspace slug already taken in this organization",
-          );
-        }
-      }
-    }
-
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (input.name !== undefined) updates.name = input.name;
-    if (input.slug !== undefined) updates.slug = input.slug;
     if (input.logo !== undefined) updates.logo = input.logo;
     if (input.description !== undefined) updates.description = input.description;
 
@@ -407,6 +374,10 @@ export class WorkspaceService {
       throw AppError.forbidden("Only workspace admin can change member roles");
     }
 
+    if (member.userId === callerUserId) {
+      throw AppError.forbidden("Cannot change your own role");
+    }
+
     const [updated] = await this.db
       .update(workspaceMembers)
       .set({ role })
@@ -428,6 +399,10 @@ export class WorkspaceService {
 
     if (!member) {
       throw AppError.notFound("member");
+    }
+
+    if (member.userId === callerUserId) {
+      throw AppError.forbidden("Cannot remove yourself from the workspace");
     }
 
     // Verify caller is an admin of the workspace

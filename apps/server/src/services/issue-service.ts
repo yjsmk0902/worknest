@@ -1,5 +1,6 @@
 import {
   type Database,
+  cycles,
   cycleIssues,
   issueAssignees,
   issueLabels,
@@ -191,7 +192,25 @@ export class IssueService {
       .innerJoin(labels, eq(issueLabels.labelId, labels.id))
       .where(eq(issueLabels.issueId, issueId));
 
-    return this.formatIssue(row, assigneeRows, labelRows);
+    // Get active cycle for this issue
+    const cycleRow = await this.db
+      .select({
+        id: cycles.id,
+        name: cycles.name,
+        status: cycles.status,
+      })
+      .from(cycleIssues)
+      .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
+      .where(
+        and(
+          eq(cycleIssues.issueId, issueId),
+          isNull(cycleIssues.removedAt),
+        ),
+      )
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+
+    return this.formatIssue(row, assigneeRows, labelRows, cycleRow);
   }
 
   /**
@@ -222,6 +241,7 @@ export class IssueService {
       issueLabel: { id: string; labelId: string };
       label: { id: string; name: string; color: string };
     }[],
+    cycleData?: { id: string; name: string; status: string } | null,
   ) {
     return {
       id: row.issue.id,
@@ -236,6 +256,7 @@ export class IssueService {
       parentId: row.issue.parentId,
       creatorId: row.issue.creatorId,
       sortOrder: row.issue.sortOrder,
+      startDate: row.issue.startDate?.toISOString() ?? null,
       dueDate: row.issue.dueDate?.toISOString() ?? null,
       createdAt: row.issue.createdAt.toISOString(),
       updatedAt: row.issue.updatedAt.toISOString(),
@@ -277,6 +298,7 @@ export class IssueService {
           color: l.label.color,
         },
       })),
+      cycle: cycleData ?? null,
     };
   }
 
@@ -284,6 +306,18 @@ export class IssueService {
 
   async create(projectId: string, callerUserId: string, input: CreateIssueInput) {
     await this.verifyProjectMember(projectId, callerUserId);
+
+    // Resolve default status if not provided
+    let statusId = input.statusId ?? null;
+    if (!statusId) {
+      const [defaultStatus] = await this.db
+        .select({ id: issueStatuses.id })
+        .from(issueStatuses)
+        .where(eq(issueStatuses.projectId, projectId))
+        .orderBy(asc(issueStatuses.sortOrder))
+        .limit(1);
+      statusId = defaultStatus?.id ?? null;
+    }
 
     const issue = await this.db.transaction(async (tx) => {
       // Atomically increment the project's issue counter
@@ -310,11 +344,12 @@ export class IssueService {
           title: input.title,
           description: input.description ? sanitizeContent(input.description) : null,
           descriptionText: input.descriptionText ?? null,
-          statusId: input.statusId ?? null,
+          statusId,
           typeId: input.typeId ?? null,
           priority: input.priority ?? 'none',
           parentId: input.parentId ?? null,
           creatorId: callerUserId,
+          startDate: input.startDate ? new Date(input.startDate) : null,
           dueDate: input.dueDate ? new Date(input.dueDate) : null,
         })
         .returning();
@@ -641,8 +676,10 @@ export class IssueService {
       }[]
     >();
 
+    const cycleMap = new Map<string, { id: string; name: string; status: string }>();
+
     if (issueIds.length > 0) {
-      const [allAssignees, allLabels] = await Promise.all([
+      const [allAssignees, allLabels, allCycles] = await Promise.all([
         this.db
           .select({
             issueId: issueAssignees.issueId,
@@ -676,6 +713,21 @@ export class IssueService {
           .from(issueLabels)
           .innerJoin(labels, eq(issueLabels.labelId, labels.id))
           .where(inArray(issueLabels.issueId, issueIds)),
+        this.db
+          .select({
+            issueId: cycleIssues.issueId,
+            id: cycles.id,
+            name: cycles.name,
+            status: cycles.status,
+          })
+          .from(cycleIssues)
+          .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
+          .where(
+            and(
+              inArray(cycleIssues.issueId, issueIds),
+              isNull(cycleIssues.removedAt),
+            ),
+          ),
       ]);
 
       for (const row of allAssignees) {
@@ -688,6 +740,13 @@ export class IssueService {
         const existing = labelMap.get(row.issueId) ?? [];
         existing.push({ issueLabel: row.issueLabel, label: row.label });
         labelMap.set(row.issueId, existing);
+      }
+
+      for (const row of allCycles) {
+        // Keep the first (most relevant) cycle per issue
+        if (!cycleMap.has(row.issueId)) {
+          cycleMap.set(row.issueId, { id: row.id, name: row.name, status: row.status });
+        }
       }
     }
 
@@ -716,6 +775,7 @@ export class IssueService {
           row,
           assigneeMap.get(row.issue.id) ?? [],
           labelMap.get(row.issue.id) ?? [],
+          cycleMap.get(row.issue.id) ?? null,
         ),
       ),
       pagination: {
@@ -796,6 +856,15 @@ export class IssueService {
         throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Invalid sort order format');
       }
       updates.sortOrder = input.sortOrder;
+    }
+    if (input.startDate !== undefined) {
+      const newStartDate = input.startDate ? new Date(input.startDate) : null;
+      updates.startDate = newStartDate;
+      changedFields.push({
+        field: 'startDate',
+        oldValue: existing.startDate?.toISOString() ?? null,
+        newValue: newStartDate?.toISOString() ?? null,
+      });
     }
     if (input.dueDate !== undefined) {
       const newDueDate = input.dueDate ? new Date(input.dueDate) : null;

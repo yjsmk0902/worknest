@@ -308,6 +308,23 @@ export class FileService {
     return file;
   }
 
+  // ── Get File record (public, no auth check) ─────────────────────
+
+  async getFileRecordPublic(fileId: string) {
+    const file = await this.db
+      .select()
+      .from(files)
+      .where(eq(files.id, fileId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!file) {
+      throw AppError.notFound("file");
+    }
+
+    return file;
+  }
+
   // ── Delete File ─────────────────────────────────────────────────
 
   async delete(fileId: string, callerUserId: string) {

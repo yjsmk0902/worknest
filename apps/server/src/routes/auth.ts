@@ -135,14 +135,23 @@ export async function authRoutes(
       },
     },
     async (request, reply) => {
-      const response = await auth.api.signOut({
-        headers: request.headers as unknown as Headers,
-        asResponse: true,
-      });
+      try {
+        const response = await auth.api.signOut({
+          headers: request.headers as unknown as Headers,
+          asResponse: true,
+        });
 
-      const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
-      for (const cookie of setCookieHeaders) {
-        reply.header("set-cookie", cookie);
+        const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
+        for (const cookie of setCookieHeaders) {
+          reply.header("set-cookie", cookie);
+        }
+      } catch {
+        // If signOut fails, manually clear session cookies
+        const cookiePrefix = "worknest";
+        reply.header(
+          "set-cookie",
+          `${cookiePrefix}.session_token=; Path=/; HttpOnly; Max-Age=0`,
+        );
       }
 
       return reply.status(200).send({ data: { success: true } });

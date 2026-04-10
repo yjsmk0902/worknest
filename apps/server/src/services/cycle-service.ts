@@ -205,10 +205,10 @@ export class CycleService {
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
 
-    if (existing.status !== "draft") {
+    if (existing.status === "active") {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        "Only draft cycles can be deleted",
+        "Active cycles cannot be deleted. Complete the cycle first.",
       );
     }
 
@@ -455,6 +455,7 @@ export class CycleService {
         parentId: row.issue.parentId ?? null,
         creatorId: row.issue.creatorId ?? null,
         sortOrder: row.issue.sortOrder,
+        startDate: row.issue.startDate?.toISOString() ?? null,
         dueDate: row.issue.dueDate?.toISOString() ?? null,
         createdAt: row.issue.createdAt.toISOString(),
         updatedAt: row.issue.updatedAt.toISOString(),
