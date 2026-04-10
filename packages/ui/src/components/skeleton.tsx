@@ -8,7 +8,7 @@ function Skeleton({
     <div
       aria-busy="true"
       aria-label="Loading"
-      className={cn('animate-pulse rounded-md bg-muted', className)}
+      className={cn('animate-pulse rounded-lg bg-muted/70', className)}
       {...props}
     />
   );
