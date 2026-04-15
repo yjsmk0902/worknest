@@ -1,7 +1,7 @@
 import {
   type Database,
-  cycles,
   cycleIssues,
+  cycles,
   issueAssignees,
   issueLabels,
   issueStatuses,
@@ -206,12 +206,7 @@ export class IssueService {
       })
       .from(cycleIssues)
       .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
-      .where(
-        and(
-          eq(cycleIssues.issueId, issueId),
-          isNull(cycleIssues.removedAt),
-        ),
-      )
+      .where(and(eq(cycleIssues.issueId, issueId), isNull(cycleIssues.removedAt)))
       .limit(1)
       .then((rows) => rows[0] ?? null);
 
@@ -762,12 +757,7 @@ export class IssueService {
           })
           .from(cycleIssues)
           .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
-          .where(
-            and(
-              inArray(cycleIssues.issueId, issueIds),
-              isNull(cycleIssues.removedAt),
-            ),
-          ),
+          .where(and(inArray(cycleIssues.issueId, issueIds), isNull(cycleIssues.removedAt))),
       ]);
 
       for (const row of allAssignees) {
@@ -950,9 +940,7 @@ export class IssueService {
               recipientIds: assigneeIds,
               issueId,
               message: `이슈 #${existing.sequenceId}의 상태가 변경되었습니다`,
-            }).catch((err) =>
-              console.error('Failed to dispatch status_changed notification', err),
-            );
+            }).catch((err) => console.error('Failed to dispatch status_changed notification', err));
           }
         })
         .catch((err) =>

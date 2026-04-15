@@ -1,16 +1,16 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { createRequireAuth, createRequireOrgRole } from "../middleware/auth";
-import { OrganizationService } from "../services/organization-service";
+import type { Database } from '@worknest/db';
 import {
-  createOrganizationInput,
-  updateOrganizationInput,
   createOrgInvitationInput,
-  updateOrgMemberInput,
+  createOrganizationInput,
   cursorPaginationQuery,
+  updateOrgMemberInput,
+  updateOrganizationInput,
   uuidParam,
-} from "@worknest/shared";
+} from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth, createRequireOrgRole } from '../middleware/auth';
+import { OrganizationService } from '../services/organization-service';
 
 /**
  * Organization routes.
@@ -21,19 +21,19 @@ export async function organizationRoutes(
 ): Promise<void> {
   const { auth, db } = opts;
   const requireAuth = createRequireAuth(auth);
-  const requireAdmin = createRequireOrgRole(db, "admin");
-  const requireMember = createRequireOrgRole(db, "member");
+  const requireAdmin = createRequireOrgRole(db, 'admin');
+  const requireMember = createRequireOrgRole(db, 'member');
   const service = new OrganizationService(db);
 
   // ── GET /api/v1/organizations ──────────────────────────────────────
 
   app.get(
-    "/api/v1/organizations",
+    '/api/v1/organizations',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "List organizations the current user belongs to",
+        tags: ['Organizations'],
+        summary: 'List organizations the current user belongs to',
       },
     },
     async (request, reply) => {
@@ -46,12 +46,12 @@ export async function organizationRoutes(
   // ── POST /api/v1/organizations ─────────────────────────────────────
 
   app.post(
-    "/api/v1/organizations",
+    '/api/v1/organizations',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Create a new organization (creator becomes owner)",
+        tags: ['Organizations'],
+        summary: 'Create a new organization (creator becomes owner)',
       },
     },
     async (request, reply) => {
@@ -64,12 +64,12 @@ export async function organizationRoutes(
   // ── GET /api/v1/organizations/by-slug/:slug ────────────────────────
 
   app.get(
-    "/api/v1/organizations/by-slug/:slug",
+    '/api/v1/organizations/by-slug/:slug',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Get organization details by slug (current user must be a member)",
+        tags: ['Organizations'],
+        summary: 'Get organization details by slug (current user must be a member)',
       },
     },
     async (request, reply) => {
@@ -82,12 +82,12 @@ export async function organizationRoutes(
   // ── GET /api/v1/organizations/:id ──────────────────────────────────
 
   app.get(
-    "/api/v1/organizations/:id",
+    '/api/v1/organizations/:id',
     {
       preHandler: [requireAuth, requireMember],
       schema: {
-        tags: ["Organizations"],
-        summary: "Get organization details",
+        tags: ['Organizations'],
+        summary: 'Get organization details',
       },
     },
     async (request, reply) => {
@@ -100,12 +100,12 @@ export async function organizationRoutes(
   // ── PATCH /api/v1/organizations/:id ────────────────────────────────
 
   app.patch(
-    "/api/v1/organizations/:id",
+    '/api/v1/organizations/:id',
     {
       preHandler: [requireAuth, requireAdmin],
       schema: {
-        tags: ["Organizations"],
-        summary: "Update organization (admin+)",
+        tags: ['Organizations'],
+        summary: 'Update organization (admin+)',
       },
     },
     async (request, reply) => {
@@ -120,12 +120,12 @@ export async function organizationRoutes(
   // Owner check is enforced in service.softDelete()
 
   app.delete(
-    "/api/v1/organizations/:id",
+    '/api/v1/organizations/:id',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Soft delete organization (owner only)",
+        tags: ['Organizations'],
+        summary: 'Soft delete organization (owner only)',
       },
     },
     async (request, reply) => {
@@ -138,12 +138,12 @@ export async function organizationRoutes(
   // ── GET /api/v1/organizations/:id/members ──────────────────────────
 
   app.get(
-    "/api/v1/organizations/:id/members",
+    '/api/v1/organizations/:id/members',
     {
       preHandler: [requireAuth, requireMember],
       schema: {
-        tags: ["Organizations"],
-        summary: "List organization members",
+        tags: ['Organizations'],
+        summary: 'List organization members',
       },
     },
     async (request, reply) => {
@@ -157,12 +157,12 @@ export async function organizationRoutes(
   // ── POST /api/v1/organizations/:id/invitations ─────────────────────
 
   app.post(
-    "/api/v1/organizations/:id/invitations",
+    '/api/v1/organizations/:id/invitations',
     {
       preHandler: [requireAuth, requireAdmin],
       schema: {
-        tags: ["Organizations"],
-        summary: "Create an invitation to the organization",
+        tags: ['Organizations'],
+        summary: 'Create an invitation to the organization',
       },
     },
     async (request, reply) => {
@@ -176,12 +176,12 @@ export async function organizationRoutes(
   // ── GET /api/v1/organizations/:id/invitations ──────────────────────
 
   app.get(
-    "/api/v1/organizations/:id/invitations",
+    '/api/v1/organizations/:id/invitations',
     {
       preHandler: [requireAuth, requireAdmin],
       schema: {
-        tags: ["Organizations"],
-        summary: "List pending invitations for the organization",
+        tags: ['Organizations'],
+        summary: 'List pending invitations for the organization',
       },
     },
     async (request, reply) => {
@@ -195,12 +195,12 @@ export async function organizationRoutes(
   // ── POST /api/v1/invitations/:id/resend ─────────────────────────────
 
   app.post(
-    "/api/v1/invitations/:id/resend",
+    '/api/v1/invitations/:id/resend',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Resend a pending invitation (refreshes token and expiry)",
+        tags: ['Organizations'],
+        summary: 'Resend a pending invitation (refreshes token and expiry)',
       },
     },
     async (request, reply) => {
@@ -213,12 +213,12 @@ export async function organizationRoutes(
   // ── DELETE /api/v1/invitations/:id ─────────────────────────────────
 
   app.delete(
-    "/api/v1/invitations/:id",
+    '/api/v1/invitations/:id',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Cancel a pending invitation",
+        tags: ['Organizations'],
+        summary: 'Cancel a pending invitation',
       },
     },
     async (request, reply) => {
@@ -231,24 +231,22 @@ export async function organizationRoutes(
   // ── POST /api/v1/invitations/accept ─────────────────────────────────
 
   app.post(
-    "/api/v1/invitations/accept",
+    '/api/v1/invitations/accept',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Accept an invitation using its token",
+        tags: ['Organizations'],
+        summary: 'Accept an invitation using its token',
       },
     },
     async (request, reply) => {
-      const { token } = z
-        .object({ token: z.string().min(1) })
-        .parse(request.body);
+      const { token } = z.object({ token: z.string().min(1) }).parse(request.body);
       const result = await service.acceptInvitation(request.user!.id, token);
       if (!result) {
         return reply.status(404).send({
           error: {
-            code: "NOT_FOUND",
-            message: "Invalid or expired invitation token",
+            code: 'NOT_FOUND',
+            message: 'Invalid or expired invitation token',
           },
         });
       }
@@ -259,11 +257,11 @@ export async function organizationRoutes(
   // ── PATCH /api/v1/org-members/:id ──────────────────────────────────
 
   app.patch(
-    "/api/v1/org-members/:id",
+    '/api/v1/org-members/:id',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
+        tags: ['Organizations'],
         summary: "Change an organization member's role",
       },
     },
@@ -278,12 +276,12 @@ export async function organizationRoutes(
   // ── DELETE /api/v1/org-members/:id ─────────────────────────────────
 
   app.delete(
-    "/api/v1/org-members/:id",
+    '/api/v1/org-members/:id',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Organizations"],
-        summary: "Remove a member from the organization",
+        tags: ['Organizations'],
+        summary: 'Remove a member from the organization',
       },
     },
     async (request, reply) => {

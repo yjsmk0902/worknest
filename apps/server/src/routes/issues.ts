@@ -1,18 +1,18 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { z } from "zod";
-import { createRequireAuth } from "../middleware/auth";
-import { IssueService } from "../services/issue-service";
-import { ActivityService } from "../services/activity-service";
-import { NotificationService } from "../services/notification-service";
+import type { Database } from '@worknest/db';
 import {
-  createIssueInput,
-  updateIssueInput,
-  issueListQuery,
   bulkUpdateInput,
+  createIssueInput,
   cursorPaginationQuery,
-} from "@worknest/shared";
+  issueListQuery,
+  updateIssueInput,
+} from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { ActivityService } from '../services/activity-service';
+import { IssueService } from '../services/issue-service';
+import { NotificationService } from '../services/notification-service';
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -55,12 +55,12 @@ export async function issueRoutes(
   // ── POST /api/v1/projects/:projectId/issues ───────────────────────
 
   app.post(
-    "/api/v1/projects/:projectId/issues",
+    '/api/v1/projects/:projectId/issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Create a new issue in a project",
+        tags: ['Issues'],
+        summary: 'Create a new issue in a project',
       },
     },
     async (request, reply) => {
@@ -74,12 +74,12 @@ export async function issueRoutes(
   // ── GET /api/v1/projects/:projectId/issues ────────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/issues",
+    '/api/v1/projects/:projectId/issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "List issues in a project with optional filters, sorting, and cursor pagination",
+        tags: ['Issues'],
+        summary: 'List issues in a project with optional filters, sorting, and cursor pagination',
       },
     },
     async (request, reply) => {
@@ -93,12 +93,12 @@ export async function issueRoutes(
   // ── GET /api/v1/projects/:projectId/issues/stats ───────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/issues/stats",
+    '/api/v1/projects/:projectId/issues/stats',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Get issue count stats grouped by status",
+        tags: ['Issues'],
+        summary: 'Get issue count stats grouped by status',
       },
     },
     async (request, reply) => {
@@ -112,12 +112,12 @@ export async function issueRoutes(
   // ── PATCH /api/v1/projects/:projectId/issues/bulk ─────────────────
 
   app.patch(
-    "/api/v1/projects/:projectId/issues/bulk",
+    '/api/v1/projects/:projectId/issues/bulk',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Bulk update multiple issues",
+        tags: ['Issues'],
+        summary: 'Bulk update multiple issues',
       },
     },
     async (request, reply) => {
@@ -131,12 +131,12 @@ export async function issueRoutes(
   // ── GET /api/v1/projects/:projectId/issues/:issueId ───────────────
 
   app.get(
-    "/api/v1/projects/:projectId/issues/:issueId",
+    '/api/v1/projects/:projectId/issues/:issueId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Get an issue by ID",
+        tags: ['Issues'],
+        summary: 'Get an issue by ID',
       },
     },
     async (request, reply) => {
@@ -149,12 +149,12 @@ export async function issueRoutes(
   // ── PATCH /api/v1/projects/:projectId/issues/:issueId ─────────────
 
   app.patch(
-    "/api/v1/projects/:projectId/issues/:issueId",
+    '/api/v1/projects/:projectId/issues/:issueId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Update an issue",
+        tags: ['Issues'],
+        summary: 'Update an issue',
       },
     },
     async (request, reply) => {
@@ -168,12 +168,12 @@ export async function issueRoutes(
   // ── DELETE /api/v1/projects/:projectId/issues/:issueId ────────────
 
   app.delete(
-    "/api/v1/projects/:projectId/issues/:issueId",
+    '/api/v1/projects/:projectId/issues/:issueId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Soft delete an issue",
+        tags: ['Issues'],
+        summary: 'Soft delete an issue',
       },
     },
     async (request, reply) => {
@@ -186,12 +186,12 @@ export async function issueRoutes(
   // ── GET /api/v1/projects/:projectId/issues/:issueId/sub-issues ────
 
   app.get(
-    "/api/v1/projects/:projectId/issues/:issueId/sub-issues",
+    '/api/v1/projects/:projectId/issues/:issueId/sub-issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "List sub-issues for an issue",
+        tags: ['Issues'],
+        summary: 'List sub-issues for an issue',
       },
     },
     async (request, reply) => {
@@ -204,12 +204,12 @@ export async function issueRoutes(
   // ── POST /api/v1/projects/:projectId/issues/:issueId/assignees ────
 
   app.post(
-    "/api/v1/projects/:projectId/issues/:issueId/assignees",
+    '/api/v1/projects/:projectId/issues/:issueId/assignees',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Add an assignee to an issue",
+        tags: ['Issues'],
+        summary: 'Add an assignee to an issue',
       },
     },
     async (request, reply) => {
@@ -218,17 +218,22 @@ export async function issueRoutes(
       const assignee = await service.addAssignee(issueId, request.user!.id, userId);
 
       // Fire-and-forget: dispatch "assigned" notification
-      service.getIssueSummary(issueId).then((summary) => {
-        if (summary) {
-          notificationService.dispatchNotification({
-            type: 'assigned',
-            actorId: request.user!.id,
-            recipientIds: [userId],
-            issueId,
-            message: `이슈 #${summary.sequenceId}에 담당자로 배정되었습니다`,
-          }).catch((err) => app.log.error(err, 'Failed to dispatch assigned notification'));
-        }
-      }).catch((err) => app.log.error(err, 'Failed to fetch issue summary for notification'));
+      service
+        .getIssueSummary(issueId)
+        .then((summary) => {
+          if (summary) {
+            notificationService
+              .dispatchNotification({
+                type: 'assigned',
+                actorId: request.user!.id,
+                recipientIds: [userId],
+                issueId,
+                message: `이슈 #${summary.sequenceId}에 담당자로 배정되었습니다`,
+              })
+              .catch((err) => app.log.error(err, 'Failed to dispatch assigned notification'));
+          }
+        })
+        .catch((err) => app.log.error(err, 'Failed to fetch issue summary for notification'));
 
       return reply.status(201).send({ data: assignee });
     },
@@ -237,12 +242,12 @@ export async function issueRoutes(
   // ── DELETE /api/v1/projects/:projectId/issues/:issueId/assignees/:userId
 
   app.delete(
-    "/api/v1/projects/:projectId/issues/:issueId/assignees/:userId",
+    '/api/v1/projects/:projectId/issues/:issueId/assignees/:userId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Remove an assignee from an issue",
+        tags: ['Issues'],
+        summary: 'Remove an assignee from an issue',
       },
     },
     async (request, reply) => {
@@ -255,12 +260,12 @@ export async function issueRoutes(
   // ── POST /api/v1/projects/:projectId/issues/:issueId/labels ───────
 
   app.post(
-    "/api/v1/projects/:projectId/issues/:issueId/labels",
+    '/api/v1/projects/:projectId/issues/:issueId/labels',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Add a label to an issue",
+        tags: ['Issues'],
+        summary: 'Add a label to an issue',
       },
     },
     async (request, reply) => {
@@ -274,12 +279,12 @@ export async function issueRoutes(
   // ── DELETE /api/v1/projects/:projectId/issues/:issueId/labels/:labelId
 
   app.delete(
-    "/api/v1/projects/:projectId/issues/:issueId/labels/:labelId",
+    '/api/v1/projects/:projectId/issues/:issueId/labels/:labelId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "Remove a label from an issue",
+        tags: ['Issues'],
+        summary: 'Remove a label from an issue',
       },
     },
     async (request, reply) => {
@@ -292,12 +297,12 @@ export async function issueRoutes(
   // ── GET /api/v1/projects/:projectId/issues/:issueId/activities ────
 
   app.get(
-    "/api/v1/projects/:projectId/issues/:issueId/activities",
+    '/api/v1/projects/:projectId/issues/:issueId/activities',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issues"],
-        summary: "List activities for an issue",
+        tags: ['Issues'],
+        summary: 'List activities for an issue',
       },
     },
     async (request, reply) => {
