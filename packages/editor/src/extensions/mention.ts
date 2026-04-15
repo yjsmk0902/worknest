@@ -23,6 +23,7 @@ function createFloatingContainer() {
   container.style.position = "absolute";
   container.style.zIndex = "50";
   container.style.pointerEvents = "auto";
+  container.setAttribute("data-suggestion-popup", "");
   document.body.appendChild(container);
   return container;
 }

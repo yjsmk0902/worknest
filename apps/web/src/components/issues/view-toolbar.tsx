@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useSearch } from '@tanstack/react-router';
 import {
   List,
   Columns3,
+  GanttChart,
   ArrowUpDown,
 } from 'lucide-react';
 import {
@@ -46,7 +47,7 @@ const ORDER_OPTIONS: { value: SortOrder; label: string; icon: string }[] = [
 
 // ── View type ──────────────────────────────────────────────────────────
 
-type ViewType = 'list' | 'board';
+type ViewType = 'list' | 'board' | 'gantt';
 
 interface ViewTab {
   type: ViewType;
@@ -58,6 +59,7 @@ interface ViewTab {
 const VIEW_TABS: ViewTab[] = [
   { type: 'list', label: '리스트', icon: List, routeSuffix: '/issues' },
   { type: 'board', label: '보드', icon: Columns3, routeSuffix: '/board' },
+  { type: 'gantt', label: '간트', icon: GanttChart, routeSuffix: '/gantt' },
 ];
 
 // ── Props ──────────────────────────────────────────────────────────────
@@ -78,6 +80,7 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
   // Determine current view from the URL path
   const activeView = useMemo<ViewType>(() => {
     if (location.pathname.includes('/board')) return 'board';
+    if (location.pathname.includes('/gantt')) return 'gantt';
     return 'list';
   }, [location.pathname]);
 
@@ -110,13 +113,16 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
 
       // Build the target path by replacing the current view segment
       const pathParts = location.pathname.split('/');
-      // Find the index of 'issues' or 'board' in the path
-      const issuesIndex = pathParts.indexOf('issues');
-      const boardIndex = pathParts.indexOf('board');
-      const replaceIndex = issuesIndex !== -1 ? issuesIndex : boardIndex;
+      const viewSegments = ['issues', 'board', 'gantt'];
+      const replaceIndex = pathParts.findIndex((p) => viewSegments.includes(p));
 
       if (replaceIndex !== -1) {
-        pathParts[replaceIndex] = view === 'board' ? 'board' : 'issues';
+        const segmentMap: Record<ViewType, string> = {
+          list: 'issues',
+          board: 'board',
+          gantt: 'gantt',
+        };
+        pathParts[replaceIndex] = segmentMap[view];
         const newPath = pathParts.join('/');
         navigate({
           to: newPath,

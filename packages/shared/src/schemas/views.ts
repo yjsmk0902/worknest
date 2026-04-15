@@ -64,7 +64,7 @@ export type ViewSort = z.infer<typeof viewSort>;
 
 // ── View Type ───────────────────────────────────────────────────────────
 
-export const viewType = z.enum(["list", "board"]);
+export const viewType = z.enum(["list", "board", "gantt"]);
 
 export type ViewType = z.infer<typeof viewType>;
 

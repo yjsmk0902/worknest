@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createRequireAuth } from "../middleware/auth";
 import { IssueService } from "../services/issue-service";
 import { ActivityService } from "../services/activity-service";
+import { NotificationService } from "../services/notification-service";
 import {
   createIssueInput,
   updateIssueInput,
@@ -47,7 +48,8 @@ export async function issueRoutes(
 ): Promise<void> {
   const { auth, db } = opts;
   const requireAuth = createRequireAuth(auth);
-  const service = new IssueService(db);
+  const notificationService = new NotificationService(db);
+  const service = new IssueService(db, notificationService);
   const activityService = new ActivityService(db);
 
   // ── POST /api/v1/projects/:projectId/issues ───────────────────────
@@ -214,6 +216,20 @@ export async function issueRoutes(
       const { issueId } = projectIssueParams.parse(request.params);
       const { userId } = addAssigneeBody.parse(request.body);
       const assignee = await service.addAssignee(issueId, request.user!.id, userId);
+
+      // Fire-and-forget: dispatch "assigned" notification
+      service.getIssueSummary(issueId).then((summary) => {
+        if (summary) {
+          notificationService.dispatchNotification({
+            type: 'assigned',
+            actorId: request.user!.id,
+            recipientIds: [userId],
+            issueId,
+            message: `이슈 #${summary.sequenceId}에 담당자로 배정되었습니다`,
+          }).catch((err) => app.log.error(err, 'Failed to dispatch assigned notification'));
+        }
+      }).catch((err) => app.log.error(err, 'Failed to fetch issue summary for notification'));
+
       return reply.status(201).send({ data: assignee });
     },
   );

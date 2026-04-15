@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Folder,
+  GanttChart,
   Kanban,
   List,
   Plus,
@@ -44,6 +45,7 @@ function ProjectSubNav({
   const issueSubItems = [
     { icon: <List className="h-3.5 w-3.5" />, label: 'List', href: `${base}/issues` },
     { icon: <Kanban className="h-3.5 w-3.5" />, label: 'Board', href: `${base}/board` },
+    { icon: <GanttChart className="h-3.5 w-3.5" />, label: 'Gantt', href: `${base}/gantt` },
   ];
 
   const otherItems = [

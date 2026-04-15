@@ -29,10 +29,12 @@ function ViewRedirectPage() {
 
     const view = viewQuery.data;
     const searchParams = viewToSearchParams(view);
-    const targetPath =
-      view.type === 'board'
-        ? '/$orgSlug/$wsSlug/projects/$projectId/board'
-        : '/$orgSlug/$wsSlug/projects/$projectId/issues';
+    const targetPaths: Record<string, string> = {
+      board: '/$orgSlug/$wsSlug/projects/$projectId/board',
+      gantt: '/$orgSlug/$wsSlug/projects/$projectId/gantt',
+      list: '/$orgSlug/$wsSlug/projects/$projectId/issues',
+    };
+    const targetPath = targetPaths[view.type] ?? targetPaths.list;
 
     navigate({
       to: targetPath,

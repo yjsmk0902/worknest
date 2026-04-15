@@ -45,6 +45,7 @@ import {
   broadcastIssueUpdated,
 } from '../websocket/issue-events';
 import { ActivityService } from './activity-service';
+import type { NotificationService } from './notification-service';
 
 // ── Constants ───────────────────────────────────────────────────────────
 
@@ -95,10 +96,14 @@ function parseMultiValue(val: string | undefined): string[] {
 // ── Service ──────────────────────────────────────────────────────────────
 
 export class IssueService {
+  private db: Database;
   private activityService: ActivityService;
+  private notificationService: NotificationService | null;
 
-  constructor(private db: Database) {
+  constructor(db: Database, notificationService?: NotificationService) {
+    this.db = db;
     this.activityService = new ActivityService(db);
+    this.notificationService = notificationService ?? null;
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
@@ -408,6 +413,41 @@ export class IssueService {
     await this.verifyProjectMember(issue.projectId, callerUserId);
 
     return issue;
+  }
+
+  // ── Get Issue Summary (for notifications) ────────────────────────────
+
+  /**
+   * Lightweight fetch of issue summary data for notification messages.
+   * Returns null if issue not found.
+   */
+  async getIssueSummary(issueId: string) {
+    const row = await this.db
+      .select({
+        id: issues.id,
+        sequenceId: issues.sequenceId,
+        title: issues.title,
+        projectId: issues.projectId,
+        creatorId: issues.creatorId,
+      })
+      .from(issues)
+      .where(and(eq(issues.id, issueId), isNull(issues.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    return row ?? null;
+  }
+
+  /**
+   * Get all assignee user IDs for an issue.
+   */
+  async getAssigneeIds(issueId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ userId: issueAssignees.userId })
+      .from(issueAssignees)
+      .where(eq(issueAssignees.issueId, issueId));
+
+    return rows.map((r) => r.userId);
   }
 
   // ── Build Filter Conditions (shared between list & stats) ─────────────
@@ -897,6 +937,28 @@ export class IssueService {
 
     // Broadcast WebSocket event
     broadcastIssueUpdated(existing.projectId, fullIssue);
+
+    // Fire-and-forget: dispatch "status_changed" notification to assignees
+    const statusChanged = changedFields.some((c) => c.field === 'status');
+    if (statusChanged && this.notificationService) {
+      this.getAssigneeIds(issueId)
+        .then((assigneeIds) => {
+          if (assigneeIds.length > 0) {
+            this.notificationService!.dispatchNotification({
+              type: 'status_changed',
+              actorId: callerUserId,
+              recipientIds: assigneeIds,
+              issueId,
+              message: `이슈 #${existing.sequenceId}의 상태가 변경되었습니다`,
+            }).catch((err) =>
+              console.error('Failed to dispatch status_changed notification', err),
+            );
+          }
+        })
+        .catch((err) =>
+          console.error('Failed to fetch assignees for status_changed notification', err),
+        );
+    }
 
     return fullIssue!;
   }

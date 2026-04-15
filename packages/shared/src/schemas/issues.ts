@@ -164,7 +164,7 @@ export const issueListQuery = z.object({
   order: z.enum(["asc", "desc"]).optional(),
   // Pagination
   cursor: z.string().optional(), // opaque base64 cursor
-  limit: z.coerce.number().int().min(1).max(100).default(50),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 
 export type IssueListQuery = z.infer<typeof issueListQuery>;

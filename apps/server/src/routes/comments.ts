@@ -4,6 +4,8 @@ import type { Auth } from "../lib/auth";
 import type { Database } from "@worknest/db";
 import { createRequireAuth } from "../middleware/auth";
 import { CommentService } from "../services/comment-service";
+import { NotificationService } from "../services/notification-service";
+import { IssueService } from "../services/issue-service";
 import {
   createCommentInput,
   updateCommentInput,
@@ -15,6 +17,38 @@ import {
   broadcastCommentDeleted,
   broadcastReactionToggled,
 } from "../websocket/comment-events";
+
+// ── Mention Parser ────────────────────────────────────────────────────
+
+/**
+ * Extract user IDs from TipTap JSON content by finding mention nodes.
+ * TipTap mention nodes: { type: "mention", attrs: { id: "userId", label: "userName" } }
+ */
+function extractMentionedUserIds(content: unknown): string[] {
+  const userIds = new Set<string>();
+
+  function walk(node: unknown): void {
+    if (!node || typeof node !== 'object') return;
+
+    const n = node as Record<string, unknown>;
+
+    if (n.type === 'mention' && n.attrs && typeof n.attrs === 'object') {
+      const attrs = n.attrs as Record<string, unknown>;
+      if (typeof attrs.id === 'string' && attrs.id) {
+        userIds.add(attrs.id);
+      }
+    }
+
+    if (Array.isArray(n.content)) {
+      for (const child of n.content) {
+        walk(child);
+      }
+    }
+  }
+
+  walk(content);
+  return Array.from(userIds);
+}
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -38,6 +72,8 @@ export async function commentRoutes(
   const { auth, db } = opts;
   const requireAuth = createRequireAuth(auth);
   const service = new CommentService(db);
+  const notificationService = new NotificationService(db);
+  const issueService = new IssueService(db);
 
   // ── GET /api/v1/issues/:issueId/comments ─────────────────────────
 
@@ -80,6 +116,44 @@ export async function commentRoutes(
 
       // Broadcast via WebSocket
       broadcastCommentCreated(`issue:${issueId}`, comment);
+
+      // Fire-and-forget: dispatch "commented" and "mentioned" notifications
+      Promise.all([
+        issueService.getIssueSummary(issueId),
+        issueService.getAssigneeIds(issueId),
+      ]).then(([summary, assigneeIds]) => {
+        if (!summary) return;
+
+        const actorId = request.user!.id;
+
+        // Extract mentioned user IDs from TipTap content
+        const mentionedIds = extractMentionedUserIds(body.content);
+
+        // Dispatch "mentioned" notifications
+        if (mentionedIds.length > 0) {
+          notificationService.dispatchNotification({
+            type: 'mentioned',
+            actorId,
+            recipientIds: mentionedIds,
+            issueId,
+            message: `이슈 #${summary.sequenceId}에서 멘션되었습니다`,
+          }).catch((err) => app.log.error(err, 'Failed to dispatch mentioned notification'));
+        }
+
+        // Dispatch "commented" notification to assignees + creator, excluding mentioned users
+        const commentRecipients = [...new Set([...assigneeIds, summary.creatorId])].filter(
+          (id) => !mentionedIds.includes(id),
+        );
+        if (commentRecipients.length > 0) {
+          notificationService.dispatchNotification({
+            type: 'commented',
+            actorId,
+            recipientIds: commentRecipients,
+            issueId,
+            message: `이슈 #${summary.sequenceId}에 새 댓글이 작성되었습니다`,
+          }).catch((err) => app.log.error(err, 'Failed to dispatch commented notification'));
+        }
+      }).catch((err) => app.log.error(err, 'Failed to fetch issue data for comment notifications'));
 
       return reply.status(201).send({ data: comment });
     },

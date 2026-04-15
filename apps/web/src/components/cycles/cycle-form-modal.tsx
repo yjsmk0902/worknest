@@ -228,9 +228,9 @@ export function CycleFormModal({
           </div>
 
           {/* Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="cycle-start-date">시작일</Label>
+          <div>
+            <Label>기간</Label>
+            <div className="mt-1.5 flex items-center gap-2">
               <Input
                 id="cycle-start-date"
                 type="date"
@@ -240,13 +240,12 @@ export function CycleFormModal({
                   if (dateError) setDateError('');
                 }}
               />
-            </div>
-            <div>
-              <Label htmlFor="cycle-end-date">종료일</Label>
+              <span className="text-muted-foreground text-sm">–</span>
               <Input
                 id="cycle-end-date"
                 type="date"
                 value={endDate}
+                min={startDate || undefined}
                 onChange={(e) => {
                   setEndDate(e.target.value);
                   if (dateError) setDateError('');

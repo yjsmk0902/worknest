@@ -93,6 +93,8 @@ export function activeFiltersToConditions(
 
 // ── View type display label ────────────────────────────────────────────
 
-export function getViewTypeLabel(type: 'list' | 'board'): string {
-  return type === 'list' ? '리스트' : '보드';
+export function getViewTypeLabel(type: 'list' | 'board' | 'gantt'): string {
+  if (type === 'board') return '보드';
+  if (type === 'gantt') return '간트';
+  return '리스트';
 }

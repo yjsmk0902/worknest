@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import LinkExtension from '@tiptap/extension-link';
+import Mention from '@tiptap/extension-mention';
 import { MoreHorizontal, Pencil, Reply, Trash2 } from 'lucide-react';
 import {
   Avatar,
@@ -85,6 +86,11 @@ function CommentContent({ content }: { content: unknown }) {
           class: 'text-primary underline underline-offset-2 cursor-pointer hover:text-primary/80',
           rel: 'noopener noreferrer',
           target: '_blank',
+        },
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'bg-primary/10 text-primary rounded px-1 py-0.5 font-medium',
         },
       }),
     ],

@@ -8,6 +8,7 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import {
   Bookmark,
   Columns3,
+  GanttChart,
   List,
   MoreHorizontal,
   Plus,
@@ -113,10 +114,12 @@ export function SavedViewsDropdown({
   // Apply a saved view: navigate to the correct view type with filter params
   function handleApplyView(view: ViewOutput) {
     const searchParams = viewToSearchParams(view);
-    const targetPath =
-      view.type === 'board'
-        ? '/$orgSlug/$wsSlug/projects/$projectId/board'
-        : '/$orgSlug/$wsSlug/projects/$projectId/issues';
+    const targetPaths: Record<string, string> = {
+      board: '/$orgSlug/$wsSlug/projects/$projectId/board',
+      gantt: '/$orgSlug/$wsSlug/projects/$projectId/gantt',
+      list: '/$orgSlug/$wsSlug/projects/$projectId/issues',
+    };
+    const targetPath = targetPaths[view.type] ?? targetPaths.list;
 
     navigate({
       to: targetPath,
@@ -133,12 +136,13 @@ export function SavedViewsDropdown({
 
   const views = viewsQuery.data ?? [];
 
-  const viewTypeIcon = (type: ViewType) =>
-    type === 'board' ? (
-      <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />
-    ) : (
-      <List className="h-3.5 w-3.5 text-muted-foreground" />
-    );
+  const viewTypeIcon = (type: ViewType) => {
+    if (type === 'board')
+      return <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />;
+    if (type === 'gantt')
+      return <GanttChart className="h-3.5 w-3.5 text-muted-foreground" />;
+    return <List className="h-3.5 w-3.5 text-muted-foreground" />;
+  };
 
   return (
     <>

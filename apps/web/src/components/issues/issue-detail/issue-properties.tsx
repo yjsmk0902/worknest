@@ -169,6 +169,9 @@ export function IssueProperties({
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'board-issues'],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'gantt-issues'],
+      });
     },
   });
 
@@ -181,6 +184,9 @@ export function IssueProperties({
     });
     queryClient.invalidateQueries({
       queryKey: ['projects', projectId, 'board-issues'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['projects', projectId, 'gantt-issues'],
     });
   };
 
@@ -241,7 +247,7 @@ export function IssueProperties({
 
   if (mode === 'sidebar') {
     return (
-      <div className="w-[240px] space-y-4 overflow-y-auto border-l border-border p-4">
+      <div className="w-[360px] shrink-0 space-y-4 overflow-y-auto border-l border-border p-5">
         {/* Status */}
         <PropertySection label="상태">
           <StatusSelect
@@ -313,19 +319,13 @@ export function IssueProperties({
 
         <Separator />
 
-        {/* Start date */}
-        <PropertySection label="시작일">
-          <DateTimePicker
-            value={issue.startDate}
-            onChange={(startDate) => updateMutation.mutate({ startDate })}
-          />
-        </PropertySection>
-
-        {/* Due date */}
-        <PropertySection label="마감일">
-          <DateTimePicker
-            value={issue.dueDate}
-            onChange={(dueDate) => updateMutation.mutate({ dueDate })}
+        {/* Date range */}
+        <PropertySection label="기간">
+          <DateRangePicker
+            startDate={issue.startDate}
+            dueDate={issue.dueDate}
+            onChangeStart={(startDate) => updateMutation.mutate({ startDate })}
+            onChangeDue={(dueDate) => updateMutation.mutate({ dueDate })}
           />
         </PropertySection>
 
@@ -402,18 +402,13 @@ export function IssueProperties({
         wsSlug={wsSlug}
       />
 
-      {/* Start date */}
-      <span className="self-center text-sm text-muted-foreground">시작일</span>
-      <DateTimePicker
-        value={issue.startDate}
-        onChange={(startDate) => updateMutation.mutate({ startDate })}
-      />
-
-      {/* Due date */}
-      <span className="self-center text-sm text-muted-foreground">마감일</span>
-      <DateTimePicker
-        value={issue.dueDate}
-        onChange={(dueDate) => updateMutation.mutate({ dueDate })}
+      {/* Date range */}
+      <span className="self-center text-sm text-muted-foreground">기간</span>
+      <DateRangePicker
+        startDate={issue.startDate}
+        dueDate={issue.dueDate}
+        onChangeStart={(startDate) => updateMutation.mutate({ startDate })}
+        onChangeDue={(dueDate) => updateMutation.mutate({ dueDate })}
       />
     </div>
   );
@@ -806,40 +801,58 @@ function LabelPicker({
   );
 }
 
-// ── Date Time Picker ────────────────────────────────────────────────────
+// ── Date Range Picker ──────────────────────────────────────────────────
 
-function DateTimePicker({
-  value,
-  onChange,
+function DateRangePicker({
+  startDate,
+  dueDate,
+  onChangeStart,
+  onChangeDue,
 }: {
-  value: string | null;
-  onChange: (value: string | null) => void;
+  startDate: string | null;
+  dueDate: string | null;
+  onChangeStart: (value: string | null) => void;
+  onChangeDue: (value: string | null) => void;
 }) {
-  // Convert ISO string to datetime-local format (YYYY-MM-DDTHH:mm)
-  const localValue = value ? toLocalDateTimeString(value) : '';
+  const startLocal = startDate ? toLocalDateString(startDate) : '';
+  const dueLocal = dueDate ? toLocalDateString(dueDate) : '';
+  const hasAny = startDate || dueDate;
 
   return (
-    <div className="flex items-center gap-2">
-      <Calendar className="h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
       <input
-        type="datetime-local"
-        value={localValue}
+        type="date"
+        value={startLocal}
+        max={dueLocal || undefined}
         onChange={(e) => {
           const v = e.target.value;
-          if (!v) {
-            onChange(null);
-          } else {
-            // Convert local datetime to ISO string
-            onChange(new Date(v).toISOString());
-          }
+          if (!v) { onChangeStart(null); return; }
+          if (dueLocal && v > dueLocal) return;
+          onChangeStart(toISOStartOfDay(v));
         }}
-        className="h-8 rounded-md border border-border bg-transparent px-2 text-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+        placeholder="시작일"
+        className="h-8 min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 text-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
       />
-      {value && (
+      <span className="text-muted-foreground text-sm">–</span>
+      <input
+        type="date"
+        value={dueLocal}
+        min={startLocal || undefined}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (!v) { onChangeDue(null); return; }
+          if (startLocal && v < startLocal) return;
+          onChangeDue(toISOEndOfDay(v));
+        }}
+        placeholder="마감일"
+        className="h-8 min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 text-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+      {hasAny && (
         <button
           type="button"
-          onClick={() => onChange(null)}
-          className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent"
+          onClick={() => { onChangeStart(null); onChangeDue(null); }}
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-accent"
           aria-label="날짜 제거"
         >
           <X className="h-3.5 w-3.5 text-muted-foreground" />
@@ -849,10 +862,18 @@ function DateTimePicker({
   );
 }
 
-function toLocalDateTimeString(iso: string): string {
+function toLocalDateString(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function toISOStartOfDay(dateStr: string): string {
+  return new Date(`${dateStr}T00:00:00`).toISOString();
+}
+
+function toISOEndOfDay(dateStr: string): string {
+  return new Date(`${dateStr}T23:59:59`).toISOString();
 }
 
 // ── Cycle Picker ──────────────────────────────────────────────────────

@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { Button, Separator, Skeleton, ScrollArea } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import type { MentionQueryFn, MentionUser } from '@worknest/editor';
+import type { MentionQueryFn, MentionUser, JSONContent } from '@worknest/editor';
+import { EditorWithAutosave } from '@worknest/editor';
 import { apiClient } from '../../../lib/api-client';
 import { IssueProperties } from './issue-properties';
 import { CommentList } from '../../comments/comment-list';
@@ -70,6 +71,8 @@ export function IssueDetailPanel({
   mode,
   onClose,
 }: IssueDetailPanelProps) {
+  const queryClient = useQueryClient();
+
   const mentionQueryFn = useMemo(
     () => createProjectMentionQueryFn(projectId),
     [projectId],
@@ -82,6 +85,19 @@ export function IssueDetailPanel({
         `/projects/${projectId}/issues/${issueId}`,
       ),
   });
+
+  const saveDescription = useCallback(
+    async (json: JSONContent, text: string) => {
+      await apiClient.patch(`/projects/${projectId}/issues/${issueId}`, {
+        description: json,
+        descriptionText: text,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['projects', projectId, 'issues', issueId],
+      });
+    },
+    [projectId, issueId, queryClient],
+  );
 
   // Close on Escape
   useEffect(() => {
@@ -182,10 +198,14 @@ export function IssueDetailPanel({
 
           <Separator className="my-4" />
 
-          {/* Description placeholder */}
-          <div className="min-h-[100px] rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-            설명을 추가하세요... (TipTap 에디터 예정)
-          </div>
+          {/* Description */}
+          <EditorWithAutosave
+            content={issue.description as JSONContent | null}
+            onSave={saveDescription}
+            placeholder="설명을 추가하세요..."
+            className="min-h-[100px]"
+            statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
+          />
 
           <Separator className="my-4" />
 
@@ -233,6 +253,7 @@ export function IssueDetailPanel({
       <div className="flex flex-1 overflow-hidden">
         {/* Main content */}
         <ScrollArea className="flex-1 px-6 py-6">
+          <div className="mx-auto max-w-3xl">
           {/* Title (inline editable) */}
           <InlineEditableTitle
             issueId={issue.id}
@@ -242,10 +263,14 @@ export function IssueDetailPanel({
 
           <Separator className="my-4" />
 
-          {/* Description placeholder */}
-          <div className="min-h-[200px] rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
-            설명을 추가하세요... (TipTap 에디터 예정)
-          </div>
+          {/* Description */}
+          <EditorWithAutosave
+            content={issue.description as JSONContent | null}
+            onSave={saveDescription}
+            placeholder="설명을 추가하세요..."
+            className="min-h-[200px]"
+            statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
+          />
 
           <Separator className="my-4" />
 
@@ -266,6 +291,7 @@ export function IssueDetailPanel({
             projectId={projectId}
             mentionQueryFn={mentionQueryFn}
           />
+          </div>
         </ScrollArea>
 
         {/* Properties sidebar */}

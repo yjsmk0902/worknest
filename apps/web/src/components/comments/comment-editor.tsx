@@ -115,9 +115,14 @@ export function CommentEditor({
         'aria-label': '댓글 작성',
         'aria-multiline': 'true',
       },
-      handleKeyDown: (_view, event) => {
-        // Cmd+Enter or Ctrl+Enter to submit
-        if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      handleKeyDown: (view, event) => {
+        // Don't intercept Enter when a suggestion popup (mention/slash) is open
+        const hasSuggestion = !!document.querySelector('[data-suggestion-popup]');
+        if (event.key === 'Enter' && hasSuggestion) {
+          return false; // let the suggestion plugin handle it
+        }
+        // Enter to submit (Shift+Enter for newline)
+        if (event.key === 'Enter' && !event.shiftKey && !event.metaKey && !event.ctrlKey) {
           event.preventDefault();
           submitRef.current();
           return true;
@@ -277,7 +282,7 @@ export function CommentEditor({
               {submitLabel}
             </Button>
           )}
-          <span className="text-xs text-muted-foreground">Cmd+Enter</span>
+          <span className="text-xs text-muted-foreground">Enter로 전송 · Shift+Enter 줄바꿈</span>
         </div>
       </div>
     </div>
