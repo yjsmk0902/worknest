@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
-import {
-  Loader2,
-  AlertTriangle,
-  Building2,
-  Users,
-  Rocket,
-  FolderKanban,
-  UserPlus,
-  FileText,
-} from 'lucide-react';
-import { z } from 'zod';
+import { createFileRoute } from '@tanstack/react-router';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { apiClient, ApiError } from '../../lib/api-client';
+import {
+  AlertTriangle,
+  Building2,
+  FileText,
+  FolderKanban,
+  Loader2,
+  Rocket,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import { useState } from 'react';
+import { z } from 'zod';
+import { ApiError, apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/onboarding')({
   component: OnboardingPage,
@@ -37,8 +37,7 @@ function OnboardingPage() {
 
   // Step 1: Org
   const [orgData, setOrgData] = useState({ name: '' });
-  const [orgErrors, setOrgErrors] =
-    useState<Partial<Record<string, string>>>();
+  const [orgErrors, setOrgErrors] = useState<Partial<Record<string, string>>>();
   const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
   const [inviteCode, setInviteCode] = useState('');
@@ -54,9 +53,7 @@ function OnboardingPage() {
     onError: (err) => {
       if (err instanceof ApiError) {
         setInviteError(
-          err.code === 'NOT_FOUND'
-            ? '유효하지 않거나 만료된 초대 코드입니다.'
-            : err.message,
+          err.code === 'NOT_FOUND' ? '유효하지 않거나 만료된 초대 코드입니다.' : err.message,
         );
       } else {
         setInviteError('초대 수락에 실패했습니다.');
@@ -66,8 +63,7 @@ function OnboardingPage() {
 
   // Step 2: Workspace
   const [wsData, setWsData] = useState({ name: '' });
-  const [wsErrors, setWsErrors] =
-    useState<Partial<Record<string, string>>>();
+  const [wsErrors, setWsErrors] = useState<Partial<Record<string, string>>>();
   const [createdWsSlug, setCreatedWsSlug] = useState('');
 
   const createOrgMutation = useMutation({
@@ -141,7 +137,8 @@ function OnboardingPage() {
     if (step === 1) {
       // Cannot skip org creation — required to enter the app
       return;
-    } else if (step === 2) {
+    }
+    if (step === 2) {
       // Auto-create a default workspace when skipping
       createWsMutation.mutate({ name: '기본 워크스페이스' });
     } else {
@@ -184,9 +181,7 @@ function OnboardingPage() {
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  조직 설정
-                </h2>
+                <h2 className="text-lg font-semibold text-foreground">조직 설정</h2>
                 <p className="text-sm text-muted-foreground">
                   새 조직을 만들거나 기존 조직에 참여하세요.
                 </p>
@@ -225,9 +220,7 @@ function OnboardingPage() {
                 className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
               >
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                <p className="text-sm text-destructive">
-                  {createOrgMutation.error.message}
-                </p>
+                <p className="text-sm text-destructive">{createOrgMutation.error.message}</p>
               </div>
             )}
 
@@ -248,16 +241,10 @@ function OnboardingPage() {
                       setOrgData({ name });
                     }}
                   />
-                  {orgErrors?.name && (
-                    <p className="text-sm text-destructive">{orgErrors.name}</p>
-                  )}
+                  {orgErrors?.name && <p className="text-sm text-destructive">{orgErrors.name}</p>}
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={createOrgMutation.isPending}
-                >
+                <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
                   {createOrgMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -322,9 +309,7 @@ function OnboardingPage() {
                 <Users className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  워크스페이스 만들기
-                </h2>
+                <h2 className="text-lg font-semibold text-foreground">워크스페이스 만들기</h2>
                 <p className="text-sm text-muted-foreground">
                   팀별 워크스페이스를 만들어 작업을 구분하세요.
                 </p>
@@ -337,9 +322,7 @@ function OnboardingPage() {
                 className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
               >
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                <p className="text-sm text-destructive">
-                  {createWsMutation.error.message}
-                </p>
+                <p className="text-sm text-destructive">{createWsMutation.error.message}</p>
               </div>
             )}
 
@@ -358,16 +341,10 @@ function OnboardingPage() {
                     setWsData({ name: e.target.value });
                   }}
                 />
-                {wsErrors?.name && (
-                  <p className="text-sm text-destructive">{wsErrors.name}</p>
-                )}
+                {wsErrors?.name && <p className="text-sm text-destructive">{wsErrors.name}</p>}
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={createWsMutation.isPending}
-              >
+              <Button type="submit" className="w-full" disabled={createWsMutation.isPending}>
                 {createWsMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -389,12 +366,8 @@ function OnboardingPage() {
                 <Rocket className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  시작 가이드
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  어떤 것부터 시작할까요?
-                </p>
+                <h2 className="text-lg font-semibold text-foreground">시작 가이드</h2>
+                <p className="text-sm text-muted-foreground">어떤 것부터 시작할까요?</p>
               </div>
             </div>
 
@@ -406,12 +379,8 @@ function OnboardingPage() {
               >
                 <FolderKanban className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    프로젝트 만들기
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    이슈 관리를 시작하세요
-                  </p>
+                  <p className="text-sm font-medium text-foreground">프로젝트 만들기</p>
+                  <p className="text-xs text-muted-foreground">이슈 관리를 시작하세요</p>
                 </div>
               </button>
 
@@ -422,12 +391,8 @@ function OnboardingPage() {
               >
                 <UserPlus className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    팀원 초대
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    이메일로 팀원을 초대하세요
-                  </p>
+                  <p className="text-sm font-medium text-foreground">팀원 초대</p>
+                  <p className="text-xs text-muted-foreground">이메일로 팀원을 초대하세요</p>
                 </div>
               </button>
 
@@ -438,22 +403,14 @@ function OnboardingPage() {
               >
                 <FileText className="mt-0.5 h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    Wiki 시작
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    팀 문서를 작성하세요
-                  </p>
+                  <p className="text-sm font-medium text-foreground">Wiki 시작</p>
+                  <p className="text-xs text-muted-foreground">팀 문서를 작성하세요</p>
                 </div>
               </button>
             </div>
 
             <div className="mt-6">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleFinish}
-              >
+              <Button variant="outline" className="w-full" onClick={handleFinish}>
                 나중에 할게요
               </Button>
             </div>

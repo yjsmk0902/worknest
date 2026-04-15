@@ -1,18 +1,16 @@
-import { useState } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { FileText, Plus, BookOpen } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import type { WikiSpaceOutput } from '@worknest/shared';
-import { apiClient } from '@/lib/api-client';
+import { EmptyState } from '@/components/empty-state';
 import { AppHeader } from '@/components/layout/app-header';
 import { SpaceFormModal } from '@/components/wiki/space-form-modal';
-import { EmptyState } from '@/components/empty-state';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { Link, createFileRoute } from '@tanstack/react-router';
+import type { WikiSpaceOutput } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { BookOpen, FileText, Plus } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/wiki/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/')({
   component: WikiIndexPage,
 });
 
@@ -23,10 +21,7 @@ function WikiIndexPage() {
 
   const spacesQuery = useQuery({
     queryKey: ['workspaces', wsId, 'wiki-spaces'],
-    queryFn: () =>
-      apiClient.getList<WikiSpaceOutput>(
-        `/workspaces/${wsId}/wiki-spaces`,
-      ),
+    queryFn: () => apiClient.getList<WikiSpaceOutput>(`/workspaces/${wsId}/wiki-spaces`),
   });
 
   const spaces = spacesQuery.data?.data ?? [];
@@ -48,10 +43,7 @@ function WikiIndexPage() {
         {spacesQuery.isLoading && (
           <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border bg-card p-4"
-              >
+              <div key={i} className="rounded-lg border border-border bg-card p-4">
                 <Skeleton className="mb-3 h-9 w-9 rounded-lg" />
                 <Skeleton className="mb-2 h-4 w-32" />
                 <Skeleton className="h-3 w-24" />
@@ -64,9 +56,7 @@ function WikiIndexPage() {
         {spacesQuery.isError && (
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
-              <p className="text-sm text-destructive">
-                위키 스페이스를 불러올 수 없습니다.
-              </p>
+              <p className="text-sm text-destructive">위키 스페이스를 불러올 수 없습니다.</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -123,11 +113,7 @@ function WikiIndexPage() {
         )}
       </div>
 
-      <SpaceFormModal
-        workspaceId={wsId}
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-      />
+      <SpaceFormModal workspaceId={wsId} open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </div>
   );
 }

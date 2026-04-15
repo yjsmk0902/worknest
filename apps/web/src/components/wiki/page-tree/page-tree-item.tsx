@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { ChevronRight, FileText, GripVertical } from 'lucide-react';
-import { cn } from '@worknest/ui';
 import type { WikiPageOutput } from '@worknest/shared';
+import { cn } from '@worknest/ui';
+import { ChevronRight, FileText, GripVertical } from 'lucide-react';
 
 interface PageTreeItemProps {
   page: WikiPageOutput;
@@ -39,9 +38,7 @@ export function PageTreeItem({
     <div
       className={cn(
         'group flex h-8 items-center gap-1.5 rounded-sm cursor-pointer transition-colors',
-        isSelected
-          ? 'bg-accent font-medium'
-          : 'hover:bg-accent/50',
+        isSelected ? 'bg-accent font-medium' : 'hover:bg-accent/50',
         isDragging && 'opacity-85 shadow-lg scale-[1.02]',
       )}
       style={{ paddingLeft: `${indent}px` }}

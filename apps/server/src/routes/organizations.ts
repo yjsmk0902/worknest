@@ -38,7 +38,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const pagination = cursorPaginationQuery.parse(request.query);
-      const result = await service.listByUser(request.user!.id, pagination);
+      const result = await service.listByUser(request.user?.id, pagination);
       return reply.status(200).send(result);
     },
   );
@@ -56,7 +56,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const body = createOrganizationInput.parse(request.body);
-      const org = await service.create(request.user!.id, body);
+      const org = await service.create(request.user?.id, body);
       return reply.status(201).send({ data: org });
     },
   );
@@ -74,7 +74,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { slug } = request.params as { slug: string };
-      const org = await service.getBySlug(slug, request.user!.id);
+      const org = await service.getBySlug(slug, request.user?.id);
       return reply.status(200).send({ data: org });
     },
   );
@@ -130,7 +130,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.softDelete(id, request.user!.id);
+      await service.softDelete(id, request.user?.id);
       return reply.status(204).send();
     },
   );
@@ -168,7 +168,7 @@ export async function organizationRoutes(
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
       const body = createOrgInvitationInput.parse(request.body);
-      const result = await service.createInvitation(id, request.user!.id, body);
+      const result = await service.createInvitation(id, request.user?.id, body);
       return reply.status(201).send({ data: result.invitation });
     },
   );
@@ -205,7 +205,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      const result = await service.resendInvitation(id, request.user!.id);
+      const result = await service.resendInvitation(id, request.user?.id);
       return reply.status(200).send({ data: result.invitation });
     },
   );
@@ -223,7 +223,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.cancelInvitation(id, request.user!.id);
+      await service.cancelInvitation(id, request.user?.id);
       return reply.status(204).send();
     },
   );
@@ -241,7 +241,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { token } = z.object({ token: z.string().min(1) }).parse(request.body);
-      const result = await service.acceptInvitation(request.user!.id, token);
+      const result = await service.acceptInvitation(request.user?.id, token);
       if (!result) {
         return reply.status(404).send({
           error: {
@@ -268,7 +268,7 @@ export async function organizationRoutes(
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
       const body = updateOrgMemberInput.parse(request.body);
-      await service.updateMemberRole(id, body.role, request.user!.id);
+      await service.updateMemberRole(id, body.role, request.user?.id);
       return reply.status(200).send({ data: { success: true } });
     },
   );
@@ -286,7 +286,7 @@ export async function organizationRoutes(
     },
     async (request, reply) => {
       const { id } = uuidParam.parse(request.params);
-      await service.removeMember(id, request.user!.id);
+      await service.removeMember(id, request.user?.id);
       return reply.status(204).send();
     },
   );

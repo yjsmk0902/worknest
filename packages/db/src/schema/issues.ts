@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -8,14 +9,13 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { projects } from "./projects";
-import { labels } from "./labels";
-import { cycleIssues } from "./cycles";
-import { issueMentions } from "./mentions";
-import { comments } from "./comments";
+} from 'drizzle-orm/pg-core';
+import { comments } from './comments';
+import { cycleIssues } from './cycles';
+import { labels } from './labels';
+import { issueMentions } from './mentions';
+import { projects } from './projects';
+import { users } from './users';
 
 /**
  * Issue statuses table.
@@ -24,26 +24,21 @@ import { comments } from "./comments";
  * Cancelled). Seeded when a project is created.
  */
 export const issueStatuses = pgTable(
-  "issue_statuses",
+  'issue_statuses',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    color: text("color").notNull(),
-    sortOrder: integer("sort_order").notNull().default(0),
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
     /** Workflow category for grouping: backlog | unstarted | started | completed | cancelled */
-    category: text("category").notNull(), // 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled'
+    category: text('category').notNull(), // 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled'
     /** Whether this status is the default for new issues in the project */
-    isDefault: boolean("is_default").notNull().default(false),
+    isDefault: boolean('is_default').notNull().default(false),
   },
-  (table) => [
-    uniqueIndex("issue_statuses_project_name_unique").on(
-      table.projectId,
-      table.name,
-    ),
-  ],
+  (table) => [uniqueIndex('issue_statuses_project_name_unique').on(table.projectId, table.name)],
 );
 
 export const issueStatusesRelations = relations(issueStatuses, ({ one }) => ({
@@ -60,25 +55,20 @@ export const issueStatusesRelations = relations(issueStatuses, ({ one }) => ({
  * Seeded when a project is created.
  */
 export const issueTypes = pgTable(
-  "issue_types",
+  'issue_types',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    icon: text("icon").notNull(),
-    color: text("color").notNull(),
-    sortOrder: integer("sort_order").notNull().default(0),
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    icon: text('icon').notNull(),
+    color: text('color').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0),
     /** Whether this type is the default for new issues in the project */
-    isDefault: boolean("is_default").notNull().default(false),
+    isDefault: boolean('is_default').notNull().default(false),
   },
-  (table) => [
-    uniqueIndex("issue_types_project_name_unique").on(
-      table.projectId,
-      table.name,
-    ),
-  ],
+  (table) => [uniqueIndex('issue_types_project_name_unique').on(table.projectId, table.name)],
 );
 
 export const issueTypesRelations = relations(issueTypes, ({ one }) => ({
@@ -101,45 +91,42 @@ export const issueTypesRelations = relations(issueTypes, ({ one }) => ({
 // CHECK constraint added via raw SQL migration:
 // CHECK (priority IN ('urgent', 'high', 'medium', 'low', 'none'))
 export const issues = pgTable(
-  "issues",
+  'issues',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    sequenceId: integer("sequence_id").notNull(),
-    title: text("title").notNull(),
-    description: jsonb("description"),
-    descriptionText: text("description_text"),
-    statusId: uuid("status_id").references(() => issueStatuses.id, {
-      onDelete: "set null",
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    sequenceId: integer('sequence_id').notNull(),
+    title: text('title').notNull(),
+    description: jsonb('description'),
+    descriptionText: text('description_text'),
+    statusId: uuid('status_id').references(() => issueStatuses.id, {
+      onDelete: 'set null',
     }),
-    typeId: uuid("type_id").references(() => issueTypes.id, {
-      onDelete: "set null",
+    typeId: uuid('type_id').references(() => issueTypes.id, {
+      onDelete: 'set null',
     }),
-    priority: text("priority").notNull().default("none"), // 'urgent' | 'high' | 'medium' | 'low' | 'none'
-    parentId: uuid("parent_id"),
-    creatorId: text("creator_id").references(() => users.id, {
-      onDelete: "set null",
+    priority: text('priority').notNull().default('none'), // 'urgent' | 'high' | 'medium' | 'low' | 'none'
+    parentId: uuid('parent_id'),
+    creatorId: text('creator_id').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    sortOrder: text("sort_order").notNull().default("a0"),
-    startDate: timestamp("start_date", { withTimezone: true }),
-    dueDate: timestamp("due_date", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    sortOrder: text('sort_order').notNull().default('a0'),
+    startDate: timestamp('start_date', { withTimezone: true }),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("issues_project_sequence_unique").on(
-      table.projectId,
-      table.sequenceId,
-    ),
-    index("issues_project_id_idx").on(table.projectId),
-    index("issues_status_id_idx").on(table.statusId),
-    index("issues_parent_id_idx").on(table.parentId),
-    index("issues_priority_idx").on(table.priority),
-    index("issues_due_date_idx").on(table.dueDate),
-    index("issues_creator_id_idx").on(table.creatorId),
+    uniqueIndex('issues_project_sequence_unique').on(table.projectId, table.sequenceId),
+    index('issues_project_id_idx').on(table.projectId),
+    index('issues_status_id_idx').on(table.statusId),
+    index('issues_parent_id_idx').on(table.parentId),
+    index('issues_priority_idx').on(table.priority),
+    index('issues_due_date_idx').on(table.dueDate),
+    index('issues_creator_id_idx').on(table.creatorId),
   ],
 );
 
@@ -159,9 +146,9 @@ export const issuesRelations = relations(issues, ({ one, many }) => ({
   parent: one(issues, {
     fields: [issues.parentId],
     references: [issues.id],
-    relationName: "subIssues",
+    relationName: 'subIssues',
   }),
-  children: many(issues, { relationName: "subIssues" }),
+  children: many(issues, { relationName: 'subIssues' }),
   creator: one(users, {
     fields: [issues.creatorId],
     references: [users.id],
@@ -180,39 +167,33 @@ export const issuesRelations = relations(issues, ({ one, many }) => ({
  * CASCADE on both FKs: deleting an issue or user removes the assignment.
  */
 export const issueAssignees = pgTable(
-  "issue_assignees",
+  'issue_assignees',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    issueId: uuid("issue_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id')
       .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    userId: text("user_id")
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => users.id, { onDelete: 'cascade' }),
+    assignedAt: timestamp('assigned_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("issue_assignees_issue_user_unique").on(
-      table.issueId,
-      table.userId,
-    ),
-    index("issue_assignees_user_id_idx").on(table.userId),
+    uniqueIndex('issue_assignees_issue_user_unique').on(table.issueId, table.userId),
+    index('issue_assignees_user_id_idx').on(table.userId),
   ],
 );
 
-export const issueAssigneesRelations = relations(
-  issueAssignees,
-  ({ one }) => ({
-    issue: one(issues, {
-      fields: [issueAssignees.issueId],
-      references: [issues.id],
-    }),
-    user: one(users, {
-      fields: [issueAssignees.userId],
-      references: [users.id],
-    }),
+export const issueAssigneesRelations = relations(issueAssignees, ({ one }) => ({
+  issue: one(issues, {
+    fields: [issueAssignees.issueId],
+    references: [issues.id],
   }),
-);
+  user: one(users, {
+    fields: [issueAssignees.userId],
+    references: [users.id],
+  }),
+}));
 
 /**
  * Issue labels join table.
@@ -221,22 +202,17 @@ export const issueAssigneesRelations = relations(
  * CASCADE on both FKs: deleting an issue or label removes the association.
  */
 export const issueLabels = pgTable(
-  "issue_labels",
+  'issue_labels',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    issueId: uuid("issue_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id')
       .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    labelId: uuid("label_id")
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    labelId: uuid('label_id')
       .notNull()
-      .references(() => labels.id, { onDelete: "cascade" }),
+      .references(() => labels.id, { onDelete: 'cascade' }),
   },
-  (table) => [
-    uniqueIndex("issue_labels_issue_label_unique").on(
-      table.issueId,
-      table.labelId,
-    ),
-  ],
+  (table) => [uniqueIndex('issue_labels_issue_label_unique').on(table.issueId, table.labelId)],
 );
 
 export const issueLabelsRelations = relations(issueLabels, ({ one }) => ({

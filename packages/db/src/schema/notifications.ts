@@ -1,14 +1,8 @@
-import {
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { issues } from "./issues";
-import { wikiPages } from "./wiki";
+import { relations } from 'drizzle-orm';
+import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { issues } from './issues';
+import { users } from './users';
+import { wikiPages } from './wiki';
 
 /**
  * Notifications table.
@@ -21,26 +15,26 @@ import { wikiPages } from "./wiki";
  * `read_at` tracks when the user acknowledged the notification.
  */
 export const notifications = pgTable(
-  "notifications",
+  'notifications',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    issueId: uuid("issue_id").references(() => issues.id, {
-      onDelete: "cascade",
+      .references(() => users.id, { onDelete: 'cascade' }),
+    issueId: uuid('issue_id').references(() => issues.id, {
+      onDelete: 'cascade',
     }),
-    pageId: uuid("page_id").references(() => wikiPages.id, {
-      onDelete: "cascade",
+    pageId: uuid('page_id').references(() => wikiPages.id, {
+      onDelete: 'cascade',
     }),
-    type: text("type").notNull(), // 'assigned' | 'mentioned' | 'commented' | 'status_changed' | 'invited'
-    message: text("message").notNull(),
-    readAt: timestamp("read_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    type: text('type').notNull(), // 'assigned' | 'mentioned' | 'commented' | 'status_changed' | 'invited'
+    message: text('message').notNull(),
+    readAt: timestamp('read_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    index("notifications_user_read_idx").on(table.userId, table.readAt),
-    index("notifications_user_created_idx").on(table.userId, table.createdAt),
+    index('notifications_user_read_idx').on(table.userId, table.readAt),
+    index('notifications_user_created_idx').on(table.userId, table.createdAt),
   ],
 );
 

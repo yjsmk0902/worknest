@@ -1,18 +1,13 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { Button } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
+import { ProjectContext, type ProjectContextValue } from '@/contexts/project-context';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
-import {
-  ProjectContext,
-  type ProjectContextValue,
-} from '@/contexts/project-context';
 import { useIssueRealtime } from '@/hooks/use-issue-realtime';
+import { apiClient } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { Button } from '@worknest/ui';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId')({
   component: ProjectLayout,
 });
 
@@ -36,8 +31,7 @@ function ProjectLayout() {
 
   const projectQuery = useQuery<ProjectResponse>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get(`/workspaces/${wsId}/projects/${projectId}`),
+    queryFn: () => apiClient.get(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -54,9 +48,7 @@ function ProjectLayout() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            프로젝트를 불러올 수 없습니다.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">프로젝트를 불러올 수 없습니다.</p>
           <Button
             variant="outline"
             size="sm"

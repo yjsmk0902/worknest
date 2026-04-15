@@ -1,30 +1,27 @@
-import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import type { CreateViewInput, SortField, ViewOutput, ViewSort, ViewType } from '@worknest/shared';
 import {
+  Button,
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
-  Button,
   Input,
   Label,
   toast,
 } from '@worknest/ui';
-import type { CreateViewInput, SortField, ViewOutput, ViewSort, ViewType } from '@worknest/shared';
-import { apiClient } from '../../lib/api-client';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useProjectContext } from '../../contexts/project-context';
+import { apiClient } from '../../lib/api-client';
 import {
-  useIssueFilters,
-  getFieldMeta,
-} from '../issues/filter-builder/use-issue-filters';
-import {
-  getSortDisplayText,
   activeFiltersToConditions,
+  getSortDisplayText,
   getViewTypeLabel,
 } from '../../lib/view-utils';
+import { getFieldMeta, useIssueFilters } from '../issues/filter-builder/use-issue-filters';
 
 // ── Props ──────────────────────────────────────────────────────────────
 
@@ -36,11 +33,7 @@ interface SaveViewModalProps {
 
 // ── Component ──────────────────────────────────────────────────────────
 
-export function SaveViewModal({
-  open,
-  onOpenChange,
-  viewType,
-}: SaveViewModalProps) {
+export function SaveViewModal({ open, onOpenChange, viewType }: SaveViewModalProps) {
   const { projectId } = useProjectContext();
   const queryClient = useQueryClient();
   const { filters, apiParams } = useIssueFilters();
@@ -71,10 +64,7 @@ export function SaveViewModal({
   // Create view mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateViewInput) =>
-      apiClient.post<ViewOutput>(
-        `/projects/${projectId}/views`,
-        data,
-      ),
+      apiClient.post<ViewOutput>(`/projects/${projectId}/views`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'views'],
@@ -138,7 +128,7 @@ export function SaveViewModal({
                   const label = meta?.label ?? condition.field;
                   const values = Array.isArray(condition.value)
                     ? condition.value.join(', ')
-                    : condition.value ?? '';
+                    : (condition.value ?? '');
                   return (
                     <span
                       key={`${condition.field}-${condition.operator}`}
@@ -150,9 +140,7 @@ export function SaveViewModal({
                 })}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                적용된 필터가 없습니다
-              </p>
+              <p className="text-sm text-muted-foreground">적용된 필터가 없습니다</p>
             )}
           </div>
 
@@ -165,9 +153,7 @@ export function SaveViewModal({
           {/* View type */}
           <div className="space-y-2">
             <span className="text-sm font-medium">뷰 타입</span>
-            <p className="text-sm text-muted-foreground">
-              {getViewTypeLabel(viewType)}
-            </p>
+            <p className="text-sm text-muted-foreground">{getViewTypeLabel(viewType)}</p>
           </div>
 
           <DialogFooter>

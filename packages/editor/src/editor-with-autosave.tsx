@@ -1,8 +1,8 @@
-import { type JSONContent } from "@tiptap/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Editor, type EditorProps } from "./editor";
+import type { JSONContent } from '@tiptap/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Editor, type EditorProps } from './editor';
 
-type SaveStatus = "saved" | "saving" | "unsaved";
+type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
 export interface EditorWithAutosaveProps {
   /** Initial TipTap JSON content */
@@ -20,7 +20,7 @@ export interface EditorWithAutosaveProps {
   /** Whether to autofocus the editor on mount */
   autofocus?: boolean;
   /** Additional TipTap extensions */
-  extensions?: EditorProps["extensions"];
+  extensions?: EditorProps['extensions'];
   /** Custom status labels (e.g., for i18n) */
   statusLabels?: {
     saved?: string;
@@ -30,9 +30,9 @@ export interface EditorWithAutosaveProps {
 }
 
 const DEFAULT_LABELS: Record<SaveStatus, string> = {
-  saved: "Saved",
-  saving: "Saving...",
-  unsaved: "Unsaved changes",
+  saved: 'Saved',
+  saving: 'Saving...',
+  unsaved: 'Unsaved changes',
 };
 
 /**
@@ -52,7 +52,7 @@ export function EditorWithAutosave({
   extensions,
   statusLabels,
 }: EditorWithAutosaveProps) {
-  const [status, setStatus] = useState<SaveStatus>("saved");
+  const [status, setStatus] = useState<SaveStatus>('saved');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<{ json: JSONContent; text: string } | null>(null);
   const onSaveRef = useRef(onSave);
@@ -70,19 +70,19 @@ export function EditorWithAutosave({
     pendingRef.current = null;
 
     if (mountedRef.current) {
-      setStatus("saving");
+      setStatus('saving');
     }
 
     try {
       await onSaveRef.current(pending.json, pending.text);
       if (mountedRef.current) {
-        setStatus("saved");
+        setStatus('saved');
       }
     } catch {
       // Restore pending data so it can be retried
       pendingRef.current = pending;
       if (mountedRef.current) {
-        setStatus("unsaved");
+        setStatus('unsaved');
       }
     }
   }, []);
@@ -90,7 +90,7 @@ export function EditorWithAutosave({
   const handleUpdate = useCallback(
     (json: JSONContent, text: string) => {
       pendingRef.current = { json, text };
-      setStatus("unsaved");
+      setStatus('unsaved');
 
       // Clear existing timer
       if (timerRef.current) {
@@ -139,24 +139,24 @@ export function EditorWithAutosave({
         <div className="absolute top-2 right-2 pointer-events-none">
           <span
             className={[
-              "inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md",
-              status === "saved"
-                ? "text-muted-foreground"
-                : status === "saving"
-                  ? "text-muted-foreground"
-                  : "text-amber-600 dark:text-amber-400",
-            ].join(" ")}
+              'inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md',
+              status === 'saved'
+                ? 'text-muted-foreground'
+                : status === 'saving'
+                  ? 'text-muted-foreground'
+                  : 'text-amber-600 dark:text-amber-400',
+            ].join(' ')}
           >
             {/* Status dot */}
             <span
               className={[
-                "w-1.5 h-1.5 rounded-full",
-                status === "saved"
-                  ? "bg-emerald-500"
-                  : status === "saving"
-                    ? "bg-muted-foreground animate-pulse"
-                    : "bg-amber-500",
-              ].join(" ")}
+                'w-1.5 h-1.5 rounded-full',
+                status === 'saved'
+                  ? 'bg-emerald-500'
+                  : status === 'saving'
+                    ? 'bg-muted-foreground animate-pulse'
+                    : 'bg-amber-500',
+              ].join(' ')}
             />
             {labels[status]}
           </span>

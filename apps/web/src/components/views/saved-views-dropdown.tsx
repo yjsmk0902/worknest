@@ -1,19 +1,6 @@
-import { useState } from 'react';
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import {
-  Bookmark,
-  Columns3,
-  GanttChart,
-  List,
-  MoreHorizontal,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import type { ViewOutput, ViewType } from '@worknest/shared';
 import {
   Button,
   Dialog,
@@ -33,9 +20,10 @@ import {
   DropdownMenuTrigger,
   toast,
 } from '@worknest/ui';
-import type { ViewOutput, ViewType } from '@worknest/shared';
-import { apiClient } from '../../lib/api-client';
+import { Bookmark, Columns3, GanttChart, List, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useProjectContext } from '../../contexts/project-context';
+import { apiClient } from '../../lib/api-client';
 import { viewToSearchParams } from '../../lib/view-utils';
 import { SaveViewModal } from './save-view-modal';
 
@@ -47,9 +35,7 @@ interface SavedViewsDropdownProps {
 
 // ── Component ──────────────────────────────────────────────────────────
 
-export function SavedViewsDropdown({
-  currentViewType,
-}: SavedViewsDropdownProps) {
+export function SavedViewsDropdown({ currentViewType }: SavedViewsDropdownProps) {
   const { projectId } = useProjectContext();
   const { orgSlug, wsSlug } = useParams({ strict: false }) as {
     orgSlug: string;
@@ -65,9 +51,7 @@ export function SavedViewsDropdown({
   const viewsQuery = useQuery<ViewOutput[]>({
     queryKey: ['projects', projectId, 'views'],
     queryFn: async () => {
-      const result = await apiClient.getList<ViewOutput>(
-        `/projects/${projectId}/views`,
-      );
+      const result = await apiClient.getList<ViewOutput>(`/projects/${projectId}/views`);
       return result.data;
     },
     staleTime: 30 * 1000,
@@ -75,8 +59,7 @@ export function SavedViewsDropdown({
 
   // Delete view mutation with optimistic update
   const deleteMutation = useMutation({
-    mutationFn: (viewId: string) =>
-      apiClient.delete(`/views/${viewId}`),
+    mutationFn: (viewId: string) => apiClient.delete(`/views/${viewId}`),
     onMutate: async (viewId: string) => {
       await queryClient.cancelQueries({
         queryKey: ['projects', projectId, 'views'],
@@ -94,10 +77,7 @@ export function SavedViewsDropdown({
     },
     onError: (_err, _viewId, context) => {
       if (context?.previousViews) {
-        queryClient.setQueryData(
-          ['projects', projectId, 'views'],
-          context.previousViews,
-        );
+        queryClient.setQueryData(['projects', projectId, 'views'], context.previousViews);
       }
       toast('뷰 삭제에 실패했습니다.');
     },
@@ -137,10 +117,8 @@ export function SavedViewsDropdown({
   const views = viewsQuery.data ?? [];
 
   const viewTypeIcon = (type: ViewType) => {
-    if (type === 'board')
-      return <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />;
-    if (type === 'gantt')
-      return <GanttChart className="h-3.5 w-3.5 text-muted-foreground" />;
+    if (type === 'board') return <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />;
+    if (type === 'gantt') return <GanttChart className="h-3.5 w-3.5 text-muted-foreground" />;
     return <List className="h-3.5 w-3.5 text-muted-foreground" />;
   };
 
@@ -148,11 +126,7 @@ export function SavedViewsDropdown({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            aria-haspopup="menu"
-          >
+          <Button variant="outline" size="sm" aria-haspopup="menu">
             <Bookmark className="h-3.5 w-3.5" />
             <span>뷰</span>
           </Button>
@@ -207,10 +181,7 @@ export function SavedViewsDropdown({
           <DropdownMenuSeparator />
 
           {/* Save current view action */}
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => setSaveModalOpen(true)}
-          >
+          <DropdownMenuItem className="cursor-pointer" onSelect={() => setSaveModalOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             현재 뷰 저장
           </DropdownMenuItem>
@@ -239,10 +210,7 @@ export function SavedViewsDropdown({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               취소
             </Button>
             <Button

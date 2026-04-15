@@ -12,10 +12,7 @@ import {
 // ── Type icon mapping ───────────────────────────────────────────────────
 // Keys match the string identifiers seeded by the backend.
 
-export const TYPE_ICON_MAP: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
+export const TYPE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'check-circle': CircleCheck,
   bug: Bug,
   'book-open': BookOpen,

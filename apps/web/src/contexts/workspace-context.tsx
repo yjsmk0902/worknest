@@ -9,16 +9,12 @@ export interface WorkspaceContextValue {
   wsName: string;
 }
 
-export const WorkspaceContext = createContext<WorkspaceContextValue | null>(
-  null,
-);
+export const WorkspaceContext = createContext<WorkspaceContextValue | null>(null);
 
 export function useWorkspaceContext(): WorkspaceContextValue {
   const ctx = useContext(WorkspaceContext);
   if (!ctx) {
-    throw new Error(
-      'useWorkspaceContext must be used within a WorkspaceContext.Provider',
-    );
+    throw new Error('useWorkspaceContext must be used within a WorkspaceContext.Provider');
   }
   return ctx;
 }

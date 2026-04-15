@@ -1,16 +1,13 @@
 import { Link } from '@tanstack/react-router';
-import { RefreshCw } from 'lucide-react';
+import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
 import { Badge } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
+import { RefreshCw } from 'lucide-react';
 import { EmptyState } from '../empty-state';
 
 // ── Status Badge Config ────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; className: string }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   draft: {
     label: 'Draft',
     className:
@@ -31,12 +28,7 @@ const STATUS_CONFIG: Record<
 export function CycleStatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.draft;
   return (
-    <Badge
-      className={cn(
-        'text-xs font-medium px-2 py-0.5 rounded-full',
-        config.className,
-      )}
-    >
+    <Badge className={cn('text-xs font-medium px-2 py-0.5 rounded-full', config.className)}>
       {config.label}
     </Badge>
   );
@@ -49,14 +41,9 @@ interface CycleProgressBarProps {
   height?: string;
 }
 
-export function CycleProgressBar({
-  progress,
-  height = 'h-2',
-}: CycleProgressBarProps) {
+export function CycleProgressBar({ progress, height = 'h-2' }: CycleProgressBarProps) {
   if (!progress || progress.total === 0) {
-    return (
-      <div className={cn('w-full rounded-full bg-muted', height)} />
-    );
+    return <div className={cn('w-full rounded-full bg-muted', height)} />;
   }
 
   const { total, byCategory } = progress;
@@ -123,9 +110,7 @@ export function CycleProgressText({
     <div className="flex items-center justify-between mt-2">
       <div className="flex items-center gap-1 text-xs text-muted-foreground">
         {completed > 0 && <span>완료 {completed}</span>}
-        {completed > 0 && (started > 0 || unstarted > 0) && (
-          <span>&middot;</span>
-        )}
+        {completed > 0 && (started > 0 || unstarted > 0) && <span>&middot;</span>}
         {started > 0 && <span>진행 중 {started}</span>}
         {started > 0 && unstarted > 0 && <span>&middot;</span>}
         {unstarted > 0 && <span>미시작 {unstarted}</span>}
@@ -137,10 +122,7 @@ export function CycleProgressText({
 
 // ── Date Formatting ────────────────────────────────────────────────────
 
-export function formatCycleDateRange(
-  startDate: string | null,
-  endDate: string | null,
-): string {
+export function formatCycleDateRange(startDate: string | null, endDate: string | null): string {
   if (!startDate && !endDate) return '';
 
   const format = (dateStr: string) => {
@@ -167,13 +149,7 @@ interface CycleCardProps {
   projectId: string;
 }
 
-export function CycleCard({
-  cycle,
-  progress,
-  orgSlug,
-  wsSlug,
-  projectId,
-}: CycleCardProps) {
+export function CycleCard({ cycle, progress, orgSlug, wsSlug, projectId }: CycleCardProps) {
   return (
     <Link
       to="/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId"
@@ -182,9 +158,7 @@ export function CycleCard({
     >
       {/* Top row: name, status, date */}
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium flex-1 truncate">
-          {cycle.name}
-        </span>
+        <span className="text-sm font-medium flex-1 truncate">{cycle.name}</span>
         <CycleStatusBadge status={cycle.status} />
         <span className="text-xs text-muted-foreground ml-auto shrink-0">
           {formatCycleDateRange(cycle.startDate, cycle.endDate)}
@@ -193,9 +167,7 @@ export function CycleCard({
 
       {/* Description */}
       {cycle.description && (
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
-          {cycle.description}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{cycle.description}</p>
       )}
 
       {/* Progress bar */}
@@ -217,13 +189,7 @@ interface CycleListProps {
   projectId: string;
 }
 
-export function CycleList({
-  cycles,
-  progressMap,
-  orgSlug,
-  wsSlug,
-  projectId,
-}: CycleListProps) {
+export function CycleList({ cycles, progressMap, orgSlug, wsSlug, projectId }: CycleListProps) {
   return (
     <div>
       {cycles.map((cycle) => (

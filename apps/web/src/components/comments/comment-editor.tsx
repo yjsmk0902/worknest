@@ -1,11 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
-import { useEditor, EditorContent, type JSONContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
 import LinkExtension from '@tiptap/extension-link';
-import { Bold, Italic, Link, AtSign } from 'lucide-react';
+import Placeholder from '@tiptap/extension-placeholder';
+import { EditorContent, type JSONContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { type MentionQueryFn, createMentionExtension } from '@worknest/editor';
 import { Button, cn } from '@worknest/ui';
-import { createMentionExtension, type MentionQueryFn } from '@worknest/editor';
+import { AtSign, Bold, Italic, Link } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -115,7 +115,7 @@ export function CommentEditor({
         'aria-label': '댓글 작성',
         'aria-multiline': 'true',
       },
-      handleKeyDown: (view, event) => {
+      handleKeyDown: (_view, event) => {
         // Don't intercept Enter when a suggestion popup (mention/slash) is open
         const hasSuggestion = !!document.querySelector('[data-suggestion-popup]');
         if (event.key === 'Enter' && hasSuggestion) {
@@ -226,11 +226,7 @@ export function CommentEditor({
           title="Link (Cmd+K)"
         />
         {mentionQueryFn && (
-          <ToolbarButton
-            onClick={insertMention}
-            icon={<AtSign size={14} />}
-            title="Mention"
-          />
+          <ToolbarButton onClick={insertMention} icon={<AtSign size={14} />} title="Mention" />
         )}
 
         {/* Link URL inline input */}
@@ -243,7 +239,6 @@ export function CommentEditor({
               onChange={(e) => setLinkInput(e.target.value)}
               onKeyDown={handleLinkKeyDown}
               className="w-40 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
-              autoFocus
             />
             <button
               type="button"

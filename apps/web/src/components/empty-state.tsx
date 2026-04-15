@@ -37,9 +37,7 @@ export function EmptyState({
       <Icon
         aria-hidden="true"
         className={
-          compact
-            ? 'w-8 h-8 text-muted-foreground/40'
-            : 'w-12 h-12 text-muted-foreground/50'
+          compact ? 'w-8 h-8 text-muted-foreground/40' : 'w-12 h-12 text-muted-foreground/50'
         }
       />
       <p

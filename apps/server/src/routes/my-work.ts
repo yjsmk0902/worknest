@@ -1,28 +1,23 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
 import {
-  eq,
-  and,
-  isNull,
-  inArray,
-} from "drizzle-orm";
-import type { Auth } from "../lib/auth";
-import {
-  cycles,
+  type Database,
   cycleIssues,
-  issues,
-  issueStatuses,
-  issueTypes,
+  cycles,
   issueAssignees,
   issueLabels,
+  issueStatuses,
+  issueTypes,
+  issues,
   labels,
   projects,
   users,
   workspaceMembers,
-  type Database,
-} from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { AppError } from "../lib/errors";
+} from '@worknest/db';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -31,7 +26,7 @@ const workspaceIdParam = z.object({ workspaceId: z.string().uuid() });
 // ── Types ──────────────────────────────────────────────────────────────
 
 /** Status category keys used for grouping */
-type StatusCategory = "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+type StatusCategory = 'backlog' | 'unstarted' | 'started' | 'completed' | 'cancelled';
 
 interface MyIssue {
   id: string;
@@ -83,17 +78,17 @@ export async function myWorkRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/my-issues ─────────────────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/my-issues",
+    '/api/v1/workspaces/:workspaceId/my-issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["My Work"],
-        summary: "List issues assigned to the current user grouped by status category",
+        tags: ['My Work'],
+        summary: 'List issues assigned to the current user grouped by status category',
       },
     },
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
-      const callerUserId = request.user!.id;
+      const callerUserId = request.user?.id;
 
       // Verify caller is a workspace member
       const wsMember = await db
@@ -109,7 +104,7 @@ export async function myWorkRoutes(
         .then((rows) => rows[0]);
 
       if (!wsMember) {
-        throw AppError.forbidden("You are not a member of this workspace");
+        throw AppError.forbidden('You are not a member of this workspace');
       }
 
       // Fetch all issues assigned to the caller in this workspace
@@ -190,17 +185,12 @@ export async function myWorkRoutes(
               })
               .from(cycleIssues)
               .innerJoin(cycles, eq(cycleIssues.cycleId, cycles.id))
-              .where(
-                and(
-                  inArray(cycleIssues.issueId, issueIds),
-                  isNull(cycleIssues.removedAt),
-                ),
-              )
+              .where(and(inArray(cycleIssues.issueId, issueIds), isNull(cycleIssues.removedAt)))
           : Promise.resolve([]),
       ]);
 
       // Index assignees and labels by issue ID
-      const assigneesByIssue = new Map<string, MyIssue["assignees"]>();
+      const assigneesByIssue = new Map<string, MyIssue['assignees']>();
       for (const a of assigneeRows) {
         const arr = assigneesByIssue.get(a.issueId) ?? [];
         arr.push({
@@ -216,7 +206,7 @@ export async function myWorkRoutes(
         assigneesByIssue.set(a.issueId, arr);
       }
 
-      const labelsByIssue = new Map<string, MyIssue["labels"]>();
+      const labelsByIssue = new Map<string, MyIssue['labels']>();
       for (const l of labelRows) {
         const arr = labelsByIssue.get(l.issueId) ?? [];
         arr.push({
@@ -231,7 +221,7 @@ export async function myWorkRoutes(
         labelsByIssue.set(l.issueId, arr);
       }
 
-      const cycleByIssue = new Map<string, MyIssue["cycle"]>();
+      const cycleByIssue = new Map<string, MyIssue['cycle']>();
       for (const c of cycleRows) {
         if (!cycleByIssue.has(c.issueId)) {
           cycleByIssue.set(c.issueId, {
@@ -252,7 +242,7 @@ export async function myWorkRoutes(
       };
 
       for (const row of rows) {
-        const category = (row.status?.category ?? "backlog") as StatusCategory;
+        const category = (row.status?.category ?? 'backlog') as StatusCategory;
         const bucket = grouped[category] ?? grouped.backlog;
 
         const formatted: MyIssue = {

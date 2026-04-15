@@ -1,11 +1,11 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { updateProfileInput } from "@worknest/shared";
-import { users } from "@worknest/db";
-import { eq } from "drizzle-orm";
-import { AppError } from "../lib/errors";
+import type { Database } from '@worknest/db';
+import { users } from '@worknest/db';
+import { updateProfileInput } from '@worknest/shared';
+import { eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
 
 /**
  * Profile routes for the currently authenticated user.
@@ -23,16 +23,16 @@ export async function profileRoutes(
   // ── GET /api/v1/my/profile ─────────────────────────────────────────
 
   app.get(
-    "/api/v1/my/profile",
+    '/api/v1/my/profile',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Profile"],
-        summary: "Get current user profile",
+        tags: ['Profile'],
+        summary: 'Get current user profile',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
 
       const user = await db
         .select()
@@ -42,7 +42,7 @@ export async function profileRoutes(
         .then((rows) => rows[0]);
 
       if (!user) {
-        throw AppError.notFound("user");
+        throw AppError.notFound('user');
       }
 
       return reply.status(200).send({
@@ -60,16 +60,16 @@ export async function profileRoutes(
   // ── PATCH /api/v1/my/profile ───────────────────────────────────────
 
   app.patch(
-    "/api/v1/my/profile",
+    '/api/v1/my/profile',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Profile"],
-        summary: "Update current user profile",
+        tags: ['Profile'],
+        summary: 'Update current user profile',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const body = updateProfileInput.parse(request.body);
 
       const updates: Record<string, unknown> = {
@@ -86,7 +86,7 @@ export async function profileRoutes(
         .then((rows) => rows[0]);
 
       if (!updated) {
-        throw AppError.notFound("user");
+        throw AppError.notFound('user');
       }
 
       return reply.status(200).send({

@@ -1,47 +1,41 @@
-import { useCallback, useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { EmptyState } from '@/components/empty-state';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
 import {
   DndContext,
+  type DragEndEvent,
   DragOverlay,
-  PointerSensor,
   KeyboardSensor,
+  PointerSensor,
   closestCenter,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  Star,
-  GripVertical,
-  Folder,
-  CircleCheck,
-  FileText,
-  BookOpen,
-  AlertTriangle,
-} from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { type FavoriteEntityType, type FavoriteOutput, generateKeyBetween } from '@worknest/shared';
 import { Button, Skeleton, toast } from '@worknest/ui';
 import {
-  generateKeyBetween,
-  type FavoriteOutput,
-  type FavoriteEntityType,
-} from '@worknest/shared';
-import { apiClient } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { EmptyState } from '@/components/empty-state';
+  AlertTriangle,
+  BookOpen,
+  CircleCheck,
+  FileText,
+  Folder,
+  GripVertical,
+  Star,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/my/favorites',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/my/favorites')({
   component: FavoritesPage,
 });
 
@@ -68,19 +62,10 @@ interface SortableFavoriteItemProps {
   onClick: (favorite: FavoriteOutput) => void;
 }
 
-function SortableFavoriteItem({
-  favorite,
-  onUnfavorite,
-  onClick,
-}: SortableFavoriteItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: favorite.id });
+function SortableFavoriteItem({ favorite, onUnfavorite, onClick }: SortableFavoriteItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: favorite.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -102,7 +87,6 @@ function SortableFavoriteItem({
       onKeyDown={(e) => {
         if (e.key === 'Enter') onClick(favorite);
       }}
-      tabIndex={0}
     >
       {/* Drag handle */}
       <button
@@ -120,9 +104,7 @@ function SortableFavoriteItem({
       <EntityIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
 
       {/* Entity name */}
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-        {favorite.entityName}
-      </span>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground">{favorite.entityName}</span>
 
       {/* Entity type badge */}
       <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
@@ -155,9 +137,7 @@ function DragOverlayItem({ favorite }: { favorite: FavoriteOutput }) {
     <div className="flex h-11 items-center gap-3 rounded-md border border-border bg-background px-4 shadow-lg">
       <GripVertical className="h-4 w-4 text-muted-foreground/50" />
       <EntityIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-        {favorite.entityName}
-      </span>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground">{favorite.entityName}</span>
       <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
         {entityConfig.label}
       </span>
@@ -185,14 +165,10 @@ function FavoritesPage() {
 
   // Delete favorite mutation
   const deleteMutation = useMutation({
-    mutationFn: (favoriteId: string) =>
-      apiClient.delete(`/favorites/${favoriteId}`),
+    mutationFn: (favoriteId: string) => apiClient.delete(`/favorites/${favoriteId}`),
     onMutate: async (favoriteId) => {
       await queryClient.cancelQueries({ queryKey: ['my', 'favorites'] });
-      const previousData = queryClient.getQueryData<FavoriteOutput[]>([
-        'my',
-        'favorites',
-      ]);
+      const previousData = queryClient.getQueryData<FavoriteOutput[]>(['my', 'favorites']);
 
       queryClient.setQueryData<FavoriteOutput[]>(
         ['my', 'favorites'],
@@ -254,18 +230,12 @@ function FavoritesPage() {
         // Moving down: place after the target item
         const target = items[newIndex];
         const nextItem = newIndex + 1 < items.length ? items[newIndex + 1] : null;
-        newSortOrder = generateKeyBetween(
-          target.sortOrder,
-          nextItem?.sortOrder ?? null,
-        );
+        newSortOrder = generateKeyBetween(target.sortOrder, nextItem?.sortOrder ?? null);
       } else {
         // Moving up: place before the target item
         const target = items[newIndex];
         const prevItem = newIndex - 1 >= 0 ? items[newIndex - 1] : null;
-        newSortOrder = generateKeyBetween(
-          prevItem?.sortOrder ?? null,
-          target.sortOrder,
-        );
+        newSortOrder = generateKeyBetween(prevItem?.sortOrder ?? null, target.sortOrder);
       }
 
       // Optimistic reorder
@@ -329,7 +299,7 @@ function FavoritesPage() {
 
   // Active item for drag overlay
   const activeItem = activeId
-    ? favoritesQuery.data?.find((f) => f.id === activeId) ?? null
+    ? (favoritesQuery.data?.find((f) => f.id === activeId) ?? null)
     : null;
 
   // Loading state
@@ -339,11 +309,7 @@ function FavoritesPage() {
         <div className="px-6 py-4">
           <h1 className="text-2xl font-semibold">즐겨찾기</h1>
         </div>
-        <div
-          className="space-y-0 px-6"
-          aria-busy="true"
-          aria-label="즐겨찾기 로딩 중"
-        >
+        <div className="space-y-0 px-6" aria-busy="true" aria-label="즐겨찾기 로딩 중">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={`skeleton-${i}`}
@@ -371,9 +337,7 @@ function FavoritesPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              즐겨찾기를 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">즐겨찾기를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -438,9 +402,7 @@ function FavoritesPage() {
             </div>
           </SortableContext>
 
-          <DragOverlay>
-            {activeItem ? <DragOverlayItem favorite={activeItem} /> : null}
-          </DragOverlay>
+          <DragOverlay>{activeItem ? <DragOverlayItem favorite={activeItem} /> : null}</DragOverlay>
         </DndContext>
       </div>
     </div>

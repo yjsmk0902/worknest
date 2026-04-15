@@ -1,21 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Maximize2,
-  X,
-} from 'lucide-react';
-import { Button, Separator, Skeleton, ScrollArea } from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import type { MentionQueryFn, MentionUser, JSONContent } from '@worknest/editor';
+import type { JSONContent, MentionQueryFn, MentionUser } from '@worknest/editor';
 import { EditorWithAutosave } from '@worknest/editor';
+import type { IssueOutput } from '@worknest/shared';
+import { Button, ScrollArea, Separator, Skeleton } from '@worknest/ui';
+import { cn } from '@worknest/ui';
+import { AlertTriangle, ArrowLeft, Maximize2, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
-import { IssueProperties } from './issue-properties';
 import { CommentList } from '../../comments/comment-list';
 import { SubIssues } from '../sub-issues';
-import type { IssueOutput } from '@worknest/shared';
+import { IssueProperties } from './issue-properties';
 
 // ── Member type for mention suggestions ────────────────────────────────
 
@@ -32,16 +27,13 @@ interface MemberOutput {
 
 function createProjectMentionQueryFn(projectId: string): MentionQueryFn {
   return async (query: string): Promise<MentionUser[]> => {
-    const result = await apiClient.getList<MemberOutput>(
-      `/projects/${projectId}/members`,
-    );
+    const result = await apiClient.getList<MemberOutput>(`/projects/${projectId}/members`);
     const members = result.data ?? [];
     const lower = query.toLowerCase();
     return members
       .filter(
         (m) =>
-          m.user.name.toLowerCase().includes(lower) ||
-          m.user.email.toLowerCase().includes(lower),
+          m.user.name.toLowerCase().includes(lower) || m.user.email.toLowerCase().includes(lower),
       )
       .map((m) => ({
         id: m.user.id,
@@ -73,17 +65,11 @@ export function IssueDetailPanel({
 }: IssueDetailPanelProps) {
   const queryClient = useQueryClient();
 
-  const mentionQueryFn = useMemo(
-    () => createProjectMentionQueryFn(projectId),
-    [projectId],
-  );
+  const mentionQueryFn = useMemo(() => createProjectMentionQueryFn(projectId), [projectId]);
 
   const issueQuery = useQuery<IssueOutput>({
     queryKey: ['projects', projectId, 'issues', issueId],
-    queryFn: () =>
-      apiClient.get<IssueOutput>(
-        `/projects/${projectId}/issues/${issueId}`,
-      ),
+    queryFn: () => apiClient.get<IssueOutput>(`/projects/${projectId}/issues/${issueId}`),
   });
 
   const saveDescription = useCallback(
@@ -112,30 +98,21 @@ export function IssueDetailPanel({
   }, [mode, onClose]);
 
   if (issueQuery.isLoading) {
-    return mode === 'panel' ? (
-      <PanelSkeleton />
-    ) : (
-      <FullPageSkeleton />
-    );
+    return mode === 'panel' ? <PanelSkeleton /> : <FullPageSkeleton />;
   }
 
   if (issueQuery.isError) {
     return (
-      <div className={cn(
-        mode === 'panel' && 'w-[640px] border-l border-border bg-background',
-        'flex h-full items-center justify-center',
-      )}>
+      <div
+        className={cn(
+          mode === 'panel' && 'w-[640px] border-l border-border bg-background',
+          'flex h-full items-center justify-center',
+        )}
+      >
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            이슈를 불러올 수 없습니다.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={() => issueQuery.refetch()}
-          >
+          <p className="mt-2 text-sm text-muted-foreground">이슈를 불러올 수 없습니다.</p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => issueQuery.refetch()}>
             다시 시도
           </Button>
         </div>
@@ -167,12 +144,7 @@ export function IssueDetailPanel({
                 <Maximize2 className="h-4 w-4" />
               </Button>
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              aria-label="닫기 (Esc)"
-            >
+            <Button variant="ghost" size="sm" onClick={onClose} aria-label="닫기 (Esc)">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -190,11 +162,7 @@ export function IssueDetailPanel({
         {/* Body (scrollable) */}
         <ScrollArea className="flex-1 px-4 py-4">
           {/* Title (inline editable) */}
-          <InlineEditableTitle
-            issueId={issue.id}
-            projectId={projectId}
-            title={issue.title}
-          />
+          <InlineEditableTitle issueId={issue.id} projectId={projectId} title={issue.title} />
 
           <Separator className="my-4" />
 
@@ -221,11 +189,7 @@ export function IssueDetailPanel({
           <Separator className="my-4" />
 
           {/* Comments & Activity */}
-          <CommentList
-            issueId={issue.id}
-            projectId={projectId}
-            mentionQueryFn={mentionQueryFn}
-          />
+          <CommentList issueId={issue.id} projectId={projectId} mentionQueryFn={mentionQueryFn} />
         </ScrollArea>
       </div>
     );
@@ -244,9 +208,7 @@ export function IssueDetailPanel({
           <ArrowLeft className="h-4 w-4" />
           <span>{projectPrefix} Issues</span>
         </Link>
-        <span className="text-sm font-mono text-muted-foreground">
-          {issueKey}
-        </span>
+        <span className="text-sm font-mono text-muted-foreground">{issueKey}</span>
       </div>
 
       {/* Content: body + sidebar */}
@@ -254,43 +216,35 @@ export function IssueDetailPanel({
         {/* Main content */}
         <ScrollArea className="flex-1 px-6 py-6">
           <div className="mx-auto max-w-3xl">
-          {/* Title (inline editable) */}
-          <InlineEditableTitle
-            issueId={issue.id}
-            projectId={projectId}
-            title={issue.title}
-          />
+            {/* Title (inline editable) */}
+            <InlineEditableTitle issueId={issue.id} projectId={projectId} title={issue.title} />
 
-          <Separator className="my-4" />
+            <Separator className="my-4" />
 
-          {/* Description */}
-          <EditorWithAutosave
-            content={issue.description as JSONContent | null}
-            onSave={saveDescription}
-            placeholder="설명을 추가하세요..."
-            className="min-h-[200px]"
-            statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
-          />
+            {/* Description */}
+            <EditorWithAutosave
+              content={issue.description as JSONContent | null}
+              onSave={saveDescription}
+              placeholder="설명을 추가하세요..."
+              className="min-h-[200px]"
+              statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
+            />
 
-          <Separator className="my-4" />
+            <Separator className="my-4" />
 
-          {/* Sub-issues */}
-          <SubIssues
-            projectId={projectId}
-            issueId={issue.id}
-            projectPrefix={projectPrefix}
-            orgSlug={orgSlug}
-            wsSlug={wsSlug}
-          />
+            {/* Sub-issues */}
+            <SubIssues
+              projectId={projectId}
+              issueId={issue.id}
+              projectPrefix={projectPrefix}
+              orgSlug={orgSlug}
+              wsSlug={wsSlug}
+            />
 
-          <Separator className="my-4" />
+            <Separator className="my-4" />
 
-          {/* Comments & Activity */}
-          <CommentList
-            issueId={issue.id}
-            projectId={projectId}
-            mentionQueryFn={mentionQueryFn}
-          />
+            {/* Comments & Activity */}
+            <CommentList issueId={issue.id} projectId={projectId} mentionQueryFn={mentionQueryFn} />
           </div>
         </ScrollArea>
 
@@ -384,8 +338,6 @@ function InlineEditableTitle({
       onKeyDown={(e) => {
         if (e.key === 'Enter') startEditing();
       }}
-      tabIndex={0}
-      role="button"
       className="cursor-pointer rounded-md px-2 py-1 text-lg font-semibold hover:bg-accent"
     >
       {title}

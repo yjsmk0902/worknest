@@ -1,8 +1,8 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { Bug, BookOpen, CheckCircle, Rocket, type LucideIcon } from 'lucide-react';
+import type { IssueOutput } from '@worknest/shared';
 import { cn } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
-import type { IssueOutput } from '@worknest/shared';
+import { BookOpen, Bug, CheckCircle, type LucideIcon, Rocket } from 'lucide-react';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
@@ -52,12 +52,9 @@ export function KanbanCard({
   const style = undefined;
 
   const isTemp = issue.id.startsWith('temp-');
-  const issueKey = isTemp
-    ? '...'
-    : `${projectPrefix}-${issue.sequenceId}`;
+  const issueKey = isTemp ? '...' : `${projectPrefix}-${issue.sequenceId}`;
 
-  const priorityConfig =
-    PRIORITY_CONFIG[issue.priority as Priority] ?? PRIORITY_CONFIG.none;
+  const priorityConfig = PRIORITY_CONFIG[issue.priority as Priority] ?? PRIORITY_CONFIG.none;
   const PriorityIcon = priorityConfig.icon;
   const showPriority = issue.priority !== 'none';
 
@@ -92,10 +89,14 @@ export function KanbanCard({
       className={cn(
         'flex flex-col rounded-xl p-3.5 h-[140px] cursor-grab',
         'shadow-sm ring-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5',
-        issue.priority === 'urgent' && 'bg-red-50 ring-red-200/60 dark:bg-red-950/30 dark:ring-red-800/40',
-        issue.priority === 'high' && 'bg-orange-50 ring-orange-200/60 dark:bg-orange-950/30 dark:ring-orange-800/40',
-        issue.priority === 'medium' && 'bg-amber-50 ring-amber-200/60 dark:bg-yellow-950/30 dark:ring-yellow-800/40',
-        issue.priority === 'low' && 'bg-blue-50 ring-blue-200/60 dark:bg-blue-950/30 dark:ring-blue-800/40',
+        issue.priority === 'urgent' &&
+          'bg-red-50 ring-red-200/60 dark:bg-red-950/30 dark:ring-red-800/40',
+        issue.priority === 'high' &&
+          'bg-orange-50 ring-orange-200/60 dark:bg-orange-950/30 dark:ring-orange-800/40',
+        issue.priority === 'medium' &&
+          'bg-amber-50 ring-amber-200/60 dark:bg-yellow-950/30 dark:ring-yellow-800/40',
+        issue.priority === 'low' &&
+          'bg-blue-50 ring-blue-200/60 dark:bg-blue-950/30 dark:ring-blue-800/40',
         (issue.priority === 'none' || !issue.priority) && 'bg-card ring-border/50',
         isDragging && 'opacity-0 pointer-events-none',
         isTemp && 'pointer-events-none opacity-70',
@@ -103,11 +104,9 @@ export function KanbanCard({
     >
       {/* Top row: key + type + labels + priority */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-mono text-muted-foreground shrink-0">
-          {issueKey}
-        </span>
+        <span className="text-xs font-mono text-muted-foreground shrink-0">{issueKey}</span>
         {TypeIcon && (
-          <TypeIcon className="h-3.5 w-3.5 shrink-0" style={{ color: issue.type!.color }} />
+          <TypeIcon className="h-3.5 w-3.5 shrink-0" style={{ color: issue.type?.color }} />
         )}
         {labels.length > 0 && (
           <div className="flex items-center gap-1 min-w-0 overflow-hidden">
@@ -135,9 +134,7 @@ export function KanbanCard({
       </div>
 
       {/* Title */}
-      <p className="mt-1 text-sm font-medium line-clamp-2">
-        {issue.title}
-      </p>
+      <p className="mt-1 text-sm font-medium line-clamp-2">{issue.title}</p>
 
       {/* Spacer */}
       <div className="flex-1" />

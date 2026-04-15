@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import type { FilterField, FilterOperator } from '@worknest/shared';
+import { useCallback, useMemo } from 'react';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -322,9 +322,7 @@ export function useIssueFilters() {
 
   const updateFilter = useCallback(
     (field: FilterField, update: Partial<ActiveFilter>) => {
-      setFilters(
-        filters.map((f) => (f.field === field ? { ...f, ...update } : f)),
-      );
+      setFilters(filters.map((f) => (f.field === field ? { ...f, ...update } : f)));
     },
     [filters, setFilters],
   );
@@ -353,8 +351,7 @@ export function useIssueFilters() {
           break;
         case 'assigneeId':
           if (f.operator === 'is_empty') params.assigneeEmpty = 'true';
-          else if (f.operator === 'is_not')
-            params.assigneeIdNot = vals ?? '';
+          else if (f.operator === 'is_not') params.assigneeIdNot = vals ?? '';
           else params.assigneeId = vals ?? '';
           break;
         case 'labelId':

@@ -1,16 +1,12 @@
-import { eq, and, asc, count } from "drizzle-orm";
-import {
-  wikiSpaces,
-  wikiSpaceMembers,
-  type Database,
-} from "@worknest/db";
+import { type Database, wikiSpaceMembers, wikiSpaces } from '@worknest/db';
 import type {
+  AddWikiSpaceMemberInput,
   CreateWikiSpaceInput,
   UpdateWikiSpaceInput,
-  AddWikiSpaceMemberInput,
   WikiSpaceRole,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
+} from '@worknest/shared';
+import { and, asc, count, eq } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -18,25 +14,16 @@ import { AppError, ErrorCode } from "../lib/errors";
  * Verify that the caller is a member of the wiki space.
  * Returns the membership record.
  */
-async function requireSpaceMembership(
-  db: Database,
-  spaceId: string,
-  userId: string,
-) {
+async function requireSpaceMembership(db: Database, spaceId: string, userId: string) {
   const member = await db
     .select()
     .from(wikiSpaceMembers)
-    .where(
-      and(
-        eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-        eq(wikiSpaceMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(wikiSpaceMembers.wikiSpaceId, spaceId), eq(wikiSpaceMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this wiki space");
+    throw AppError.forbidden('You are not a member of this wiki space');
   }
 
   return member;
@@ -45,15 +32,11 @@ async function requireSpaceMembership(
 /**
  * Verify that the caller has the 'editor' role in the wiki space.
  */
-async function requireEditorRole(
-  db: Database,
-  spaceId: string,
-  userId: string,
-) {
+async function requireEditorRole(db: Database, spaceId: string, userId: string) {
   const member = await requireSpaceMembership(db, spaceId, userId);
 
-  if (member.role !== "editor") {
-    throw AppError.forbidden("Editor role required for this action");
+  if (member.role !== 'editor') {
+    throw AppError.forbidden('Editor role required for this action');
   }
 
   return member;
@@ -79,7 +62,7 @@ function toMemberOutput(row: typeof wikiSpaceMembers.$inferSelect) {
     id: row.id,
     wikiSpaceId: row.wikiSpaceId,
     userId: row.userId,
-    role: row.role as "editor" | "viewer",
+    role: row.role as 'editor' | 'viewer',
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -117,28 +100,19 @@ export class WikiSpaceService {
 
   // ── Create Space ─────────────────────────────────────────────────
 
-  async create(
-    workspaceId: string,
-    callerUserId: string,
-    input: CreateWikiSpaceInput,
-  ) {
+  async create(workspaceId: string, callerUserId: string, input: CreateWikiSpaceInput) {
     // Check slug uniqueness within workspace
     const existing = await this.db
       .select({ id: wikiSpaces.id })
       .from(wikiSpaces)
-      .where(
-        and(
-          eq(wikiSpaces.workspaceId, workspaceId),
-          eq(wikiSpaces.slug, input.slug),
-        ),
-      )
+      .where(and(eq(wikiSpaces.workspaceId, workspaceId), eq(wikiSpaces.slug, input.slug)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (existing) {
       throw AppError.conflict(
         ErrorCode.SLUG_ALREADY_EXISTS,
-        "A wiki space with this slug already exists in this workspace",
+        'A wiki space with this slug already exists in this workspace',
       );
     }
 
@@ -156,9 +130,9 @@ export class WikiSpaceService {
         .returning();
 
       await tx.insert(wikiSpaceMembers).values({
-        wikiSpaceId: space!.id,
+        wikiSpaceId: space?.id,
         userId: callerUserId,
-        role: "editor",
+        role: 'editor',
       });
 
       return space!;
@@ -178,7 +152,7 @@ export class WikiSpaceService {
       .then((rows) => rows[0]);
 
     if (!space) {
-      throw AppError.notFound("wiki_space");
+      throw AppError.notFound('wiki_space');
     }
 
     await requireSpaceMembership(this.db, spaceId, callerUserId);
@@ -188,11 +162,7 @@ export class WikiSpaceService {
 
   // ── Update Space ─────────────────────────────────────────────────
 
-  async update(
-    spaceId: string,
-    callerUserId: string,
-    input: UpdateWikiSpaceInput,
-  ) {
+  async update(spaceId: string, callerUserId: string, input: UpdateWikiSpaceInput) {
     const space = await this.db
       .select()
       .from(wikiSpaces)
@@ -201,7 +171,7 @@ export class WikiSpaceService {
       .then((rows) => rows[0]);
 
     if (!space) {
-      throw AppError.notFound("wiki_space");
+      throw AppError.notFound('wiki_space');
     }
 
     await requireEditorRole(this.db, spaceId, callerUserId);
@@ -211,19 +181,14 @@ export class WikiSpaceService {
       const slugExists = await this.db
         .select({ id: wikiSpaces.id })
         .from(wikiSpaces)
-        .where(
-          and(
-            eq(wikiSpaces.workspaceId, space.workspaceId),
-            eq(wikiSpaces.slug, input.slug),
-          ),
-        )
+        .where(and(eq(wikiSpaces.workspaceId, space.workspaceId), eq(wikiSpaces.slug, input.slug)))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (slugExists) {
         throw AppError.conflict(
           ErrorCode.SLUG_ALREADY_EXISTS,
-          "A wiki space with this slug already exists in this workspace",
+          'A wiki space with this slug already exists in this workspace',
         );
       }
     }
@@ -253,7 +218,7 @@ export class WikiSpaceService {
       .then((rows) => rows[0]);
 
     if (!space) {
-      throw AppError.notFound("wiki_space");
+      throw AppError.notFound('wiki_space');
     }
 
     await requireEditorRole(this.db, spaceId, callerUserId);
@@ -283,11 +248,7 @@ export class WikiSpaceService {
 
   // ── Add Member ───────────────────────────────────────────────────
 
-  async addMember(
-    spaceId: string,
-    callerUserId: string,
-    input: AddWikiSpaceMemberInput,
-  ) {
+  async addMember(spaceId: string, callerUserId: string, input: AddWikiSpaceMemberInput) {
     await requireEditorRole(this.db, spaceId, callerUserId);
 
     // Check if already a member
@@ -295,10 +256,7 @@ export class WikiSpaceService {
       .select({ id: wikiSpaceMembers.id })
       .from(wikiSpaceMembers)
       .where(
-        and(
-          eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-          eq(wikiSpaceMembers.userId, input.userId),
-        ),
+        and(eq(wikiSpaceMembers.wikiSpaceId, spaceId), eq(wikiSpaceMembers.userId, input.userId)),
       )
       .limit(1)
       .then((rows) => rows[0]);
@@ -306,7 +264,7 @@ export class WikiSpaceService {
     if (existing) {
       throw AppError.conflict(
         ErrorCode.ALREADY_A_MEMBER,
-        "User is already a member of this wiki space",
+        'User is already a member of this wiki space',
       );
     }
 
@@ -335,36 +293,23 @@ export class WikiSpaceService {
     const existing = await this.db
       .select()
       .from(wikiSpaceMembers)
-      .where(
-        and(
-          eq(wikiSpaceMembers.id, memberId),
-          eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-        ),
-      )
+      .where(and(eq(wikiSpaceMembers.id, memberId), eq(wikiSpaceMembers.wikiSpaceId, spaceId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Prevent downgrading the last editor to viewer
-    if (existing.role === "editor" && role === "viewer") {
+    if (existing.role === 'editor' && role === 'viewer') {
       const [editorCount] = await this.db
         .select({ count: count() })
         .from(wikiSpaceMembers)
-        .where(
-          and(
-            eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-            eq(wikiSpaceMembers.role, "editor"),
-          ),
-        );
+        .where(and(eq(wikiSpaceMembers.wikiSpaceId, spaceId), eq(wikiSpaceMembers.role, 'editor')));
 
-      if (editorCount!.count <= 1) {
-        throw AppError.badRequest(
-          ErrorCode.VALIDATION_ERROR,
-          "Cannot downgrade the last editor",
-        );
+      if (editorCount?.count <= 1) {
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Cannot downgrade the last editor');
       }
     }
 
@@ -379,51 +324,32 @@ export class WikiSpaceService {
 
   // ── Remove Member ────────────────────────────────────────────────
 
-  async removeMember(
-    spaceId: string,
-    callerUserId: string,
-    memberId: string,
-  ) {
+  async removeMember(spaceId: string, callerUserId: string, memberId: string) {
     await requireEditorRole(this.db, spaceId, callerUserId);
 
     const existing = await this.db
       .select()
       .from(wikiSpaceMembers)
-      .where(
-        and(
-          eq(wikiSpaceMembers.id, memberId),
-          eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-        ),
-      )
+      .where(and(eq(wikiSpaceMembers.id, memberId), eq(wikiSpaceMembers.wikiSpaceId, spaceId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Prevent removing the last editor
-    if (existing.role === "editor") {
+    if (existing.role === 'editor') {
       const [editorCount] = await this.db
         .select({ count: count() })
         .from(wikiSpaceMembers)
-        .where(
-          and(
-            eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-            eq(wikiSpaceMembers.role, "editor"),
-          ),
-        );
+        .where(and(eq(wikiSpaceMembers.wikiSpaceId, spaceId), eq(wikiSpaceMembers.role, 'editor')));
 
-      if (editorCount!.count <= 1) {
-        throw AppError.badRequest(
-          ErrorCode.VALIDATION_ERROR,
-          "Cannot remove the last editor",
-        );
+      if (editorCount?.count <= 1) {
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Cannot remove the last editor');
       }
     }
 
-    await this.db
-      .delete(wikiSpaceMembers)
-      .where(eq(wikiSpaceMembers.id, memberId));
+    await this.db.delete(wikiSpaceMembers).where(eq(wikiSpaceMembers.id, memberId));
   }
 }

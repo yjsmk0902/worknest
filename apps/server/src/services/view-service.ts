@@ -1,36 +1,20 @@
-import { eq, and, asc } from "drizzle-orm";
-import {
-  views,
-  projectMembers,
-  type Database,
-} from "@worknest/db";
-import type {
-  CreateViewInput,
-  UpdateViewInput,
-} from "@worknest/shared";
-import { AppError } from "../lib/errors";
+import { type Database, projectMembers, views } from '@worknest/db';
+import type { CreateViewInput, UpdateViewInput } from '@worknest/shared';
+import { and, asc, eq } from 'drizzle-orm';
+import { AppError } from '../lib/errors';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-async function requireProjectMembership(
-  db: Database,
-  projectId: string,
-  userId: string,
-) {
+async function requireProjectMembership(db: Database, projectId: string, userId: string) {
   const member = await db
     .select()
     .from(projectMembers)
-    .where(
-      and(
-        eq(projectMembers.projectId, projectId),
-        eq(projectMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this project");
+    throw AppError.forbidden('You are not a member of this project');
   }
 
   return member;
@@ -80,11 +64,7 @@ export class ViewService {
 
   // ── Create View ──────────────────────────────────────────────────
 
-  async create(
-    projectId: string,
-    creatorId: string,
-    input: CreateViewInput,
-  ) {
+  async create(projectId: string, creatorId: string, input: CreateViewInput) {
     await requireProjectMembership(this.db, projectId, creatorId);
 
     const [view] = await this.db
@@ -114,7 +94,7 @@ export class ViewService {
       .then((rows) => rows[0]);
 
     if (!view) {
-      throw AppError.notFound("view");
+      throw AppError.notFound('view');
     }
 
     await requireProjectMembership(this.db, view.projectId, callerUserId);
@@ -124,11 +104,7 @@ export class ViewService {
 
   // ── Update View ──────────────────────────────────────────────────
 
-  async update(
-    viewId: string,
-    callerUserId: string,
-    input: UpdateViewInput,
-  ) {
+  async update(viewId: string, callerUserId: string, input: UpdateViewInput) {
     // Look up the view to get its projectId
     const existing = await this.db
       .select()
@@ -138,7 +114,7 @@ export class ViewService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("view");
+      throw AppError.notFound('view');
     }
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
@@ -171,7 +147,7 @@ export class ViewService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("view");
+      throw AppError.notFound('view');
     }
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);

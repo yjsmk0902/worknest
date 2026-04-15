@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CircleCheck } from 'lucide-react';
-import { toast } from '@worknest/ui';
-import { apiClient } from '../../lib/api-client';
 import type { IssueOutput } from '@worknest/shared';
+import { toast } from '@worknest/ui';
+import { CircleCheck } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { apiClient } from '../../lib/api-client';
 
 interface QuickAddProps {
   projectId: string;
@@ -26,10 +26,7 @@ export function QuickAdd({
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; parentId?: string; statusId?: string }) =>
-      apiClient.post<IssueOutput>(
-        `/projects/${projectId}/issues`,
-        data,
-      ),
+      apiClient.post<IssueOutput>(`/projects/${projectId}/issues`, data),
     onSuccess: (created) => {
       // Invalidate all issue queries for this project (list, board, stats, etc.)
       queryClient.invalidateQueries({
@@ -108,7 +105,6 @@ export function QuickAdd({
         onBlur={handleBlur}
         placeholder="이슈 제목을 입력하세요..."
         aria-label="이슈 제목"
-        autoFocus
         className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
       />
     </div>

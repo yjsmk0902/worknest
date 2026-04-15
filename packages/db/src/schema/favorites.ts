@@ -1,15 +1,9 @@
-import {
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { projects } from "./projects";
-import { issues } from "./issues";
-import { wikiPages, wikiSpaces } from "./wiki";
+import { relations } from 'drizzle-orm';
+import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { issues } from './issues';
+import { projects } from './projects';
+import { users } from './users';
+import { wikiPages, wikiSpaces } from './wiki';
 
 /**
  * Favorites table.
@@ -24,30 +18,28 @@ import { wikiPages, wikiSpaces } from "./wiki";
  * reordering within a user's favorites list.
  */
 export const favorites = pgTable(
-  "favorites",
+  'favorites',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    projectId: uuid("project_id").references(() => projects.id, {
-      onDelete: "cascade",
+      .references(() => users.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id').references(() => projects.id, {
+      onDelete: 'cascade',
     }),
-    issueId: uuid("issue_id").references(() => issues.id, {
-      onDelete: "cascade",
+    issueId: uuid('issue_id').references(() => issues.id, {
+      onDelete: 'cascade',
     }),
-    pageId: uuid("page_id").references(() => wikiPages.id, {
-      onDelete: "cascade",
+    pageId: uuid('page_id').references(() => wikiPages.id, {
+      onDelete: 'cascade',
     }),
-    spaceId: uuid("space_id").references(() => wikiSpaces.id, {
-      onDelete: "cascade",
+    spaceId: uuid('space_id').references(() => wikiSpaces.id, {
+      onDelete: 'cascade',
     }),
-    sortOrder: text("sort_order").notNull().default("a0"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    sortOrder: text('sort_order').notNull().default('a0'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    index("favorites_user_sort_idx").on(table.userId, table.sortOrder),
-  ],
+  (table) => [index('favorites_user_sort_idx').on(table.userId, table.sortOrder)],
 );
 
 export const favoritesRelations = relations(favorites, ({ one }) => ({

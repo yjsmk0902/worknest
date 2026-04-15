@@ -66,7 +66,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
       const body = createIssueInput.parse(request.body);
-      const issue = await service.create(projectId, request.user!.id, body);
+      const issue = await service.create(projectId, request.user?.id, body);
       return reply.status(201).send({ data: issue });
     },
   );
@@ -85,7 +85,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
       const query = issueListQuery.parse(request.query);
-      const result = await service.list(projectId, request.user!.id, query);
+      const result = await service.list(projectId, request.user?.id, query);
       return reply.status(200).send(result);
     },
   );
@@ -104,7 +104,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
       const query = issueListQuery.parse(request.query);
-      const result = await service.stats(projectId, request.user!.id, query);
+      const result = await service.stats(projectId, request.user?.id, query);
       return reply.status(200).send(result);
     },
   );
@@ -123,7 +123,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
       const body = bulkUpdateInput.parse(request.body);
-      const result = await service.bulkUpdate(projectId, request.user!.id, body);
+      const result = await service.bulkUpdate(projectId, request.user?.id, body);
       return reply.status(200).send({ data: result });
     },
   );
@@ -141,7 +141,7 @@ export async function issueRoutes(
     },
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
-      const issue = await service.getById(issueId, request.user!.id);
+      const issue = await service.getById(issueId, request.user?.id);
       return reply.status(200).send({ data: issue });
     },
   );
@@ -160,7 +160,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
       const body = updateIssueInput.parse(request.body);
-      const issue = await service.update(issueId, request.user!.id, body);
+      const issue = await service.update(issueId, request.user?.id, body);
       return reply.status(200).send({ data: issue });
     },
   );
@@ -178,7 +178,7 @@ export async function issueRoutes(
     },
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
-      await service.softDelete(issueId, request.user!.id);
+      await service.softDelete(issueId, request.user?.id);
       return reply.status(204).send();
     },
   );
@@ -196,7 +196,7 @@ export async function issueRoutes(
     },
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
-      const result = await service.listSubIssues(issueId, request.user!.id);
+      const result = await service.listSubIssues(issueId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -215,7 +215,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
       const { userId } = addAssigneeBody.parse(request.body);
-      const assignee = await service.addAssignee(issueId, request.user!.id, userId);
+      const assignee = await service.addAssignee(issueId, request.user?.id, userId);
 
       // Fire-and-forget: dispatch "assigned" notification
       service
@@ -225,7 +225,7 @@ export async function issueRoutes(
             notificationService
               .dispatchNotification({
                 type: 'assigned',
-                actorId: request.user!.id,
+                actorId: request.user?.id,
                 recipientIds: [userId],
                 issueId,
                 message: `이슈 #${summary.sequenceId}에 담당자로 배정되었습니다`,
@@ -252,7 +252,7 @@ export async function issueRoutes(
     },
     async (request, reply) => {
       const { issueId, userId } = assigneeRemoveParams.parse(request.params);
-      await service.removeAssignee(issueId, request.user!.id, userId);
+      await service.removeAssignee(issueId, request.user?.id, userId);
       return reply.status(204).send();
     },
   );
@@ -271,7 +271,7 @@ export async function issueRoutes(
     async (request, reply) => {
       const { issueId } = projectIssueParams.parse(request.params);
       const { labelId } = addLabelBody.parse(request.body);
-      const issueLabel = await service.addLabel(issueId, request.user!.id, labelId);
+      const issueLabel = await service.addLabel(issueId, request.user?.id, labelId);
       return reply.status(201).send({ data: issueLabel });
     },
   );
@@ -289,7 +289,7 @@ export async function issueRoutes(
     },
     async (request, reply) => {
       const { issueId, labelId } = labelRemoveParams.parse(request.params);
-      await service.removeLabel(issueId, request.user!.id, labelId);
+      await service.removeLabel(issueId, request.user?.id, labelId);
       return reply.status(204).send();
     },
   );
@@ -310,7 +310,7 @@ export async function issueRoutes(
       const pagination = cursorPaginationQuery.parse(request.query);
       const result = await activityService.listByIssue(
         issueId,
-        request.user!.id,
+        request.user?.id,
         pagination.cursor,
         pagination.limit,
       );

@@ -1,1 +1,1 @@
-export { generateKeyBetween, generateNKeysBetween, isValidSortKey } from "./fractional-index";
+export { generateKeyBetween, generateNKeysBetween, isValidSortKey } from './fractional-index';

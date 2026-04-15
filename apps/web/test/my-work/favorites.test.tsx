@@ -1,3 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 /**
  * FavoritesPage component tests.
  *
@@ -6,10 +9,7 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ const mockPatch = vi.fn();
 const mockDelete = vi.fn();
 const mockNavigate = vi.fn();
 
-vi.mock("../../src/lib/api-client", () => ({
+vi.mock('../../src/lib/api-client', () => ({
   apiClient: {
     get: (...args: unknown[]) => mockGet(...args),
     getList: vi.fn(),
@@ -31,66 +31,67 @@ vi.mock("../../src/lib/api-client", () => ({
     code: string;
     constructor(status: number, code: string, message: string) {
       super(message);
-      this.name = "ApiError";
+      this.name = 'ApiError';
       this.status = status;
       this.code = code;
     }
   },
 }));
 
-vi.mock("@tanstack/react-router", () => ({
+vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => {
     const routeOpts = (opts: Record<string, unknown>) => ({
       ...opts,
-      useParams: () => ({ orgSlug: "my-org", wsSlug: "my-ws" }),
+      useParams: () => ({ orgSlug: 'my-org', wsSlug: 'my-ws' }),
     });
     return routeOpts;
   },
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("../../src/contexts/workspace-context", () => ({
+vi.mock('../../src/contexts/workspace-context', () => ({
   useWorkspaceContext: () => ({
-    orgId: "org-1",
-    orgSlug: "my-org",
-    orgName: "My Org",
-    wsId: "ws-1",
-    wsSlug: "my-ws",
-    wsName: "My Workspace",
+    orgId: 'org-1',
+    orgSlug: 'my-org',
+    orgName: 'My Org',
+    wsId: 'ws-1',
+    wsSlug: 'my-ws',
+    wsName: 'My Workspace',
   }),
 }));
 
-vi.mock("@worknest/ui", () => ({
+vi.mock('@worknest/ui', () => ({
   Skeleton: ({ className }: { className?: string }) =>
-    React.createElement("div", { "data-testid": "skeleton", className }),
+    React.createElement('div', { 'data-testid': 'skeleton', className }),
   toast: Object.assign(vi.fn(), { error: vi.fn(), success: vi.fn() }),
 }));
 
-vi.mock("@worknest/shared", () => ({
-  generateKeyBetween: (a: string | null, b: string | null) => "m0",
+vi.mock('@worknest/shared', () => ({
+  generateKeyBetween: (_a: string | null, _b: string | null) => 'm0',
 }));
 
-vi.mock("lucide-react", () => {
-  const icon = (testId: string) =>
+vi.mock('lucide-react', () => {
+  const icon =
+    (testId: string) =>
     ({ className }: { className?: string }) =>
-      React.createElement("span", { "data-testid": testId, className });
+      React.createElement('span', { 'data-testid': testId, className });
   return {
-    Star: icon("star-icon"),
-    GripVertical: icon("grip-icon"),
-    Folder: icon("folder-icon"),
-    CircleCheck: icon("circle-check-icon"),
-    FileText: icon("file-text-icon"),
-    BookOpen: icon("book-open-icon"),
-    AlertTriangle: icon("alert-triangle-icon"),
+    Star: icon('star-icon'),
+    GripVertical: icon('grip-icon'),
+    Folder: icon('folder-icon'),
+    CircleCheck: icon('circle-check-icon'),
+    FileText: icon('file-text-icon'),
+    BookOpen: icon('book-open-icon'),
+    AlertTriangle: icon('alert-triangle-icon'),
   };
 });
 
 // Mock DnD Kit — render children directly with sortable-like structure
-vi.mock("@dnd-kit/core", () => ({
+vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "dnd-context" }, children),
+    React.createElement('div', { 'data-testid': 'dnd-context' }, children),
   DragOverlay: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "drag-overlay" }, children),
+    React.createElement('div', { 'data-testid': 'drag-overlay' }, children),
   PointerSensor: class {},
   KeyboardSensor: class {},
   closestCenter: vi.fn(),
@@ -98,9 +99,9 @@ vi.mock("@dnd-kit/core", () => ({
   useSensors: vi.fn(() => []),
 }));
 
-vi.mock("@dnd-kit/sortable", () => ({
+vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", null, children),
+    React.createElement('div', null, children),
   sortableKeyboardCoordinates: vi.fn(),
   verticalListSortingStrategy: {},
   useSortable: () => ({
@@ -113,7 +114,7 @@ vi.mock("@dnd-kit/sortable", () => ({
   }),
 }));
 
-vi.mock("@dnd-kit/utilities", () => ({
+vi.mock('@dnd-kit/utilities', () => ({
   CSS: {
     Transform: {
       toString: () => null,
@@ -123,7 +124,7 @@ vi.mock("@dnd-kit/utilities", () => ({
 
 // ── Import component after mocks ─────────────────────────────────────
 
-import { Route } from "../../src/routes/_app/$orgSlug/$wsSlug/my/favorites";
+import { Route } from '../../src/routes/_app/$orgSlug/$wsSlug/my/favorites';
 
 const FavoritesPage = (Route as { component: React.ComponentType }).component;
 
@@ -132,15 +133,15 @@ const FavoritesPage = (Route as { component: React.ComponentType }).component;
 function makeFavorite(overrides: Record<string, unknown> = {}) {
   return {
     id: `fav-${Math.random().toString(36).slice(2, 8)}`,
-    userId: "user-1",
+    userId: 'user-1',
     projectId: null,
     issueId: null,
     pageId: null,
     spaceId: null,
-    entityType: "project" as const,
-    entityName: "Test Project",
-    sortOrder: "a0",
-    createdAt: "2025-06-01T10:00:00Z",
+    entityType: 'project' as const,
+    entityName: 'Test Project',
+    sortOrder: 'a0',
+    createdAt: '2025-06-01T10:00:00Z',
     ...overrides,
   };
 }
@@ -166,7 +167,7 @@ function renderFavorites() {
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
-describe("FavoritesPage", () => {
+describe('FavoritesPage', () => {
   beforeEach(() => {
     mockGet.mockReset();
     mockPatch.mockReset();
@@ -174,88 +175,87 @@ describe("FavoritesPage", () => {
     mockNavigate.mockReset();
   });
 
-  it("renders favorite items with entity names", async () => {
+  it('renders favorite items with entity names', async () => {
     mockGet.mockResolvedValue([
-      makeFavorite({ id: "f1", entityName: "Alpha Project", entityType: "project", projectId: "p1" }),
-      makeFavorite({ id: "f2", entityName: "Bug Report", entityType: "issue", issueId: "i1" }),
+      makeFavorite({
+        id: 'f1',
+        entityName: 'Alpha Project',
+        entityType: 'project',
+        projectId: 'p1',
+      }),
+      makeFavorite({ id: 'f2', entityName: 'Bug Report', entityType: 'issue', issueId: 'i1' }),
     ]);
 
     renderFavorites();
 
     await waitFor(() => {
-      expect(screen.getByText("Alpha Project")).toBeDefined();
-      expect(screen.getByText("Bug Report")).toBeDefined();
+      expect(screen.getByText('Alpha Project')).toBeDefined();
+      expect(screen.getByText('Bug Report')).toBeDefined();
     });
   });
 
   it("star toggle button has aria-label '즐겨찾기 해제'", async () => {
-    mockGet.mockResolvedValue([
-      makeFavorite({ id: "f1", entityName: "My Fav" }),
-    ]);
+    mockGet.mockResolvedValue([makeFavorite({ id: 'f1', entityName: 'My Fav' })]);
 
     renderFavorites();
 
     await waitFor(() => {
-      const unfavButton = screen.getByLabelText("즐겨찾기 해제");
+      const unfavButton = screen.getByLabelText('즐겨찾기 해제');
       expect(unfavButton).toBeDefined();
     });
   });
 
-  it("clicking star toggle calls delete mutation", async () => {
-    mockGet.mockResolvedValue([
-      makeFavorite({ id: "fav-abc", entityName: "Remove Me" }),
-    ]);
+  it('clicking star toggle calls delete mutation', async () => {
+    mockGet.mockResolvedValue([makeFavorite({ id: 'fav-abc', entityName: 'Remove Me' })]);
     mockDelete.mockResolvedValue({});
 
     renderFavorites();
 
     await waitFor(() => {
-      expect(screen.getByText("Remove Me")).toBeDefined();
+      expect(screen.getByText('Remove Me')).toBeDefined();
     });
 
-    const unfavButton = screen.getByLabelText("즐겨찾기 해제");
+    const unfavButton = screen.getByLabelText('즐겨찾기 해제');
     fireEvent.click(unfavButton);
 
-    expect(mockDelete).toHaveBeenCalledWith("/favorites/fav-abc");
+    expect(mockDelete).toHaveBeenCalledWith('/favorites/fav-abc');
   });
 
-  it("entity type badges are rendered correctly", async () => {
+  it('entity type badges are rendered correctly', async () => {
     mockGet.mockResolvedValue([
-      makeFavorite({ id: "f1", entityType: "project", entityName: "Proj", projectId: "p1" }),
-      makeFavorite({ id: "f2", entityType: "issue", entityName: "Issue", issueId: "i1" }),
-      makeFavorite({ id: "f3", entityType: "page", entityName: "Page", pageId: "pg1" }),
-      makeFavorite({ id: "f4", entityType: "space", entityName: "Space", spaceId: "s1" }),
+      makeFavorite({ id: 'f1', entityType: 'project', entityName: 'Proj', projectId: 'p1' }),
+      makeFavorite({ id: 'f2', entityType: 'issue', entityName: 'Issue', issueId: 'i1' }),
+      makeFavorite({ id: 'f3', entityType: 'page', entityName: 'Page', pageId: 'pg1' }),
+      makeFavorite({ id: 'f4', entityType: 'space', entityName: 'Space', spaceId: 's1' }),
     ]);
 
     renderFavorites();
 
     await waitFor(() => {
-      expect(screen.getByText("프로젝트")).toBeDefined();
-      expect(screen.getByText("이슈")).toBeDefined();
-      expect(screen.getByText("Wiki 페이지")).toBeDefined();
-      expect(screen.getByText("Wiki 스페이스")).toBeDefined();
+      expect(screen.getByText('프로젝트')).toBeDefined();
+      expect(screen.getByText('이슈')).toBeDefined();
+      expect(screen.getByText('Wiki 페이지')).toBeDefined();
+      expect(screen.getByText('Wiki 스페이스')).toBeDefined();
     });
   });
 
-  it("empty state shows when no favorites", async () => {
+  it('empty state shows when no favorites', async () => {
     mockGet.mockResolvedValue([]);
 
     renderFavorites();
 
     await waitFor(() => {
-      expect(screen.getByText("즐겨찾기한 항목이 없습니다")).toBeDefined();
+      expect(screen.getByText('즐겨찾기한 항목이 없습니다')).toBeDefined();
     });
   });
 
-  it("DnD context is rendered for reorder support", async () => {
-    mockGet.mockResolvedValue([
-      makeFavorite({ id: "f1", entityName: "Sortable Item" }),
-    ]);
+  it('DnD context is rendered for reorder support', async () => {
+    mockGet.mockResolvedValue([makeFavorite({ id: 'f1', entityName: 'Sortable Item' })]);
 
     renderFavorites();
 
     await waitFor(() => {
-      const dndContext = screen.getByTestId("dnd-context");
+      const dndContext = screen.getByTestId('dnd-context');
       expect(dndContext).toBeDefined();
     });
   });

@@ -1,70 +1,66 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Security tests.
  *
  * Tests authentication bypass, cross-user access control, XSS sanitization,
  * and rate limiting on auth endpoints.
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
-  createTestOrg,
-  createTestProject,
+  createMockAuth,
+  createTestFavorite,
   createTestIssue,
   createTestNotification,
-  createTestFavorite,
+  createTestOrg,
+  createTestProject,
+  createTestUser,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
-  createMockAuth,
-  stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock WebSocket broadcasts ───────────────────────────────────────────
 
-vi.mock("../src/websocket/issue-events", () => ({
+vi.mock('../src/websocket/issue-events', () => ({
   broadcastIssueCreated: vi.fn(),
   broadcastIssueUpdated: vi.fn(),
   broadcastIssueDeleted: vi.fn(),
 }));
 
-vi.mock("../src/websocket/comment-events", () => ({
+vi.mock('../src/websocket/comment-events', () => ({
   broadcastCommentCreated: vi.fn(),
   broadcastCommentUpdated: vi.fn(),
   broadcastCommentDeleted: vi.fn(),
   broadcastReactionToggled: vi.fn(),
 }));
 
-vi.mock("../src/lib/sanitize", () => ({
+vi.mock('../src/lib/sanitize', () => ({
   sanitizeContent: vi.fn((content: unknown) => content),
 }));
 
-vi.mock("../src/lib/queue", () => ({
+vi.mock('../src/lib/queue', () => ({
   addJob: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── App builder ──────────────────────────────────────────────────────────
 
 async function buildSecurityApp() {
-  const { issueRoutes } = await import("../src/routes/issues");
-  const { commentRoutes } = await import("../src/routes/comments");
-  const { notificationRoutes } = await import("../src/routes/notifications");
-  const { favoriteRoutes } = await import("../src/routes/favorites");
-  const { projectRoutes } = await import("../src/routes/projects");
-  const { searchRoutes } = await import("../src/routes/search");
+  const { issueRoutes } = await import('../src/routes/issues');
+  const { commentRoutes } = await import('../src/routes/comments');
+  const { notificationRoutes } = await import('../src/routes/notifications');
+  const { favoriteRoutes } = await import('../src/routes/favorites');
+  const { projectRoutes } = await import('../src/routes/projects');
+  const { searchRoutes } = await import('../src/routes/search');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await issueRoutes(app, { auth: auth as never, db: db as never });
-      await commentRoutes(app, { auth: auth as never, db: db as never });
-      await notificationRoutes(app, { auth: auth as never, db: db as never });
-      await favoriteRoutes(app, { auth: auth as never, db: db as never });
-      await projectRoutes(app, { auth: auth as never, db: db as never });
-      await searchRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await issueRoutes(app, { auth: auth as never, db: db as never });
+    await commentRoutes(app, { auth: auth as never, db: db as never });
+    await notificationRoutes(app, { auth: auth as never, db: db as never });
+    await favoriteRoutes(app, { auth: auth as never, db: db as never });
+    await projectRoutes(app, { auth: auth as never, db: db as never });
+    await searchRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
@@ -73,17 +69,17 @@ async function buildSecurityApp() {
 
 function setupTwoUsers() {
   // User A: owns the org/workspace/project
-  const userA = createTestUser({ name: "User A" });
+  const userA = createTestUser({ name: 'User A' });
   const org = createTestOrg(userA.id);
   const ws = createTestWorkspace(org.id, userA.id);
   const project = createTestProject(ws.id, userA.id, {
-    name: "Secure Project",
-    prefix: "SEC",
+    name: 'Secure Project',
+    prefix: 'SEC',
   });
   const cookieA = loginAsUser(userA);
 
   // User B: a completely separate user with no memberships
-  const userB = createTestUser({ name: "User B" });
+  const userB = createTestUser({ name: 'User B' });
   const cookieB = loginAsUser(userB);
 
   return { userA, userB, org, ws, project, cookieA, cookieB };
@@ -93,7 +89,7 @@ function setupTwoUsers() {
 // 1. Auth bypass: unauthenticated access to protected routes
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Auth bypass: unauthenticated access returns 401", () => {
+describe('Auth bypass: unauthenticated access returns 401', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -107,69 +103,69 @@ describe("Auth bypass: unauthenticated access returns 401", () => {
     cleanup();
   });
 
-  it("GET /api/v1/projects/:id/issues requires auth", async () => {
+  it('GET /api/v1/projects/:id/issues requires auth', async () => {
     const { project } = setupTwoUsers();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues`,
       // No cookie header
     });
 
     expect(res.statusCode).toBe(401);
     const body = JSON.parse(res.body);
-    expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it("POST /api/v1/projects/:id/issues requires auth", async () => {
+  it('POST /api/v1/projects/:id/issues requires auth', async () => {
     const { project } = setupTwoUsers();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/issues`,
-      payload: { title: "Hacked issue" },
+      payload: { title: 'Hacked issue' },
     });
 
     expect(res.statusCode).toBe(401);
   });
 
-  it("GET /api/v1/my/notifications requires auth", async () => {
+  it('GET /api/v1/my/notifications requires auth', async () => {
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications",
+      method: 'GET',
+      url: '/api/v1/my/notifications',
     });
 
     expect(res.statusCode).toBe(401);
   });
 
-  it("GET /api/v1/my/favorites requires auth", async () => {
+  it('GET /api/v1/my/favorites requires auth', async () => {
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/favorites",
+      method: 'GET',
+      url: '/api/v1/my/favorites',
     });
 
     expect(res.statusCode).toBe(401);
   });
 
-  it("GET /api/v1/workspaces/:id/search requires auth", async () => {
+  it('GET /api/v1/workspaces/:id/search requires auth', async () => {
     const { ws } = setupTwoUsers();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=test`,
     });
 
     expect(res.statusCode).toBe(401);
   });
 
-  it("DELETE /api/v1/projects/:id/issues/:issueId requires auth", async () => {
+  it('DELETE /api/v1/projects/:id/issues/:issueId requires auth', async () => {
     const { project, userA } = setupTwoUsers();
     const issue = createTestIssue(project.id, userA.id, {
-      title: "Protected issue",
+      title: 'Protected issue',
     });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/projects/${project.id}/issues/${issue.id}`,
     });
 
@@ -181,7 +177,7 @@ describe("Auth bypass: unauthenticated access returns 401", () => {
 // 2. Cross-user access: user B cannot access user A's resources
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Cross-user access: user B cannot access user A resources", () => {
+describe('Cross-user access: user B cannot access user A resources', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -195,11 +191,11 @@ describe("Cross-user access: user B cannot access user A resources", () => {
     cleanup();
   });
 
-  it("user B cannot list issues in user A project", async () => {
+  it('user B cannot list issues in user A project', async () => {
     const { project, cookieB } = setupTwoUsers();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues`,
       headers: { cookie: cookieB },
     });
@@ -207,36 +203,36 @@ describe("Cross-user access: user B cannot access user A resources", () => {
     expect(res.statusCode).toBe(403);
   });
 
-  it("user B cannot create issues in user A project", async () => {
+  it('user B cannot create issues in user A project', async () => {
     const { project, cookieB } = setupTwoUsers();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/issues`,
       headers: { cookie: cookieB },
-      payload: { title: "Cross-user issue" },
+      payload: { title: 'Cross-user issue' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 
-  it("user B cannot post comments on user A issues", async () => {
+  it('user B cannot post comments on user A issues', async () => {
     const { project, userA, cookieB } = setupTwoUsers();
     const issue = createTestIssue(project.id, userA.id, {
-      title: "User A issue",
+      title: 'User A issue',
     });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/issues/${issue.id}/comments`,
       headers: { cookie: cookieB },
       payload: {
         content: {
-          type: "doc",
+          type: 'doc',
           content: [
             {
-              type: "paragraph",
-              content: [{ type: "text", text: "Cross-user comment" }],
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Cross-user comment' }],
             },
           ],
         },
@@ -246,19 +242,19 @@ describe("Cross-user access: user B cannot access user A resources", () => {
     expect(res.statusCode).toBe(403);
   });
 
-  it("user B cannot read user A notifications", async () => {
+  it('user B cannot read user A notifications', async () => {
     const { userA, cookieB } = setupTwoUsers();
 
     // Create a notification for user A
     createTestNotification({
       userId: userA.id,
-      type: "assigned",
-      message: "Private notification for A",
+      type: 'assigned',
+      message: 'Private notification for A',
     });
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications",
+      method: 'GET',
+      url: '/api/v1/my/notifications',
       headers: { cookie: cookieB },
     });
 
@@ -267,12 +263,12 @@ describe("Cross-user access: user B cannot access user A resources", () => {
     const body = JSON.parse(res.body);
     const notifications = body.data ?? [];
     const hasUserANotification = notifications.some(
-      (n: { message: string }) => n.message === "Private notification for A",
+      (n: { message: string }) => n.message === 'Private notification for A',
     );
     expect(hasUserANotification).toBe(false);
   });
 
-  it("user B cannot see user A favorites", async () => {
+  it('user B cannot see user A favorites', async () => {
     const { userA, project, cookieB } = setupTwoUsers();
 
     // Create a favorite for user A
@@ -282,8 +278,8 @@ describe("Cross-user access: user B cannot access user A resources", () => {
     });
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/favorites",
+      method: 'GET',
+      url: '/api/v1/my/favorites',
       headers: { cookie: cookieB },
     });
 
@@ -301,7 +297,7 @@ describe("Cross-user access: user B cannot access user A resources", () => {
 // 3. XSS: sanitizeContent() unit tests
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("sanitizeContent XSS prevention", () => {
+describe('sanitizeContent XSS prevention', () => {
   // Import the real sanitizeContent (not the mocked version)
   // We use a dynamic import so we can test the real implementation.
   let sanitizeContent: (content: unknown) => unknown;
@@ -310,41 +306,37 @@ describe("sanitizeContent XSS prevention", () => {
     // Reset modules so we get the real implementation
     const module = await vi.importActual<{
       sanitizeContent: (content: unknown) => unknown;
-    }>("../src/lib/sanitize");
+    }>('../src/lib/sanitize');
     sanitizeContent = module.sanitizeContent;
   });
 
-  it("strips script nodes entirely", () => {
+  it('strips script nodes entirely', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
-          content: [{ type: "text", text: "Safe text" }],
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Safe text' }],
         },
         {
-          type: "script",
-          content: [{ type: "text", text: 'alert("XSS")' }],
+          type: 'script',
+          content: [{ type: 'text', text: 'alert("XSS")' }],
         },
       ],
     };
 
     const result = sanitizeContent(content) as { content: unknown[] };
     expect(result.content).toHaveLength(1);
-    expect(
-      result.content.some(
-        (n: { type?: string }) => n.type === "script",
-      ),
-    ).toBe(false);
+    expect(result.content.some((n: { type?: string }) => n.type === 'script')).toBe(false);
   });
 
-  it("strips iframe nodes entirely", () => {
+  it('strips iframe nodes entirely', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "iframe",
-          attrs: { src: "https://evil.com" },
+          type: 'iframe',
+          attrs: { src: 'https://evil.com' },
         },
       ],
     };
@@ -353,18 +345,18 @@ describe("sanitizeContent XSS prevention", () => {
     expect(result.content).toHaveLength(0);
   });
 
-  it("strips event handler attributes (onclick, onerror, onload)", () => {
+  it('strips event handler attributes (onclick, onerror, onload)', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "image",
+          type: 'image',
           attrs: {
-            src: "image.png",
+            src: 'image.png',
             onerror: 'alert("XSS")',
             onclick: 'document.location="evil.com"',
-            onload: "stealCookies()",
-            alt: "safe alt",
+            onload: 'stealCookies()',
+            alt: 'safe alt',
           },
         },
       ],
@@ -373,28 +365,28 @@ describe("sanitizeContent XSS prevention", () => {
     const result = sanitizeContent(content) as {
       content: { attrs?: Record<string, unknown> }[];
     };
-    const imgAttrs = result.content[0]!.attrs!;
+    const imgAttrs = result.content[0]?.attrs!;
     expect(imgAttrs.onerror).toBeUndefined();
     expect(imgAttrs.onclick).toBeUndefined();
     expect(imgAttrs.onload).toBeUndefined();
-    expect(imgAttrs.src).toBe("image.png");
-    expect(imgAttrs.alt).toBe("safe alt");
+    expect(imgAttrs.src).toBe('image.png');
+    expect(imgAttrs.alt).toBe('safe alt');
   });
 
-  it("strips javascript: URIs from attributes", () => {
+  it('strips javascript: URIs from attributes', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
             {
-              type: "text",
-              text: "Click me",
+              type: 'text',
+              text: 'Click me',
               marks: [
                 {
-                  type: "link",
-                  attrs: { href: "javascript:alert(1)" },
+                  type: 'link',
+                  attrs: { href: 'javascript:alert(1)' },
                 },
               ],
             },
@@ -410,20 +402,20 @@ describe("sanitizeContent XSS prevention", () => {
         }[];
       }[];
     };
-    const linkMark = result.content[0]!.content[0]!.marks[0]!;
+    const linkMark = result.content[0]?.content[0]?.marks[0]!;
     // The href should be stripped because it starts with javascript:
     expect(linkMark.attrs?.href).toBeUndefined();
   });
 
-  it("strips data: URIs from attributes", () => {
+  it('strips data: URIs from attributes', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "image",
+          type: 'image',
           attrs: {
-            src: "data:text/html,<script>alert(1)</script>",
-            alt: "photo",
+            src: 'data:text/html,<script>alert(1)</script>',
+            alt: 'photo',
           },
         },
       ],
@@ -432,53 +424,53 @@ describe("sanitizeContent XSS prevention", () => {
     const result = sanitizeContent(content) as {
       content: { attrs?: Record<string, unknown> }[];
     };
-    const attrs = result.content[0]!.attrs!;
+    const attrs = result.content[0]?.attrs!;
     expect(attrs.src).toBeUndefined();
-    expect(attrs.alt).toBe("photo");
+    expect(attrs.alt).toBe('photo');
   });
 
-  it("strips embed, object, and applet nodes", () => {
+  it('strips embed, object, and applet nodes', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
-        { type: "embed", attrs: { src: "evil.swf" } },
-        { type: "object", attrs: { data: "evil.jar" } },
-        { type: "applet", attrs: { code: "Evil.class" } },
+        { type: 'embed', attrs: { src: 'evil.swf' } },
+        { type: 'object', attrs: { data: 'evil.jar' } },
+        { type: 'applet', attrs: { code: 'Evil.class' } },
         {
-          type: "paragraph",
-          content: [{ type: "text", text: "Safe" }],
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Safe' }],
         },
       ],
     };
 
     const result = sanitizeContent(content) as { content: unknown[] };
     expect(result.content).toHaveLength(1);
-    expect((result.content[0] as { type: string }).type).toBe("paragraph");
+    expect((result.content[0] as { type: string }).type).toBe('paragraph');
   });
 
-  it("handles null and undefined content gracefully", () => {
+  it('handles null and undefined content gracefully', () => {
     expect(sanitizeContent(null)).toBeNull();
     expect(sanitizeContent(undefined)).toBeNull();
   });
 
-  it("handles non-object content gracefully", () => {
-    expect(sanitizeContent("just a string")).toBe("just a string");
+  it('handles non-object content gracefully', () => {
+    expect(sanitizeContent('just a string')).toBe('just a string');
     expect(sanitizeContent(42)).toBe(42);
   });
 
-  it("strips vbscript: URIs from attributes", () => {
+  it('strips vbscript: URIs from attributes', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
             {
-              type: "text",
-              text: "Link",
+              type: 'text',
+              text: 'Link',
               marks: [
                 {
-                  type: "link",
+                  type: 'link',
                   attrs: { href: "vbscript:MsgBox('XSS')" },
                 },
               ],
@@ -495,33 +487,33 @@ describe("sanitizeContent XSS prevention", () => {
         }[];
       }[];
     };
-    const linkMark = result.content[0]!.content[0]!.marks[0]!;
+    const linkMark = result.content[0]?.content[0]?.marks[0]!;
     expect(linkMark.attrs?.href).toBeUndefined();
   });
 
-  it("preserves safe content and attributes", () => {
+  it('preserves safe content and attributes', () => {
     const content = {
-      type: "doc",
+      type: 'doc',
       content: [
         {
-          type: "paragraph",
+          type: 'paragraph',
           content: [
             {
-              type: "text",
-              text: "Hello world",
+              type: 'text',
+              text: 'Hello world',
               marks: [
                 {
-                  type: "link",
-                  attrs: { href: "https://example.com" },
+                  type: 'link',
+                  attrs: { href: 'https://example.com' },
                 },
-                { type: "bold" },
+                { type: 'bold' },
               ],
             },
           ],
         },
         {
-          type: "image",
-          attrs: { src: "https://cdn.example.com/img.png", alt: "A photo" },
+          type: 'image',
+          attrs: { src: 'https://cdn.example.com/img.png', alt: 'A photo' },
         },
       ],
     };
@@ -536,10 +528,8 @@ describe("sanitizeContent XSS prevention", () => {
         marks: { type: string; attrs?: Record<string, unknown> }[];
       }[];
     };
-    expect(paragraph.content[0]!.marks).toHaveLength(2);
-    expect(paragraph.content[0]!.marks[0]!.attrs!.href).toBe(
-      "https://example.com",
-    );
+    expect(paragraph.content[0]?.marks).toHaveLength(2);
+    expect(paragraph.content[0]?.marks[0]?.attrs?.href).toBe('https://example.com');
   });
 });
 
@@ -547,19 +537,15 @@ describe("sanitizeContent XSS prevention", () => {
 // 4. Rate limiting: auth endpoints return 429 after threshold
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("Rate limiting on auth endpoints", () => {
-  it("returns 429 after exceeding auth rate limit", async () => {
+describe('Rate limiting on auth endpoints', () => {
+  it('returns 429 after exceeding auth rate limit', async () => {
     // Build a dedicated app for auth routes (uses its own rate limiter)
-    const { default: Fastify } = await import("fastify");
-    const { default: cookie } = await import("@fastify/cookie");
-    const { errorHandler } = await import("../src/lib/errors");
-    const { authRoutes } = await import("../src/routes/auth");
-    const { OrganizationService } = await import(
-      "../src/services/organization-service"
-    );
-    const { WorkspaceService } = await import(
-      "../src/services/workspace-service"
-    );
+    const { default: Fastify } = await import('fastify');
+    const { default: cookie } = await import('@fastify/cookie');
+    const { errorHandler } = await import('../src/lib/errors');
+    const { authRoutes } = await import('../src/routes/auth');
+    const { OrganizationService } = await import('../src/services/organization-service');
+    const { WorkspaceService } = await import('../src/services/workspace-service');
 
     cleanup();
     const app = Fastify({ logger: false });
@@ -568,14 +554,8 @@ describe("Rate limiting on auth endpoints", () => {
 
     const auth = createMockAuth();
 
-    vi.spyOn(
-      OrganizationService.prototype,
-      "acceptInvitation",
-    ).mockResolvedValue(null);
-    vi.spyOn(
-      WorkspaceService.prototype,
-      "acceptInvitation",
-    ).mockResolvedValue(null);
+    vi.spyOn(OrganizationService.prototype, 'acceptInvitation').mockResolvedValue(null);
+    vi.spyOn(WorkspaceService.prototype, 'acceptInvitation').mockResolvedValue(null);
 
     await authRoutes(app, { auth, db: {} as never });
     await app.ready();
@@ -591,9 +571,9 @@ describe("Rate limiting on auth endpoints", () => {
       });
 
       const res = await app.inject({
-        method: "POST",
-        url: "/api/v1/auth/login",
-        payload: { email: user.email, password: "password" },
+        method: 'POST',
+        url: '/api/v1/auth/login',
+        payload: { email: user.email, password: 'password' },
         // All requests come from the same IP by default in inject
       });
       results.push(res.statusCode);

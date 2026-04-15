@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { Link, useParams } from '@tanstack/react-router';
-import { cn } from '@worknest/ui';
-import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
+import type { WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
+import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 import { CollapsedNavItem } from './sidebar-nav';
 
@@ -19,8 +18,7 @@ export function SidebarWiki({ orgSlug, wsSlug, wsId }: SidebarWikiProps) {
 
   const spacesQuery = useQuery({
     queryKey: ['workspaces', wsId, 'wiki-spaces'],
-    queryFn: () =>
-      apiClient.getList<WikiSpaceOutput>(`/workspaces/${wsId}/wiki-spaces`),
+    queryFn: () => apiClient.getList<WikiSpaceOutput>(`/workspaces/${wsId}/wiki-spaces`),
     enabled: !!wsId,
   });
 
@@ -47,11 +45,7 @@ export function SidebarWiki({ orgSlug, wsSlug, wsId }: SidebarWikiProps) {
           onClick={() => setSectionOpen((v) => !v)}
           className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
         >
-          {sectionOpen ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
+          {sectionOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           Wiki
         </button>
         <Link
@@ -115,8 +109,7 @@ function SpaceSidebarItem({
 }) {
   const pagesQuery = useQuery({
     queryKey: ['wiki-spaces', space.id, 'pages'],
-    queryFn: () =>
-      apiClient.getList<WikiPageOutput>(`/wiki-spaces/${space.id}/pages`),
+    queryFn: () => apiClient.getList<WikiPageOutput>(`/wiki-spaces/${space.id}/pages`),
     enabled: expanded,
   });
 
@@ -130,11 +123,7 @@ function SpaceSidebarItem({
           className="flex h-[34px] w-5 items-center justify-center shrink-0 ml-1 text-sidebar-foreground/30 hover:text-sidebar-foreground/60 transition-colors"
           onClick={onToggle}
         >
-          {expanded ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
+          {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         </button>
         <Link
           to="/$orgSlug/$wsSlug/wiki/$spaceId"
@@ -165,9 +154,7 @@ function SpaceSidebarItem({
             </Link>
           ))}
           {!pagesQuery.isLoading && rootPages.length === 0 && (
-            <p className="px-2 py-1 text-[11px] text-sidebar-foreground/35">
-              페이지 없음
-            </p>
+            <p className="px-2 py-1 text-[11px] text-sidebar-foreground/35">페이지 없음</p>
           )}
         </div>
       )}

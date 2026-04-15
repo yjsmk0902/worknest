@@ -1,17 +1,17 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { ProjectService } from "../services/project-service";
+import type { Database } from '@worknest/db';
 import {
-  createProjectInput,
-  updateProjectInput,
-  checkPrefixQuery,
   addProjectMemberInput,
-  updateProjectMemberInput,
+  checkPrefixQuery,
+  createProjectInput,
   cursorPaginationQuery,
-} from "@worknest/shared";
+  updateProjectInput,
+  updateProjectMemberInput,
+} from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { ProjectService } from '../services/project-service';
 
 // ── Param schemas for nested routes ────────────────────────────────────
 
@@ -36,18 +36,18 @@ export async function projectRoutes(
   // ── POST /api/v1/workspaces/:workspaceId/projects ─────────────────
 
   app.post(
-    "/api/v1/workspaces/:workspaceId/projects",
+    '/api/v1/workspaces/:workspaceId/projects',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Create a new project in a workspace",
+        tags: ['Projects'],
+        summary: 'Create a new project in a workspace',
       },
     },
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
       const body = createProjectInput.parse(request.body);
-      const project = await service.create(workspaceId, request.user!.id, body);
+      const project = await service.create(workspaceId, request.user?.id, body);
       return reply.status(201).send({ data: project });
     },
   );
@@ -55,22 +55,18 @@ export async function projectRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/projects ──────────────────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/projects",
+    '/api/v1/workspaces/:workspaceId/projects',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "List projects the caller is a member of in this workspace",
+        tags: ['Projects'],
+        summary: 'List projects the caller is a member of in this workspace',
       },
     },
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
       const pagination = cursorPaginationQuery.parse(request.query);
-      const result = await service.listByWorkspace(
-        workspaceId,
-        request.user!.id,
-        pagination,
-      );
+      const result = await service.listByWorkspace(workspaceId, request.user?.id, pagination);
       return reply.status(200).send(result);
     },
   );
@@ -78,12 +74,12 @@ export async function projectRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/projects/check-prefix ─────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/projects/check-prefix",
+    '/api/v1/workspaces/:workspaceId/projects/check-prefix',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Check if a project prefix is available",
+        tags: ['Projects'],
+        summary: 'Check if a project prefix is available',
       },
     },
     async (request, reply) => {
@@ -97,20 +93,17 @@ export async function projectRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/projects/sidebar ──────────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/projects/sidebar",
+    '/api/v1/workspaces/:workspaceId/projects/sidebar',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Lightweight project list for sidebar",
+        tags: ['Projects'],
+        summary: 'Lightweight project list for sidebar',
       },
     },
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
-      const result = await service.listForSidebar(
-        workspaceId,
-        request.user!.id,
-      );
+      const result = await service.listForSidebar(workspaceId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -118,17 +111,17 @@ export async function projectRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/projects/:projectId ───────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/projects/:projectId",
+    '/api/v1/workspaces/:workspaceId/projects/:projectId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Get project details",
+        tags: ['Projects'],
+        summary: 'Get project details',
       },
     },
     async (request, reply) => {
-      const { projectId } = (request.params as { projectId: string });
-      const project = await service.getById(projectId, request.user!.id);
+      const { projectId } = request.params as { projectId: string };
+      const project = await service.getById(projectId, request.user?.id);
       return reply.status(200).send({ data: project });
     },
   );
@@ -136,22 +129,18 @@ export async function projectRoutes(
   // ── PATCH /api/v1/workspaces/:workspaceId/projects/:projectId ─────
 
   app.patch(
-    "/api/v1/workspaces/:workspaceId/projects/:projectId",
+    '/api/v1/workspaces/:workspaceId/projects/:projectId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Update project (admin only)",
+        tags: ['Projects'],
+        summary: 'Update project (admin only)',
       },
     },
     async (request, reply) => {
-      const { projectId } = (request.params as { projectId: string });
+      const { projectId } = request.params as { projectId: string };
       const body = updateProjectInput.parse(request.body);
-      const project = await service.update(
-        projectId,
-        request.user!.id,
-        body,
-      );
+      const project = await service.update(projectId, request.user?.id, body);
       return reply.status(200).send({ data: project });
     },
   );
@@ -159,17 +148,17 @@ export async function projectRoutes(
   // ── DELETE /api/v1/workspaces/:workspaceId/projects/:projectId ────
 
   app.delete(
-    "/api/v1/workspaces/:workspaceId/projects/:projectId",
+    '/api/v1/workspaces/:workspaceId/projects/:projectId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Soft delete project (admin only)",
+        tags: ['Projects'],
+        summary: 'Soft delete project (admin only)',
       },
     },
     async (request, reply) => {
-      const { projectId } = (request.params as { projectId: string });
-      await service.softDelete(projectId, request.user!.id);
+      const { projectId } = request.params as { projectId: string };
+      await service.softDelete(projectId, request.user?.id);
       return reply.status(204).send();
     },
   );
@@ -177,22 +166,18 @@ export async function projectRoutes(
   // ── GET /api/v1/projects/:projectId/members ───────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/members",
+    '/api/v1/projects/:projectId/members',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "List project members",
+        tags: ['Projects'],
+        summary: 'List project members',
       },
     },
     async (request, reply) => {
       const { projectId } = projectIdParam.parse(request.params);
       const pagination = cursorPaginationQuery.parse(request.query);
-      const result = await service.listMembers(
-        projectId,
-        request.user!.id,
-        pagination,
-      );
+      const result = await service.listMembers(projectId, request.user?.id, pagination);
       return reply.status(200).send(result);
     },
   );
@@ -200,22 +185,18 @@ export async function projectRoutes(
   // ── POST /api/v1/projects/:projectId/members ──────────────────────
 
   app.post(
-    "/api/v1/projects/:projectId/members",
+    '/api/v1/projects/:projectId/members',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Add a member to a project (admin only)",
+        tags: ['Projects'],
+        summary: 'Add a member to a project (admin only)',
       },
     },
     async (request, reply) => {
       const { projectId } = projectIdParam.parse(request.params);
       const body = addProjectMemberInput.parse(request.body);
-      const member = await service.addMember(
-        projectId,
-        request.user!.id,
-        body,
-      );
+      const member = await service.addMember(projectId, request.user?.id, body);
       return reply.status(201).send({ data: member });
     },
   );
@@ -223,25 +204,18 @@ export async function projectRoutes(
   // ── PATCH /api/v1/projects/:projectId/members/:memberId ───────────
 
   app.patch(
-    "/api/v1/projects/:projectId/members/:memberId",
+    '/api/v1/projects/:projectId/members/:memberId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
+        tags: ['Projects'],
         summary: "Update a project member's role (admin only)",
       },
     },
     async (request, reply) => {
-      const { projectId, memberId } = projectMemberIdParam.parse(
-        request.params,
-      );
+      const { projectId, memberId } = projectMemberIdParam.parse(request.params);
       const body = updateProjectMemberInput.parse(request.body);
-      await service.updateMemberRole(
-        projectId,
-        request.user!.id,
-        memberId,
-        body.role,
-      );
+      await service.updateMemberRole(projectId, request.user?.id, memberId, body.role);
       return reply.status(200).send({ data: { success: true } });
     },
   );
@@ -249,19 +223,17 @@ export async function projectRoutes(
   // ── DELETE /api/v1/projects/:projectId/members/:memberId ──────────
 
   app.delete(
-    "/api/v1/projects/:projectId/members/:memberId",
+    '/api/v1/projects/:projectId/members/:memberId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Projects"],
-        summary: "Remove a member from a project (admin only)",
+        tags: ['Projects'],
+        summary: 'Remove a member from a project (admin only)',
       },
     },
     async (request, reply) => {
-      const { projectId, memberId } = projectMemberIdParam.parse(
-        request.params,
-      );
-      await service.removeMember(projectId, request.user!.id, memberId);
+      const { projectId, memberId } = projectMemberIdParam.parse(request.params);
+      await service.removeMember(projectId, request.user?.id, memberId);
       return reply.status(204).send();
     },
   );

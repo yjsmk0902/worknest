@@ -1,14 +1,8 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { organizations } from "./organizations";
-import { workspaces } from "./workspaces";
+import { relations, sql } from 'drizzle-orm';
+import { pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { organizations } from './organizations';
+import { users } from './users';
+import { workspaces } from './workspaces';
 
 /**
  * Invitations table.
@@ -24,30 +18,30 @@ import { workspaces } from "./workspaces";
 // CHECK constraint added via raw SQL migration:
 // CHECK ((org_id IS NOT NULL AND workspace_id IS NULL) OR (org_id IS NULL AND workspace_id IS NOT NULL))
 export const invitations = pgTable(
-  "invitations",
+  'invitations',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orgId: uuid("org_id").references(() => organizations.id, {
-      onDelete: "cascade",
+    id: uuid('id').primaryKey().defaultRandom(),
+    orgId: uuid('org_id').references(() => organizations.id, {
+      onDelete: 'cascade',
     }),
-    workspaceId: uuid("workspace_id").references(() => workspaces.id, {
-      onDelete: "cascade",
+    workspaceId: uuid('workspace_id').references(() => workspaces.id, {
+      onDelete: 'cascade',
     }),
-    email: text("email").notNull(),
-    role: text("role").notNull(), // org: 'owner' | 'admin' | 'member'; ws: 'admin' | 'member' | 'guest'
-    tokenHash: text("token_hash").unique().notNull(),
-    invitedBy: text("invited_by").references(() => users.id, {
-      onDelete: "set null",
+    email: text('email').notNull(),
+    role: text('role').notNull(), // org: 'owner' | 'admin' | 'member'; ws: 'admin' | 'member' | 'guest'
+    tokenHash: text('token_hash').unique().notNull(),
+    invitedBy: text('invited_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("invitations_ws_email_unique")
+    uniqueIndex('invitations_ws_email_unique')
       .on(table.workspaceId, table.email)
       .where(sql`${table.acceptedAt} IS NULL`),
-    uniqueIndex("invitations_org_email_unique")
+    uniqueIndex('invitations_org_email_unique')
       .on(table.orgId, table.email)
       .where(sql`${table.acceptedAt} IS NULL`),
   ],

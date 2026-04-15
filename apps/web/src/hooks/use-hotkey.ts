@@ -10,9 +10,7 @@ interface HotkeyOptions {
   preventDefault?: boolean;
 }
 
-const isMac =
-  typeof navigator !== 'undefined' &&
-  /mac/i.test(navigator.platform);
+const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
 
 /**
  * Check if the currently focused element is an input-like element.

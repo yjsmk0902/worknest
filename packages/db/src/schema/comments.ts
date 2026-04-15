@@ -1,16 +1,8 @@
-import {
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { issues } from "./issues";
-import { wikiPages } from "./wiki";
+import { relations } from 'drizzle-orm';
+import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { issues } from './issues';
+import { users } from './users';
+import { wikiPages } from './wiki';
 
 /**
  * Comments table.
@@ -24,31 +16,31 @@ import { wikiPages } from "./wiki";
  * `resolved_at` is reserved for v1.0 comment resolution.
  */
 export const comments = pgTable(
-  "comments",
+  'comments',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    issueId: uuid("issue_id").references(() => issues.id, {
-      onDelete: "cascade",
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id').references(() => issues.id, {
+      onDelete: 'cascade',
     }),
-    pageId: uuid("page_id").references(() => wikiPages.id, {
-      onDelete: "cascade",
+    pageId: uuid('page_id').references(() => wikiPages.id, {
+      onDelete: 'cascade',
     }),
-    content: jsonb("content").notNull(),
-    parentId: uuid("parent_id"),
-    authorId: text("author_id").references(() => users.id, {
-      onDelete: "set null",
+    content: jsonb('content').notNull(),
+    parentId: uuid('parent_id'),
+    authorId: text('author_id').references(() => users.id, {
+      onDelete: 'set null',
     }),
     /** Reserved for v1.0 — marks when a comment thread was resolved */
-    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    index("comments_issue_id_idx").on(table.issueId),
-    index("comments_page_id_idx").on(table.pageId),
-    index("comments_parent_id_idx").on(table.parentId),
-    index("comments_author_id_idx").on(table.authorId),
+    index('comments_issue_id_idx').on(table.issueId),
+    index('comments_page_id_idx').on(table.pageId),
+    index('comments_parent_id_idx').on(table.parentId),
+    index('comments_author_id_idx').on(table.authorId),
   ],
 );
 
@@ -68,9 +60,9 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   parent: one(comments, {
     fields: [comments.parentId],
     references: [comments.id],
-    relationName: "replies",
+    relationName: 'replies',
   }),
-  replies: many(comments, { relationName: "replies" }),
+  replies: many(comments, { relationName: 'replies' }),
   reactions: many(reactions),
 }));
 
@@ -82,20 +74,20 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
  * CASCADE on both FKs: deleting a comment or user removes the reaction.
  */
 export const reactions = pgTable(
-  "reactions",
+  'reactions',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    commentId: uuid("comment_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    commentId: uuid('comment_id')
       .notNull()
-      .references(() => comments.id, { onDelete: "cascade" }),
-    userId: text("user_id")
+      .references(() => comments.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    emoji: text("emoji").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => users.id, { onDelete: 'cascade' }),
+    emoji: text('emoji').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("reactions_comment_user_emoji_unique").on(
+    uniqueIndex('reactions_comment_user_emoji_unique').on(
       table.commentId,
       table.userId,
       table.emoji,

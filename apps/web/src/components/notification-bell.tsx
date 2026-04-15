@@ -1,24 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Bell,
-  UserPlus,
-  AtSign,
-  MessageSquare,
-  RefreshCw,
-  Mail,
-} from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  ScrollArea,
-} from '@worknest/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import type { NotificationOutput, NotificationType } from '@worknest/shared';
-import { apiClient, type ListResponse } from '../lib/api-client';
-import { formatRelativeTime } from '../lib/format-time';
+import { Popover, PopoverContent, PopoverTrigger, ScrollArea } from '@worknest/ui';
+import { AtSign, Bell, Mail, MessageSquare, RefreshCw, UserPlus } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNotificationRealtime } from '../hooks/use-notification-realtime';
+import { type ListResponse, apiClient } from '../lib/api-client';
+import { formatRelativeTime } from '../lib/format-time';
 
 // ── Notification type icon config ────────────────────────────────────────
 
@@ -77,8 +65,7 @@ export function NotificationBell() {
   // Fetch unread count
   const unreadQuery = useQuery<{ count: number }>({
     queryKey: ['my', 'notifications', 'unread-count'],
-    queryFn: () =>
-      apiClient.get<{ count: number }>('/my/notifications/unread-count'),
+    queryFn: () => apiClient.get<{ count: number }>('/my/notifications/unread-count'),
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
   });
@@ -111,9 +98,7 @@ export function NotificationBell() {
           return {
             ...old,
             data: old.data.map((n: NotificationOutput) =>
-              n.id === notificationId
-                ? { ...n, readAt: new Date().toISOString() }
-                : n,
+              n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n,
             ),
           };
         },
@@ -121,8 +106,7 @@ export function NotificationBell() {
 
       queryClient.setQueryData(
         ['my', 'notifications', 'unread-count'],
-        (old: { count: number } | undefined) =>
-          old ? { count: Math.max(0, old.count - 1) } : old,
+        (old: { count: number } | undefined) => (old ? { count: Math.max(0, old.count - 1) } : old),
       );
     },
     onSettled: () => {
@@ -156,10 +140,7 @@ export function NotificationBell() {
         },
       );
 
-      queryClient.setQueryData(
-        ['my', 'notifications', 'unread-count'],
-        { count: 0 },
-      );
+      queryClient.setQueryData(['my', 'notifications', 'unread-count'], { count: 0 });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'notifications'] });
@@ -216,9 +197,7 @@ export function NotificationBell() {
           aria-expanded={open}
           data-animate={animate || undefined}
         >
-          <Bell
-            className={`h-5 w-5 ${animate ? 'animate-bell-shake' : ''}`}
-          />
+          <Bell className={`h-5 w-5 ${animate ? 'animate-bell-shake' : ''}`} />
           {unreadCount > 0 && (
             <span
               className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-white"
@@ -230,11 +209,7 @@ export function NotificationBell() {
         </button>
       </PopoverTrigger>
 
-      <PopoverContent
-        align="end"
-        side="bottom"
-        className="w-[360px] max-h-[400px] rounded-xl p-0"
-      >
+      <PopoverContent align="end" side="bottom" className="w-[360px] max-h-[400px] rounded-xl p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <span className="text-sm font-semibold">알림</span>
@@ -254,9 +229,7 @@ export function NotificationBell() {
           // Empty state
           <div className="flex flex-col items-center justify-center gap-2 py-8">
             <Bell className="h-7 w-7 text-muted-foreground/40" />
-            <span className="text-xs text-muted-foreground">
-              새로운 알림이 없습니다
-            </span>
+            <span className="text-xs text-muted-foreground">새로운 알림이 없습니다</span>
           </div>
         ) : (
           <ScrollArea className="max-h-[300px]">
@@ -271,7 +244,6 @@ export function NotificationBell() {
                   <button
                     key={notification.id}
                     type="button"
-                    role="listitem"
                     aria-label={notification.message}
                     className={`flex h-12 w-full cursor-pointer items-center gap-2.5 px-4 hover:bg-accent/50 ${
                       isLast ? '' : 'border-b border-border/30'
@@ -279,9 +251,7 @@ export function NotificationBell() {
                     onClick={() => handleNotificationClick(notification)}
                   >
                     {/* Type icon */}
-                    <IconComponent
-                      className={`h-4 w-4 shrink-0 ${iconConfig.color}`}
-                    />
+                    <IconComponent className={`h-4 w-4 shrink-0 ${iconConfig.color}`} />
 
                     {/* Message */}
                     <span className="min-w-0 flex-1 truncate text-left text-xs text-foreground">
@@ -294,9 +264,7 @@ export function NotificationBell() {
                     </span>
 
                     {/* Unread dot */}
-                    {isUnread && (
-                      <span className="ml-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    )}
+                    {isUnread && <span className="ml-1 h-2 w-2 shrink-0 rounded-full bg-primary" />}
                   </button>
                 );
               })}

@@ -1,21 +1,21 @@
-import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle, Copy, Check } from 'lucide-react';
-import { z } from 'zod';
+import { createWsInvitationInput } from '@worknest/shared';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@worknest/ui';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { createWsInvitationInput } from '@worknest/shared';
-import { apiClient } from '../../lib/api-client';
 import { toast } from '@worknest/ui';
+import { AlertTriangle, Check, Copy, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { z } from 'zod';
+import { apiClient } from '../../lib/api-client';
 
 interface InviteModalProps {
   workspaceId: string;
@@ -42,19 +42,13 @@ const ROLES = [
   { value: 'guest' as const, label: 'Guest' },
 ];
 
-export function InviteModal({
-  workspaceId,
-  open,
-  onOpenChange,
-}: InviteModalProps) {
+export function InviteModal({ workspaceId, open, onOpenChange }: InviteModalProps) {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<InviteForm>({
     email: '',
     role: 'member',
   });
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof InviteForm, string>>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof InviteForm, string>>>({});
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -104,16 +98,12 @@ export function InviteModal({
       <DialogContent className="max-w-[400px]">
         <DialogHeader>
           <DialogTitle>멤버 초대</DialogTitle>
-          <DialogDescription>
-            이메일 주소로 워크스페이스에 멤버를 초대합니다.
-          </DialogDescription>
+          <DialogDescription>이메일 주소로 워크스페이스에 멤버를 초대합니다.</DialogDescription>
         </DialogHeader>
 
         {inviteToken ? (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              아래 초대 코드를 상대방에게 전달하세요.
-            </p>
+            <p className="text-sm text-muted-foreground">아래 초대 코드를 상대방에게 전달하세요.</p>
             <div className="flex items-center gap-2">
               <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-sm font-mono break-all">
                 {inviteToken}
@@ -128,7 +118,11 @@ export function InviteModal({
                   setTimeout(() => setCopied(false), 2000);
                 }}
               >
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             </div>
             <DialogFooter>
@@ -145,84 +139,80 @@ export function InviteModal({
             </DialogFooter>
           </div>
         ) : (
-        <>
-        {inviteMutation.error && (
-          <div
-            role="alert"
-            className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
-          >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive">
-              {inviteMutation.error.message}
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="invite-email" error={!!fieldErrors.email}>
-              이메일
-            </Label>
-            <Input
-              id="invite-email"
-              type="email"
-              placeholder="name@company.com"
-              disabled={isLoading}
-              error={!!fieldErrors.email}
-              value={formData.email}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, email: e.target.value }))
-              }
-            />
-            {fieldErrors.email && (
-              <p className="text-sm text-destructive">{fieldErrors.email}</p>
+          <>
+            {inviteMutation.error && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <p className="text-sm text-destructive">{inviteMutation.error.message}</p>
+              </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="invite-role">역할</Label>
-            <select
-              id="invite-role"
-              value={formData.role}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  role: e.target.value as InviteForm['role'],
-                }))
-              }
-              disabled={isLoading}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {ROLES.map((role) => (
-                <option key={role.value} value={role.value}>
-                  {role.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="invite-email" error={!!fieldErrors.email}>
+                  이메일
+                </Label>
+                <Input
+                  id="invite-email"
+                  type="email"
+                  placeholder="name@company.com"
+                  disabled={isLoading}
+                  error={!!fieldErrors.email}
+                  value={formData.email}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                />
+                {fieldErrors.email && (
+                  <p className="text-sm text-destructive">{fieldErrors.email}</p>
+                )}
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              취소
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  발송 중...
-                </>
-              ) : (
-                '초대 보내기'
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-        </>
+              <div className="space-y-2">
+                <Label htmlFor="invite-role">역할</Label>
+                <select
+                  id="invite-role"
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      role: e.target.value as InviteForm['role'],
+                    }))
+                  }
+                  disabled={isLoading}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {ROLES.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isLoading}
+                >
+                  취소
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      발송 중...
+                    </>
+                  ) : (
+                    '초대 보내기'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
         )}
       </DialogContent>
     </Dialog>

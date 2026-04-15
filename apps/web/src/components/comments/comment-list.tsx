@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { JSONContent } from '@tiptap/core';
+import type { MentionQueryFn } from '@worknest/editor';
+import type { ActivityOutput } from '@worknest/shared';
+import { Skeleton, cn, toast } from '@worknest/ui';
 import {
   AlertTriangle,
   Calendar,
@@ -12,16 +14,14 @@ import {
   Tag,
   UserPlus,
 } from 'lucide-react';
-import { Skeleton, toast, cn } from '@worknest/ui';
-import type { ActivityOutput } from '@worknest/shared';
-import type { MentionQueryFn } from '@worknest/editor';
-import { apiClient, type ListResponse } from '../../lib/api-client';
-import { formatRelativeTime } from '../../lib/format-time';
-import { useAuthStore } from '../../stores/auth-store';
+import { useMemo, useState } from 'react';
 import { useWebSocket } from '../../hooks/use-websocket';
 import { useWebSocketEvent } from '../../hooks/use-websocket-event';
+import { type ListResponse, apiClient } from '../../lib/api-client';
+import { formatRelativeTime } from '../../lib/format-time';
+import { useAuthStore } from '../../stores/auth-store';
 import { CommentEditor } from './comment-editor';
-import { CommentItem, type CommentData } from './comment-item';
+import { type CommentData, CommentItem } from './comment-item';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -100,8 +100,7 @@ function getActivityDescription(activity: ActivityOutput): string {
         sortOrder: '정렬 순서',
       };
       const label = fieldLabels[field] ?? field;
-      if (oldValue && newValue)
-        return `${label}을(를) ${oldValue}에서 ${newValue}으로 변경`;
+      if (oldValue && newValue) return `${label}을(를) ${oldValue}에서 ${newValue}으로 변경`;
       if (newValue) return `${label}을(를) ${newValue}으로 설정`;
       if (oldValue) return `${label}을(를) 제거`;
       return `${label}을(를) 수정함`;
@@ -137,23 +136,15 @@ function getActivityDescription(activity: ActivityOutput): string {
 
 function ActivityItem({ activity }: { activity: ActivityOutput }) {
   return (
-    <div
-      className="flex items-start gap-3 px-4 py-2"
-      role="article"
-      aria-label="활동 로그"
-    >
+    <div className="flex items-start gap-3 px-4 py-2" role="article" aria-label="활동 로그">
       <div className="mt-0.5 shrink-0">{getActivityIcon(activity.action)}</div>
       <div className="min-w-0 flex-1">
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {activity.actor?.name ?? '시스템'}
-          </span>
+          <span className="font-medium text-foreground">{activity.actor?.name ?? '시스템'}</span>
           <span className="mx-1">&middot;</span>
           <span className="text-xs">{formatRelativeTime(activity.createdAt)}</span>
         </p>
-        <p className="text-sm text-muted-foreground">
-          {getActivityDescription(activity)}
-        </p>
+        <p className="text-sm text-muted-foreground">{getActivityDescription(activity)}</p>
       </div>
     </div>
   );
@@ -175,11 +166,7 @@ function FilterTabs({
   onChange: (tab: FilterTab) => void;
 }) {
   return (
-    <div
-      className="flex items-center gap-1"
-      role="tablist"
-      aria-label="필터"
-    >
+    <div className="flex items-center gap-1" role="tablist" aria-label="필터">
       {FILTER_TABS.map((tab) => (
         <button
           key={tab.value}
@@ -224,16 +211,9 @@ function TimelineSkeleton() {
 function EmptyComments() {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <MessageSquare
-        size={32}
-        className="text-muted-foreground/50"
-      />
-      <p className="mt-2 text-sm text-muted-foreground">
-        아직 댓글이 없습니다
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground/70">
-        첫 번째 댓글을 작성해 보세요
-      </p>
+      <MessageSquare size={32} className="text-muted-foreground/50" />
+      <p className="mt-2 text-sm text-muted-foreground">아직 댓글이 없습니다</p>
+      <p className="mt-1 text-xs text-muted-foreground/70">첫 번째 댓글을 작성해 보세요</p>
     </div>
   );
 }
@@ -248,12 +228,7 @@ function EmptyActivities() {
 
 // ── Main CommentList ───────────────────────────────────────────────────
 
-export function CommentList({
-  issueId,
-  pageId,
-  projectId,
-  mentionQueryFn,
-}: CommentListProps) {
+export function CommentList({ issueId, pageId, projectId, mentionQueryFn }: CommentListProps) {
   const [filter, setFilter] = useState<FilterTab>('all');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -274,22 +249,13 @@ export function CommentList({
       : [];
 
   const activitiesQueryKey =
-    projectId && issueId
-      ? ['projects', projectId, 'issues', issueId, 'activities']
-      : [];
+    projectId && issueId ? ['projects', projectId, 'issues', issueId, 'activities'] : [];
 
   // ── WebSocket subscription ─────────────────────────────────────────
 
-  const wsChannel = issueId
-    ? `issue:${issueId}`
-    : pageId
-      ? `page:${pageId}`
-      : '';
+  const wsChannel = issueId ? `issue:${issueId}` : pageId ? `page:${pageId}` : '';
 
-  const wsChannels = useMemo(
-    () => (wsChannel ? [wsChannel] : []),
-    [wsChannel],
-  );
+  const wsChannels = useMemo(() => (wsChannel ? [wsChannel] : []), [wsChannel]);
   useWebSocket(wsChannels);
 
   useWebSocketEvent('comment.created', () => {
@@ -321,9 +287,7 @@ export function CommentList({
   const commentsQuery = useQuery<{ data: CommentData[] }>({
     queryKey: commentsQueryKey,
     queryFn: () =>
-      commentsPath
-        ? apiClient.getList<CommentData>(commentsPath)
-        : Promise.resolve({ data: [] }),
+      commentsPath ? apiClient.getList<CommentData>(commentsPath) : Promise.resolve({ data: [] }),
     enabled: !!commentsPath,
   });
 
@@ -331,9 +295,7 @@ export function CommentList({
     queryKey: activitiesQueryKey,
     queryFn: () =>
       projectId && issueId
-        ? apiClient.getList<ActivityOutput>(
-            `/projects/${projectId}/issues/${issueId}/activities`,
-          )
+        ? apiClient.getList<ActivityOutput>(`/projects/${projectId}/issues/${issueId}/activities`)
         : Promise.resolve({ data: [], pagination: { next_cursor: null, has_more: false } }),
     enabled: !!projectId && !!issueId,
   });
@@ -398,9 +360,7 @@ export function CommentList({
       const previous = queryClient.getQueryData<{ data: CommentData[] }>(commentsQueryKey);
       queryClient.setQueryData<{ data: CommentData[] }>(commentsQueryKey, (old) => ({
         data: (old?.data ?? []).map((c) =>
-          c.id === commentId
-            ? { ...c, content, updatedAt: new Date().toISOString() }
-            : c,
+          c.id === commentId ? { ...c, content, updatedAt: new Date().toISOString() } : c,
         ),
       }));
       return { previous };
@@ -417,8 +377,7 @@ export function CommentList({
   });
 
   const deleteComment = useMutation({
-    mutationFn: (commentId: string) =>
-      apiClient.delete(`/comments/${commentId}`),
+    mutationFn: (commentId: string) => apiClient.delete(`/comments/${commentId}`),
     onMutate: async (commentId) => {
       await queryClient.cancelQueries({ queryKey: commentsQueryKey });
       const previous = queryClient.getQueryData<{ data: CommentData[] }>(commentsQueryKey);
@@ -547,10 +506,7 @@ export function CommentList({
     }
 
     // Sort chronologically (oldest first)
-    entries.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-    );
+    entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return entries;
   }, [topLevelComments, activities, filter]);
@@ -598,9 +554,7 @@ export function CommentList({
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-foreground">댓글 &amp; 활동</h3>
         <div className="flex flex-col items-center justify-center py-8">
-          <p className="text-sm text-muted-foreground">
-            댓글을 불러오는데 실패했습니다.
-          </p>
+          <p className="text-sm text-muted-foreground">댓글을 불러오는데 실패했습니다.</p>
           <button
             type="button"
             className="mt-2 text-sm text-primary hover:underline"
@@ -628,11 +582,7 @@ export function CommentList({
       <FilterTabs value={filter} onChange={setFilter} />
 
       {/* Timeline */}
-      <div
-        className="space-y-4"
-        role="feed"
-        aria-label="댓글 및 활동"
-      >
+      <div className="space-y-4" role="feed" aria-label="댓글 및 활동">
         {isEmpty ? (
           filter === 'activities' ? (
             <EmptyActivities />
@@ -642,12 +592,7 @@ export function CommentList({
         ) : (
           timeline.map((entry) => {
             if (entry.type === 'activity') {
-              return (
-                <ActivityItem
-                  key={`activity-${entry.data.id}`}
-                  activity={entry.data}
-                />
-              );
+              return <ActivityItem key={`activity-${entry.data.id}`} activity={entry.data} />;
             }
 
             // Comment + its replies
@@ -685,9 +630,7 @@ export function CommentList({
                 {replyingTo === comment.id && (
                   <div className="ml-8 border-l-2 border-border pl-4">
                     <CommentEditor
-                      onSubmit={(content) =>
-                        handleCreateReply(comment.id, content)
-                      }
+                      onSubmit={(content) => handleCreateReply(comment.id, content)}
                       onCancel={() => setReplyingTo(null)}
                       submitLabel="답글"
                       placeholder="답글 작성..."

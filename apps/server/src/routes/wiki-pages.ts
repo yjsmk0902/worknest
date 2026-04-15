@@ -1,20 +1,17 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import { eq } from "drizzle-orm";
-import type { Auth } from "../lib/auth";
-import { wikiSpaces, type Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { WikiPageService } from "../services/wiki-page-service";
-import { MentionService } from "../services/mention-service";
-import {
-  createWikiPageInput,
-  updateWikiPageInput,
-} from "@worknest/shared";
+import { type Database, wikiSpaces } from '@worknest/db';
+import { createWikiPageInput, updateWikiPageInput } from '@worknest/shared';
+import { eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { MentionService } from '../services/mention-service';
+import { WikiPageService } from '../services/wiki-page-service';
 import {
   broadcastWikiPageCreated,
-  broadcastWikiPageUpdated,
   broadcastWikiPageDeleted,
-} from "../websocket/wiki-events";
+  broadcastWikiPageUpdated,
+} from '../websocket/wiki-events';
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -37,7 +34,7 @@ async function getWorkspaceId(db: Database, spaceId: string): Promise<string> {
     .limit(1)
     .then((rows) => rows[0]);
 
-  return space!.workspaceId;
+  return space?.workspaceId;
 }
 
 /**
@@ -57,17 +54,17 @@ export async function wikiPageRoutes(
   // ── GET /api/v1/wiki-spaces/:spaceId/pages/tree ─────────────────
 
   app.get(
-    "/api/v1/wiki-spaces/:spaceId/pages/tree",
+    '/api/v1/wiki-spaces/:spaceId/pages/tree',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Get page tree for a wiki space",
+        tags: ['Wiki Pages'],
+        summary: 'Get page tree for a wiki space',
       },
     },
     async (request, reply) => {
       const { spaceId } = spaceIdParam.parse(request.params);
-      const result = await pageService.getTree(spaceId, request.user!.id);
+      const result = await pageService.getTree(spaceId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -75,17 +72,17 @@ export async function wikiPageRoutes(
   // ── GET /api/v1/wiki-spaces/:spaceId/pages ──────────────────────
 
   app.get(
-    "/api/v1/wiki-spaces/:spaceId/pages",
+    '/api/v1/wiki-spaces/:spaceId/pages',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "List all pages in a wiki space",
+        tags: ['Wiki Pages'],
+        summary: 'List all pages in a wiki space',
       },
     },
     async (request, reply) => {
       const { spaceId } = spaceIdParam.parse(request.params);
-      const result = await pageService.list(spaceId, request.user!.id);
+      const result = await pageService.list(spaceId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -93,22 +90,18 @@ export async function wikiPageRoutes(
   // ── POST /api/v1/wiki-spaces/:spaceId/pages ─────────────────────
 
   app.post(
-    "/api/v1/wiki-spaces/:spaceId/pages",
+    '/api/v1/wiki-spaces/:spaceId/pages',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Create a new wiki page",
+        tags: ['Wiki Pages'],
+        summary: 'Create a new wiki page',
       },
     },
     async (request, reply) => {
       const { spaceId } = spaceIdParam.parse(request.params);
       const body = createWikiPageInput.parse(request.body);
-      const page = await pageService.create(
-        spaceId,
-        request.user!.id,
-        body,
-      );
+      const page = await pageService.create(spaceId, request.user?.id, body);
 
       // Sync mentions if content was provided
       if (body.content) {
@@ -126,17 +119,17 @@ export async function wikiPageRoutes(
   // ── GET /api/v1/wiki-pages/:pageId ──────────────────────────────
 
   app.get(
-    "/api/v1/wiki-pages/:pageId",
+    '/api/v1/wiki-pages/:pageId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Get a wiki page by ID",
+        tags: ['Wiki Pages'],
+        summary: 'Get a wiki page by ID',
       },
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
-      const page = await pageService.getById(pageId, request.user!.id);
+      const page = await pageService.getById(pageId, request.user?.id);
       return reply.status(200).send({ data: page });
     },
   );
@@ -144,22 +137,18 @@ export async function wikiPageRoutes(
   // ── PATCH /api/v1/wiki-pages/:pageId ────────────────────────────
 
   app.patch(
-    "/api/v1/wiki-pages/:pageId",
+    '/api/v1/wiki-pages/:pageId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Update a wiki page",
+        tags: ['Wiki Pages'],
+        summary: 'Update a wiki page',
       },
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
       const body = updateWikiPageInput.parse(request.body);
-      const page = await pageService.update(
-        pageId,
-        request.user!.id,
-        body,
-      );
+      const page = await pageService.update(pageId, request.user?.id, body);
 
       // Sync mentions if content was updated
       if (body.content !== undefined) {
@@ -177,21 +166,21 @@ export async function wikiPageRoutes(
   // ── DELETE /api/v1/wiki-pages/:pageId ───────────────────────────
 
   app.delete(
-    "/api/v1/wiki-pages/:pageId",
+    '/api/v1/wiki-pages/:pageId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Delete a wiki page (soft delete)",
+        tags: ['Wiki Pages'],
+        summary: 'Delete a wiki page (soft delete)',
       },
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
 
       // Look up the page before deletion to get the spaceId for broadcasting
-      const page = await pageService.getById(pageId, request.user!.id);
+      const page = await pageService.getById(pageId, request.user?.id);
 
-      await pageService.delete(pageId, request.user!.id);
+      await pageService.delete(pageId, request.user?.id);
 
       // Broadcast wiki page deleted event
       const workspaceId = await getWorkspaceId(db, page.wikiSpaceId);
@@ -204,23 +193,18 @@ export async function wikiPageRoutes(
   // ── POST /api/v1/wiki-pages/:pageId/move ──────────────────────
 
   app.post(
-    "/api/v1/wiki-pages/:pageId/move",
+    '/api/v1/wiki-pages/:pageId/move',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Wiki Pages"],
-        summary: "Move a wiki page to a new parent and/or position",
+        tags: ['Wiki Pages'],
+        summary: 'Move a wiki page to a new parent and/or position',
       },
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
       const { parentId, sortOrder } = movePageBody.parse(request.body);
-      const page = await pageService.move(
-        pageId,
-        request.user!.id,
-        parentId,
-        sortOrder,
-      );
+      const page = await pageService.move(pageId, request.user?.id, parentId, sortOrder);
       return reply.status(200).send({ data: page });
     },
   );

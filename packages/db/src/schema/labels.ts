@@ -1,13 +1,7 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { projects } from "./projects";
-import { issueLabels } from "./issues";
+import { relations } from 'drizzle-orm';
+import { pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { issueLabels } from './issues';
+import { projects } from './projects';
 
 /**
  * Labels table.
@@ -16,20 +10,18 @@ import { issueLabels } from "./issues";
  * join table. Each label has a color (hex) for visual identification.
  */
 export const labels = pgTable(
-  "labels",
+  'labels',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    color: text("color").notNull(),
-    description: text("description"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull(),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("labels_project_name_unique").on(table.projectId, table.name),
-  ],
+  (table) => [uniqueIndex('labels_project_name_unique').on(table.projectId, table.name)],
 );
 
 export const labelsRelations = relations(labels, ({ one, many }) => ({

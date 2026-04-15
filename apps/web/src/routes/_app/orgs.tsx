@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Building2, ChevronRight, Loader2, Plus } from 'lucide-react';
+import { createFileRoute } from '@tanstack/react-router';
 import { Button, Skeleton } from '@worknest/ui';
+import { Building2, ChevronRight, Loader2, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_app/orgs')({
@@ -63,9 +63,7 @@ function OrgsPage() {
     <div className="flex flex-1 items-center justify-center">
       <div className="w-full max-w-[480px] space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-foreground">
-            Organization
-          </h2>
+          <h2 className="text-2xl font-semibold text-foreground">Organization</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Select an organization and workspace to get started.
           </p>
@@ -79,9 +77,7 @@ function OrgsPage() {
 
         {orgs.length === 0 && (
           <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              No organizations found.
-            </p>
+            <p className="text-sm text-muted-foreground">No organizations found.</p>
           </div>
         )}
 
@@ -106,8 +102,7 @@ function OrgCard({ org }: { org: Org }) {
 
   const workspacesQuery = useQuery({
     queryKey: ['organizations', org.id, 'workspaces'],
-    queryFn: () =>
-      apiClient.getList<Workspace>(`/organizations/${org.id}/workspaces`),
+    queryFn: () => apiClient.getList<Workspace>(`/organizations/${org.id}/workspaces`),
     enabled: expanded,
   });
 
@@ -124,9 +119,7 @@ function OrgCard({ org }: { org: Org }) {
           {org.name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">
-            {org.name}
-          </p>
+          <p className="truncate text-sm font-medium text-foreground">{org.name}</p>
           <p className="truncate text-xs text-muted-foreground">{org.slug}</p>
         </div>
         <ChevronRight
@@ -143,9 +136,7 @@ function OrgCard({ org }: { org: Org }) {
             </div>
           )}
           {workspaces.length === 0 && !workspacesQuery.isLoading && (
-            <p className="py-2 text-sm text-muted-foreground">
-              No workspaces found.
-            </p>
+            <p className="py-2 text-sm text-muted-foreground">No workspaces found.</p>
           )}
           {workspaces.map((ws) => (
             <a

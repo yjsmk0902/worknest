@@ -1,11 +1,11 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import { Avatar, Skeleton } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../lib/api-client';
-import { QuickAdd } from './quick-add';
 import type { IssueOutput } from '@worknest/shared';
+import { Avatar, Skeleton } from '@worknest/ui';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { type ListResponse, apiClient } from '../../lib/api-client';
+import { QuickAdd } from './quick-add';
 
 interface SubIssuesProps {
   projectId: string;
@@ -15,32 +15,22 @@ interface SubIssuesProps {
   wsSlug: string;
 }
 
-export function SubIssues({
-  projectId,
-  issueId,
-  projectPrefix,
-  orgSlug,
-  wsSlug,
-}: SubIssuesProps) {
+export function SubIssues({ projectId, issueId, projectPrefix, orgSlug, wsSlug }: SubIssuesProps) {
   const [expanded, setExpanded] = useState(true);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const subIssuesQuery = useQuery<ListResponse<IssueOutput>>({
     queryKey: ['projects', projectId, 'issues', issueId, 'sub-issues'],
     queryFn: () =>
-      apiClient.getList<IssueOutput>(
-        `/projects/${projectId}/issues/${issueId}/sub-issues`,
-      ),
+      apiClient.getList<IssueOutput>(`/projects/${projectId}/issues/${issueId}/sub-issues`),
   });
 
   const subIssues = subIssuesQuery.data?.data ?? [];
   const completedCount = subIssues.filter(
-    (issue) =>
-      issue.status?.name === 'Done' || issue.status?.name === 'Cancelled',
+    (issue) => issue.status?.name === 'Done' || issue.status?.name === 'Cancelled',
   ).length;
   const totalCount = subIssues.length;
-  const progressPercent =
-    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   if (subIssuesQuery.isLoading) {
     return (
@@ -77,11 +67,7 @@ export function SubIssues({
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-foreground/80"
         >
-          {expanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           <span>서브이슈</span>
           <span className="text-muted-foreground">
             ({completedCount}/{totalCount})
@@ -107,9 +93,7 @@ export function SubIssues({
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <span className="text-xs text-muted-foreground">
-            {progressPercent}%
-          </span>
+          <span className="text-xs text-muted-foreground">{progressPercent}%</span>
         </div>
       )}
 
@@ -118,9 +102,7 @@ export function SubIssues({
         <div className="space-y-0.5">
           {subIssues.map((issue) => {
             const isTemp = issue.id.startsWith('temp-');
-            const issueKey = isTemp
-              ? '...'
-              : `${projectPrefix}-${issue.sequenceId}`;
+            const issueKey = isTemp ? '...' : `${projectPrefix}-${issue.sequenceId}`;
 
             return (
               <Link
@@ -147,9 +129,7 @@ export function SubIssues({
                 />
 
                 {/* Issue key */}
-                <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                  {issueKey}
-                </span>
+                <span className="shrink-0 font-mono text-xs text-muted-foreground">{issueKey}</span>
 
                 {/* Title */}
                 <span className="flex-1 truncate">{issue.title}</span>

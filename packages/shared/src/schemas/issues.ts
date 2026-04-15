@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Priority ─────────────────────────────────────────────────────────────
 
-export const priorityEnum = z.enum(["urgent", "high", "medium", "low", "none"]);
+export const priorityEnum = z.enum(['urgent', 'high', 'medium', 'low', 'none']);
 export type Priority = z.infer<typeof priorityEnum>;
 
 // ── Issue Input ──────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ export const issueOutput = z.object({
     .object({
       id: z.string().uuid(),
       name: z.string(),
-      status: z.enum(["draft", "active", "completed"]),
+      status: z.enum(['draft', 'active', 'completed']),
     })
     .nullable()
     .optional(),
@@ -158,10 +158,8 @@ export const issueListQuery = z.object({
   cycleIdNot: z.string().uuid().optional(), // issues NOT in a specific cycle
   cycleEmpty: z.coerce.boolean().optional(), // issues not in any cycle
   // Sort
-  sort: z
-    .enum(["created_at", "updated_at", "priority", "due_date", "manual"])
-    .optional(),
-  order: z.enum(["asc", "desc"]).optional(),
+  sort: z.enum(['created_at', 'updated_at', 'priority', 'due_date', 'manual']).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
   // Pagination
   cursor: z.string().optional(), // opaque base64 cursor
   limit: z.coerce.number().int().min(1).max(200).default(50),
@@ -182,7 +180,7 @@ export const bulkUpdateInput = z.object({
       labelIds: z.array(z.string().uuid()).optional(), // set labels
     })
     .refine((obj) => Object.values(obj).some((v) => v !== undefined), {
-      message: "At least one change is required",
+      message: 'At least one change is required',
     }),
 });
 
@@ -190,13 +188,7 @@ export type BulkUpdateInput = z.infer<typeof bulkUpdateInput>;
 
 // ── Issue Status / Type ──────────────────────────────────────────────────
 
-export const statusCategory = z.enum([
-  "backlog",
-  "unstarted",
-  "started",
-  "completed",
-  "cancelled",
-]);
+export const statusCategory = z.enum(['backlog', 'unstarted', 'started', 'completed', 'cancelled']);
 
 export type StatusCategory = z.infer<typeof statusCategory>;
 

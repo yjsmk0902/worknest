@@ -4,7 +4,7 @@
  * Provides a render function wrapped with the providers needed by
  * the application (QueryClientProvider, Router context, etc.).
  */
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 // ── Mock API Client ───────────────────────────────────────────────────
 
@@ -27,14 +27,9 @@ export class MockApiError extends Error {
   public code: string;
   public details?: Record<string, string[]>;
 
-  constructor(
-    status: number,
-    code: string,
-    message: string,
-    details?: Record<string, string[]>,
-  ) {
+  constructor(status: number, code: string, message: string, details?: Record<string, string[]>) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.code = code;
     this.details = details;
@@ -44,23 +39,27 @@ export class MockApiError extends Error {
 // ── Mock modules ──────────────────────────────────────────────────────
 
 // Mock the api-client module so all components that import it get mocks.
-vi.mock("../../src/lib/api-client", () => ({
+vi.mock('../../src/lib/api-client', () => ({
   apiClient: mockApiClient,
   ApiError: MockApiError,
 }));
 
 // Mock TanStack Router hooks
-vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-router")>();
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>();
   return {
     ...actual,
     useNavigate: () => vi.fn(),
-    Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => {
+    Link: ({
+      children,
+      to,
+      ...props
+    }: { children: React.ReactNode; to: string; [key: string]: unknown }) => {
       // Simple anchor tag for testing
-      const anchor = Object.assign(document.createElement("a"), { href: to });
+      const _anchor = Object.assign(document.createElement('a'), { href: to });
       return actual.Link ? (actual as never) : { children, to, ...props };
     },
-    createFileRoute: (path: string) => (opts: unknown) => opts,
+    createFileRoute: (_path: string) => (opts: unknown) => opts,
   };
 });
 
@@ -86,7 +85,7 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(globalThis, "localStorage", {
+Object.defineProperty(globalThis, 'localStorage', {
   value: localStorageMock,
   writable: true,
 });

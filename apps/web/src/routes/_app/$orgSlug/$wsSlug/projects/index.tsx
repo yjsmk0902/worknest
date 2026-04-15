@@ -1,18 +1,16 @@
-import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { Folder, Plus } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { AppHeader } from '@/components/layout/app-header';
-import { ProjectCard } from '@/components/projects/project-card';
-import { CreateProjectModal } from '@/components/projects/create-project-modal';
 import { EmptyState } from '@/components/empty-state';
+import { AppHeader } from '@/components/layout/app-header';
+import { CreateProjectModal } from '@/components/projects/create-project-modal';
+import { ProjectCard } from '@/components/projects/project-card';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Button, Skeleton } from '@worknest/ui';
+import { Folder, Plus } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/')({
   component: ProjectListPage,
 });
 
@@ -35,8 +33,7 @@ function ProjectListPage() {
 
   const projectsQuery = useQuery({
     queryKey: ['workspaces', wsId, 'projects'],
-    queryFn: () =>
-      apiClient.getList<Project>(`/workspaces/${wsId}/projects`),
+    queryFn: () => apiClient.getList<Project>(`/workspaces/${wsId}/projects`),
   });
 
   const projects = projectsQuery.data?.data ?? [];
@@ -61,10 +58,7 @@ function ProjectListPage() {
             role="list"
           >
             {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border bg-card p-4"
-              >
+              <div key={i} className="rounded-lg border border-border bg-card p-4">
                 <Skeleton className="mb-3 h-9 w-9 rounded-lg" />
                 <Skeleton className="mb-1 h-3 w-12" />
                 <Skeleton className="mb-2 h-4 w-32" />
@@ -78,9 +72,7 @@ function ProjectListPage() {
         {projectsQuery.isError && (
           <div className="flex min-h-[400px] items-center justify-center">
             <div className="text-center">
-              <p className="text-sm text-destructive">
-                프로젝트를 불러올 수 없습니다.
-              </p>
+              <p className="text-sm text-destructive">프로젝트를 불러올 수 없습니다.</p>
               <Button
                 variant="outline"
                 size="sm"

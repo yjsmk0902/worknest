@@ -1,19 +1,12 @@
-import { useState } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  AlertTriangle,
-  XCircle,
-  Clock,
-} from 'lucide-react';
-import { z } from 'zod';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { apiClient, ApiError } from '../../lib/api-client';
+import { AlertTriangle, Clock, Eye, EyeOff, Loader2, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { z } from 'zod';
+import { ApiError, apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/invite/$token')({
   component: InviteAcceptPage,
@@ -28,10 +21,7 @@ interface InviteInfo {
 }
 
 const registerSchema = z.object({
-  name: z
-    .string()
-    .min(1, '이름을 입력해주세요.')
-    .max(100, '이름은 100자 이하여야 합니다.'),
+  name: z.string().min(1, '이름을 입력해주세요.').max(100, '이름은 100자 이하여야 합니다.'),
   password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.'),
 });
 
@@ -39,15 +29,13 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 function InviteAcceptPage() {
   const { token } = Route.useParams();
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<RegisterForm>({
     name: '',
     password: '',
   });
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof RegisterForm, string>>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof RegisterForm, string>>>({});
 
   const inviteQuery = useQuery<InviteInfo>({
     queryKey: ['invite', token],
@@ -56,8 +44,7 @@ function InviteAcceptPage() {
   });
 
   const acceptMutation = useMutation({
-    mutationFn: (data?: RegisterForm) =>
-      apiClient.post(`/auth/invitations/${token}/accept`, data),
+    mutationFn: (data?: RegisterForm) => apiClient.post(`/auth/invitations/${token}/accept`, data),
     onSuccess: () => {
       window.location.href = '/orgs';
     },
@@ -66,11 +53,9 @@ function InviteAcceptPage() {
   const queryError = inviteQuery.error;
   const isExpired =
     queryError instanceof ApiError &&
-    (queryError.code === 'INVITATION_EXPIRED' ||
-      queryError.code === 'INVITATION_NOT_FOUND');
+    (queryError.code === 'INVITATION_EXPIRED' || queryError.code === 'INVITATION_NOT_FOUND');
   const isAlreadyAccepted =
-    queryError instanceof ApiError &&
-    queryError.code === 'INVITATION_ALREADY_ACCEPTED';
+    queryError instanceof ApiError && queryError.code === 'INVITATION_ALREADY_ACCEPTED';
 
   // Loading state
   if (inviteQuery.isLoading) {
@@ -78,9 +63,7 @@ function InviteAcceptPage() {
       <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col items-center gap-4 py-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            초대를 확인하고 있습니다...
-          </p>
+          <p className="text-sm text-muted-foreground">초대를 확인하고 있습니다...</p>
         </div>
       </div>
     );
@@ -93,15 +76,11 @@ function InviteAcceptPage() {
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <Clock className="h-10 w-10 text-muted-foreground" />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              초대가 만료되었습니다
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">초대가 만료되었습니다</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               이 초대 링크는 만료되었거나 유효하지 않습니다.
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              관리자에게 새 초대를 요청해주세요.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">관리자에게 새 초대를 요청해주세요.</p>
           </div>
           <Link to="/login">
             <Button variant="outline">로그인 페이지로 이동</Button>
@@ -118,12 +97,8 @@ function InviteAcceptPage() {
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <XCircle className="h-10 w-10 text-muted-foreground" />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              이미 수락된 초대입니다
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              이 초대는 이미 사용되었습니다.
-            </p>
+            <h2 className="text-lg font-semibold text-foreground">이미 수락된 초대입니다</h2>
+            <p className="mt-1 text-sm text-muted-foreground">이 초대는 이미 사용되었습니다.</p>
           </div>
           <Link to="/login">
             <Button variant="outline">로그인</Button>
@@ -140,17 +115,12 @@ function InviteAcceptPage() {
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <AlertTriangle className="h-10 w-10 text-destructive" />
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              오류가 발생했습니다
-            </h2>
+            <h2 className="text-lg font-semibold text-foreground">오류가 발생했습니다</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               초대 정보를 불러올 수 없습니다. 다시 시도해주세요.
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => inviteQuery.refetch()}
-          >
+          <Button variant="outline" onClick={() => inviteQuery.refetch()}>
             다시 시도
           </Button>
         </div>
@@ -168,21 +138,16 @@ function InviteAcceptPage() {
     return (
       <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
         <div className="mb-6 text-center">
-          <h2 className="text-2xl font-semibold text-foreground">
-            초대를 수락하세요
-          </h2>
+          <h2 className="text-2xl font-semibold text-foreground">초대를 수락하세요</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{targetName}</span>
-            에 초대되었습니다
+            <span className="font-medium text-foreground">{targetName}</span>에 초대되었습니다
           </p>
         </div>
 
         <div className="rounded-md border border-border bg-muted/50 p-4 text-center">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">
-              {invite.email}
-            </span>{' '}
-            계정으로 로그인하여 초대를 수락하세요.
+            <span className="font-medium text-foreground">{invite.email}</span> 계정으로 로그인하여
+            초대를 수락하세요.
           </p>
         </div>
 
@@ -192,9 +157,7 @@ function InviteAcceptPage() {
             className="mt-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive">
-              {acceptMutation.error.message}
-            </p>
+            <p className="text-sm text-destructive">{acceptMutation.error.message}</p>
           </div>
         )}
 
@@ -235,12 +198,10 @@ function InviteAcceptPage() {
   return (
     <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">
-          초대를 수락하세요
-        </h2>
+        <h2 className="text-2xl font-semibold text-foreground">초대를 수락하세요</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{targetName}</span>
-          에 초대되었습니다. 계정을 만들어 시작하세요.
+          <span className="font-medium text-foreground">{targetName}</span>에 초대되었습니다. 계정을
+          만들어 시작하세요.
         </p>
       </div>
 
@@ -254,17 +215,11 @@ function InviteAcceptPage() {
           className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-          <p className="text-sm text-destructive">
-            {acceptMutation.error.message}
-          </p>
+          <p className="text-sm text-destructive">{acceptMutation.error.message}</p>
         </div>
       )}
 
-      <form
-        aria-label="초대 수락 - 회원가입"
-        onSubmit={handleRegisterSubmit}
-        className="space-y-4"
-      >
+      <form aria-label="초대 수락 - 회원가입" onSubmit={handleRegisterSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name" error={!!fieldErrors.name}>
             이름
@@ -277,9 +232,7 @@ function InviteAcceptPage() {
             disabled={isLoading}
             error={!!fieldErrors.name}
             value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             aria-describedby={fieldErrors.name ? 'name-error' : undefined}
           />
           {fieldErrors.name && (
@@ -307,9 +260,7 @@ function InviteAcceptPage() {
                   password: e.target.value,
                 }))
               }
-              aria-describedby={
-                fieldErrors.password ? 'password-error' : undefined
-              }
+              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
               className="pr-10"
             />
             <button
@@ -319,16 +270,10 @@ function InviteAcceptPage() {
               aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            8자 이상, 영문/숫자 포함
-          </p>
+          <p className="text-xs text-muted-foreground">8자 이상, 영문/숫자 포함</p>
           {fieldErrors.password && (
             <p id="password-error" className="text-sm text-destructive">
               {fieldErrors.password}
@@ -336,12 +281,7 @@ function InviteAcceptPage() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

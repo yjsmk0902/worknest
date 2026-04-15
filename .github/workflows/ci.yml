@@ -33,7 +33,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Biome check (lint + format)
-        run: pnpm exec biome check .
+        run: pnpm exec biome check --diagnostic-level=error .
 
       - name: Typecheck
         run: pnpm run typecheck

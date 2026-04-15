@@ -1,22 +1,20 @@
-import { useState } from 'react';
+import { ImageUpload } from '@/components/settings/image-upload';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
 import { Separator } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { SettingsLayout } from '@/components/settings/settings-layout';
-import { ImageUpload } from '@/components/settings/image-upload';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { useAuthStore } from '@/stores/auth-store';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/settings/org/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/org/')({
   component: OrgSettingsGeneral,
 });
 
@@ -60,9 +58,7 @@ function OrgSettingsGeneral() {
         <div className="flex items-center justify-center p-12">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              조직 설정을 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">조직 설정을 불러올 수 없습니다.</p>
             <Button variant="outline" size="sm" className="mt-4" onClick={() => orgQuery.refetch()}>
               다시 시도
             </Button>
@@ -76,9 +72,7 @@ function OrgSettingsGeneral() {
     <SettingsLayout orgSlug={orgSlug} wsSlug={wsSlug} activeTab="org-general">
       <OrgSettingsForm
         org={orgQuery.data}
-        onSaved={() =>
-          queryClient.invalidateQueries({ queryKey: ['organizations', orgId] })
-        }
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ['organizations', orgId] })}
       />
     </SettingsLayout>
   );
@@ -98,8 +92,7 @@ function OrgSettingsForm({
   const hasChanges = formData.name !== org.name;
 
   const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) =>
-      apiClient.patch(`/organizations/${org.id}`, data),
+    mutationFn: (data: typeof formData) => apiClient.patch(`/organizations/${org.id}`, data),
     onSuccess: () => {
       toast('조직 설정이 저장되었습니다.');
       onSaved();
@@ -118,9 +111,7 @@ function OrgSettingsForm({
     <div className="max-w-[720px] space-y-8 p-6">
       <div>
         <h2 className="text-lg font-semibold text-foreground">조직 설정</h2>
-        <p className="text-sm text-muted-foreground">
-          조직의 기본 정보를 관리합니다.
-        </p>
+        <p className="text-sm text-muted-foreground">조직의 기본 정보를 관리합니다.</p>
       </div>
 
       <Separator />
@@ -158,14 +149,8 @@ function OrgSettingsForm({
 
         <div className="space-y-2">
           <Label htmlFor="org-slug">조직 URL (slug)</Label>
-          <Input
-            id="org-slug"
-            value={org.slug}
-            disabled
-          />
-          <p className="text-xs text-muted-foreground">
-            slug는 자동 생성되며 변경할 수 없습니다.
-          </p>
+          <Input id="org-slug" value={org.slug} disabled />
+          <p className="text-xs text-muted-foreground">slug는 자동 생성되며 변경할 수 없습니다.</p>
         </div>
 
         <Button type="submit" disabled={!hasChanges || updateMutation.isPending}>

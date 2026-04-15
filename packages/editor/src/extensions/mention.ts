@@ -1,12 +1,8 @@
-import Mention from "@tiptap/extension-mention";
-import { ReactRenderer } from "@tiptap/react";
-import {
-  MentionList,
-  type MentionListRef,
-  type MentionUser,
-} from "./mention-list";
+import Mention from '@tiptap/extension-mention';
+import { ReactRenderer } from '@tiptap/react';
+import { MentionList, type MentionListRef, type MentionUser } from './mention-list';
 
-export type { MentionUser } from "./mention-list";
+export type { MentionUser } from './mention-list';
 
 /**
  * Query function type for fetching mention suggestions.
@@ -19,19 +15,16 @@ export type MentionQueryFn = (query: string) => Promise<MentionUser[]>;
  * Uses a plain DOM element instead of tippy.js for zero extra dependencies.
  */
 function createFloatingContainer() {
-  const container = document.createElement("div");
-  container.style.position = "absolute";
-  container.style.zIndex = "50";
-  container.style.pointerEvents = "auto";
-  container.setAttribute("data-suggestion-popup", "");
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.zIndex = '50';
+  container.style.pointerEvents = 'auto';
+  container.setAttribute('data-suggestion-popup', '');
   document.body.appendChild(container);
   return container;
 }
 
-function updateFloatingPosition(
-  container: HTMLElement,
-  clientRect: (() => DOMRect) | null,
-) {
+function updateFloatingPosition(container: HTMLElement, clientRect: (() => DOMRect) | null) {
   if (!clientRect) return;
   const rect = clientRect();
   container.style.left = `${rect.left + window.scrollX}px`;
@@ -55,8 +48,7 @@ function updateFloatingPosition(
 export function createMentionExtension(queryFn: MentionQueryFn) {
   return Mention.configure({
     HTMLAttributes: {
-      class:
-        "bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer",
+      class: 'bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer',
     },
     suggestion: {
       items: async ({ query }: { query: string }) => {
@@ -70,42 +62,32 @@ export function createMentionExtension(queryFn: MentionQueryFn) {
           onStart: (props: Record<string, unknown>) => {
             component = new ReactRenderer(MentionList, {
               props,
-              editor: props.editor as Parameters<
-                typeof ReactRenderer
-              >[1]["editor"],
+              editor: props.editor as Parameters<typeof ReactRenderer>[1]['editor'],
             });
 
             container = createFloatingContainer();
             container.appendChild(component.element);
 
-            updateFloatingPosition(
-              container,
-              props.clientRect as (() => DOMRect) | null,
-            );
+            updateFloatingPosition(container, props.clientRect as (() => DOMRect) | null);
           },
 
           onUpdate: (props: Record<string, unknown>) => {
             component?.updateProps(props);
 
             if (container) {
-              updateFloatingPosition(
-                container,
-                props.clientRect as (() => DOMRect) | null,
-              );
+              updateFloatingPosition(container, props.clientRect as (() => DOMRect) | null);
             }
           },
 
           onKeyDown: (props: { event: KeyboardEvent }) => {
-            if (props.event.key === "Escape") {
+            if (props.event.key === 'Escape') {
               container?.remove();
               container = null;
               return true;
             }
 
             return (
-              component?.ref?.onKeyDown(
-                props as unknown as { event: React.KeyboardEvent },
-              ) ?? false
+              component?.ref?.onKeyDown(props as unknown as { event: React.KeyboardEvent }) ?? false
             );
           },
 

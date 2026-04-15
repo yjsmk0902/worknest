@@ -12,9 +12,7 @@ export const ProjectContext = createContext<ProjectContextValue | null>(null);
 export function useProjectContext(): ProjectContextValue {
   const ctx = useContext(ProjectContext);
   if (!ctx) {
-    throw new Error(
-      'useProjectContext must be used within a ProjectContext.Provider',
-    );
+    throw new Error('useProjectContext must be used within a ProjectContext.Provider');
   }
   return ctx;
 }

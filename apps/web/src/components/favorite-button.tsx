@@ -1,12 +1,8 @@
-import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Star } from 'lucide-react';
+import type { CreateFavoriteInput, FavoriteEntityType, FavoriteOutput } from '@worknest/shared';
 import { Button, toast } from '@worknest/ui';
-import type {
-  FavoriteOutput,
-  FavoriteEntityType,
-  CreateFavoriteInput,
-} from '@worknest/shared';
+import { Star } from 'lucide-react';
+import { useCallback } from 'react';
 import { apiClient } from '../lib/api-client';
 
 // ── Props ──────────────────────────────────────────────────────────────
@@ -65,10 +61,7 @@ export function FavoriteButton({
       apiClient.post<FavoriteOutput>('/my/favorites', input),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['my', 'favorites'] });
-      const previousData = queryClient.getQueryData<FavoriteOutput[]>([
-        'my',
-        'favorites',
-      ]);
+      const previousData = queryClient.getQueryData<FavoriteOutput[]>(['my', 'favorites']);
 
       // Optimistic: add a temporary favorite entry
       const tempFavorite: FavoriteOutput = {
@@ -84,10 +77,10 @@ export function FavoriteButton({
         createdAt: new Date().toISOString(),
       };
 
-      queryClient.setQueryData<FavoriteOutput[]>(
-        ['my', 'favorites'],
-        (old) => [...(old ?? []), tempFavorite],
-      );
+      queryClient.setQueryData<FavoriteOutput[]>(['my', 'favorites'], (old) => [
+        ...(old ?? []),
+        tempFavorite,
+      ]);
 
       return { previousData };
     },
@@ -104,14 +97,10 @@ export function FavoriteButton({
 
   // Remove favorite mutation
   const removeMutation = useMutation({
-    mutationFn: (favoriteId: string) =>
-      apiClient.delete(`/favorites/${favoriteId}`),
+    mutationFn: (favoriteId: string) => apiClient.delete(`/favorites/${favoriteId}`),
     onMutate: async (favoriteId) => {
       await queryClient.cancelQueries({ queryKey: ['my', 'favorites'] });
-      const previousData = queryClient.getQueryData<FavoriteOutput[]>([
-        'my',
-        'favorites',
-      ]);
+      const previousData = queryClient.getQueryData<FavoriteOutput[]>(['my', 'favorites']);
 
       queryClient.setQueryData<FavoriteOutput[]>(
         ['my', 'favorites'],
@@ -142,14 +131,7 @@ export function FavoriteButton({
         addMutation.mutate({ entityType, entityId });
       }
     },
-    [
-      isFavorited,
-      existingFavorite,
-      removeMutation,
-      addMutation,
-      entityType,
-      entityId,
-    ],
+    [isFavorited, existingFavorite, removeMutation, addMutation, entityType, entityId],
   );
 
   const isPending = addMutation.isPending || removeMutation.isPending;

@@ -1,30 +1,30 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Notification route integration tests.
  *
  * Tests the full HTTP request lifecycle through real Fastify routes,
  * real service code, and an in-memory mock database.
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  cleanup,
-  createTestUser,
-  createTestNotification,
-  loginAsUser,
   buildTestApp,
+  cleanup,
+  createTestNotification,
+  createTestUser,
+  loginAsUser,
   stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock queue (addJob) ─────────────────────────────────────────────────
 
-vi.mock("../src/lib/queue", () => ({
+vi.mock('../src/lib/queue', () => ({
   addJob: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ── Build a test app with notification routes ───────────────────────────
 
 async function buildNotificationApp() {
-  const { notificationRoutes } = await import("../src/routes/notifications");
+  const { notificationRoutes } = await import('../src/routes/notifications');
 
   const { app, auth, db } = await buildTestApp(
     async (app, { auth, db }) => {
@@ -39,27 +39,27 @@ async function buildNotificationApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupUserWithNotifications() {
-  const user = createTestUser({ name: "Notification User" });
+  const user = createTestUser({ name: 'Notification User' });
   const cookie = loginAsUser(user);
 
   const n1 = createTestNotification({
     userId: user.id,
-    type: "assigned",
-    message: "You were assigned to an issue",
-    createdAt: new Date("2026-04-01T10:00:00Z"),
+    type: 'assigned',
+    message: 'You were assigned to an issue',
+    createdAt: new Date('2026-04-01T10:00:00Z'),
   });
   const n2 = createTestNotification({
     userId: user.id,
-    type: "commented",
-    message: "Someone commented on your issue",
-    createdAt: new Date("2026-04-01T11:00:00Z"),
+    type: 'commented',
+    message: 'Someone commented on your issue',
+    createdAt: new Date('2026-04-01T11:00:00Z'),
   });
   const n3 = createTestNotification({
     userId: user.id,
-    type: "mentioned",
-    message: "You were mentioned in a comment",
-    readAt: new Date("2026-04-01T12:00:00Z"),
-    createdAt: new Date("2026-04-01T12:00:00Z"),
+    type: 'mentioned',
+    message: 'You were mentioned in a comment',
+    readAt: new Date('2026-04-01T12:00:00Z'),
+    createdAt: new Date('2026-04-01T12:00:00Z'),
   });
 
   return { user, cookie, notifications: [n1, n2, n3] };
@@ -67,7 +67,7 @@ function setupUserWithNotifications() {
 
 // ── Tests: GET list ─────────────────────────────────────────────────────
 
-describe("GET /api/v1/my/notifications", () => {
+describe('GET /api/v1/my/notifications', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -81,12 +81,12 @@ describe("GET /api/v1/my/notifications", () => {
     cleanup();
   });
 
-  it("returns notifications for the current user", async () => {
+  it('returns notifications for the current user', async () => {
     const { cookie, notifications } = setupUserWithNotifications();
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications",
+      method: 'GET',
+      url: '/api/v1/my/notifications',
       headers: { cookie },
     });
 
@@ -96,13 +96,13 @@ describe("GET /api/v1/my/notifications", () => {
     expect(body.pagination).toBeDefined();
   });
 
-  it("returns empty list for user with no notifications", async () => {
-    const user = createTestUser({ name: "No Notifications" });
+  it('returns empty list for user with no notifications', async () => {
+    const user = createTestUser({ name: 'No Notifications' });
     const cookie = loginAsUser(user);
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications",
+      method: 'GET',
+      url: '/api/v1/my/notifications',
       headers: { cookie },
     });
 
@@ -112,23 +112,23 @@ describe("GET /api/v1/my/notifications", () => {
     expect(body.pagination.has_more).toBe(false);
   });
 
-  it("supports pagination with limit", async () => {
-    const user = createTestUser({ name: "Paginated User" });
+  it('supports pagination with limit', async () => {
+    const user = createTestUser({ name: 'Paginated User' });
     const cookie = loginAsUser(user);
 
     // Create many notifications
     for (let i = 0; i < 5; i++) {
       createTestNotification({
         userId: user.id,
-        type: "commented",
+        type: 'commented',
         message: `Notification ${i}`,
         createdAt: new Date(Date.now() - i * 60000),
       });
     }
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications?limit=3",
+      method: 'GET',
+      url: '/api/v1/my/notifications?limit=3',
       headers: { cookie },
     });
 
@@ -139,10 +139,10 @@ describe("GET /api/v1/my/notifications", () => {
     expect(body.pagination.next_cursor).toBeDefined();
   });
 
-  it("returns 401 when not authenticated", async () => {
+  it('returns 401 when not authenticated', async () => {
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications",
+      method: 'GET',
+      url: '/api/v1/my/notifications',
     });
 
     expect(res.statusCode).toBe(401);
@@ -151,7 +151,7 @@ describe("GET /api/v1/my/notifications", () => {
 
 // ── Tests: GET unread count ─────────────────────────────────────────────
 
-describe("GET /api/v1/my/notifications/unread-count", () => {
+describe('GET /api/v1/my/notifications/unread-count', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -165,13 +165,13 @@ describe("GET /api/v1/my/notifications/unread-count", () => {
     cleanup();
   });
 
-  it("returns the correct unread count", async () => {
+  it('returns the correct unread count', async () => {
     const { cookie } = setupUserWithNotifications();
     // n1, n2 are unread, n3 is read
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications/unread-count",
+      method: 'GET',
+      url: '/api/v1/my/notifications/unread-count',
       headers: { cookie },
     });
 
@@ -180,8 +180,8 @@ describe("GET /api/v1/my/notifications/unread-count", () => {
     expect(body.data.count).toBe(2);
   });
 
-  it("returns 0 when all are read", async () => {
-    const user = createTestUser({ name: "All Read" });
+  it('returns 0 when all are read', async () => {
+    const user = createTestUser({ name: 'All Read' });
     const cookie = loginAsUser(user);
     createTestNotification({
       userId: user.id,
@@ -189,8 +189,8 @@ describe("GET /api/v1/my/notifications/unread-count", () => {
     });
 
     const res = await app.inject({
-      method: "GET",
-      url: "/api/v1/my/notifications/unread-count",
+      method: 'GET',
+      url: '/api/v1/my/notifications/unread-count',
       headers: { cookie },
     });
 
@@ -202,7 +202,7 @@ describe("GET /api/v1/my/notifications/unread-count", () => {
 
 // ── Tests: PATCH mark as read ───────────────────────────────────────────
 
-describe("PATCH /api/v1/notifications/:notificationId", () => {
+describe('PATCH /api/v1/notifications/:notificationId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -216,12 +216,12 @@ describe("PATCH /api/v1/notifications/:notificationId", () => {
     cleanup();
   });
 
-  it("marks a notification as read and sets readAt", async () => {
+  it('marks a notification as read and sets readAt', async () => {
     const { cookie, notifications } = setupUserWithNotifications();
     const notif = notifications[0]!;
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/notifications/${notif.id}`,
       headers: { cookie },
     });
@@ -232,12 +232,12 @@ describe("PATCH /api/v1/notifications/:notificationId", () => {
     expect(body.data.readAt).not.toBeNull();
   });
 
-  it("returns 404 when notification does not exist", async () => {
+  it('returns 404 when notification does not exist', async () => {
     const { cookie } = setupUserWithNotifications();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/notifications/${fakeId}`,
       headers: { cookie },
     });
@@ -247,12 +247,12 @@ describe("PATCH /api/v1/notifications/:notificationId", () => {
 
   it("cannot mark another user's notification as read", async () => {
     const { notifications } = setupUserWithNotifications();
-    const otherUser = createTestUser({ name: "Other User" });
+    const otherUser = createTestUser({ name: 'Other User' });
     const otherCookie = loginAsUser(otherUser);
 
     const res = await app.inject({
-      method: "PATCH",
-      url: `/api/v1/notifications/${notifications[0]!.id}`,
+      method: 'PATCH',
+      url: `/api/v1/notifications/${notifications[0]?.id}`,
       headers: { cookie: otherCookie },
     });
 
@@ -263,7 +263,7 @@ describe("PATCH /api/v1/notifications/:notificationId", () => {
 
 // ── Tests: PATCH read-all ───────────────────────────────────────────────
 
-describe("PATCH /api/v1/my/notifications/read-all", () => {
+describe('PATCH /api/v1/my/notifications/read-all', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -277,12 +277,12 @@ describe("PATCH /api/v1/my/notifications/read-all", () => {
     cleanup();
   });
 
-  it("marks all unread notifications as read", async () => {
+  it('marks all unread notifications as read', async () => {
     const { user, cookie } = setupUserWithNotifications();
 
     const res = await app.inject({
-      method: "PATCH",
-      url: "/api/v1/my/notifications/read-all",
+      method: 'PATCH',
+      url: '/api/v1/my/notifications/read-all',
       headers: { cookie },
     });
 
@@ -291,16 +291,14 @@ describe("PATCH /api/v1/my/notifications/read-all", () => {
     expect(body.data.updated).toBe(2); // n1 and n2 were unread
 
     // Verify all are now read
-    const unread = stores.notifications.filter(
-      (n) => n.userId === user.id && n.readAt === null,
-    );
+    const unread = stores.notifications.filter((n) => n.userId === user.id && n.readAt === null);
     expect(unread).toHaveLength(0);
   });
 });
 
 // ── Tests: DELETE notification ──────────────────────────────────────────
 
-describe("DELETE /api/v1/notifications/:notificationId", () => {
+describe('DELETE /api/v1/notifications/:notificationId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -314,12 +312,12 @@ describe("DELETE /api/v1/notifications/:notificationId", () => {
     cleanup();
   });
 
-  it("deletes a notification and returns 200", async () => {
+  it('deletes a notification and returns 200', async () => {
     const { cookie, notifications } = setupUserWithNotifications();
     const notif = notifications[0]!;
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/notifications/${notif.id}`,
       headers: { cookie },
     });
@@ -333,12 +331,12 @@ describe("DELETE /api/v1/notifications/:notificationId", () => {
     expect(found).toBeUndefined();
   });
 
-  it("returns 404 when notification does not exist", async () => {
+  it('returns 404 when notification does not exist', async () => {
     const { cookie } = setupUserWithNotifications();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/notifications/${fakeId}`,
       headers: { cookie },
     });
@@ -348,12 +346,12 @@ describe("DELETE /api/v1/notifications/:notificationId", () => {
 
   it("cannot delete another user's notification", async () => {
     const { notifications } = setupUserWithNotifications();
-    const otherUser = createTestUser({ name: "Other User" });
+    const otherUser = createTestUser({ name: 'Other User' });
     const otherCookie = loginAsUser(otherUser);
 
     const res = await app.inject({
-      method: "DELETE",
-      url: `/api/v1/notifications/${notifications[0]!.id}`,
+      method: 'DELETE',
+      url: `/api/v1/notifications/${notifications[0]?.id}`,
       headers: { cookie: otherCookie },
     });
 

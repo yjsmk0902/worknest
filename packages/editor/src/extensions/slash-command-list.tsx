@@ -1,28 +1,28 @@
+import type { Editor } from '@tiptap/core';
+import type { Range } from '@tiptap/suggestion';
 import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-  useCallback,
-  type KeyboardEvent,
-} from "react";
-import type { Editor } from "@tiptap/core";
-import type { Range } from "@tiptap/suggestion";
-import {
+  Code2,
   Heading1,
   Heading2,
   Heading3,
-  Pilcrow,
+  Image,
   List,
   ListOrdered,
   ListTodo,
-  Image,
-  Paperclip,
-  Code2,
-  Table,
-  Quote,
   Minus,
-} from "lucide-react";
+  Paperclip,
+  Pilcrow,
+  Quote,
+  Table,
+} from 'lucide-react';
+import {
+  type KeyboardEvent,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 
 /** Props passed to each slash command's `command` callback. */
 interface SlashCommandProps {
@@ -53,94 +53,94 @@ export function getSlashCommandItems(): SlashCommandItem[] {
   return [
     // Text
     {
-      title: "제목 1",
-      description: "큰 섹션 제목",
+      title: '제목 1',
+      description: '큰 섹션 제목',
       icon: <Heading1 size={18} />,
-      keywords: ["heading1", "h1", "title"],
-      category: "텍스트",
+      keywords: ['heading1', 'h1', 'title'],
+      category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode("heading", { level: 1 }).run();
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run();
       },
     },
     {
-      title: "제목 2",
-      description: "중간 섹션 제목",
+      title: '제목 2',
+      description: '중간 섹션 제목',
       icon: <Heading2 size={18} />,
-      keywords: ["heading2", "h2"],
-      category: "텍스트",
+      keywords: ['heading2', 'h2'],
+      category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode("heading", { level: 2 }).run();
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run();
       },
     },
     {
-      title: "제목 3",
-      description: "작은 섹션 제목",
+      title: '제목 3',
+      description: '작은 섹션 제목',
       icon: <Heading3 size={18} />,
-      keywords: ["heading3", "h3"],
-      category: "텍스트",
+      keywords: ['heading3', 'h3'],
+      category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode("heading", { level: 3 }).run();
+        editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run();
       },
     },
     {
-      title: "본문",
-      description: "일반 텍스트",
+      title: '본문',
+      description: '일반 텍스트',
       icon: <Pilcrow size={18} />,
-      keywords: ["paragraph", "text", "plain"],
-      category: "텍스트",
+      keywords: ['paragraph', 'text', 'plain'],
+      category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setParagraph().run();
       },
     },
     // Lists
     {
-      title: "글머리 기호",
-      description: "순서 없는 리스트",
+      title: '글머리 기호',
+      description: '순서 없는 리스트',
       icon: <List size={18} />,
-      keywords: ["bullet", "list", "unordered"],
-      category: "리스트",
+      keywords: ['bullet', 'list', 'unordered'],
+      category: '리스트',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleBulletList().run();
       },
     },
     {
-      title: "번호 매기기",
-      description: "순서 있는 리스트",
+      title: '번호 매기기',
+      description: '순서 있는 리스트',
       icon: <ListOrdered size={18} />,
-      keywords: ["numbered", "ordered", "ol"],
-      category: "리스트",
+      keywords: ['numbered', 'ordered', 'ol'],
+      category: '리스트',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleOrderedList().run();
       },
     },
     {
-      title: "체크리스트",
-      description: "할 일 목록",
+      title: '체크리스트',
+      description: '할 일 목록',
       icon: <ListTodo size={18} />,
-      keywords: ["todo", "checklist", "task"],
-      category: "리스트",
+      keywords: ['todo', 'checklist', 'task'],
+      category: '리스트',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleTaskList().run();
       },
     },
     // Media
     {
-      title: "이미지",
-      description: "이미지 업로드",
+      title: '이미지',
+      description: '이미지 업로드',
       icon: <Image size={18} />,
-      keywords: ["image", "img", "picture", "photo"],
-      category: "미디어",
+      keywords: ['image', 'img', 'picture', 'photo'],
+      category: '미디어',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).run();
         // Trigger file input for image upload
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
         input.onchange = (e) => {
           const file = (e.target as HTMLInputElement).files?.[0];
           if (file) {
             // Dispatch custom event that the image-upload extension can handle
-            const event = new CustomEvent("editor:image-upload", {
+            const event = new CustomEvent('editor:image-upload', {
               detail: { file },
             });
             document.dispatchEvent(event);
@@ -150,19 +150,19 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       },
     },
     {
-      title: "파일 첨부",
-      description: "파일 업로드",
+      title: '파일 첨부',
+      description: '파일 업로드',
       icon: <Paperclip size={18} />,
-      keywords: ["file", "attachment", "upload"],
-      category: "미디어",
+      keywords: ['file', 'attachment', 'upload'],
+      category: '미디어',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).run();
-        const input = document.createElement("input");
-        input.type = "file";
+        const input = document.createElement('input');
+        input.type = 'file';
         input.onchange = (e) => {
           const file = (e.target as HTMLInputElement).files?.[0];
           if (file) {
-            const event = new CustomEvent("editor:file-upload", {
+            const event = new CustomEvent('editor:file-upload', {
               detail: { file },
             });
             document.dispatchEvent(event);
@@ -173,21 +173,21 @@ export function getSlashCommandItems(): SlashCommandItem[] {
     },
     // Advanced
     {
-      title: "코드 블록",
-      description: "구문 강조 코드",
+      title: '코드 블록',
+      description: '구문 강조 코드',
       icon: <Code2 size={18} />,
-      keywords: ["code", "codeblock", "pre"],
-      category: "고급",
+      keywords: ['code', 'codeblock', 'pre'],
+      category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
       },
     },
     {
-      title: "테이블",
-      description: "행/열 테이블",
+      title: '테이블',
+      description: '행/열 테이블',
       icon: <Table size={18} />,
-      keywords: ["table", "grid"],
-      category: "고급",
+      keywords: ['table', 'grid'],
+      category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor
           .chain()
@@ -198,21 +198,21 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       },
     },
     {
-      title: "인용구",
-      description: "인용 텍스트",
+      title: '인용구',
+      description: '인용 텍스트',
       icon: <Quote size={18} />,
-      keywords: ["quote", "blockquote", "cite"],
-      category: "고급",
+      keywords: ['quote', 'blockquote', 'cite'],
+      category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleBlockquote().run();
       },
     },
     {
-      title: "구분선",
-      description: "수평 구분선",
+      title: '구분선',
+      description: '수평 구분선',
       icon: <Minus size={18} />,
-      keywords: ["divider", "hr", "line", "separator"],
-      category: "고급",
+      keywords: ['divider', 'hr', 'line', 'separator'],
+      category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setHorizontalRule().run();
       },
@@ -226,108 +226,101 @@ export function getSlashCommandItems(): SlashCommandItem[] {
  * Shows categorized block types with search filtering
  * and keyboard navigation support.
  */
-export const SlashCommandList = forwardRef<
-  SlashCommandListRef,
-  SlashCommandListProps
->(({ items, command }, ref) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandListProps>(
+  ({ items, command }, ref) => {
+    const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Reset selection when items change
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [items]);
+    // Reset selection when items change
+    useEffect(() => {
+      setSelectedIndex(0);
+    }, [items]);
 
-  const selectItem = useCallback(
-    (index: number) => {
-      const item = items[index];
-      if (item) {
-        command(item);
+    const selectItem = useCallback(
+      (index: number) => {
+        const item = items[index];
+        if (item) {
+          command(item);
+        }
+      },
+      [items, command],
+    );
+
+    useImperativeHandle(ref, () => ({
+      onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+        if (event.key === 'ArrowUp') {
+          setSelectedIndex((prev) => (prev <= 0 ? items.length - 1 : prev - 1));
+          return true;
+        }
+
+        if (event.key === 'ArrowDown') {
+          setSelectedIndex((prev) => (prev >= items.length - 1 ? 0 : prev + 1));
+          return true;
+        }
+
+        if (event.key === 'Enter') {
+          selectItem(selectedIndex);
+          return true;
+        }
+
+        return false;
+      },
+    }));
+
+    if (items.length === 0) {
+      return (
+        <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md p-3 text-sm text-muted-foreground w-[280px]">
+          결과 없음
+        </div>
+      );
+    }
+
+    // Group items by category
+    const grouped: Record<string, SlashCommandItem[]> = {};
+    for (const item of items) {
+      if (!grouped[item.category]) {
+        grouped[item.category] = [];
       }
-    },
-    [items, command],
-  );
+      grouped[item.category].push(item);
+    }
 
-  useImperativeHandle(ref, () => ({
-    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (event.key === "ArrowUp") {
-        setSelectedIndex((prev) =>
-          prev <= 0 ? items.length - 1 : prev - 1,
-        );
-        return true;
-      }
+    let flatIndex = 0;
 
-      if (event.key === "ArrowDown") {
-        setSelectedIndex((prev) =>
-          prev >= items.length - 1 ? 0 : prev + 1,
-        );
-        return true;
-      }
-
-      if (event.key === "Enter") {
-        selectItem(selectedIndex);
-        return true;
-      }
-
-      return false;
-    },
-  }));
-
-  if (items.length === 0) {
     return (
-      <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md p-3 text-sm text-muted-foreground w-[280px]">
-        결과 없음
+      <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md overflow-hidden w-[280px] max-h-[320px] overflow-y-auto">
+        {Object.entries(grouped).map(([category, categoryItems]) => (
+          <div key={category}>
+            {/* Category header */}
+            <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
+              {category}
+            </div>
+            {/* Items */}
+            {categoryItems.map((item) => {
+              const currentIndex = flatIndex++;
+              return (
+                <button
+                  type="button"
+                  key={item.title}
+                  className={[
+                    'flex items-center gap-3 w-full h-10 px-3 text-left',
+                    'hover:bg-accent transition-colors',
+                    currentIndex === selectedIndex ? 'bg-accent' : '',
+                  ].join(' ')}
+                  onClick={() => selectItem(currentIndex)}
+                  onMouseEnter={() => setSelectedIndex(currentIndex)}
+                >
+                  <div className="w-6 h-6 flex items-center justify-center rounded-md bg-muted text-muted-foreground shrink-0">
+                    {item.icon}
+                  </div>
+                  <span className="text-sm font-medium">{item.title}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{item.description}</span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
     );
-  }
+  },
+);
 
-  // Group items by category
-  const grouped: Record<string, SlashCommandItem[]> = {};
-  for (const item of items) {
-    if (!grouped[item.category]) {
-      grouped[item.category] = [];
-    }
-    grouped[item.category].push(item);
-  }
-
-  let flatIndex = 0;
-
-  return (
-    <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md overflow-hidden w-[280px] max-h-[320px] overflow-y-auto">
-      {Object.entries(grouped).map(([category, categoryItems]) => (
-        <div key={category}>
-          {/* Category header */}
-          <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider bg-muted/30">
-            {category}
-          </div>
-          {/* Items */}
-          {categoryItems.map((item) => {
-            const currentIndex = flatIndex++;
-            return (
-              <button
-                type="button"
-                key={item.title}
-                className={[
-                  "flex items-center gap-3 w-full h-10 px-3 text-left",
-                  "hover:bg-accent transition-colors",
-                  currentIndex === selectedIndex ? "bg-accent" : "",
-                ].join(" ")}
-                onClick={() => selectItem(currentIndex)}
-                onMouseEnter={() => setSelectedIndex(currentIndex)}
-              >
-                <div className="w-6 h-6 flex items-center justify-center rounded-md bg-muted text-muted-foreground shrink-0">
-                  {item.icon}
-                </div>
-                <span className="text-sm font-medium">{item.title}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {item.description}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-});
-
-SlashCommandList.displayName = "SlashCommandList";
+SlashCommandList.displayName = 'SlashCommandList';

@@ -24,10 +24,7 @@ export function ErrorPage({
   secondaryAction,
 }: ErrorPageProps) {
   return (
-    <div
-      role="alert"
-      className="flex items-center justify-center min-h-screen bg-background"
-    >
+    <div role="alert" className="flex items-center justify-center min-h-screen bg-background">
       <div className="flex flex-col items-center text-center max-w-md px-6 py-20 relative">
         {/* Background error code */}
         <span
@@ -38,20 +35,13 @@ export function ErrorPage({
         </span>
 
         {/* Icon */}
-        <Icon
-          className="w-16 h-16 text-muted-foreground/50 relative z-10"
-          aria-hidden="true"
-        />
+        <Icon className="w-16 h-16 text-muted-foreground/50 relative z-10" aria-hidden="true" />
 
         {/* Title */}
-        <h1 className="text-2xl font-semibold text-foreground mt-4">
-          {title}
-        </h1>
+        <h1 className="text-2xl font-semibold text-foreground mt-4">{title}</h1>
 
         {/* Description */}
-        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          {description}
-        </p>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
 
         {/* Buttons */}
         <div className="flex items-center gap-3 mt-8">

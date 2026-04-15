@@ -1,3 +1,4 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Search route integration tests.
  *
@@ -8,27 +9,25 @@
  * in-memory mock DB, so the FTS path is effectively treated as "match all".
  * ILIKE-based search on titles and project names works correctly in the mock.
  */
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  addWikiSpaceMember,
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
+  createTestIssue,
   createTestOrg,
   createTestProject,
-  createTestIssue,
-  createTestWikiSpace,
+  createTestUser,
   createTestWikiPage,
-  addProjectMember,
-  addWikiSpaceMember,
+  createTestWikiSpace,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
-} from "./setup";
+} from './setup';
 
 // ── Build a test app with search routes ─────────────────────────────────
 
 async function buildSearchApp() {
-  const { searchRoutes } = await import("../src/routes/search");
+  const { searchRoutes } = await import('../src/routes/search');
 
   const { app, auth, db } = await buildTestApp(
     async (app, { auth, db }) => {
@@ -43,12 +42,12 @@ async function buildSearchApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupSearchContext() {
-  const user = createTestUser({ name: "Search User" });
+  const user = createTestUser({ name: 'Search User' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const project = createTestProject(ws.id, user.id, {
-    name: "Search Project",
-    prefix: "SP",
+    name: 'Search Project',
+    prefix: 'SP',
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
@@ -56,7 +55,7 @@ function setupSearchContext() {
 
 // ── Tests ───────────────────────────────────────────────────────────────
 
-describe("GET /api/v1/workspaces/:workspaceId/search", () => {
+describe('GET /api/v1/workspaces/:workspaceId/search', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -70,13 +69,13 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     cleanup();
   });
 
-  it("returns matching issues by title", async () => {
+  it('returns matching issues by title', async () => {
     const { user, ws, project, cookie } = setupSearchContext();
-    createTestIssue(project.id, user.id, { title: "Fix login bug" });
-    createTestIssue(project.id, user.id, { title: "Add signup flow" });
+    createTestIssue(project.id, user.id, { title: 'Fix login bug' });
+    createTestIssue(project.id, user.id, { title: 'Add signup flow' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=login`,
       headers: { cookie },
     });
@@ -92,16 +91,16 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     expect(body.data.categories.projects).toBeDefined();
   });
 
-  it("returns results grouped by category", async () => {
+  it('returns results grouped by category', async () => {
     const { user, ws, project, cookie } = setupSearchContext();
-    createTestIssue(project.id, user.id, { title: "Test issue" });
+    createTestIssue(project.id, user.id, { title: 'Test issue' });
 
     const space = createTestWikiSpace(ws.id);
     addWikiSpaceMember(space.id, user.id);
-    createTestWikiPage(space.id, { title: "Test page" });
+    createTestWikiPage(space.id, { title: 'Test page' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=Test`,
       headers: { cookie },
     });
@@ -114,11 +113,11 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     expect(body.data.results.length).toBeGreaterThan(0);
   });
 
-  it("returns empty results for non-matching query", async () => {
+  it('returns empty results for non-matching query', async () => {
     const { ws, cookie } = setupSearchContext();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=zzzznonexistent`,
       headers: { cookie },
     });
@@ -130,21 +129,21 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     expect(body.data.categories.projects).toHaveLength(0);
   });
 
-  it("isolates results to the requested workspace", async () => {
+  it('isolates results to the requested workspace', async () => {
     const { user, org, ws, project, cookie } = setupSearchContext();
-    createTestIssue(project.id, user.id, { title: "WS1 issue" });
+    createTestIssue(project.id, user.id, { title: 'WS1 issue' });
 
     // Create another workspace with a different project
-    const ws2 = createTestWorkspace(org.id, user.id, { name: "Other WS" });
+    const ws2 = createTestWorkspace(org.id, user.id, { name: 'Other WS' });
     const project2 = createTestProject(ws2.id, user.id, {
-      name: "Other Project",
-      prefix: "OP",
+      name: 'Other Project',
+      prefix: 'OP',
     });
-    createTestIssue(project2.id, user.id, { title: "WS2 issue" });
+    createTestIssue(project2.id, user.id, { title: 'WS2 issue' });
 
     // Search in ws1 only
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=issue&type=project`,
       headers: { cookie },
     });
@@ -154,15 +153,15 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     // Only projects from ws1 should match
     const projectResults = body.data.categories.projects;
     for (const p of projectResults) {
-      expect(p.title).not.toBe("Other Project");
+      expect(p.title).not.toBe('Other Project');
     }
   });
 
-  it("returns 400 when query is empty", async () => {
+  it('returns 400 when query is empty', async () => {
     const { ws, cookie } = setupSearchContext();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=`,
       headers: { cookie },
     });
@@ -170,23 +169,23 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("returns 401 when not authenticated", async () => {
+  it('returns 401 when not authenticated', async () => {
     const { ws } = setupSearchContext();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=test`,
     });
 
     expect(res.statusCode).toBe(401);
   });
 
-  it("searches projects by name using ILIKE", async () => {
+  it('searches projects by name using ILIKE', async () => {
     const { ws, cookie } = setupSearchContext();
     // The "Search Project" already exists from setup
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=Search&type=project`,
       headers: { cookie },
     });
@@ -194,19 +193,19 @@ describe("GET /api/v1/workspaces/:workspaceId/search", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data.categories.projects.length).toBeGreaterThanOrEqual(1);
-    expect(body.data.categories.projects[0].title).toBe("Search Project");
+    expect(body.data.categories.projects[0].title).toBe('Search Project');
   });
 
-  it("issue key direct lookup returns matching issue", async () => {
+  it('issue key direct lookup returns matching issue', async () => {
     const { user, ws, project, cookie } = setupSearchContext();
     const issue = createTestIssue(project.id, user.id, {
-      title: "Direct lookup issue",
+      title: 'Direct lookup issue',
     });
 
     const key = `${project.prefix}-${issue.sequenceId}`;
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/search?q=${key}`,
       headers: { cookie },
     });

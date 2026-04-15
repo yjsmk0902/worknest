@@ -934,13 +934,15 @@ export class IssueService {
       this.getAssigneeIds(issueId)
         .then((assigneeIds) => {
           if (assigneeIds.length > 0) {
-            this.notificationService!.dispatchNotification({
-              type: 'status_changed',
-              actorId: callerUserId,
-              recipientIds: assigneeIds,
-              issueId,
-              message: `이슈 #${existing.sequenceId}의 상태가 변경되었습니다`,
-            }).catch((err) => console.error('Failed to dispatch status_changed notification', err));
+            this.notificationService
+              ?.dispatchNotification({
+                type: 'status_changed',
+                actorId: callerUserId,
+                recipientIds: assigneeIds,
+                issueId,
+                message: `이슈 #${existing.sequenceId}의 상태가 변경되었습니다`,
+              })
+              .catch((err) => console.error('Failed to dispatch status_changed notification', err));
           }
         })
         .catch((err) =>

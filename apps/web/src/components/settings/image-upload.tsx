@@ -1,15 +1,9 @@
-import { useCallback, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Avatar, Button } from '@worknest/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@worknest/ui';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@worknest/ui';
 import { toast } from '@worknest/ui';
+import { Loader2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 
 interface ImageUploadProps {
   currentUrl: string | null;
@@ -43,7 +37,9 @@ async function deleteOldFile(url: string): Promise<void> {
   if (!fileId) return;
   try {
     await fetch(`/api/v1/files/${fileId}`, { method: 'DELETE', credentials: 'include' });
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
 }
 
 function cropImage(
@@ -182,12 +178,7 @@ function ImageCropper({
 
 // ── Main Component ───────────────────────────────────────────────────
 
-export function ImageUpload({
-  currentUrl,
-  fallback,
-  onUpdate,
-  shape = 'logo',
-}: ImageUploadProps) {
+export function ImageUpload({ currentUrl, fallback, onUpdate, shape = 'logo' }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0, zoom: 1 });
@@ -296,7 +287,9 @@ export function ImageUpload({
 
       <Dialog
         open={!!previewUrl}
-        onOpenChange={(open) => { if (!open && !isUploading) closePreview(); }}
+        onOpenChange={(open) => {
+          if (!open && !isUploading) closePreview();
+        }}
       >
         <DialogContent className="max-w-[360px]">
           <DialogHeader>

@@ -1,12 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Label ──────────────────────────────────────────────────────────────
 
 export const createLabelInput = z.object({
   name: z.string().min(1).max(50),
-  color: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex color (e.g. #ff0000)"),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color must be a valid hex color (e.g. #ff0000)'),
   description: z.string().max(200).nullable().optional(),
 });
 
@@ -16,7 +14,7 @@ export const updateLabelInput = z.object({
   name: z.string().min(1).max(50).optional(),
   color: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex color (e.g. #ff0000)")
+    .regex(/^#[0-9a-fA-F]{6}$/, 'Color must be a valid hex color (e.g. #ff0000)')
     .optional(),
   description: z.string().max(200).nullable().optional(),
 });

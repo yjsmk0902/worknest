@@ -1,24 +1,13 @@
-import { useState } from 'react';
+import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
+import { useProjectContext } from '@/contexts/project-context';
+import { apiClient } from '@/lib/api-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  MoreHorizontal,
-  Loader2,
-  Tag,
-  Plus,
-  AlertTriangle,
-} from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label as FormLabel } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@worknest/ui';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@worknest/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,13 +16,10 @@ import {
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
-import { useProjectContext } from '@/contexts/project-context';
+import { AlertTriangle, Loader2, MoreHorizontal, Plus, Tag } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels')({
   component: ProjectSettingsLabels,
 });
 
@@ -76,13 +62,11 @@ function ProjectSettingsLabels() {
 
   const labelsQuery = useQuery<LabelData[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelData[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelData[]>(`/projects/${projectId}/labels`),
   });
 
   const deleteLabelMutation = useMutation({
-    mutationFn: (labelId: string) =>
-      apiClient.delete(`/projects/${projectId}/labels/${labelId}`),
+    mutationFn: (labelId: string) => apiClient.delete(`/projects/${projectId}/labels/${labelId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'labels'],
@@ -110,9 +94,7 @@ function ProjectSettingsLabels() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">라벨</h2>
-            <p className="text-sm text-muted-foreground">
-              프로젝트의 이슈 라벨을 관리합니다.
-            </p>
+            <p className="text-sm text-muted-foreground">프로젝트의 이슈 라벨을 관리합니다.</p>
           </div>
           <Button size="sm" onClick={() => setCreateModalOpen(true)}>
             <Plus className="h-4 w-4" />
@@ -138,9 +120,7 @@ function ProjectSettingsLabels() {
         {/* Error */}
         {labelsQuery.isError && (
           <div className="rounded-md border border-destructive/20 bg-destructive/5 p-8 text-center">
-            <p className="text-sm text-destructive">
-              라벨 목록을 불러올 수 없습니다.
-            </p>
+            <p className="text-sm text-destructive">라벨 목록을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -156,17 +136,9 @@ function ProjectSettingsLabels() {
         {labelsQuery.isSuccess && labels.length === 0 && (
           <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
             <Tag className="mx-auto h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-base font-medium text-foreground">
-              라벨이 없습니다
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              이슈를 분류할 라벨을 만들어보세요
-            </p>
-            <Button
-              size="sm"
-              className="mt-4"
-              onClick={() => setCreateModalOpen(true)}
-            >
+            <p className="mt-4 text-base font-medium text-foreground">라벨이 없습니다</p>
+            <p className="mt-1 text-sm text-muted-foreground">이슈를 분류할 라벨을 만들어보세요</p>
+            <Button size="sm" className="mt-4" onClick={() => setCreateModalOpen(true)}>
               <Plus className="h-4 w-4" />
               라벨 추가
             </Button>
@@ -196,18 +168,12 @@ function ProjectSettingsLabels() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="작업 메뉴"
-                    >
+                    <Button variant="ghost" size="icon" aria-label="작업 메뉴">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditLabel(label)}>
-                      수정
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setEditLabel(label)}>수정</DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={() => setDeleteLabel(label)}
@@ -352,11 +318,7 @@ function LabelFormModal({
       name?: string;
       color?: string;
       description?: string | null;
-    }) =>
-      apiClient.patch(
-        `/projects/${projectId}/labels/${label?.id}`,
-        data,
-      ),
+    }) => apiClient.patch(`/projects/${projectId}/labels/${label?.id}`, data),
     onSuccess: () => {
       toast('라벨이 수정되었습니다.');
       onSuccess();
@@ -462,10 +424,7 @@ function LabelFormModal({
             >
               취소
             </Button>
-            <Button
-              type="submit"
-              disabled={!name.trim() || isLoading}
-            >
+            <Button type="submit" disabled={!name.trim() || isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />

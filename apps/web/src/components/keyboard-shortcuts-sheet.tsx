@@ -1,15 +1,7 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@worknest/ui';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@worknest/ui';
 
 // Platform detection
-const isMac =
-  typeof navigator !== 'undefined' &&
-  /mac/i.test(navigator.platform);
+const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
 
 const modSymbol = isMac ? '\u2318' : 'Ctrl';
 
@@ -71,10 +63,7 @@ function KeyBadge({ children }: { children: string }) {
 
 function ShortcutRow({ shortcut }: { shortcut: ShortcutEntry }) {
   return (
-    <div
-      className="flex h-9 items-center justify-between"
-      role="listitem"
-    >
+    <div className="flex h-9 items-center justify-between" role="listitem">
       <span className="text-sm text-muted-foreground">{shortcut.label}</span>
       <div className="flex items-center gap-1">
         {shortcut.keys.map((key) => (
@@ -98,10 +87,7 @@ interface KeyboardShortcutsSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function KeyboardShortcutsSheet({
-  open,
-  onOpenChange,
-}: KeyboardShortcutsSheetProps) {
+export function KeyboardShortcutsSheet({ open, onOpenChange }: KeyboardShortcutsSheetProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -124,9 +110,7 @@ export function KeyboardShortcutsSheet({
             aria-label={category.title}
             className={idx > 0 ? 'mt-6' : 'mt-2'}
           >
-            <h3 className="mb-2 text-sm font-semibold text-foreground">
-              {category.title}
-            </h3>
+            <h3 className="mb-2 text-sm font-semibold text-foreground">{category.title}</h3>
             <div role="list">
               {category.shortcuts.map((shortcut) => (
                 <ShortcutRow key={shortcut.label} shortcut={shortcut} />

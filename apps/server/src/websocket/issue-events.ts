@@ -1,14 +1,11 @@
-import { broadcast } from "./handler";
+import { broadcast } from './handler';
 
 /**
  * Broadcast that a new issue was created in a project.
  */
-export function broadcastIssueCreated(
-  projectId: string,
-  issue: unknown,
-): void {
+export function broadcastIssueCreated(projectId: string, issue: unknown): void {
   broadcast(`project:${projectId}`, {
-    type: "issue.created",
+    type: 'issue.created',
     payload: issue,
     timestamp: new Date().toISOString(),
   });
@@ -17,12 +14,9 @@ export function broadcastIssueCreated(
 /**
  * Broadcast that an issue was updated in a project.
  */
-export function broadcastIssueUpdated(
-  projectId: string,
-  issue: unknown,
-): void {
+export function broadcastIssueUpdated(projectId: string, issue: unknown): void {
   broadcast(`project:${projectId}`, {
-    type: "issue.updated",
+    type: 'issue.updated',
     payload: issue,
     timestamp: new Date().toISOString(),
   });
@@ -31,12 +25,9 @@ export function broadcastIssueUpdated(
 /**
  * Broadcast that an issue was deleted from a project.
  */
-export function broadcastIssueDeleted(
-  projectId: string,
-  issueId: string,
-): void {
+export function broadcastIssueDeleted(projectId: string, issueId: string): void {
   broadcast(`project:${projectId}`, {
-    type: "issue.deleted",
+    type: 'issue.deleted',
     payload: { id: issueId },
     timestamp: new Date().toISOString(),
   });
@@ -50,7 +41,7 @@ export function broadcastIssueBulkUpdated(
   data: { actorId: string; issueIds: string[]; changes: Record<string, unknown> },
 ): void {
   broadcast(`project:${projectId}`, {
-    type: "issue.bulk_updated",
+    type: 'issue.bulk_updated',
     payload: data,
     timestamp: new Date().toISOString(),
   });

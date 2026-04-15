@@ -1,3 +1,4 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Wiki route integration tests.
  *
@@ -5,36 +6,35 @@
  * Fastify routes, real service code, and an in-memory mock database.
  * No service methods are mocked -- business logic is actually executed.
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  cleanup,
-  createTestUser,
-  createTestWorkspace,
-  createTestOrg,
-  createTestWikiSpace,
-  createTestWikiPage,
   addWikiSpaceMember,
-  loginAsUser,
   buildTestApp,
+  cleanup,
+  createTestOrg,
+  createTestUser,
+  createTestWikiPage,
+  createTestWikiSpace,
+  createTestWorkspace,
+  loginAsUser,
   stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock modules that wiki page service depends on ──────────────────────
 
-vi.mock("../src/lib/sanitize", () => ({
+vi.mock('../src/lib/sanitize', () => ({
   sanitizeContent: vi.fn((content: unknown) => content),
 }));
 
-vi.mock("../src/lib/extract-text", () => ({
-  extractPlainText: vi.fn((_content: unknown) => "extracted text"),
+vi.mock('../src/lib/extract-text', () => ({
+  extractPlainText: vi.fn((_content: unknown) => 'extracted text'),
 }));
 
 // ── Build a test app with wiki routes ───────────────────────────────────
 
 async function buildWikiApp() {
-  const { wikiSpaceRoutes } = await import("../src/routes/wiki-spaces");
-  const { wikiPageRoutes } = await import("../src/routes/wiki-pages");
+  const { wikiSpaceRoutes } = await import('../src/routes/wiki-spaces');
+  const { wikiPageRoutes } = await import('../src/routes/wiki-pages');
 
   const { app, auth, db } = await buildTestApp(
     async (app, { auth, db }) => {
@@ -50,7 +50,7 @@ async function buildWikiApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupWorkspaceWithUser() {
-  const user = createTestUser({ name: "Wiki Admin" });
+  const user = createTestUser({ name: 'Wiki Admin' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const cookie = loginAsUser(user);
@@ -59,7 +59,7 @@ function setupWorkspaceWithUser() {
 
 // ── Tests: WikiSpace CRUD ───────────────────────────────────────────────
 
-describe("POST /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
+describe('POST /api/v1/workspaces/:workspaceId/wiki-spaces', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -73,20 +73,20 @@ describe("POST /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
     cleanup();
   });
 
-  it("creates a wiki space and returns 201 with creator as editor", async () => {
+  it('creates a wiki space and returns 201 with creator as editor', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
       headers: { cookie },
-      payload: { name: "Engineering Wiki", slug: "engineering" },
+      payload: { name: 'Engineering Wiki', slug: 'engineering' },
     });
 
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
-    expect(body.data.name).toBe("Engineering Wiki");
-    expect(body.data.slug).toBe("engineering");
+    expect(body.data.name).toBe('Engineering Wiki');
+    expect(body.data.slug).toBe('engineering');
     expect(body.data.workspaceId).toBe(ws.id);
     expect(body.data.createdBy).toBe(user.id);
     expect(body.data.createdAt).toBeDefined();
@@ -96,50 +96,50 @@ describe("POST /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
       (m) => m.wikiSpaceId === body.data.id && m.userId === user.id,
     );
     expect(membership).toBeDefined();
-    expect(membership!.role).toBe("editor");
+    expect(membership?.role).toBe('editor');
   });
 
-  it("returns 409 when slug already exists in workspace", async () => {
+  it('returns 409 when slug already exists in workspace', async () => {
     const { ws, cookie } = setupWorkspaceWithUser();
-    createTestWikiSpace(ws.id, { slug: "engineering" });
+    createTestWikiSpace(ws.id, { slug: 'engineering' });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
       headers: { cookie },
-      payload: { name: "Another Wiki", slug: "engineering" },
+      payload: { name: 'Another Wiki', slug: 'engineering' },
     });
 
     expect(res.statusCode).toBe(409);
   });
 
-  it("returns 400 when name is missing", async () => {
+  it('returns 400 when name is missing', async () => {
     const { ws, cookie } = setupWorkspaceWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
       headers: { cookie },
-      payload: { slug: "no-name" },
+      payload: { slug: 'no-name' },
     });
 
     expect(res.statusCode).toBe(400);
   });
 
-  it("returns 401 when not authenticated", async () => {
+  it('returns 401 when not authenticated', async () => {
     const { ws } = setupWorkspaceWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
-      payload: { name: "No Auth", slug: "no-auth" },
+      payload: { name: 'No Auth', slug: 'no-auth' },
     });
 
     expect(res.statusCode).toBe(401);
   });
 });
 
-describe("GET /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
+describe('GET /api/v1/workspaces/:workspaceId/wiki-spaces', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -153,15 +153,15 @@ describe("GET /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
     cleanup();
   });
 
-  it("returns wiki spaces where user is a member", async () => {
+  it('returns wiki spaces where user is a member', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space1 = createTestWikiSpace(ws.id, { name: "Space 1" });
-    const space2 = createTestWikiSpace(ws.id, { name: "Space 2" });
-    addWikiSpaceMember(space1.id, user.id, "editor");
-    addWikiSpaceMember(space2.id, user.id, "viewer");
+    const space1 = createTestWikiSpace(ws.id, { name: 'Space 1' });
+    const space2 = createTestWikiSpace(ws.id, { name: 'Space 2' });
+    addWikiSpaceMember(space1.id, user.id, 'editor');
+    addWikiSpaceMember(space2.id, user.id, 'viewer');
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
       headers: { cookie },
     });
@@ -172,12 +172,12 @@ describe("GET /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
     expect(body.pagination.has_more).toBe(false);
   });
 
-  it("returns empty list when user is not a member of any space", async () => {
+  it('returns empty list when user is not a member of any space', async () => {
     const { ws, cookie } = setupWorkspaceWithUser();
-    createTestWikiSpace(ws.id, { name: "Not a member" });
+    createTestWikiSpace(ws.id, { name: 'Not a member' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/wiki-spaces`,
       headers: { cookie },
     });
@@ -188,7 +188,7 @@ describe("GET /api/v1/workspaces/:workspaceId/wiki-spaces", () => {
   });
 });
 
-describe("GET /api/v1/wiki-spaces/:spaceId", () => {
+describe('GET /api/v1/wiki-spaces/:spaceId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -202,13 +202,13 @@ describe("GET /api/v1/wiki-spaces/:spaceId", () => {
     cleanup();
   });
 
-  it("returns a wiki space by ID", async () => {
+  it('returns a wiki space by ID', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Get Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Get Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie },
     });
@@ -216,15 +216,15 @@ describe("GET /api/v1/wiki-spaces/:spaceId", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data.id).toBe(space.id);
-    expect(body.data.name).toBe("Get Space");
+    expect(body.data.name).toBe('Get Space');
   });
 
-  it("returns 404 for non-existent space", async () => {
+  it('returns 404 for non-existent space', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${fakeId}`,
       headers: { cookie },
     });
@@ -232,14 +232,14 @@ describe("GET /api/v1/wiki-spaces/:spaceId", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when non-member tries to access", async () => {
+  it('returns 403 when non-member tries to access', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Private Space" });
-    const outsider = createTestUser({ name: "Outsider" });
+    const space = createTestWikiSpace(ws.id, { name: 'Private Space' });
+    const outsider = createTestUser({ name: 'Outsider' });
     const outsiderCookie = loginAsUser(outsider);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie: outsiderCookie },
     });
@@ -248,7 +248,7 @@ describe("GET /api/v1/wiki-spaces/:spaceId", () => {
   });
 });
 
-describe("PATCH /api/v1/wiki-spaces/:spaceId", () => {
+describe('PATCH /api/v1/wiki-spaces/:spaceId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -262,93 +262,93 @@ describe("PATCH /api/v1/wiki-spaces/:spaceId", () => {
     cleanup();
   });
 
-  it("updates wiki space name", async () => {
+  it('updates wiki space name', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Old Name" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Old Name' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie },
-      payload: { name: "New Name" },
+      payload: { name: 'New Name' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.name).toBe("New Name");
+    expect(body.data.name).toBe('New Name');
   });
 
-  it("updates wiki space description", async () => {
+  it('updates wiki space description', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Desc Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Desc Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie },
-      payload: { description: "Updated description" },
+      payload: { description: 'Updated description' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.description).toBe("Updated description");
+    expect(body.data.description).toBe('Updated description');
   });
 
-  it("updates wiki space slug", async () => {
+  it('updates wiki space slug', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
     const space = createTestWikiSpace(ws.id, {
-      name: "Slug Space",
-      slug: "old-slug",
+      name: 'Slug Space',
+      slug: 'old-slug',
     });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie },
-      payload: { slug: "new-slug" },
+      payload: { slug: 'new-slug' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.slug).toBe("new-slug");
+    expect(body.data.slug).toBe('new-slug');
   });
 
-  it("returns 403 when viewer tries to update", async () => {
+  it('returns 403 when viewer tries to update', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "View Only" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'View Only' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie: viewerCookie },
-      payload: { name: "Hacked" },
+      payload: { name: 'Hacked' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 
-  it("returns 404 when space does not exist", async () => {
+  it('returns 404 when space does not exist', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${fakeId}`,
       headers: { cookie },
-      payload: { name: "Nope" },
+      payload: { name: 'Nope' },
     });
 
     expect(res.statusCode).toBe(404);
   });
 });
 
-describe("DELETE /api/v1/wiki-spaces/:spaceId", () => {
+describe('DELETE /api/v1/wiki-spaces/:spaceId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -362,13 +362,13 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId", () => {
     cleanup();
   });
 
-  it("deletes a wiki space and returns 204", async () => {
+  it('deletes a wiki space and returns 204', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "To Delete" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'To Delete' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie },
     });
@@ -379,12 +379,12 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId", () => {
     expect(found).toBeUndefined();
   });
 
-  it("returns 404 when space does not exist", async () => {
+  it('returns 404 when space does not exist', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-spaces/${fakeId}`,
       headers: { cookie },
     });
@@ -392,15 +392,15 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when viewer tries to delete", async () => {
+  it('returns 403 when viewer tries to delete', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Delete" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Delete' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-spaces/${space.id}`,
       headers: { cookie: viewerCookie },
     });
@@ -411,7 +411,7 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId", () => {
 
 // ── Tests: WikiSpace Members ────────────────────────────────────────────
 
-describe("GET /api/v1/wiki-spaces/:spaceId/members", () => {
+describe('GET /api/v1/wiki-spaces/:spaceId/members', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -425,15 +425,15 @@ describe("GET /api/v1/wiki-spaces/:spaceId/members", () => {
     cleanup();
   });
 
-  it("lists members of a wiki space", async () => {
+  it('lists members of a wiki space', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Members Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const otherUser = createTestUser({ name: "Other" });
-    addWikiSpaceMember(space.id, otherUser.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Members Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const otherUser = createTestUser({ name: 'Other' });
+    addWikiSpaceMember(space.id, otherUser.id, 'viewer');
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${space.id}/members`,
       headers: { cookie },
     });
@@ -445,7 +445,7 @@ describe("GET /api/v1/wiki-spaces/:spaceId/members", () => {
   });
 });
 
-describe("POST /api/v1/wiki-spaces/:spaceId/members", () => {
+describe('POST /api/v1/wiki-spaces/:spaceId/members', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -459,62 +459,62 @@ describe("POST /api/v1/wiki-spaces/:spaceId/members", () => {
     cleanup();
   });
 
-  it("adds a member to a wiki space", async () => {
+  it('adds a member to a wiki space', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Add Member" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const newUser = createTestUser({ name: "New Member" });
+    const space = createTestWikiSpace(ws.id, { name: 'Add Member' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const newUser = createTestUser({ name: 'New Member' });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/members`,
       headers: { cookie },
-      payload: { userId: newUser.id, role: "viewer" },
+      payload: { userId: newUser.id, role: 'viewer' },
     });
 
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
     expect(body.data.userId).toBe(newUser.id);
-    expect(body.data.role).toBe("viewer");
+    expect(body.data.role).toBe('viewer');
   });
 
-  it("returns 409 when user is already a member", async () => {
+  it('returns 409 when user is already a member', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Dup Member" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const existing = createTestUser({ name: "Existing" });
-    addWikiSpaceMember(space.id, existing.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Dup Member' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const existing = createTestUser({ name: 'Existing' });
+    addWikiSpaceMember(space.id, existing.id, 'viewer');
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/members`,
       headers: { cookie },
-      payload: { userId: existing.id, role: "editor" },
+      payload: { userId: existing.id, role: 'editor' },
     });
 
     expect(res.statusCode).toBe(409);
   });
 
-  it("returns 403 when viewer tries to add member", async () => {
+  it('returns 403 when viewer tries to add member', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Add" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Add' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
-    const newUser = createTestUser({ name: "New" });
+    const newUser = createTestUser({ name: 'New' });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/members`,
       headers: { cookie: viewerCookie },
-      payload: { userId: newUser.id, role: "viewer" },
+      payload: { userId: newUser.id, role: 'viewer' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 });
 
-describe("PATCH /api/v1/wiki-spaces/:spaceId/members/:memberId", () => {
+describe('PATCH /api/v1/wiki-spaces/:spaceId/members/:memberId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -530,44 +530,44 @@ describe("PATCH /api/v1/wiki-spaces/:spaceId/members/:memberId", () => {
 
   it("updates a member's role", async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Role Update" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const member = createTestUser({ name: "Member" });
-    const membership = addWikiSpaceMember(space.id, member.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Role Update' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const member = createTestUser({ name: 'Member' });
+    const membership = addWikiSpaceMember(space.id, member.id, 'viewer');
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}/members/${membership.id}`,
       headers: { cookie },
-      payload: { role: "editor" },
+      payload: { role: 'editor' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.role).toBe("editor");
+    expect(body.data.role).toBe('editor');
   });
 
-  it("returns 403 when viewer tries to update role", async () => {
+  it('returns 403 when viewer tries to update role', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Update" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Update' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
-    const otherUser = createTestUser({ name: "Other" });
-    const membership = addWikiSpaceMember(space.id, otherUser.id, "viewer");
+    const otherUser = createTestUser({ name: 'Other' });
+    const membership = addWikiSpaceMember(space.id, otherUser.id, 'viewer');
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-spaces/${space.id}/members/${membership.id}`,
       headers: { cookie: viewerCookie },
-      payload: { role: "editor" },
+      payload: { role: 'editor' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 });
 
-describe("DELETE /api/v1/wiki-spaces/:spaceId/members/:memberId", () => {
+describe('DELETE /api/v1/wiki-spaces/:spaceId/members/:memberId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -581,38 +581,36 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId/members/:memberId", () => {
     cleanup();
   });
 
-  it("removes a member from a wiki space", async () => {
+  it('removes a member from a wiki space', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Remove Member" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const member = createTestUser({ name: "To Remove" });
-    const membership = addWikiSpaceMember(space.id, member.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Remove Member' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const member = createTestUser({ name: 'To Remove' });
+    const membership = addWikiSpaceMember(space.id, member.id, 'viewer');
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-spaces/${space.id}/members/${membership.id}`,
       headers: { cookie },
     });
 
     expect(res.statusCode).toBe(204);
 
-    const found = stores.wikiSpaceMembers.find(
-      (m) => m.id === membership.id,
-    );
+    const found = stores.wikiSpaceMembers.find((m) => m.id === membership.id);
     expect(found).toBeUndefined();
   });
 
-  it("returns 403 when viewer tries to remove member", async () => {
+  it('returns 403 when viewer tries to remove member', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Remove" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Remove' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
-    const otherUser = createTestUser({ name: "Other" });
-    const membership = addWikiSpaceMember(space.id, otherUser.id, "viewer");
+    const otherUser = createTestUser({ name: 'Other' });
+    const membership = addWikiSpaceMember(space.id, otherUser.id, 'viewer');
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-spaces/${space.id}/members/${membership.id}`,
       headers: { cookie: viewerCookie },
     });
@@ -623,7 +621,7 @@ describe("DELETE /api/v1/wiki-spaces/:spaceId/members/:memberId", () => {
 
 // ── Tests: WikiPage CRUD ────────────────────────────────────────────────
 
-describe("POST /api/v1/wiki-spaces/:spaceId/pages", () => {
+describe('POST /api/v1/wiki-spaces/:spaceId/pages', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -637,43 +635,43 @@ describe("POST /api/v1/wiki-spaces/:spaceId/pages", () => {
     cleanup();
   });
 
-  it("creates a wiki page and returns 201", async () => {
+  it('creates a wiki page and returns 201', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Page Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Page Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie },
-      payload: { title: "Getting Started", slug: "getting-started" },
+      payload: { title: 'Getting Started', slug: 'getting-started' },
     });
 
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
-    expect(body.data.title).toBe("Getting Started");
-    expect(body.data.slug).toBe("getting-started");
+    expect(body.data.title).toBe('Getting Started');
+    expect(body.data.slug).toBe('getting-started');
     expect(body.data.wikiSpaceId).toBe(space.id);
     expect(body.data.parentId).toBeNull();
-    expect(body.data.contentFormat).toBe("json");
+    expect(body.data.contentFormat).toBe('json');
   });
 
-  it("creates a page with parentId", async () => {
+  it('creates a page with parentId', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Parent Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Parent Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
     const parent = createTestWikiPage(space.id, {
-      title: "Parent Page",
+      title: 'Parent Page',
       createdBy: user.id,
     });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie },
       payload: {
-        title: "Child Page",
-        slug: "child-page",
+        title: 'Child Page',
+        slug: 'child-page',
         parentId: parent.id,
       },
     });
@@ -683,40 +681,40 @@ describe("POST /api/v1/wiki-spaces/:spaceId/pages", () => {
     expect(body.data.parentId).toBe(parent.id);
   });
 
-  it("returns 403 when viewer tries to create", async () => {
+  it('returns 403 when viewer tries to create', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Create" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Create' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie: viewerCookie },
-      payload: { title: "No Access", slug: "no-access" },
+      payload: { title: 'No Access', slug: 'no-access' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 
-  it("returns 400 when title is missing", async () => {
+  it('returns 400 when title is missing', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Missing Title" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Missing Title' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie },
-      payload: { slug: "no-title" },
+      payload: { slug: 'no-title' },
     });
 
     expect(res.statusCode).toBe(400);
   });
 });
 
-describe("GET /api/v1/wiki-spaces/:spaceId/pages", () => {
+describe('GET /api/v1/wiki-spaces/:spaceId/pages', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -730,15 +728,15 @@ describe("GET /api/v1/wiki-spaces/:spaceId/pages", () => {
     cleanup();
   });
 
-  it("returns all pages in a wiki space", async () => {
+  it('returns all pages in a wiki space', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "List Pages" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    createTestWikiPage(space.id, { title: "Page 1" });
-    createTestWikiPage(space.id, { title: "Page 2" });
+    const space = createTestWikiSpace(ws.id, { name: 'List Pages' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    createTestWikiPage(space.id, { title: 'Page 1' });
+    createTestWikiPage(space.id, { title: 'Page 2' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie },
     });
@@ -749,18 +747,18 @@ describe("GET /api/v1/wiki-spaces/:spaceId/pages", () => {
     expect(body.pagination.has_more).toBe(false);
   });
 
-  it("excludes soft-deleted pages", async () => {
+  it('excludes soft-deleted pages', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Deleted Pages" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    createTestWikiPage(space.id, { title: "Active" });
+    const space = createTestWikiSpace(ws.id, { name: 'Deleted Pages' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    createTestWikiPage(space.id, { title: 'Active' });
     createTestWikiPage(space.id, {
-      title: "Deleted",
+      title: 'Deleted',
       deletedAt: new Date(),
     });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-spaces/${space.id}/pages`,
       headers: { cookie },
     });
@@ -768,11 +766,11 @@ describe("GET /api/v1/wiki-spaces/:spaceId/pages", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data).toHaveLength(1);
-    expect(body.data[0].title).toBe("Active");
+    expect(body.data[0].title).toBe('Active');
   });
 });
 
-describe("GET /api/v1/wiki-pages/:pageId", () => {
+describe('GET /api/v1/wiki-pages/:pageId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -786,14 +784,14 @@ describe("GET /api/v1/wiki-pages/:pageId", () => {
     cleanup();
   });
 
-  it("returns a wiki page by ID", async () => {
+  it('returns a wiki page by ID', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Get Page" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const page = createTestWikiPage(space.id, { title: "My Page" });
+    const space = createTestWikiSpace(ws.id, { name: 'Get Page' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const page = createTestWikiPage(space.id, { title: 'My Page' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
     });
@@ -801,15 +799,15 @@ describe("GET /api/v1/wiki-pages/:pageId", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data.id).toBe(page.id);
-    expect(body.data.title).toBe("My Page");
+    expect(body.data.title).toBe('My Page');
   });
 
-  it("returns 404 for non-existent page", async () => {
+  it('returns 404 for non-existent page', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-pages/${fakeId}`,
       headers: { cookie },
     });
@@ -817,17 +815,17 @@ describe("GET /api/v1/wiki-pages/:pageId", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 404 for soft-deleted page", async () => {
+  it('returns 404 for soft-deleted page', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Deleted Page" });
-    addWikiSpaceMember(space.id, user.id, "editor");
+    const space = createTestWikiSpace(ws.id, { name: 'Deleted Page' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
     const page = createTestWikiPage(space.id, {
-      title: "Deleted",
+      title: 'Deleted',
       deletedAt: new Date(),
     });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
     });
@@ -836,7 +834,7 @@ describe("GET /api/v1/wiki-pages/:pageId", () => {
   });
 });
 
-describe("PATCH /api/v1/wiki-pages/:pageId", () => {
+describe('PATCH /api/v1/wiki-pages/:pageId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -850,37 +848,37 @@ describe("PATCH /api/v1/wiki-pages/:pageId", () => {
     cleanup();
   });
 
-  it("updates page title", async () => {
+  it('updates page title', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Update Page" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const page = createTestWikiPage(space.id, { title: "Old Title" });
+    const space = createTestWikiSpace(ws.id, { name: 'Update Page' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const page = createTestWikiPage(space.id, { title: 'Old Title' });
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
-      payload: { title: "New Title" },
+      payload: { title: 'New Title' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.title).toBe("New Title");
+    expect(body.data.title).toBe('New Title');
   });
 
-  it("updates page content", async () => {
+  it('updates page content', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Content Space" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const page = createTestWikiPage(space.id, { title: "Content Page" });
+    const space = createTestWikiSpace(ws.id, { name: 'Content Space' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const page = createTestWikiPage(space.id, { title: 'Content Page' });
 
     const content = {
-      type: "doc",
-      content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }],
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }],
     };
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
       payload: { content },
@@ -891,40 +889,40 @@ describe("PATCH /api/v1/wiki-pages/:pageId", () => {
     expect(body.data.content).toBeDefined();
   });
 
-  it("returns 404 when page does not exist", async () => {
+  it('returns 404 when page does not exist', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${fakeId}`,
       headers: { cookie },
-      payload: { title: "Nope" },
+      payload: { title: 'Nope' },
     });
 
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when viewer tries to update", async () => {
+  it('returns 403 when viewer tries to update', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Update" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Update' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
-    const page = createTestWikiPage(space.id, { title: "Protected" });
+    const page = createTestWikiPage(space.id, { title: 'Protected' });
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie: viewerCookie },
-      payload: { title: "Hacked" },
+      payload: { title: 'Hacked' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 });
 
-describe("DELETE /api/v1/wiki-pages/:pageId", () => {
+describe('DELETE /api/v1/wiki-pages/:pageId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -938,14 +936,14 @@ describe("DELETE /api/v1/wiki-pages/:pageId", () => {
     cleanup();
   });
 
-  it("soft deletes a page (sets deletedAt)", async () => {
+  it('soft deletes a page (sets deletedAt)', async () => {
     const { ws, user, cookie } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Delete Page" });
-    addWikiSpaceMember(space.id, user.id, "editor");
-    const page = createTestWikiPage(space.id, { title: "To Delete" });
+    const space = createTestWikiSpace(ws.id, { name: 'Delete Page' });
+    addWikiSpaceMember(space.id, user.id, 'editor');
+    const page = createTestWikiPage(space.id, { title: 'To Delete' });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie },
     });
@@ -953,15 +951,15 @@ describe("DELETE /api/v1/wiki-pages/:pageId", () => {
     expect(res.statusCode).toBe(204);
 
     const deleted = stores.wikiPages.find((p) => p.id === page.id);
-    expect(deleted!.deletedAt).not.toBeNull();
+    expect(deleted?.deletedAt).not.toBeNull();
   });
 
-  it("returns 404 when page does not exist", async () => {
+  it('returns 404 when page does not exist', async () => {
     const { cookie } = setupWorkspaceWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-pages/${fakeId}`,
       headers: { cookie },
     });
@@ -969,16 +967,16 @@ describe("DELETE /api/v1/wiki-pages/:pageId", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when viewer tries to delete", async () => {
+  it('returns 403 when viewer tries to delete', async () => {
     const { ws } = setupWorkspaceWithUser();
-    const space = createTestWikiSpace(ws.id, { name: "Viewer Delete" });
-    const viewer = createTestUser({ name: "Viewer" });
-    addWikiSpaceMember(space.id, viewer.id, "viewer");
+    const space = createTestWikiSpace(ws.id, { name: 'Viewer Delete' });
+    const viewer = createTestUser({ name: 'Viewer' });
+    addWikiSpaceMember(space.id, viewer.id, 'viewer');
     const viewerCookie = loginAsUser(viewer);
-    const page = createTestWikiPage(space.id, { title: "Protected" });
+    const page = createTestWikiPage(space.id, { title: 'Protected' });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/wiki-pages/${page.id}`,
       headers: { cookie: viewerCookie },
     });

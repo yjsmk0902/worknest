@@ -1,3 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 /**
  * PageTree component tests.
  *
@@ -7,17 +10,14 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
 const mockPost = vi.fn();
 const mockPatch = vi.fn();
 
-vi.mock("../../src/lib/api-client", () => ({
+vi.mock('../../src/lib/api-client', () => ({
   apiClient: {
     get: vi.fn(),
     getList: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("../../src/lib/api-client", () => ({
     code: string;
     constructor(status: number, code: string, message: string) {
       super(message);
-      this.name = "ApiError";
+      this.name = 'ApiError';
       this.status = status;
       this.code = code;
     }
@@ -39,37 +39,38 @@ vi.mock("../../src/lib/api-client", () => ({
 
 const mockToast = vi.fn();
 
-vi.mock("@worknest/ui", () => ({
+vi.mock('@worknest/ui', () => ({
   toast: (...args: unknown[]) => mockToast(...args),
-  cn: (...args: unknown[]) => args.filter(Boolean).join(" "),
+  cn: (...args: unknown[]) => args.filter(Boolean).join(' '),
 }));
 
-vi.mock("lucide-react", () => {
-  const icon = (testId: string) =>
+vi.mock('lucide-react', () => {
+  const icon =
+    (testId: string) =>
     ({ className }: { className?: string }) =>
-      React.createElement("span", { "data-testid": testId, className });
+      React.createElement('span', { 'data-testid': testId, className });
   return {
-    Plus: icon("plus-icon"),
-    Loader2: icon("loader-icon"),
-    ChevronRight: icon("chevron-right-icon"),
-    FileText: icon("file-text-icon"),
-    GripVertical: icon("grip-vertical-icon"),
+    Plus: icon('plus-icon'),
+    Loader2: icon('loader-icon'),
+    ChevronRight: icon('chevron-right-icon'),
+    FileText: icon('file-text-icon'),
+    GripVertical: icon('grip-vertical-icon'),
   };
 });
 
 // Track which pageId the router returns
 let mockCurrentPageId: string | undefined;
 
-vi.mock("@tanstack/react-router", () => ({
+vi.mock('@tanstack/react-router', () => ({
   useParams: () => ({ pageId: mockCurrentPageId }),
   Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
-    React.createElement("a", { href: to }, children),
+    React.createElement('a', { href: to }, children),
 }));
 
 // Mock @dnd-kit/core
-vi.mock("@dnd-kit/core", () => ({
+vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "dnd-context" }, children),
+    React.createElement('div', { 'data-testid': 'dnd-context' }, children),
   closestCenter: vi.fn(),
   KeyboardSensor: class KeyboardSensor {},
   PointerSensor: class PointerSensor {},
@@ -77,9 +78,9 @@ vi.mock("@dnd-kit/core", () => ({
   useSensors: () => [],
 }));
 
-vi.mock("@dnd-kit/sortable", () => ({
+vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", null, children),
+    React.createElement('div', null, children),
   verticalListSortingStrategy: {},
   useSortable: () => ({
     attributes: {},
@@ -91,7 +92,7 @@ vi.mock("@dnd-kit/sortable", () => ({
   }),
 }));
 
-vi.mock("@dnd-kit/utilities", () => ({
+vi.mock('@dnd-kit/utilities', () => ({
   CSS: {
     Transform: {
       toString: () => undefined,
@@ -101,37 +102,35 @@ vi.mock("@dnd-kit/utilities", () => ({
 
 // ── Import component after mocks ────────────────────────────────────
 
-import { PageTree } from "../../src/components/wiki/page-tree/page-tree";
+import { PageTree } from '../../src/components/wiki/page-tree/page-tree';
 
 // ── Fixtures ─────────────────────────────────────────────────────────
 
 function makePage(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: `page-${Math.random().toString(36).slice(2, 8)}`,
-    spaceId: "space-1",
-    title: "Untitled",
-    slug: "untitled",
+    spaceId: 'space-1',
+    title: 'Untitled',
+    slug: 'untitled',
     parentId: null,
-    sortOrder: "a0",
-    contentFormat: "tiptap",
-    createdAt: "2026-04-01T00:00:00Z",
-    updatedAt: "2026-04-01T00:00:00Z",
+    sortOrder: 'a0',
+    contentFormat: 'tiptap',
+    createdAt: '2026-04-01T00:00:00Z',
+    updatedAt: '2026-04-01T00:00:00Z',
     ...overrides,
   };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-function renderTree(
-  overrides: Partial<React.ComponentProps<typeof PageTree>> = {},
-) {
+function renderTree(overrides: Partial<React.ComponentProps<typeof PageTree>> = {}) {
   const defaultProps = {
-    spaceId: "space-1",
+    spaceId: 'space-1',
     pages: [] as never[],
     isLoading: false,
     onPageSelect: vi.fn(),
-    orgSlug: "org-1",
-    wsSlug: "ws-1",
+    orgSlug: 'org-1',
+    wsSlug: 'ws-1',
     ...overrides,
   };
 
@@ -156,7 +155,7 @@ function renderTree(
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
-describe("PageTree", () => {
+describe('PageTree', () => {
   beforeEach(() => {
     mockPost.mockReset();
     mockPatch.mockReset();
@@ -164,136 +163,136 @@ describe("PageTree", () => {
     mockCurrentPageId = undefined;
   });
 
-  it("renders hierarchical pages", () => {
+  it('renders hierarchical pages', () => {
     const pages = [
-      makePage({ id: "p-1", title: "Getting Started", parentId: null, sortOrder: "a0" }),
-      makePage({ id: "p-2", title: "API Reference", parentId: null, sortOrder: "a1" }),
+      makePage({ id: 'p-1', title: 'Getting Started', parentId: null, sortOrder: 'a0' }),
+      makePage({ id: 'p-2', title: 'API Reference', parentId: null, sortOrder: 'a1' }),
     ] as never[];
 
     renderTree({ pages });
 
-    expect(screen.getByText("Getting Started")).toBeDefined();
-    expect(screen.getByText("API Reference")).toBeDefined();
+    expect(screen.getByText('Getting Started')).toBeDefined();
+    expect(screen.getByText('API Reference')).toBeDefined();
   });
 
-  it("shows loading skeleton when isLoading is true", () => {
+  it('shows loading skeleton when isLoading is true', () => {
     const { container } = renderTree({ isLoading: true });
 
-    const skeletons = container.querySelectorAll(".animate-pulse");
+    const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBe(4);
   });
 
-  it("shows empty state when no pages exist", () => {
+  it('shows empty state when no pages exist', () => {
     renderTree({ pages: [] });
 
-    expect(screen.getByText("페이지가 없습니다")).toBeDefined();
+    expect(screen.getByText('페이지가 없습니다')).toBeDefined();
   });
 
-  it("highlights the current page", () => {
-    mockCurrentPageId = "p-selected";
+  it('highlights the current page', () => {
+    mockCurrentPageId = 'p-selected';
 
     const pages = [
-      makePage({ id: "p-selected", title: "Selected Page", parentId: null, sortOrder: "a0" }),
-      makePage({ id: "p-other", title: "Other Page", parentId: null, sortOrder: "a1" }),
+      makePage({ id: 'p-selected', title: 'Selected Page', parentId: null, sortOrder: 'a0' }),
+      makePage({ id: 'p-other', title: 'Other Page', parentId: null, sortOrder: 'a1' }),
     ] as never[];
 
     renderTree({ pages });
 
     // The selected page should have aria-selected=true
-    const selectedItem = screen.getByText("Selected Page").closest('[role="treeitem"]');
+    const selectedItem = screen.getByText('Selected Page').closest('[role="treeitem"]');
     expect(selectedItem).toBeDefined();
-    expect(selectedItem!.getAttribute("aria-selected")).toBe("true");
+    expect(selectedItem?.getAttribute('aria-selected')).toBe('true');
 
-    const otherItem = screen.getByText("Other Page").closest('[role="treeitem"]');
+    const otherItem = screen.getByText('Other Page').closest('[role="treeitem"]');
     expect(otherItem).toBeDefined();
-    expect(otherItem!.getAttribute("aria-selected")).toBe("false");
+    expect(otherItem?.getAttribute('aria-selected')).toBe('false');
   });
 
-  it("click on page calls onPageSelect", () => {
+  it('click on page calls onPageSelect', () => {
     const onPageSelect = vi.fn();
     const pages = [
-      makePage({ id: "p-click", title: "Click me", parentId: null, sortOrder: "a0" }),
+      makePage({ id: 'p-click', title: 'Click me', parentId: null, sortOrder: 'a0' }),
     ] as never[];
 
     renderTree({ pages, onPageSelect });
 
-    const item = screen.getByText("Click me").closest('[role="treeitem"]');
+    const item = screen.getByText('Click me').closest('[role="treeitem"]');
     fireEvent.click(item!);
 
-    expect(onPageSelect).toHaveBeenCalledWith("p-click");
+    expect(onPageSelect).toHaveBeenCalledWith('p-click');
   });
 
   it("'New Page' button is visible at the bottom", () => {
     renderTree({ pages: [] });
 
-    expect(screen.getByText("새 페이지")).toBeDefined();
+    expect(screen.getByText('새 페이지')).toBeDefined();
   });
 
   it("'New Page' button calls create API", async () => {
     mockPost.mockResolvedValue({
-      id: "new-page",
-      title: "새 페이지",
-      slug: "page-1234",
+      id: 'new-page',
+      title: '새 페이지',
+      slug: 'page-1234',
     });
 
     const onPageSelect = vi.fn();
     renderTree({ pages: [], onPageSelect });
 
-    fireEvent.click(screen.getByText("새 페이지"));
+    fireEvent.click(screen.getByText('새 페이지'));
 
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledTimes(1);
     });
 
     expect(mockPost).toHaveBeenCalledWith(
-      "/wiki-spaces/space-1/pages",
-      expect.objectContaining({ title: "새 페이지" }),
+      '/wiki-spaces/space-1/pages',
+      expect.objectContaining({ title: '새 페이지' }),
     );
   });
 
-  it("expand/collapse toggles children visibility", () => {
+  it('expand/collapse toggles children visibility', () => {
     const pages = [
-      makePage({ id: "p-parent", title: "Parent Page", parentId: null, sortOrder: "a0" }),
-      makePage({ id: "p-child", title: "Child Page", parentId: "p-parent", sortOrder: "a0" }),
+      makePage({ id: 'p-parent', title: 'Parent Page', parentId: null, sortOrder: 'a0' }),
+      makePage({ id: 'p-child', title: 'Child Page', parentId: 'p-parent', sortOrder: 'a0' }),
     ] as never[];
 
     renderTree({ pages });
 
     // Initially children are hidden (not expanded)
-    expect(screen.getByText("Parent Page")).toBeDefined();
-    expect(screen.queryByText("Child Page")).toBeNull();
+    expect(screen.getByText('Parent Page')).toBeDefined();
+    expect(screen.queryByText('Child Page')).toBeNull();
 
     // Click expand button
-    const expandButton = screen.getByLabelText("Expand");
+    const expandButton = screen.getByLabelText('Expand');
     fireEvent.click(expandButton);
 
     // Now the child should be visible
-    expect(screen.getByText("Child Page")).toBeDefined();
+    expect(screen.getByText('Child Page')).toBeDefined();
 
     // Click collapse button
-    const collapseButton = screen.getByLabelText("Collapse");
+    const collapseButton = screen.getByLabelText('Collapse');
     fireEvent.click(collapseButton);
 
     // Child should be hidden again
-    expect(screen.queryByText("Child Page")).toBeNull();
+    expect(screen.queryByText('Child Page')).toBeNull();
   });
 
-  it("nested pages are indented via paddingLeft style", () => {
+  it('nested pages are indented via paddingLeft style', () => {
     const pages = [
-      makePage({ id: "p-root", title: "Root", parentId: null, sortOrder: "a0" }),
-      makePage({ id: "p-child", title: "Child", parentId: "p-root", sortOrder: "a0" }),
-      makePage({ id: "p-grandchild", title: "Grandchild", parentId: "p-child", sortOrder: "a0" }),
+      makePage({ id: 'p-root', title: 'Root', parentId: null, sortOrder: 'a0' }),
+      makePage({ id: 'p-child', title: 'Child', parentId: 'p-root', sortOrder: 'a0' }),
+      makePage({ id: 'p-grandchild', title: 'Grandchild', parentId: 'p-child', sortOrder: 'a0' }),
     ] as never[];
 
     // Need to expand all nodes to see nesting
     const { container } = renderTree({ pages });
 
     // Expand root to show child
-    const expandButtons = screen.getAllByLabelText("Expand");
+    const expandButtons = screen.getAllByLabelText('Expand');
     fireEvent.click(expandButtons[0]);
 
     // Now expand child to show grandchild
-    const expandButtons2 = screen.getAllByLabelText("Expand");
+    const expandButtons2 = screen.getAllByLabelText('Expand');
     // The second expand button belongs to the child
     if (expandButtons2.length > 1) {
       fireEvent.click(expandButtons2[1]);
@@ -302,25 +301,27 @@ describe("PageTree", () => {
     }
 
     // Verify all three are visible
-    expect(screen.getByText("Root")).toBeDefined();
-    expect(screen.getByText("Child")).toBeDefined();
-    expect(screen.getByText("Grandchild")).toBeDefined();
+    expect(screen.getByText('Root')).toBeDefined();
+    expect(screen.getByText('Child')).toBeDefined();
+    expect(screen.getByText('Grandchild')).toBeDefined();
 
     // Check indentation: root=level 0 (8px), child=level 1 (24px), grandchild=level 2 (40px)
-    const rootItem = screen.getByText("Root").closest('[role="treeitem"]') as HTMLElement;
-    const childItem = screen.getByText("Child").closest('[role="treeitem"]') as HTMLElement;
-    const grandchildItem = screen.getByText("Grandchild").closest('[role="treeitem"]') as HTMLElement;
+    const rootItem = screen.getByText('Root').closest('[role="treeitem"]') as HTMLElement;
+    const childItem = screen.getByText('Child').closest('[role="treeitem"]') as HTMLElement;
+    const grandchildItem = screen
+      .getByText('Grandchild')
+      .closest('[role="treeitem"]') as HTMLElement;
 
     // paddingLeft follows the formula: Math.min(level, 5) * 16 + 8
-    expect(rootItem.style.paddingLeft).toBe("8px");
-    expect(childItem.style.paddingLeft).toBe("24px");
-    expect(grandchildItem.style.paddingLeft).toBe("40px");
+    expect(rootItem.style.paddingLeft).toBe('8px');
+    expect(childItem.style.paddingLeft).toBe('24px');
+    expect(grandchildItem.style.paddingLeft).toBe('40px');
   });
 
-  it("renders tree role on the root container", () => {
+  it('renders tree role on the root container', () => {
     renderTree({ pages: [] });
 
-    const tree = screen.getByRole("tree");
+    const tree = screen.getByRole('tree');
     expect(tree).toBeDefined();
   });
 });

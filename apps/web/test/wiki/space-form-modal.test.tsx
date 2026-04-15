@@ -1,3 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 /**
  * SpaceFormModal component tests.
  *
@@ -6,17 +9,14 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
 const mockPost = vi.fn();
 const mockPatch = vi.fn();
 
-vi.mock("../../src/lib/api-client", () => ({
+vi.mock('../../src/lib/api-client', () => ({
   apiClient: {
     get: vi.fn(),
     getList: vi.fn(),
@@ -29,7 +29,7 @@ vi.mock("../../src/lib/api-client", () => ({
     code: string;
     constructor(status: number, code: string, message: string) {
       super(message);
-      this.name = "ApiError";
+      this.name = 'ApiError';
       this.status = status;
       this.code = code;
     }
@@ -38,7 +38,7 @@ vi.mock("../../src/lib/api-client", () => ({
 
 const mockToast = vi.fn();
 
-vi.mock("@worknest/ui", () => ({
+vi.mock('@worknest/ui', () => ({
   Dialog: ({
     children,
     open,
@@ -46,20 +46,20 @@ vi.mock("@worknest/ui", () => ({
     children: React.ReactNode;
     open: boolean;
     onOpenChange?: (v: boolean) => void;
-  }) => (open ? React.createElement("div", { "data-testid": "dialog" }, children) : null),
+  }) => (open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null),
   DialogContent: ({
     children,
     className,
   }: {
     children: React.ReactNode;
     className?: string;
-  }) => React.createElement("div", { className }, children),
+  }) => React.createElement('div', { className }, children),
   DialogHeader: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", null, children),
+    React.createElement('div', null, children),
   DialogTitle: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("h2", null, children),
+    React.createElement('h2', null, children),
   DialogFooter: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "dialog-footer" }, children),
+    React.createElement('div', { 'data-testid': 'dialog-footer' }, children),
   Button: ({
     children,
     onClick,
@@ -76,8 +76,8 @@ vi.mock("@worknest/ui", () => ({
     [key: string]: unknown;
   }) =>
     React.createElement(
-      "button",
-      { onClick, type, "data-variant": variant, disabled, ...rest },
+      'button',
+      { onClick, type, 'data-variant': variant, disabled, ...rest },
       children,
     ),
   Input: ({
@@ -101,7 +101,7 @@ vi.mock("@worknest/ui", () => ({
     autoFocus?: boolean;
     [key: string]: unknown;
   }) =>
-    React.createElement("input", {
+    React.createElement('input', {
       id,
       value,
       onChange,
@@ -118,30 +118,29 @@ vi.mock("@worknest/ui", () => ({
   }: {
     children: React.ReactNode;
     htmlFor?: string;
-  }) => React.createElement("label", { htmlFor }, children),
+  }) => React.createElement('label', { htmlFor }, children),
   toast: (...args: unknown[]) => mockToast(...args),
 }));
 
-vi.mock("lucide-react", () => {
-  const icon = (testId: string) =>
+vi.mock('lucide-react', () => {
+  const icon =
+    (testId: string) =>
     ({ className }: { className?: string }) =>
-      React.createElement("span", { "data-testid": testId, className });
+      React.createElement('span', { 'data-testid': testId, className });
   return {
-    Loader2: icon("loader-icon"),
+    Loader2: icon('loader-icon'),
   };
 });
 
 // ── Import component after mocks ────────────────────────────────────
 
-import { SpaceFormModal } from "../../src/components/wiki/space-form-modal";
+import { SpaceFormModal } from '../../src/components/wiki/space-form-modal';
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-function renderModal(
-  overrides: Partial<React.ComponentProps<typeof SpaceFormModal>> = {},
-) {
+function renderModal(overrides: Partial<React.ComponentProps<typeof SpaceFormModal>> = {}) {
   const defaultProps = {
-    workspaceId: "ws-1",
+    workspaceId: 'ws-1',
     open: true,
     onOpenChange: vi.fn(),
     ...overrides,
@@ -168,63 +167,63 @@ function renderModal(
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
-describe("SpaceFormModal", () => {
+describe('SpaceFormModal', () => {
   beforeEach(() => {
     mockPost.mockReset();
     mockPatch.mockReset();
     mockToast.mockReset();
   });
 
-  it("renders create form with correct title and empty fields", () => {
+  it('renders create form with correct title and empty fields', () => {
     renderModal();
 
-    expect(screen.getByText("스페이스 만들기")).toBeDefined();
+    expect(screen.getByText('스페이스 만들기')).toBeDefined();
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름") as HTMLInputElement;
-    expect(nameInput.value).toBe("");
+    const nameInput = screen.getByPlaceholderText('스페이스 이름') as HTMLInputElement;
+    expect(nameInput.value).toBe('');
 
-    const slugInput = screen.getByPlaceholderText("space-slug") as HTMLInputElement;
-    expect(slugInput.value).toBe("");
+    const slugInput = screen.getByPlaceholderText('space-slug') as HTMLInputElement;
+    expect(slugInput.value).toBe('');
   });
 
-  it("auto-generates slug when name is typed", () => {
+  it('auto-generates slug when name is typed', () => {
     renderModal();
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름");
-    fireEvent.change(nameInput, { target: { value: "My New Space" } });
+    const nameInput = screen.getByPlaceholderText('스페이스 이름');
+    fireEvent.change(nameInput, { target: { value: 'My New Space' } });
 
-    const slugInput = screen.getByPlaceholderText("space-slug") as HTMLInputElement;
-    expect(slugInput.value).toBe("my-new-space");
+    const slugInput = screen.getByPlaceholderText('space-slug') as HTMLInputElement;
+    expect(slugInput.value).toBe('my-new-space');
   });
 
-  it("stops auto-generating slug after manual slug edit", () => {
+  it('stops auto-generating slug after manual slug edit', () => {
     renderModal();
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름");
-    const slugInput = screen.getByPlaceholderText("space-slug");
+    const nameInput = screen.getByPlaceholderText('스페이스 이름');
+    const slugInput = screen.getByPlaceholderText('space-slug');
 
     // Type name first
-    fireEvent.change(nameInput, { target: { value: "First Name" } });
-    expect((slugInput as HTMLInputElement).value).toBe("first-name");
+    fireEvent.change(nameInput, { target: { value: 'First Name' } });
+    expect((slugInput as HTMLInputElement).value).toBe('first-name');
 
     // Manually edit slug
-    fireEvent.change(slugInput, { target: { value: "custom-slug" } });
-    expect((slugInput as HTMLInputElement).value).toBe("custom-slug");
+    fireEvent.change(slugInput, { target: { value: 'custom-slug' } });
+    expect((slugInput as HTMLInputElement).value).toBe('custom-slug');
 
     // Now change name again — slug should NOT update
-    fireEvent.change(nameInput, { target: { value: "Second Name" } });
-    expect((slugInput as HTMLInputElement).value).toBe("custom-slug");
+    fireEvent.change(nameInput, { target: { value: 'Second Name' } });
+    expect((slugInput as HTMLInputElement).value).toBe('custom-slug');
   });
 
-  it("calls create API on form submit", async () => {
-    mockPost.mockResolvedValue({ id: "new-space", name: "Test Space" });
+  it('calls create API on form submit', async () => {
+    mockPost.mockResolvedValue({ id: 'new-space', name: 'Test Space' });
     const onOpenChange = vi.fn();
     renderModal({ onOpenChange });
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름");
-    fireEvent.change(nameInput, { target: { value: "Test Space" } });
+    const nameInput = screen.getByPlaceholderText('스페이스 이름');
+    fireEvent.change(nameInput, { target: { value: 'Test Space' } });
 
-    const form = nameInput.closest("form")!;
+    const form = nameInput.closest('form')!;
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -232,27 +231,27 @@ describe("SpaceFormModal", () => {
     });
 
     expect(mockPost).toHaveBeenCalledWith(
-      "/workspaces/ws-1/wiki-spaces",
+      '/workspaces/ws-1/wiki-spaces',
       expect.objectContaining({
-        name: "Test Space",
-        slug: "test-space",
+        name: 'Test Space',
+        slug: 'test-space',
       }),
     );
   });
 
-  it("cancel button calls onOpenChange(false)", () => {
+  it('cancel button calls onOpenChange(false)', () => {
     const onOpenChange = vi.fn();
     renderModal({ onOpenChange });
 
-    fireEvent.click(screen.getByText("취소"));
+    fireEvent.click(screen.getByText('취소'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("does not submit when name is empty", () => {
+  it('does not submit when name is empty', () => {
     renderModal();
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름");
-    const form = nameInput.closest("form")!;
+    const nameInput = screen.getByPlaceholderText('스페이스 이름');
+    const form = nameInput.closest('form')!;
     fireEvent.submit(form);
 
     // No API call should be made
@@ -260,25 +259,25 @@ describe("SpaceFormModal", () => {
     expect(mockPatch).not.toHaveBeenCalled();
   });
 
-  it("renders edit form with pre-filled data when space is provided", () => {
+  it('renders edit form with pre-filled data when space is provided', () => {
     const space = {
-      id: "space-1",
-      workspaceId: "ws-1",
-      name: "Existing Space",
-      slug: "existing-space",
-      description: "A description",
-      createdAt: "2026-04-01T00:00:00Z",
-      updatedAt: "2026-04-01T00:00:00Z",
+      id: 'space-1',
+      workspaceId: 'ws-1',
+      name: 'Existing Space',
+      slug: 'existing-space',
+      description: 'A description',
+      createdAt: '2026-04-01T00:00:00Z',
+      updatedAt: '2026-04-01T00:00:00Z',
     };
 
     renderModal({ space: space as never });
 
-    expect(screen.getByText("스페이스 수정")).toBeDefined();
+    expect(screen.getByText('스페이스 수정')).toBeDefined();
 
-    const nameInput = screen.getByPlaceholderText("스페이스 이름") as HTMLInputElement;
-    expect(nameInput.value).toBe("Existing Space");
+    const nameInput = screen.getByPlaceholderText('스페이스 이름') as HTMLInputElement;
+    expect(nameInput.value).toBe('Existing Space');
 
-    const slugInput = screen.getByPlaceholderText("space-slug") as HTMLInputElement;
-    expect(slugInput.value).toBe("existing-space");
+    const slugInput = screen.getByPlaceholderText('space-slug') as HTMLInputElement;
+    expect(slugInput.value).toBe('existing-space');
   });
 });

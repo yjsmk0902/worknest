@@ -2,12 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { cn } from '@worknest/ui';
 import { AppHeader } from '../layout/app-header';
 
-type SettingsTab =
-  | 'ws-general'
-  | 'ws-members'
-  | 'org-general'
-  | 'org-members'
-  | 'profile';
+type SettingsTab = 'ws-general' | 'ws-members' | 'org-general' | 'org-members' | 'profile';
 
 // backwards compat alias
 type LegacyTab = 'general' | 'members';
@@ -41,9 +36,7 @@ const ORG_TABS: TabDef[] = [
   { key: 'org-members', label: '멤버', path: 'settings/org/members' },
 ];
 
-const ACCOUNT_TABS: TabDef[] = [
-  { key: 'profile', label: '프로필', path: 'settings/profile' },
-];
+const ACCOUNT_TABS: TabDef[] = [{ key: 'profile', label: '프로필', path: 'settings/profile' }];
 
 const TITLES: Record<string, string> = {
   'ws-general': '워크스페이스 설정',
@@ -69,9 +62,27 @@ export function SettingsLayout({
       <div className="flex flex-1 overflow-hidden">
         {/* Left nav */}
         <nav className="w-[200px] shrink-0 space-y-5 overflow-y-auto border-r border-border/40 p-4">
-          <Section label="조직" tabs={ORG_TABS} activeTab={activeTab} orgSlug={orgSlug} wsSlug={wsSlug} />
-          <Section label="워크스페이스" tabs={WS_TABS} activeTab={activeTab} orgSlug={orgSlug} wsSlug={wsSlug} />
-          <Section label="계정" tabs={ACCOUNT_TABS} activeTab={activeTab} orgSlug={orgSlug} wsSlug={wsSlug} />
+          <Section
+            label="조직"
+            tabs={ORG_TABS}
+            activeTab={activeTab}
+            orgSlug={orgSlug}
+            wsSlug={wsSlug}
+          />
+          <Section
+            label="워크스페이스"
+            tabs={WS_TABS}
+            activeTab={activeTab}
+            orgSlug={orgSlug}
+            wsSlug={wsSlug}
+          />
+          <Section
+            label="계정"
+            tabs={ACCOUNT_TABS}
+            activeTab={activeTab}
+            orgSlug={orgSlug}
+            wsSlug={wsSlug}
+          />
         </nav>
 
         {/* Content */}

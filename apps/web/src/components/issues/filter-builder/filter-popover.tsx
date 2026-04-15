@@ -1,26 +1,4 @@
-import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Check,
-  ChevronLeft,
-  Filter,
-  Search,
-} from 'lucide-react';
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Separator,
-} from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../lib/api-client';
-import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
-import { useProjectContext } from '../../../contexts/project-context';
-import {
-  FILTER_FIELDS,
-  type ActiveFilter,
-} from './use-issue-filters';
 import type {
   CycleOutput,
   FilterField,
@@ -28,6 +6,14 @@ import type {
   IssueStatusOutput,
   IssueTypeOutput,
 } from '@worknest/shared';
+import { Button, Popover, PopoverContent, PopoverTrigger, Separator } from '@worknest/ui';
+import { cn } from '@worknest/ui';
+import { Check, ChevronLeft, Filter, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useProjectContext } from '../../../contexts/project-context';
+import { type ListResponse, apiClient } from '../../../lib/api-client';
+import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
+import { type ActiveFilter, FILTER_FIELDS } from './use-issue-filters';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -75,23 +61,18 @@ export function FilterPopover({
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled
-    ? controlledOnOpenChange!
-    : setInternalOpen;
+  const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
-  const [step, setStep] = useState<Step>(
-    editingFilter ? 'value' : 'field',
-  );
+  const [step, setStep] = useState<Step>(editingFilter ? 'value' : 'field');
   const [selectedField, setSelectedField] = useState<FilterField | null>(
     editingFilter?.field ?? null,
   );
-  const [selectedOperator, setSelectedOperator] =
-    useState<FilterOperator | null>(editingFilter?.operator ?? null);
+  const [selectedOperator, setSelectedOperator] = useState<FilterOperator | null>(
+    editingFilter?.operator ?? null,
+  );
   const [selectedValues, setSelectedValues] = useState<string[]>(() => {
     if (!editingFilter?.value) return [];
-    return Array.isArray(editingFilter.value)
-      ? editingFilter.value
-      : [editingFilter.value];
+    return Array.isArray(editingFilter.value) ? editingFilter.value : [editingFilter.value];
   });
   const [textValue, setTextValue] = useState(
     editingFilter?.field === 'title' && typeof editingFilter?.value === 'string'
@@ -99,8 +80,7 @@ export function FilterPopover({
       : '',
   );
   const [dateValue, setDateValue] = useState(
-    editingFilter?.field === 'dueDate' &&
-      typeof editingFilter?.value === 'string'
+    editingFilter?.field === 'dueDate' && typeof editingFilter?.value === 'string'
       ? editingFilter.value
       : '',
   );
@@ -109,51 +89,40 @@ export function FilterPopover({
   // Fetch data for value selectors
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
   const typesQuery = useQuery<IssueTypeOutput[]>({
     queryKey: ['projects', projectId, 'types'],
-    queryFn: () =>
-      apiClient.get<IssueTypeOutput[]>(
-        `/projects/${projectId}/types`,
-      ),
+    queryFn: () => apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
   const membersQuery = useQuery<ListResponse<MemberOutput>>({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
+    queryFn: () => apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
   const labelsQuery = useQuery<LabelOutput[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
   const cyclesQuery = useQuery<ListResponse<CycleOutput>>({
     queryKey: ['projects', projectId, 'cycles'],
-    queryFn: () =>
-      apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
+    queryFn: () => apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
 
-  const fieldMeta = selectedField
-    ? FILTER_FIELDS.find((f) => f.field === selectedField)
-    : null;
+  const fieldMeta = selectedField ? FILTER_FIELDS.find((f) => f.field === selectedField) : null;
 
   function reset() {
     if (editingFilter) {
@@ -167,14 +136,12 @@ export function FilterPopover({
         : [];
       setSelectedValues(vals);
       setTextValue(
-        editingFilter.field === 'title' &&
-          typeof editingFilter.value === 'string'
+        editingFilter.field === 'title' && typeof editingFilter.value === 'string'
           ? editingFilter.value
           : '',
       );
       setDateValue(
-        editingFilter.field === 'dueDate' &&
-          typeof editingFilter.value === 'string'
+        editingFilter.field === 'dueDate' && typeof editingFilter.value === 'string'
           ? editingFilter.value
           : '',
       );
@@ -269,9 +236,7 @@ export function FilterPopover({
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        {trigger ?? defaultTrigger}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger ?? defaultTrigger}</PopoverTrigger>
       <PopoverContent align="start" className="w-[240px] p-0">
         {/* Step 1: Field selection */}
         {step === 'field' && (
@@ -316,14 +281,10 @@ export function FilterPopover({
                   <span
                     className={cn(
                       'h-3 w-3 rounded-full border',
-                      selectedOperator === op
-                        ? 'border-primary bg-primary'
-                        : 'border-border',
+                      selectedOperator === op ? 'border-primary bg-primary' : 'border-border',
                     )}
                   />
-                  <span className="flex-1 text-left">
-                    {formatOperator(op)}
-                  </span>
+                  <span className="flex-1 text-left">{formatOperator(op)}</span>
                 </button>
               ))}
             </div>
@@ -336,9 +297,7 @@ export function FilterPopover({
             <button
               type="button"
               onClick={() =>
-                fieldMeta.operators.length > 1
-                  ? setStep('operator')
-                  : setStep('field')
+                fieldMeta.operators.length > 1 ? setStep('operator') : setStep('field')
               }
               className="flex w-full items-center gap-1 px-3 py-2 text-sm font-medium hover:text-primary"
             >
@@ -389,7 +348,6 @@ export function FilterPopover({
                     }
                   }}
                   placeholder="검색어 입력..."
-                  autoFocus
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
                 />
               </div>
@@ -402,8 +360,7 @@ export function FilterPopover({
                 className="w-full"
                 onClick={handleApply}
                 disabled={
-                  (fieldMeta.valueType === 'multi-select' &&
-                    selectedValues.length === 0) ||
+                  (fieldMeta.valueType === 'multi-select' && selectedValues.length === 0) ||
                   (fieldMeta.valueType === 'text' && !textValue.trim()) ||
                   (fieldMeta.valueType === 'date' && !dateValue)
                 }
@@ -487,9 +444,7 @@ function MultiSelectValues({
   const showSearch = field === 'assigneeId' || field === 'labelId' || field === 'cycleId';
 
   const filtered = searchQuery
-    ? items.filter((item) =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
+    ? items.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase()))
     : items;
 
   return (
@@ -503,7 +458,6 @@ function MultiSelectValues({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="검색..."
-              autoFocus
               className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
@@ -511,9 +465,7 @@ function MultiSelectValues({
       )}
       <div className="max-h-[240px] overflow-y-auto p-1">
         {filtered.length === 0 && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            검색 결과가 없습니다
-          </div>
+          <div className="py-4 text-center text-sm text-muted-foreground">검색 결과가 없습니다</div>
         )}
         {filtered.map((item) => {
           const isSelected = selectedValues.includes(item.id);

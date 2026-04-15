@@ -1,4 +1,4 @@
-import { Queue, Worker, type Job, type ConnectionOptions } from "bullmq";
+import { type ConnectionOptions, type Job, Queue, Worker } from 'bullmq';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ interface JobRegistration {
 
 // ── Queue Manager ──────────────────────────────────────────────────────
 
-const QUEUE_NAME = "worknest";
+const QUEUE_NAME = 'worknest';
 
 let queue: Queue | null = null;
 let worker: Worker | null = null;
@@ -21,7 +21,7 @@ const processors = new Map<string, JobProcessor>();
  * Get the Redis connection options for BullMQ from environment.
  */
 function getConnectionOptions(): ConnectionOptions {
-  const url = process.env.REDIS_URL ?? "redis://localhost:6379";
+  const url = process.env.REDIS_URL ?? 'redis://localhost:6379';
   const parsed = new URL(url);
   return {
     host: parsed.hostname,
@@ -44,7 +44,7 @@ export function initQueue(): Queue {
     defaultJobOptions: {
       attempts: 3,
       backoff: {
-        type: "exponential",
+        type: 'exponential',
         delay: 1000,
       },
       removeOnComplete: { count: 1000 },
@@ -85,7 +85,7 @@ export function startWorker(): Worker {
     },
   );
 
-  worker.on("failed", (job, error) => {
+  worker.on('failed', (job, error) => {
     console.error(`Job ${job?.name}[${job?.id}] failed:`, error.message);
   });
 
@@ -112,10 +112,7 @@ export async function addJob<T>(
  * Gracefully close queue and worker.
  */
 export async function closeQueue(): Promise<void> {
-  await Promise.all([
-    worker?.close(),
-    queue?.close(),
-  ]);
+  await Promise.all([worker?.close(), queue?.close()]);
   worker = null;
   queue = null;
 }

@@ -1,3 +1,4 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Issue pagination integration tests.
  *
@@ -7,23 +8,21 @@
  * so cursor continuation tests verify the endpoint accepts the cursor
  * parameter and returns valid responses.
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
+  createTestIssue,
   createTestOrg,
   createTestProject,
-  createTestIssue,
+  createTestUser,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
-  stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock WebSocket broadcasts ───────────────────────────────────────────
 
-vi.mock("../src/websocket/issue-events", () => ({
+vi.mock('../src/websocket/issue-events', () => ({
   broadcastIssueCreated: vi.fn(),
   broadcastIssueUpdated: vi.fn(),
   broadcastIssueDeleted: vi.fn(),
@@ -33,14 +32,11 @@ vi.mock("../src/websocket/issue-events", () => ({
 // ── Build a test app with issue routes ──────────────────────────────────
 
 async function buildIssueApp() {
-  const { issueRoutes } = await import("../src/routes/issues");
+  const { issueRoutes } = await import('../src/routes/issues');
 
-  const { app, auth, db } = await buildTestApp(
-    async (app, { auth, db }) => {
-      await issueRoutes(app, { auth: auth as never, db: db as never });
-    },
-    true,
-  );
+  const { app, auth, db } = await buildTestApp(async (app, { auth, db }) => {
+    await issueRoutes(app, { auth: auth as never, db: db as never });
+  }, true);
 
   return { app, auth, db };
 }
@@ -48,12 +44,12 @@ async function buildIssueApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupProjectWithUser() {
-  const user = createTestUser({ name: "Pagination Admin" });
+  const user = createTestUser({ name: 'Pagination Admin' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const project = createTestProject(ws.id, user.id, {
-    name: "Pagination Project",
-    prefix: "PP",
+    name: 'Pagination Project',
+    prefix: 'PP',
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
@@ -61,7 +57,7 @@ function setupProjectWithUser() {
 
 // ── Tests ────────────────────────────────────────────────────────────────
 
-describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
+describe('GET /api/v1/projects/:projectId/issues — pagination', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -75,7 +71,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     cleanup();
   });
 
-  it("first page with no cursor returns results and pagination info", async () => {
+  it('first page with no cursor returns results and pagination info', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 5; i++) {
       createTestIssue(project.id, user.id, {
@@ -85,7 +81,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues`,
       headers: { cookie },
     });
@@ -98,7 +94,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.next_cursor).toBeNull();
   });
 
-  it("returns has_more=true when limit < total items", async () => {
+  it('returns has_more=true when limit < total items', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 5; i++) {
       createTestIssue(project.id, user.id, {
@@ -108,7 +104,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=3`,
       headers: { cookie },
     });
@@ -121,7 +117,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.next_cursor).not.toBeNull();
   });
 
-  it("returns has_more=false when exact items equal limit", async () => {
+  it('returns has_more=false when exact items equal limit', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 3; i++) {
       createTestIssue(project.id, user.id, {
@@ -131,7 +127,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=3`,
       headers: { cookie },
     });
@@ -142,7 +138,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.has_more).toBe(false);
   });
 
-  it("returns has_more=true when limit+1 items exist", async () => {
+  it('returns has_more=true when limit+1 items exist', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 4; i++) {
       createTestIssue(project.id, user.id, {
@@ -152,7 +148,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=3`,
       headers: { cookie },
     });
@@ -163,19 +159,19 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.has_more).toBe(true);
   });
 
-  it("limit=1 returns single item pages", async () => {
+  it('limit=1 returns single item pages', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     createTestIssue(project.id, user.id, {
-      title: "Only Issue A",
-      createdAt: new Date("2025-01-01"),
+      title: 'Only Issue A',
+      createdAt: new Date('2025-01-01'),
     });
     createTestIssue(project.id, user.id, {
-      title: "Only Issue B",
-      createdAt: new Date("2025-02-01"),
+      title: 'Only Issue B',
+      createdAt: new Date('2025-02-01'),
     });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=1`,
       headers: { cookie },
     });
@@ -186,11 +182,11 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.has_more).toBe(true);
   });
 
-  it("empty project returns empty list with no cursor", async () => {
+  it('empty project returns empty list with no cursor', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues`,
       headers: { cookie },
     });
@@ -202,7 +198,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.next_cursor).toBeNull();
   });
 
-  it("default limit is 50", async () => {
+  it('default limit is 50', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     // Create 51 issues to verify default limit
     for (let i = 0; i < 51; i++) {
@@ -213,7 +209,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues`,
       headers: { cookie },
     });
@@ -224,7 +220,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(body.pagination.has_more).toBe(true);
   });
 
-  it("next_cursor is a valid base64 string", async () => {
+  it('next_cursor is a valid base64 string', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 3; i++) {
       createTestIssue(project.id, user.id, {
@@ -234,7 +230,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     }
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=2`,
       headers: { cookie },
     });
@@ -245,12 +241,12 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(cursor).toBeDefined();
 
     // Cursor should be base64-decodable to JSON with { v, id }
-    const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
-    expect(decoded).toHaveProperty("v");
-    expect(decoded).toHaveProperty("id");
+    const decoded = JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
+    expect(decoded).toHaveProperty('v');
+    expect(decoded).toHaveProperty('id');
   });
 
-  it("accepts a cursor parameter and returns 200", async () => {
+  it('accepts a cursor parameter and returns 200', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     for (let i = 0; i < 5; i++) {
       createTestIssue(project.id, user.id, {
@@ -261,7 +257,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
 
     // Get first page
     const firstRes = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=2`,
       headers: { cookie },
     });
@@ -273,7 +269,7 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     // Use cursor for second page
     const cursor = firstBody.pagination.next_cursor;
     const secondRes = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=2&cursor=${cursor}`,
       headers: { cookie },
     });
@@ -284,11 +280,11 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(secondBody.pagination).toBeDefined();
   });
 
-  it("respects limit=100 as maximum", async () => {
+  it('respects limit=100 as maximum', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=100`,
       headers: { cookie },
     });
@@ -296,11 +292,11 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(res.statusCode).toBe(200);
   });
 
-  it("rejects limit greater than 100", async () => {
+  it('rejects limit greater than 100', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=101`,
       headers: { cookie },
     });
@@ -308,11 +304,11 @@ describe("GET /api/v1/projects/:projectId/issues — pagination", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("rejects limit less than 1", async () => {
+  it('rejects limit less than 1', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/issues?limit=0`,
       headers: { cookie },
     });

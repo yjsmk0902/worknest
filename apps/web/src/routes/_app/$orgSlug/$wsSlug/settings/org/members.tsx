@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, MoreHorizontal, Loader2, Users } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
@@ -15,14 +17,10 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { SettingsLayout } from '@/components/settings/settings-layout';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { useAuthStore } from '@/stores/auth-store';
+import { Loader2, MoreHorizontal, Search, Users } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/settings/org/members',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/org/members')({
   component: OrgSettingsMembers,
 });
 
@@ -60,8 +58,7 @@ function OrgSettingsMembers() {
 
   const membersQuery = useQuery({
     queryKey: ['organizations', orgId, 'members'],
-    queryFn: () =>
-      apiClient.getList<OrgMember>(`/organizations/${orgId}/members`),
+    queryFn: () => apiClient.getList<OrgMember>(`/organizations/${orgId}/members`),
     enabled: !!orgId,
   });
 
@@ -79,9 +76,7 @@ function OrgSettingsMembers() {
       <div className="max-w-[720px] space-y-6 p-6">
         <div>
           <h2 className="text-lg font-semibold text-foreground">조직 멤버</h2>
-          <p className="text-sm text-muted-foreground">
-            조직에 소속된 멤버를 관리합니다.
-          </p>
+          <p className="text-sm text-muted-foreground">조직에 소속된 멤버를 관리합니다.</p>
         </div>
 
         <Separator />
@@ -124,7 +119,12 @@ function OrgSettingsMembers() {
 
         <div className="space-y-2">
           {filtered.map((member) => (
-            <OrgMemberRow key={member.id} member={member} orgId={orgId!} isMe={member.user.id === currentUser?.id} />
+            <OrgMemberRow
+              key={member.id}
+              member={member}
+              orgId={orgId!}
+              isMe={member.user.id === currentUser?.id}
+            />
           ))}
         </div>
       </div>
@@ -132,7 +132,11 @@ function OrgSettingsMembers() {
   );
 }
 
-function OrgMemberRow({ member, orgId, isMe }: { member: OrgMember; orgId: string; isMe: boolean }) {
+function OrgMemberRow({
+  member,
+  orgId,
+  isMe,
+}: { member: OrgMember; orgId: string; isMe: boolean }) {
   const queryClient = useQueryClient();
 
   const updateRoleMutation = useMutation({
@@ -146,8 +150,7 @@ function OrgMemberRow({ member, orgId, isMe }: { member: OrgMember; orgId: strin
   });
 
   const removeMutation = useMutation({
-    mutationFn: () =>
-      apiClient.delete(`/organizations/${orgId}/members/${member.id}`),
+    mutationFn: () => apiClient.delete(`/organizations/${orgId}/members/${member.id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations', orgId, 'members'] });
       toast('멤버가 제거되었습니다.');
@@ -164,7 +167,11 @@ function OrgMemberRow({ member, orgId, isMe }: { member: OrgMember; orgId: strin
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="truncate text-sm font-medium">{member.user.name}</p>
-          {isMe && <Badge variant="outline" className="text-xs">나</Badge>}
+          {isMe && (
+            <Badge variant="outline" className="text-xs">
+              나
+            </Badge>
+          )}
         </div>
         <p className="truncate text-xs text-muted-foreground">{member.user.email}</p>
       </div>
@@ -200,9 +207,7 @@ function OrgMemberRow({ member, orgId, isMe }: { member: OrgMember; orgId: strin
               onClick={() => removeMutation.mutate()}
               disabled={removeMutation.isPending}
             >
-              {removeMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {removeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               멤버 제거
             </DropdownMenuItem>
           </DropdownMenuContent>

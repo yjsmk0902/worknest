@@ -1,13 +1,13 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Notification Type ───────────────────────────────────────────────────
 
 export const notificationType = z.enum([
-  "assigned",
-  "mentioned",
-  "commented",
-  "status_changed",
-  "invited",
+  'assigned',
+  'mentioned',
+  'commented',
+  'status_changed',
+  'invited',
 ]);
 
 export type NotificationType = z.infer<typeof notificationType>;
@@ -33,6 +33,4 @@ export const markNotificationReadInput = z.object({
   read: z.boolean().default(true),
 });
 
-export type MarkNotificationReadInput = z.infer<
-  typeof markNotificationReadInput
->;
+export type MarkNotificationReadInput = z.infer<typeof markNotificationReadInput>;

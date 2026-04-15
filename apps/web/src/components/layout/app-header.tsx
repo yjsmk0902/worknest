@@ -7,12 +7,7 @@ interface AppHeaderProps {
   className?: string;
 }
 
-export function AppHeader({
-  title,
-  breadcrumbs,
-  actions,
-  className,
-}: AppHeaderProps) {
+export function AppHeader({ title, breadcrumbs, actions, className }: AppHeaderProps) {
   return (
     <header
       className={cn(
@@ -25,9 +20,7 @@ export function AppHeader({
           <nav aria-label="Breadcrumb" className="flex items-center gap-1">
             {breadcrumbs.map((crumb, index) => (
               <span key={crumb.label} className="flex items-center gap-1">
-                {index > 0 && (
-                  <span className="text-muted-foreground">/</span>
-                )}
+                {index > 0 && <span className="text-muted-foreground">/</span>}
                 {crumb.href ? (
                   <a
                     href={crumb.href}
@@ -36,9 +29,7 @@ export function AppHeader({
                     {crumb.label}
                   </a>
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {crumb.label}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{crumb.label}</span>
                 )}
               </span>
             ))}

@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── File Entity Type ──────────────────────────────────────────────────
 
-export const fileEntityType = z.enum(["issue", "page"]);
+export const fileEntityType = z.enum(['issue', 'page']);
 
 export type FileEntityType = z.infer<typeof fileEntityType>;
 

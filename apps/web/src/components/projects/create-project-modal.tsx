@@ -1,17 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle, Folder, Check, X } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@worknest/ui';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@worknest/ui';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { toast } from '@worknest/ui';
+import { AlertTriangle, Check, Folder, Loader2, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 
 interface CreateProjectModalProps {
@@ -55,11 +49,7 @@ function generatePrefix(name: string): string {
 
 const PREFIX_REGEX = /^[A-Z]{2,5}$/;
 
-export function CreateProjectModal({
-  workspaceId,
-  open,
-  onOpenChange,
-}: CreateProjectModalProps) {
+export function CreateProjectModal({ workspaceId, open, onOpenChange }: CreateProjectModalProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [prefix, setPrefix] = useState('');
@@ -101,7 +91,10 @@ export function CreateProjectModal({
 
   // Manual prefix editing
   function handlePrefixChange(value: string) {
-    const upper = value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+    const upper = value
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 5);
     setPrefix(upper);
     setPrefixManuallyEdited(true);
     debouncePrefixCheck(upper);
@@ -120,8 +113,7 @@ export function CreateProjectModal({
 
   const isPrefixValid = PREFIX_REGEX.test(prefix);
   const isPrefixAvailable = prefixCheckQuery.data?.available === true;
-  const isPrefixChecking =
-    prefixCheckQuery.isFetching || prefix !== debouncedPrefix;
+  const isPrefixChecking = prefixCheckQuery.isFetching || prefix !== debouncedPrefix;
 
   // Create mutation
   const createMutation = useMutation({
@@ -178,9 +170,7 @@ export function CreateProjectModal({
             className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive">
-              {createMutation.error.message}
-            </p>
+            <p className="text-sm text-destructive">{createMutation.error.message}</p>
           </div>
         )}
 
@@ -233,14 +223,12 @@ export function CreateProjectModal({
                     확인 중...
                   </p>
                 )}
-                {isPrefixValid &&
-                  !isPrefixChecking &&
-                  isPrefixAvailable && (
-                    <p className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                      <Check className="h-3 w-3" />
-                      사용 가능
-                    </p>
-                  )}
+                {isPrefixValid && !isPrefixChecking && isPrefixAvailable && (
+                  <p className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <Check className="h-3 w-3" />
+                    사용 가능
+                  </p>
+                )}
                 {isPrefixValid &&
                   !isPrefixChecking &&
                   prefixCheckQuery.isSuccess &&

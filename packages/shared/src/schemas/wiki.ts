@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Wiki Space Role ───────────────────────────────────────────────────
 
-export const wikiSpaceRole = z.enum(["editor", "viewer"]);
+export const wikiSpaceRole = z.enum(['editor', 'viewer']);
 
 export type WikiSpaceRole = z.infer<typeof wikiSpaceRole>;
 
@@ -15,10 +15,7 @@ export const createWikiSpaceInput = z.object({
     .string()
     .min(1)
     .max(50)
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase alphanumeric with hyphens",
-    ),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
 });
 
 export type CreateWikiSpaceInput = z.infer<typeof createWikiSpaceInput>;
@@ -30,10 +27,7 @@ export const updateWikiSpaceInput = z.object({
     .string()
     .min(1)
     .max(50)
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase alphanumeric with hyphens",
-    )
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens')
     .optional(),
 });
 
@@ -85,10 +79,7 @@ export const createWikiPageInput = z.object({
     .string()
     .min(1)
     .max(200)
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Slug must be lowercase alphanumeric with hyphens",
-    ),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
   content: z.unknown().optional(),
   parentId: z.string().uuid().optional(),
 });

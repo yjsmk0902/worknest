@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Roles ──────────────────────────────────────────────────────────────
 
-export const projectRole = z.enum(["admin", "member", "viewer"]);
+export const projectRole = z.enum(['admin', 'member', 'viewer']);
 export type ProjectRole = z.infer<typeof projectRole>;
 
 // ── Project ────────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export const createProjectInput = z.object({
     .string()
     .min(2)
     .max(5)
-    .regex(/^[A-Z]{2,5}$/, "Prefix must be 2-5 uppercase letters"),
+    .regex(/^[A-Z]{2,5}$/, 'Prefix must be 2-5 uppercase letters'),
   iconUrl: z.string().max(500).nullable().optional(),
 });
 
@@ -74,7 +74,7 @@ export const addProjectMemberInput = z.object({
 export type AddProjectMemberInput = z.infer<typeof addProjectMemberInput>;
 
 export const updateProjectMemberInput = z.object({
-  role: projectRole.exclude(["admin"]),
+  role: projectRole.exclude(['admin']),
 });
 
 export type UpdateProjectMemberInput = z.infer<typeof updateProjectMemberInput>;

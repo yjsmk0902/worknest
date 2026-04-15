@@ -1,19 +1,19 @@
-import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Table from "@tiptap/extension-table";
-import TableRow from "@tiptap/extension-table-row";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import Highlight from "@tiptap/extension-highlight";
-import Underline from "@tiptap/extension-underline";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { common, createLowlight } from "lowlight";
-import { useCallback, useEffect, useRef } from "react";
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Highlight from '@tiptap/extension-highlight';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import Table from '@tiptap/extension-table';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TableRow from '@tiptap/extension-table-row';
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
+import Underline from '@tiptap/extension-underline';
+import { EditorContent, type JSONContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { common, createLowlight } from 'lowlight';
+import { useCallback, useEffect, useRef } from 'react';
 
 const lowlight = createLowlight(common);
 
@@ -31,9 +31,7 @@ export interface EditorProps {
   /** Whether to autofocus the editor on mount */
   autofocus?: boolean;
   /** Additional TipTap extensions to include */
-  extensions?: Parameters<typeof useEditor>[0] extends { extensions?: infer E }
-    ? E
-    : never;
+  extensions?: Parameters<typeof useEditor>[0] extends { extensions?: infer E } ? E : never;
 }
 
 /**
@@ -46,7 +44,7 @@ export function Editor({
   content,
   onUpdate,
   editable = true,
-  placeholder = "Write something...",
+  placeholder = 'Write something...',
   className,
   autofocus = false,
   extensions: extraExtensions,
@@ -64,74 +62,72 @@ export function Editor({
       Placeholder.configure({
         placeholder,
         emptyEditorClass:
-          "before:content-[attr(data-placeholder)] before:text-muted-foreground before:float-left before:h-0 before:pointer-events-none",
+          'before:content-[attr(data-placeholder)] before:text-muted-foreground before:float-left before:h-0 before:pointer-events-none',
       }),
       Link.configure({
         autolink: true,
         openOnClick: true,
         HTMLAttributes: {
-          class: "text-primary underline cursor-pointer",
-          rel: "noopener noreferrer",
-          target: "_blank",
+          class: 'text-primary underline cursor-pointer',
+          rel: 'noopener noreferrer',
+          target: '_blank',
         },
       }),
       Image.configure({
         inline: false,
         HTMLAttributes: {
-          class: "rounded-md max-w-full",
+          class: 'rounded-md max-w-full',
         },
       }),
       TaskList.configure({
         HTMLAttributes: {
-          class: "not-prose",
+          class: 'not-prose',
         },
       }),
       TaskItem.configure({
         nested: true,
         HTMLAttributes: {
-          class: "flex items-start gap-2",
+          class: 'flex items-start gap-2',
         },
       }),
       Table.configure({
         resizable: true,
         HTMLAttributes: {
-          class: "border-collapse table-auto w-full",
+          class: 'border-collapse table-auto w-full',
         },
       }),
       TableRow,
       TableCell.configure({
         HTMLAttributes: {
-          class: "border border-border p-2 relative min-w-[80px]",
+          class: 'border border-border p-2 relative min-w-[80px]',
         },
       }),
       TableHeader.configure({
         HTMLAttributes: {
-          class:
-            "border border-border p-2 bg-muted font-semibold text-left min-w-[80px]",
+          class: 'border border-border p-2 bg-muted font-semibold text-left min-w-[80px]',
         },
       }),
       Highlight.configure({
         multicolor: false,
         HTMLAttributes: {
-          class: "bg-yellow-200 dark:bg-yellow-800",
+          class: 'bg-yellow-200 dark:bg-yellow-800',
         },
       }),
       Underline,
       CodeBlockLowlight.configure({
         lowlight,
         HTMLAttributes: {
-          class:
-            "bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto not-prose",
+          class: 'bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto not-prose',
         },
       }),
       ...(extraExtensions ?? []),
     ],
     content: content ?? undefined,
     editable,
-    autofocus: autofocus ? "end" : false,
+    autofocus: autofocus ? 'end' : false,
     editorProps: {
       attributes: {
-        class: "outline-none",
+        class: 'outline-none',
       },
     },
     onUpdate: ({ editor: ed }) => {
@@ -158,7 +154,7 @@ export function Editor({
 
       // Only update if content actually differs to avoid cursor jumping
       if (currentJson !== newJson) {
-        editor.commands.setContent(newContent ?? { type: "doc", content: [] });
+        editor.commands.setContent(newContent ?? { type: 'doc', content: [] });
       }
     },
     [editor],
@@ -176,20 +172,20 @@ export function Editor({
   return (
     <div
       className={[
-        "prose prose-sm dark:prose-invert max-w-none",
-        "text-base leading-relaxed",
+        'prose prose-sm dark:prose-invert max-w-none',
+        'text-base leading-relaxed',
         // Task list styling
         "[&_ul[data-type='taskList']]:list-none [&_ul[data-type='taskList']]:pl-0",
         "[&_ul[data-type='taskList']_li]:flex [&_ul[data-type='taskList']_li]:items-start [&_ul[data-type='taskList']_li]:gap-2",
         "[&_ul[data-type='taskList']_input]:mt-1",
         // Table styling
-        "[&_table]:border-collapse [&_table]:w-full",
+        '[&_table]:border-collapse [&_table]:w-full',
         // Image styling
-        "[&_img]:rounded-md [&_img]:max-w-full",
+        '[&_img]:rounded-md [&_img]:max-w-full',
         className,
       ]
         .filter(Boolean)
-        .join(" ")}
+        .join(' ')}
     >
       <EditorContent editor={editor} />
     </div>

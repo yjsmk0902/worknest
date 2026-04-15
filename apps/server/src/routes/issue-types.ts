@@ -1,14 +1,10 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import { eq, and } from "drizzle-orm";
-import type { Auth } from "../lib/auth";
-import {
-  issueTypes,
-  projectMembers,
-  type Database,
-} from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { AppError } from "../lib/errors";
+import { type Database, issueTypes, projectMembers } from '@worknest/db';
+import { and, eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -25,7 +21,7 @@ const updateIssueTypeInput = z.object({
   icon: z.string().min(1).max(10).optional(),
   color: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex color")
+    .regex(/^#[0-9a-fA-F]{6}$/, 'Color must be a valid hex color')
     .optional(),
 });
 
@@ -42,12 +38,12 @@ export async function issueTypeRoutes(
   // ── GET /api/v1/projects/:projectId/types ─────────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/types",
+    '/api/v1/projects/:projectId/types',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issue Types"],
-        summary: "List issue types for a project",
+        tags: ['Issue Types'],
+        summary: 'List issue types for a project',
       },
     },
     async (request, reply) => {
@@ -58,16 +54,13 @@ export async function issueTypeRoutes(
         .select()
         .from(projectMembers)
         .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.userId, request.user!.id),
-          ),
+          and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, request.user?.id)),
         )
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!member) {
-        throw AppError.forbidden("You are not a member of this project");
+        throw AppError.forbidden('You are not a member of this project');
       }
 
       const rows = await db
@@ -93,12 +86,12 @@ export async function issueTypeRoutes(
   // ── PATCH /api/v1/projects/:projectId/types/:typeId ───────────────
 
   app.patch(
-    "/api/v1/projects/:projectId/types/:typeId",
+    '/api/v1/projects/:projectId/types/:typeId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issue Types"],
-        summary: "Update an issue type (admin only)",
+        tags: ['Issue Types'],
+        summary: 'Update an issue type (admin only)',
       },
     },
     async (request, reply) => {
@@ -110,16 +103,13 @@ export async function issueTypeRoutes(
         .select()
         .from(projectMembers)
         .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.userId, request.user!.id),
-          ),
+          and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, request.user?.id)),
         )
         .limit(1)
         .then((rows) => rows[0]);
 
-      if (!member || member.role !== "admin") {
-        throw AppError.forbidden("Only project admins can update issue types");
+      if (!member || member.role !== 'admin') {
+        throw AppError.forbidden('Only project admins can update issue types');
       }
 
       const updates: Record<string, unknown> = {};
@@ -130,16 +120,11 @@ export async function issueTypeRoutes(
       const [updated] = await db
         .update(issueTypes)
         .set(updates)
-        .where(
-          and(
-            eq(issueTypes.id, typeId),
-            eq(issueTypes.projectId, projectId),
-          ),
-        )
+        .where(and(eq(issueTypes.id, typeId), eq(issueTypes.projectId, projectId)))
         .returning();
 
       if (!updated) {
-        throw AppError.notFound("issue type");
+        throw AppError.notFound('issue type');
       }
 
       return reply.status(200).send({

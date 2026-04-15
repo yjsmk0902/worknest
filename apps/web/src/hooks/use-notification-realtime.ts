@@ -1,8 +1,8 @@
-import { useCallback, useRef } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from '@worknest/ui';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import type { NotificationOutput, NotificationType } from '@worknest/shared';
+import { toast } from '@worknest/ui';
+import { useCallback, useRef } from 'react';
 import { useWebSocketEvent } from './use-websocket-event';
 
 /**
@@ -67,17 +67,18 @@ export function useNotificationRealtime(onNew?: () => void): void {
       toast(notification.message, {
         description: label,
         duration: 5000,
-        action: orgSlug && wsSlug
-          ? {
-              label: '보기',
-              onClick: () => {
-                navigate({
-                  to: '/$orgSlug/$wsSlug/my/inbox',
-                  params: { orgSlug, wsSlug },
-                });
-              },
-            }
-          : undefined,
+        action:
+          orgSlug && wsSlug
+            ? {
+                label: '보기',
+                onClick: () => {
+                  navigate({
+                    to: '/$orgSlug/$wsSlug/my/inbox',
+                    params: { orgSlug, wsSlug },
+                  });
+                },
+              }
+            : undefined,
       });
     },
     [queryClient, onNew, navigate, orgSlug, wsSlug],

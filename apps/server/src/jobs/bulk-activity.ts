@@ -1,5 +1,5 @@
-import type { Job } from "bullmq";
-import { activities, type Database } from "@worknest/db";
+import { type Database, activities } from '@worknest/db';
+import type { Job } from 'bullmq';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -32,23 +32,23 @@ export function createBulkActivityProcessor(db: Database) {
     // Determine which fields changed
     const changedFields: { field: string; newValue: string }[] = [];
     if (changes.statusId) {
-      changedFields.push({ field: "status", newValue: changes.statusId });
+      changedFields.push({ field: 'status', newValue: changes.statusId });
     }
     if (changes.typeId) {
-      changedFields.push({ field: "type", newValue: changes.typeId });
+      changedFields.push({ field: 'type', newValue: changes.typeId });
     }
     if (changes.priority) {
-      changedFields.push({ field: "priority", newValue: changes.priority });
+      changedFields.push({ field: 'priority', newValue: changes.priority });
     }
     if (changes.assigneeIds !== undefined) {
       changedFields.push({
-        field: "assignees",
+        field: 'assignees',
         newValue: JSON.stringify(changes.assigneeIds),
       });
     }
     if (changes.labelIds !== undefined) {
       changedFields.push({
-        field: "labels",
+        field: 'labels',
         newValue: JSON.stringify(changes.labelIds),
       });
     }
@@ -61,7 +61,7 @@ export function createBulkActivityProcessor(db: Database) {
         actorId,
         issueId,
         projectId,
-        action: "bulk_updated" as const,
+        action: 'bulk_updated' as const,
         field: change.field,
         oldValue: null,
         newValue: change.newValue,

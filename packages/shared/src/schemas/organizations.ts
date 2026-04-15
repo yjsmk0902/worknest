@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Roles ──────────────────────────────────────────────────────────────
 
-export const orgRole = z.enum(["owner", "admin", "member"]);
+export const orgRole = z.enum(['owner', 'admin', 'member']);
 export type OrgRole = z.infer<typeof orgRole>;
 
 // ── Organization ───────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export type UpdateOrgMemberInput = z.infer<typeof updateOrgMemberInput>;
 
 export const createOrgInvitationInput = z.object({
   email: z.string().email(),
-  role: z.enum(["admin", "member"]),
+  role: z.enum(['admin', 'member']),
 });
 
 export type CreateOrgInvitationInput = z.infer<typeof createOrgInvitationInput>;

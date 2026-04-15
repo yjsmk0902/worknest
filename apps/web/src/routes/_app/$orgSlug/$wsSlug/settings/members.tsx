@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { InvitationList } from '@/components/settings/invitation-list';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, MoreHorizontal, Loader2, Users } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
@@ -15,15 +18,10 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { SettingsLayout } from '@/components/settings/settings-layout';
-import { InvitationList } from '@/components/settings/invitation-list';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { useAuthStore } from '@/stores/auth-store';
+import { Loader2, MoreHorizontal, Search, Users } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/settings/members',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/members')({
   component: WorkspaceSettingsMembers,
 });
 
@@ -73,8 +71,7 @@ function WorkspaceSettingsMembers() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) =>
-      apiClient.delete(`/workspace-members/${memberId}`),
+    mutationFn: (memberId: string) => apiClient.delete(`/workspace-members/${memberId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['workspaces', wsId, 'members'],
@@ -99,9 +96,7 @@ function WorkspaceSettingsMembers() {
         {/* Header */}
         <div>
           <h2 className="text-lg font-semibold text-foreground">멤버</h2>
-          <p className="text-sm text-muted-foreground">
-            워크스페이스 멤버를 관리합니다.
-          </p>
+          <p className="text-sm text-muted-foreground">워크스페이스 멤버를 관리합니다.</p>
         </div>
 
         {/* Search + invite */}
@@ -137,9 +132,7 @@ function WorkspaceSettingsMembers() {
 
         {membersQuery.isError && (
           <div className="rounded-md border border-destructive/20 bg-destructive/5 p-8 text-center">
-            <p className="text-sm text-destructive">
-              멤버 목록을 불러올 수 없습니다.
-            </p>
+            <p className="text-sm text-destructive">멤버 목록을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -151,100 +144,89 @@ function WorkspaceSettingsMembers() {
           </div>
         )}
 
-        {membersQuery.isSuccess && (
-          <>
-            {filteredMembers.length === 0 ? (
-              <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
-                <Users className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {searchQuery
-                    ? '검색 결과가 없습니다.'
-                    : '멤버가 없습니다.'}
-                </p>
+        {membersQuery.isSuccess &&
+          (filteredMembers.length === 0 ? (
+            <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
+              <Users className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                {searchQuery ? '검색 결과가 없습니다.' : '멤버가 없습니다.'}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border border-border">
+              {/* Table header */}
+              <div className="flex items-center border-b border-border px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="flex-1">이름</div>
+                <div className="w-[200px]">이메일</div>
+                <div className="w-[120px]">역할</div>
+                <div className="w-[48px]" />
               </div>
-            ) : (
-              <div className="rounded-md border border-border">
-                {/* Table header */}
-                <div className="flex items-center border-b border-border px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  <div className="flex-1">이름</div>
-                  <div className="w-[200px]">이메일</div>
-                  <div className="w-[120px]">역할</div>
-                  <div className="w-[48px]" />
-                </div>
 
-                {/* Member rows */}
-                {filteredMembers.map((member) => {
-                  const isMe = member.user.id === currentUser?.id;
-                  return (
-                    <div
-                      key={member.id}
-                      className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
-                      style={{ minHeight: '56px' }}
-                    >
-                      <div className="flex flex-1 items-center gap-3">
-                        <Avatar
-                          src={member.user.avatarUrl}
-                          fallback={member.user.name}
-                          size="md"
-                        />
-                        <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-medium">
-                            {member.user.name}
-                          </span>
-                          {isMe && (
-                            <Badge variant="outline" className="text-xs">나</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <div className="w-[200px] truncate text-sm text-muted-foreground">
-                        {member.user.email}
-                      </div>
-                      <div className="w-[120px]">
-                        {isMe ? (
-                          <Badge variant="secondary" className="text-xs capitalize">
-                            {member.role}
+              {/* Member rows */}
+              {filteredMembers.map((member) => {
+                const isMe = member.user.id === currentUser?.id;
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
+                    style={{ minHeight: '56px' }}
+                  >
+                    <div className="flex flex-1 items-center gap-3">
+                      <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="md" />
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-medium">{member.user.name}</span>
+                        {isMe && (
+                          <Badge variant="outline" className="text-xs">
+                            나
                           </Badge>
-                        ) : (
-                          <RoleSelect
-                            value={member.role}
-                            onChange={(role) =>
-                              updateRoleMutation.mutate({
-                                memberId: member.id,
-                                role,
-                              })
-                            }
-                            disabled={updateRoleMutation.isPending}
-                          />
-                        )}
-                      </div>
-                      <div className="w-[48px] text-right">
-                        {!isMe && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() =>
-                                  removeMemberMutation.mutate(member.id)
-                                }
-                              >
-                                멤버 제거
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
+                    <div className="w-[200px] truncate text-sm text-muted-foreground">
+                      {member.user.email}
+                    </div>
+                    <div className="w-[120px]">
+                      {isMe ? (
+                        <Badge variant="secondary" className="text-xs capitalize">
+                          {member.role}
+                        </Badge>
+                      ) : (
+                        <RoleSelect
+                          value={member.role}
+                          onChange={(role) =>
+                            updateRoleMutation.mutate({
+                              memberId: member.id,
+                              role,
+                            })
+                          }
+                          disabled={updateRoleMutation.isPending}
+                        />
+                      )}
+                    </div>
+                    <div className="w-[48px] text-right">
+                      {!isMe && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => removeMemberMutation.mutate(member.id)}
+                            >
+                              멤버 제거
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
 
         <Separator />
 
@@ -267,26 +249,15 @@ function RoleSelect({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-xs capitalize"
-          disabled={disabled}
-        >
+        <Button variant="outline" size="sm" className="h-7 text-xs capitalize" disabled={disabled}>
           {value}
           {disabled && <Loader2 className="ml-1 h-3 w-3 animate-spin" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {['admin', 'member', 'guest'].map((role) => (
-          <DropdownMenuItem
-            key={role}
-            onClick={() => onChange(role)}
-            className="capitalize"
-          >
-            {role === value && (
-              <span className="mr-2 text-primary">&#10003;</span>
-            )}
+          <DropdownMenuItem key={role} onClick={() => onChange(role)} className="capitalize">
+            {role === value && <span className="mr-2 text-primary">&#10003;</span>}
             {role}
           </DropdownMenuItem>
         ))}

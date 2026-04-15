@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Cycle Status ────────────────────────────────────────────────────────
 
-export const cycleStatus = z.enum(["draft", "active", "completed"]);
+export const cycleStatus = z.enum(['draft', 'active', 'completed']);
 export type CycleStatus = z.infer<typeof cycleStatus>;
 
 // ── Cycle Input ─────────────────────────────────────────────────────────

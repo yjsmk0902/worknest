@@ -1,10 +1,10 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import * as fs from "node:fs";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { FileService } from "../services/file-service";
+import * as fs from 'node:fs';
+import type { Database } from '@worknest/db';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { FileService } from '../services/file-service';
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -27,17 +27,17 @@ export async function fileRoutes(
   // ── GET /api/v1/wiki-pages/:pageId/files ─────────────────────────
 
   app.get(
-    "/api/v1/wiki-pages/:pageId/files",
+    '/api/v1/wiki-pages/:pageId/files',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Files"],
-        summary: "List files attached to a wiki page",
+        tags: ['Files'],
+        summary: 'List files attached to a wiki page',
       },
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
-      const result = await service.listByPageId(pageId, request.user!.id);
+      const result = await service.listByPageId(pageId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -45,13 +45,13 @@ export async function fileRoutes(
   // ── POST /api/v1/files/upload ───────────────────────────────────
 
   app.post(
-    "/api/v1/files/upload",
+    '/api/v1/files/upload',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Files"],
-        summary: "Upload a file",
-        consumes: ["multipart/form-data"],
+        tags: ['Files'],
+        summary: 'Upload a file',
+        consumes: ['multipart/form-data'],
       },
     },
     async (request, reply) => {
@@ -60,8 +60,8 @@ export async function fileRoutes(
       if (!data) {
         return reply.status(400).send({
           error: {
-            code: "VALIDATION_ERROR",
-            message: "No file provided",
+            code: 'VALIDATION_ERROR',
+            message: 'No file provided',
           },
         });
       }
@@ -74,24 +74,21 @@ export async function fileRoutes(
       const buffer = Buffer.concat(chunks);
 
       // Parse optional entity fields from multipart fields
-      const fields = data.fields as Record<
-        string,
-        { value?: string } | undefined
-      >;
+      const fields = data.fields as Record<string, { value?: string } | undefined>;
       const rawEntityType = fields.entityType?.value;
-      if (rawEntityType && rawEntityType !== "issue" && rawEntityType !== "page") {
+      if (rawEntityType && rawEntityType !== 'issue' && rawEntityType !== 'page') {
         return reply.status(400).send({
           error: {
-            code: "VALIDATION_ERROR",
+            code: 'VALIDATION_ERROR',
             message: "Invalid entityType. Must be 'issue' or 'page'.",
           },
         });
       }
-      const entityType = rawEntityType as "issue" | "page" | undefined;
+      const entityType = rawEntityType as 'issue' | 'page' | undefined;
       const entityId = fields.entityId?.value;
 
       const file = await service.upload(
-        request.user!.id,
+        request.user?.id,
         {
           filename: data.filename,
           mimetype: data.mimetype,
@@ -108,17 +105,17 @@ export async function fileRoutes(
   // ── GET /api/v1/files/:fileId ───────────────────────────────────
 
   app.get(
-    "/api/v1/files/:fileId",
+    '/api/v1/files/:fileId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Files"],
-        summary: "Get file info",
+        tags: ['Files'],
+        summary: 'Get file info',
       },
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
-      const file = await service.getById(fileId, request.user!.id);
+      const file = await service.getById(fileId, request.user?.id);
       return reply.status(200).send({ data: file });
     },
   );
@@ -126,34 +123,31 @@ export async function fileRoutes(
   // ── GET /api/v1/files/:fileId/download ──────────────────────────
 
   app.get(
-    "/api/v1/files/:fileId/download",
+    '/api/v1/files/:fileId/download',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Files"],
-        summary: "Download a file",
+        tags: ['Files'],
+        summary: 'Download a file',
       },
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
-      const file = await service.getFileRecord(fileId, request.user!.id);
+      const file = await service.getFileRecord(fileId, request.user?.id);
 
       if (!fs.existsSync(file.path)) {
         return reply.status(404).send({
           error: {
-            code: "FILE_NOT_FOUND",
-            message: "File not found on disk",
+            code: 'FILE_NOT_FOUND',
+            message: 'File not found on disk',
           },
         });
       }
 
       const stream = fs.createReadStream(file.path);
       return reply
-        .header("Content-Type", file.mimeType)
-        .header(
-          "Content-Disposition",
-          `attachment; filename="${encodeURIComponent(file.name)}"`,
-        )
+        .header('Content-Type', file.mimeType)
+        .header('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`)
         .send(stream);
     },
   );
@@ -164,33 +158,33 @@ export async function fileRoutes(
   // Only serves image files; rejects non-images for security.
 
   app.get(
-    "/api/v1/files/:fileId/serve",
+    '/api/v1/files/:fileId/serve',
     {
       schema: {
-        tags: ["Files"],
-        summary: "Serve an image file publicly (for logos/avatars)",
+        tags: ['Files'],
+        summary: 'Serve an image file publicly (for logos/avatars)',
       },
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
       const file = await service.getFileRecordPublic(fileId);
 
-      if (!file.mimeType.startsWith("image/")) {
+      if (!file.mimeType.startsWith('image/')) {
         return reply.status(403).send({
-          error: { code: "FORBIDDEN", message: "Only image files can be served publicly" },
+          error: { code: 'FORBIDDEN', message: 'Only image files can be served publicly' },
         });
       }
 
       if (!fs.existsSync(file.path)) {
         return reply.status(404).send({
-          error: { code: "FILE_NOT_FOUND", message: "File not found on disk" },
+          error: { code: 'FILE_NOT_FOUND', message: 'File not found on disk' },
         });
       }
 
       const stream = fs.createReadStream(file.path);
       return reply
-        .header("Content-Type", file.mimeType)
-        .header("Cache-Control", "public, max-age=31536000, immutable")
+        .header('Content-Type', file.mimeType)
+        .header('Cache-Control', 'public, max-age=31536000, immutable')
         .send(stream);
     },
   );
@@ -198,17 +192,17 @@ export async function fileRoutes(
   // ── DELETE /api/v1/files/:fileId ────────────────────────────────
 
   app.delete(
-    "/api/v1/files/:fileId",
+    '/api/v1/files/:fileId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Files"],
-        summary: "Delete a file",
+        tags: ['Files'],
+        summary: 'Delete a file',
       },
     },
     async (request, reply) => {
       const { fileId } = fileIdParam.parse(request.params);
-      await service.delete(fileId, request.user!.id);
+      await service.delete(fileId, request.user?.id);
       return reply.status(204).send();
     },
   );

@@ -1,3 +1,4 @@
+import type { FastifyInstance } from 'fastify';
 /**
  * Cycle route integration tests.
  *
@@ -5,26 +6,24 @@
  * real service code, and an in-memory mock database.
  * No service methods are mocked -- business logic is actually executed.
  */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  addIssueToCycle,
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
+  createTestCycle,
+  createTestIssue,
   createTestOrg,
   createTestProject,
-  createTestIssue,
-  createTestCycle,
-  addIssueToCycle,
-  addProjectMember,
+  createTestUser,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
   stores,
-} from "./setup";
+} from './setup';
 
 // ── Mock WebSocket broadcasts ───────────────────────────────────────────
 
-vi.mock("../src/websocket/cycle-events", () => ({
+vi.mock('../src/websocket/cycle-events', () => ({
   broadcastCycleUpdated: vi.fn(),
   broadcastCycleIssueChanged: vi.fn(),
 }));
@@ -32,7 +31,7 @@ vi.mock("../src/websocket/cycle-events", () => ({
 // ── Build a test app with cycle routes ──────────────────────────────────
 
 async function buildCycleApp() {
-  const { cycleRoutes } = await import("../src/routes/cycles");
+  const { cycleRoutes } = await import('../src/routes/cycles');
 
   const { app, auth, db } = await buildTestApp(
     async (app, { auth, db }) => {
@@ -47,12 +46,12 @@ async function buildCycleApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupProjectWithUser() {
-  const user = createTestUser({ name: "Cycle Admin" });
+  const user = createTestUser({ name: 'Cycle Admin' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const project = createTestProject(ws.id, user.id, {
-    name: "Cycle Project",
-    prefix: "CP",
+    name: 'Cycle Project',
+    prefix: 'CP',
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
@@ -60,7 +59,7 @@ function setupProjectWithUser() {
 
 // ── Tests: Cycle CRUD ───────────────────────────────────────────────────
 
-describe("POST /api/v1/projects/:projectId/cycles", () => {
+describe('POST /api/v1/projects/:projectId/cycles', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -74,54 +73,54 @@ describe("POST /api/v1/projects/:projectId/cycles", () => {
     cleanup();
   });
 
-  it("creates a cycle and returns 201", async () => {
+  it('creates a cycle and returns 201', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie },
-      payload: { name: "Sprint 1" },
+      payload: { name: 'Sprint 1' },
     });
 
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
-    expect(body.data.name).toBe("Sprint 1");
+    expect(body.data.name).toBe('Sprint 1');
     expect(body.data.projectId).toBe(project.id);
-    expect(body.data.status).toBe("draft");
+    expect(body.data.status).toBe('draft');
     expect(body.data.description).toBeNull();
     expect(body.data.startDate).toBeNull();
     expect(body.data.endDate).toBeNull();
     expect(body.data.createdAt).toBeDefined();
   });
 
-  it("creates a cycle with description and dates", async () => {
+  it('creates a cycle with description and dates', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie },
       payload: {
-        name: "Sprint 2",
-        description: "Two-week sprint",
-        startDate: "2026-04-01T00:00:00.000Z",
-        endDate: "2026-04-14T00:00:00.000Z",
+        name: 'Sprint 2',
+        description: 'Two-week sprint',
+        startDate: '2026-04-01T00:00:00.000Z',
+        endDate: '2026-04-14T00:00:00.000Z',
       },
     });
 
     expect(res.statusCode).toBe(201);
     const body = JSON.parse(res.body);
-    expect(body.data.description).toBe("Two-week sprint");
+    expect(body.data.description).toBe('Two-week sprint');
     expect(body.data.startDate).toBeDefined();
     expect(body.data.endDate).toBeDefined();
   });
 
-  it("returns 400 when name is missing", async () => {
+  it('returns 400 when name is missing', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie },
       payload: {},
@@ -130,35 +129,35 @@ describe("POST /api/v1/projects/:projectId/cycles", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("returns 403 when non-member tries to create", async () => {
+  it('returns 403 when non-member tries to create', async () => {
     const { project } = setupProjectWithUser();
-    const outsider = createTestUser({ name: "Outsider" });
+    const outsider = createTestUser({ name: 'Outsider' });
     const outsiderCookie = loginAsUser(outsider);
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie: outsiderCookie },
-      payload: { name: "No access" },
+      payload: { name: 'No access' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 
-  it("returns 401 when not authenticated", async () => {
+  it('returns 401 when not authenticated', async () => {
     const { project } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/projects/${project.id}/cycles`,
-      payload: { name: "No auth" },
+      payload: { name: 'No auth' },
     });
 
     expect(res.statusCode).toBe(401);
   });
 });
 
-describe("GET /api/v1/projects/:projectId/cycles", () => {
+describe('GET /api/v1/projects/:projectId/cycles', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -172,13 +171,13 @@ describe("GET /api/v1/projects/:projectId/cycles", () => {
     cleanup();
   });
 
-  it("returns cycles for a project", async () => {
+  it('returns cycles for a project', async () => {
     const { project, cookie } = setupProjectWithUser();
-    createTestCycle(project.id, { name: "Cycle A" });
-    createTestCycle(project.id, { name: "Cycle B" });
+    createTestCycle(project.id, { name: 'Cycle A' });
+    createTestCycle(project.id, { name: 'Cycle B' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie },
     });
@@ -188,11 +187,11 @@ describe("GET /api/v1/projects/:projectId/cycles", () => {
     expect(body.data).toHaveLength(2);
   });
 
-  it("returns empty list when no cycles exist", async () => {
+  it('returns empty list when no cycles exist', async () => {
     const { project, cookie } = setupProjectWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie },
     });
@@ -202,13 +201,13 @@ describe("GET /api/v1/projects/:projectId/cycles", () => {
     expect(body.data).toHaveLength(0);
   });
 
-  it("returns 403 when non-member tries to list", async () => {
+  it('returns 403 when non-member tries to list', async () => {
     const { project } = setupProjectWithUser();
-    const outsider = createTestUser({ name: "Outsider" });
+    const outsider = createTestUser({ name: 'Outsider' });
     const outsiderCookie = loginAsUser(outsider);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/projects/${project.id}/cycles`,
       headers: { cookie: outsiderCookie },
     });
@@ -217,7 +216,7 @@ describe("GET /api/v1/projects/:projectId/cycles", () => {
   });
 });
 
-describe("GET /api/v1/cycles/:cycleId", () => {
+describe('GET /api/v1/cycles/:cycleId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -231,12 +230,12 @@ describe("GET /api/v1/cycles/:cycleId", () => {
     cleanup();
   });
 
-  it("returns a cycle by ID", async () => {
+  it('returns a cycle by ID', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Get Cycle" });
+    const cycle = createTestCycle(project.id, { name: 'Get Cycle' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
     });
@@ -244,15 +243,15 @@ describe("GET /api/v1/cycles/:cycleId", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data.id).toBe(cycle.id);
-    expect(body.data.name).toBe("Get Cycle");
+    expect(body.data.name).toBe('Get Cycle');
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${fakeId}`,
       headers: { cookie },
     });
@@ -261,7 +260,7 @@ describe("GET /api/v1/cycles/:cycleId", () => {
   });
 });
 
-describe("PATCH /api/v1/cycles/:cycleId", () => {
+describe('PATCH /api/v1/cycles/:cycleId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -275,49 +274,49 @@ describe("PATCH /api/v1/cycles/:cycleId", () => {
     cleanup();
   });
 
-  it("updates cycle name", async () => {
+  it('updates cycle name', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Old Name" });
+    const cycle = createTestCycle(project.id, { name: 'Old Name' });
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
-      payload: { name: "New Name" },
+      payload: { name: 'New Name' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.name).toBe("New Name");
+    expect(body.data.name).toBe('New Name');
   });
 
-  it("updates cycle description", async () => {
+  it('updates cycle description', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Desc Cycle" });
+    const cycle = createTestCycle(project.id, { name: 'Desc Cycle' });
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
-      payload: { description: "Updated description" },
+      payload: { description: 'Updated description' },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.description).toBe("Updated description");
+    expect(body.data.description).toBe('Updated description');
   });
 
-  it("updates cycle dates", async () => {
+  it('updates cycle dates', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Date Cycle" });
+    const cycle = createTestCycle(project.id, { name: 'Date Cycle' });
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
       payload: {
-        startDate: "2026-05-01T00:00:00.000Z",
-        endDate: "2026-05-14T00:00:00.000Z",
+        startDate: '2026-05-01T00:00:00.000Z',
+        endDate: '2026-05-14T00:00:00.000Z',
       },
     });
 
@@ -327,38 +326,38 @@ describe("PATCH /api/v1/cycles/:cycleId", () => {
     expect(body.data.endDate).toBeDefined();
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/cycles/${fakeId}`,
       headers: { cookie },
-      payload: { name: "Nope" },
+      payload: { name: 'Nope' },
     });
 
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when non-member tries to update", async () => {
+  it('returns 403 when non-member tries to update', async () => {
     const { project } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Protected" });
-    const outsider = createTestUser({ name: "Outsider" });
+    const cycle = createTestCycle(project.id, { name: 'Protected' });
+    const outsider = createTestUser({ name: 'Outsider' });
     const outsiderCookie = loginAsUser(outsider);
 
     const res = await app.inject({
-      method: "PATCH",
+      method: 'PATCH',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie: outsiderCookie },
-      payload: { name: "Hacked" },
+      payload: { name: 'Hacked' },
     });
 
     expect(res.statusCode).toBe(403);
   });
 });
 
-describe("DELETE /api/v1/cycles/:cycleId", () => {
+describe('DELETE /api/v1/cycles/:cycleId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -372,15 +371,15 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
     cleanup();
   });
 
-  it("deletes a draft cycle and returns 204", async () => {
+  it('deletes a draft cycle and returns 204', async () => {
     const { project, cookie } = setupProjectWithUser();
     const cycle = createTestCycle(project.id, {
-      name: "To Delete",
-      status: "draft",
+      name: 'To Delete',
+      status: 'draft',
     });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
     });
@@ -391,15 +390,15 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
     expect(found).toBeUndefined();
   });
 
-  it("returns 400 when deleting an active cycle", async () => {
+  it('returns 400 when deleting an active cycle', async () => {
     const { project, cookie } = setupProjectWithUser();
     const cycle = createTestCycle(project.id, {
-      name: "Active Cycle",
-      status: "active",
+      name: 'Active Cycle',
+      status: 'active',
     });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
     });
@@ -407,15 +406,15 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("returns 400 when deleting a completed cycle", async () => {
+  it('returns 400 when deleting a completed cycle', async () => {
     const { project, cookie } = setupProjectWithUser();
     const cycle = createTestCycle(project.id, {
-      name: "Completed Cycle",
-      status: "completed",
+      name: 'Completed Cycle',
+      status: 'completed',
     });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie },
     });
@@ -423,12 +422,12 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${fakeId}`,
       headers: { cookie },
     });
@@ -436,14 +435,14 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
     expect(res.statusCode).toBe(404);
   });
 
-  it("returns 403 when non-member tries to delete", async () => {
+  it('returns 403 when non-member tries to delete', async () => {
     const { project } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Protected" });
-    const outsider = createTestUser({ name: "Outsider" });
+    const cycle = createTestCycle(project.id, { name: 'Protected' });
+    const outsider = createTestUser({ name: 'Outsider' });
     const outsiderCookie = loginAsUser(outsider);
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}`,
       headers: { cookie: outsiderCookie },
     });
@@ -454,7 +453,7 @@ describe("DELETE /api/v1/cycles/:cycleId", () => {
 
 // ── Tests: Cycle Activation ─────────────────────────────────────────────
 
-describe("POST /api/v1/cycles/:cycleId/activate", () => {
+describe('POST /api/v1/cycles/:cycleId/activate', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -468,34 +467,34 @@ describe("POST /api/v1/cycles/:cycleId/activate", () => {
     cleanup();
   });
 
-  it("activates a draft cycle", async () => {
+  it('activates a draft cycle', async () => {
     const { project, cookie } = setupProjectWithUser();
     const cycle = createTestCycle(project.id, {
-      name: "Activate Me",
-      status: "draft",
+      name: 'Activate Me',
+      status: 'draft',
     });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/activate`,
       headers: { cookie },
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.status).toBe("active");
+    expect(body.data.status).toBe('active');
   });
 
-  it("returns 409 when another active cycle exists", async () => {
+  it('returns 409 when another active cycle exists', async () => {
     const { project, cookie } = setupProjectWithUser();
-    createTestCycle(project.id, { name: "Already Active", status: "active" });
+    createTestCycle(project.id, { name: 'Already Active', status: 'active' });
     const draft = createTestCycle(project.id, {
-      name: "Try Activate",
-      status: "draft",
+      name: 'Try Activate',
+      status: 'draft',
     });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${draft.id}/activate`,
       headers: { cookie },
     });
@@ -503,12 +502,12 @@ describe("POST /api/v1/cycles/:cycleId/activate", () => {
     expect(res.statusCode).toBe(409);
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${fakeId}/activate`,
       headers: { cookie },
     });
@@ -519,7 +518,7 @@ describe("POST /api/v1/cycles/:cycleId/activate", () => {
 
 // ── Tests: Cycle Issues ─────────────────────────────────────────────────
 
-describe("POST /api/v1/cycles/:cycleId/issues", () => {
+describe('POST /api/v1/cycles/:cycleId/issues', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -533,13 +532,13 @@ describe("POST /api/v1/cycles/:cycleId/issues", () => {
     cleanup();
   });
 
-  it("adds an issue to a cycle and returns 201", async () => {
+  it('adds an issue to a cycle and returns 201', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Issue Cycle" });
-    const issue = createTestIssue(project.id, user.id, { title: "Add me" });
+    const cycle = createTestCycle(project.id, { name: 'Issue Cycle' });
+    const issue = createTestIssue(project.id, user.id, { title: 'Add me' });
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
       payload: { issueId: issue.id },
@@ -553,14 +552,14 @@ describe("POST /api/v1/cycles/:cycleId/issues", () => {
     expect(body.data.carriedFromId).toBeNull();
   });
 
-  it("returns 409 when issue is already in cycle", async () => {
+  it('returns 409 when issue is already in cycle', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Dup Cycle" });
-    const issue = createTestIssue(project.id, user.id, { title: "Dup Issue" });
+    const cycle = createTestCycle(project.id, { name: 'Dup Cycle' });
+    const issue = createTestIssue(project.id, user.id, { title: 'Dup Issue' });
     addIssueToCycle(cycle.id, issue.id);
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
       payload: { issueId: issue.id },
@@ -569,13 +568,13 @@ describe("POST /api/v1/cycles/:cycleId/issues", () => {
     expect(res.statusCode).toBe(409);
   });
 
-  it("returns 404 when issue does not exist", async () => {
+  it('returns 404 when issue does not exist', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "No Issue" });
-    const fakeIssueId = "00000000-0000-0000-0000-000000000000";
+    const cycle = createTestCycle(project.id, { name: 'No Issue' });
+    const fakeIssueId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
       payload: { issueId: fakeIssueId },
@@ -585,7 +584,7 @@ describe("POST /api/v1/cycles/:cycleId/issues", () => {
   });
 });
 
-describe("DELETE /api/v1/cycles/:cycleId/issues/:issueId", () => {
+describe('DELETE /api/v1/cycles/:cycleId/issues/:issueId', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -599,14 +598,14 @@ describe("DELETE /api/v1/cycles/:cycleId/issues/:issueId", () => {
     cleanup();
   });
 
-  it("removes an issue from a cycle and returns 204", async () => {
+  it('removes an issue from a cycle and returns 204', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Remove Cycle" });
-    const issue = createTestIssue(project.id, user.id, { title: "Remove me" });
+    const cycle = createTestCycle(project.id, { name: 'Remove Cycle' });
+    const issue = createTestIssue(project.id, user.id, { title: 'Remove me' });
     addIssueToCycle(cycle.id, issue.id);
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}/issues/${issue.id}`,
       headers: { cookie },
     });
@@ -617,16 +616,16 @@ describe("DELETE /api/v1/cycles/:cycleId/issues/:issueId", () => {
     const entry = stores.cycleIssues.find(
       (ci) => ci.cycleId === cycle.id && ci.issueId === issue.id,
     );
-    expect(entry!.removedAt).not.toBeNull();
+    expect(entry?.removedAt).not.toBeNull();
   });
 
-  it("returns 404 when issue is not in cycle", async () => {
+  it('returns 404 when issue is not in cycle', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "No Issue" });
-    const issue = createTestIssue(project.id, user.id, { title: "Not here" });
+    const cycle = createTestCycle(project.id, { name: 'No Issue' });
+    const issue = createTestIssue(project.id, user.id, { title: 'Not here' });
 
     const res = await app.inject({
-      method: "DELETE",
+      method: 'DELETE',
       url: `/api/v1/cycles/${cycle.id}/issues/${issue.id}`,
       headers: { cookie },
     });
@@ -635,7 +634,7 @@ describe("DELETE /api/v1/cycles/:cycleId/issues/:issueId", () => {
   });
 });
 
-describe("GET /api/v1/cycles/:cycleId/issues", () => {
+describe('GET /api/v1/cycles/:cycleId/issues', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -649,16 +648,16 @@ describe("GET /api/v1/cycles/:cycleId/issues", () => {
     cleanup();
   });
 
-  it("returns active issues in a cycle", async () => {
+  it('returns active issues in a cycle', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "List Cycle" });
-    const issue1 = createTestIssue(project.id, user.id, { title: "Active 1" });
-    const issue2 = createTestIssue(project.id, user.id, { title: "Active 2" });
+    const cycle = createTestCycle(project.id, { name: 'List Cycle' });
+    const issue1 = createTestIssue(project.id, user.id, { title: 'Active 1' });
+    const issue2 = createTestIssue(project.id, user.id, { title: 'Active 2' });
     addIssueToCycle(cycle.id, issue1.id);
     addIssueToCycle(cycle.id, issue2.id);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
     });
@@ -669,16 +668,16 @@ describe("GET /api/v1/cycles/:cycleId/issues", () => {
     expect(body.pagination.has_more).toBe(false);
   });
 
-  it("excludes removed issues", async () => {
+  it('excludes removed issues', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Filter Cycle" });
-    const issue1 = createTestIssue(project.id, user.id, { title: "Active" });
-    const issue2 = createTestIssue(project.id, user.id, { title: "Removed" });
+    const cycle = createTestCycle(project.id, { name: 'Filter Cycle' });
+    const issue1 = createTestIssue(project.id, user.id, { title: 'Active' });
+    const issue2 = createTestIssue(project.id, user.id, { title: 'Removed' });
     addIssueToCycle(cycle.id, issue1.id);
     addIssueToCycle(cycle.id, issue2.id, { removedAt: new Date() });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
     });
@@ -686,15 +685,15 @@ describe("GET /api/v1/cycles/:cycleId/issues", () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data).toHaveLength(1);
-    expect(body.data[0].title).toBe("Active");
+    expect(body.data[0].title).toBe('Active');
   });
 
-  it("returns empty list for cycle with no issues", async () => {
+  it('returns empty list for cycle with no issues', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Empty Cycle" });
+    const cycle = createTestCycle(project.id, { name: 'Empty Cycle' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}/issues`,
       headers: { cookie },
     });
@@ -707,7 +706,7 @@ describe("GET /api/v1/cycles/:cycleId/issues", () => {
 
 // ── Tests: Cycle Completion + Carryover ──────────────────────────────────
 
-describe("POST /api/v1/cycles/:cycleId/complete", () => {
+describe('POST /api/v1/cycles/:cycleId/complete', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -721,17 +720,17 @@ describe("POST /api/v1/cycles/:cycleId/complete", () => {
     cleanup();
   });
 
-  it("completes a cycle without target cycle", async () => {
+  it('completes a cycle without target cycle', async () => {
     const { project, user, cookie } = setupProjectWithUser();
     const cycle = createTestCycle(project.id, {
-      name: "Complete Me",
-      status: "active",
+      name: 'Complete Me',
+      status: 'active',
     });
-    const issue = createTestIssue(project.id, user.id, { title: "In cycle" });
+    const issue = createTestIssue(project.id, user.id, { title: 'In cycle' });
     addIssueToCycle(cycle.id, issue.id);
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/complete`,
       headers: { cookie },
       payload: {},
@@ -739,34 +738,34 @@ describe("POST /api/v1/cycles/:cycleId/complete", () => {
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data.status).toBe("completed");
+    expect(body.data.status).toBe('completed');
   });
 
-  it("carries over incomplete issues to target cycle", async () => {
+  it('carries over incomplete issues to target cycle', async () => {
     const { project, user, cookie } = setupProjectWithUser();
 
     // Active cycle with an in-progress issue (backlog category = incomplete)
     const cycle = createTestCycle(project.id, {
-      name: "Source Cycle",
-      status: "active",
+      name: 'Source Cycle',
+      status: 'active',
     });
     const targetCycle = createTestCycle(project.id, {
-      name: "Target Cycle",
-      status: "draft",
+      name: 'Target Cycle',
+      status: 'draft',
     });
 
     // Get a backlog status (category != completed/cancelled)
     const backlogStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "backlog",
+      (s) => s.projectId === project.id && s.category === 'backlog',
     );
     const issue = createTestIssue(project.id, user.id, {
-      title: "Incomplete",
-      statusId: backlogStatus!.id,
+      title: 'Incomplete',
+      statusId: backlogStatus?.id,
     });
     addIssueToCycle(cycle.id, issue.id);
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${cycle.id}/complete`,
       headers: { cookie },
       payload: { targetCycleId: targetCycle.id },
@@ -775,20 +774,18 @@ describe("POST /api/v1/cycles/:cycleId/complete", () => {
     expect(res.statusCode).toBe(200);
 
     // Verify carryover entry was created in target cycle
-    const carriedEntries = stores.cycleIssues.filter(
-      (ci) => ci.cycleId === targetCycle.id,
-    );
+    const carriedEntries = stores.cycleIssues.filter((ci) => ci.cycleId === targetCycle.id);
     expect(carriedEntries).toHaveLength(1);
-    expect(carriedEntries[0]!.issueId).toBe(issue.id);
-    expect(carriedEntries[0]!.carriedFromId).toBeDefined();
+    expect(carriedEntries[0]?.issueId).toBe(issue.id);
+    expect(carriedEntries[0]?.carriedFromId).toBeDefined();
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "POST",
+      method: 'POST',
       url: `/api/v1/cycles/${fakeId}/complete`,
       headers: { cookie },
       payload: {},
@@ -800,7 +797,7 @@ describe("POST /api/v1/cycles/:cycleId/complete", () => {
 
 // ── Tests: Cycle Progress ───────────────────────────────────────────────
 
-describe("GET /api/v1/cycles/:cycleId/progress", () => {
+describe('GET /api/v1/cycles/:cycleId/progress', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -814,31 +811,31 @@ describe("GET /api/v1/cycles/:cycleId/progress", () => {
     cleanup();
   });
 
-  it("returns progress counts by category", async () => {
+  it('returns progress counts by category', async () => {
     const { project, user, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Progress Cycle" });
+    const cycle = createTestCycle(project.id, { name: 'Progress Cycle' });
 
     const backlogStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "backlog",
+      (s) => s.projectId === project.id && s.category === 'backlog',
     );
     const doneStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "completed",
+      (s) => s.projectId === project.id && s.category === 'completed',
     );
 
     const issue1 = createTestIssue(project.id, user.id, {
-      title: "Backlog",
-      statusId: backlogStatus!.id,
+      title: 'Backlog',
+      statusId: backlogStatus?.id,
     });
     const issue2 = createTestIssue(project.id, user.id, {
-      title: "Done",
-      statusId: doneStatus!.id,
+      title: 'Done',
+      statusId: doneStatus?.id,
     });
 
     addIssueToCycle(cycle.id, issue1.id);
     addIssueToCycle(cycle.id, issue2.id);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}/progress`,
       headers: { cookie },
     });
@@ -848,12 +845,12 @@ describe("GET /api/v1/cycles/:cycleId/progress", () => {
     expect(body.data.total).toBeGreaterThanOrEqual(2);
   });
 
-  it("returns zero counts for empty cycle", async () => {
+  it('returns zero counts for empty cycle', async () => {
     const { project, cookie } = setupProjectWithUser();
-    const cycle = createTestCycle(project.id, { name: "Empty Progress" });
+    const cycle = createTestCycle(project.id, { name: 'Empty Progress' });
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${cycle.id}/progress`,
       headers: { cookie },
     });
@@ -864,12 +861,12 @@ describe("GET /api/v1/cycles/:cycleId/progress", () => {
     expect(body.data.completed).toBe(0);
   });
 
-  it("returns 404 when cycle does not exist", async () => {
+  it('returns 404 when cycle does not exist', async () => {
     const { cookie } = setupProjectWithUser();
-    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const fakeId = '00000000-0000-0000-0000-000000000000';
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/cycles/${fakeId}/progress`,
       headers: { cookie },
     });

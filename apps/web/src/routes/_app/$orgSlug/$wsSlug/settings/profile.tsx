@@ -1,21 +1,19 @@
-import { useState } from 'react';
+import { ImageUpload } from '@/components/settings/image-upload';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
 import { Separator } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { SettingsLayout } from '@/components/settings/settings-layout';
-import { ImageUpload } from '@/components/settings/image-upload';
-import { useAuthStore } from '@/stores/auth-store';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/settings/profile',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/profile')({
   component: ProfileSettings,
 });
 
@@ -57,10 +55,13 @@ function ProfileSettings() {
         <div className="flex items-center justify-center p-12">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              프로필을 불러올 수 없습니다.
-            </p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={() => profileQuery.refetch()}>
+            <p className="mt-2 text-sm text-muted-foreground">프로필을 불러올 수 없습니다.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => profileQuery.refetch()}
+            >
               다시 시도
             </Button>
           </div>
@@ -73,9 +74,7 @@ function ProfileSettings() {
     <SettingsLayout orgSlug={orgSlug} wsSlug={wsSlug} activeTab="profile">
       <ProfileForm
         profile={profileQuery.data}
-        onSaved={() =>
-          queryClient.invalidateQueries({ queryKey: ['my', 'profile'] })
-        }
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ['my', 'profile'] })}
       />
     </SettingsLayout>
   );
@@ -96,8 +95,7 @@ function ProfileForm({
   const hasChanges = formData.name !== profile.name;
 
   const updateMutation = useMutation({
-    mutationFn: (data: { name: string }) =>
-      apiClient.patch<UserProfile>('/my/profile', data),
+    mutationFn: (data: { name: string }) => apiClient.patch<UserProfile>('/my/profile', data),
     onSuccess: (updated) => {
       toast('프로필이 저장되었습니다.');
       setCurrentUser({
@@ -122,9 +120,7 @@ function ProfileForm({
     <div className="max-w-[720px] space-y-8 p-6">
       <div>
         <h2 className="text-lg font-semibold text-foreground">프로필</h2>
-        <p className="text-sm text-muted-foreground">
-          계정 정보를 관리합니다.
-        </p>
+        <p className="text-sm text-muted-foreground">계정 정보를 관리합니다.</p>
       </div>
 
       <Separator />
@@ -164,11 +160,7 @@ function ProfileForm({
 
         <div className="space-y-2">
           <Label htmlFor="profile-email">이메일</Label>
-          <Input
-            id="profile-email"
-            value={profile.email}
-            disabled
-          />
+          <Input id="profile-email" value={profile.email} disabled />
           <p className="text-xs text-muted-foreground">이메일은 변경할 수 없습니다.</p>
         </div>
 

@@ -1,13 +1,7 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { workspaces } from "./workspaces";
+import { relations, sql } from 'drizzle-orm';
+import { pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { users } from './users';
+import { workspaces } from './workspaces';
 
 /**
  * Organizations table.
@@ -16,20 +10,18 @@ import { workspaces } from "./workspaces";
  * `slug` so that deleted orgs don't block slug reuse.
  */
 export const organizations = pgTable(
-  "organizations",
+  'organizations',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    logo: text("logo"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    logo: text('logo'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("organizations_slug_unique")
-      .on(table.slug)
-      .where(sql`${table.deletedAt} IS NULL`),
+    uniqueIndex('organizations_slug_unique').on(table.slug).where(sql`${table.deletedAt} IS NULL`),
   ],
 );
 
@@ -45,21 +37,19 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
  * CASCADE on both FKs: deleting an org or user removes the membership.
  */
 export const orgMembers = pgTable(
-  "org_members",
+  'org_members',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orgId: uuid("org_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    orgId: uuid('org_id')
       .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    userId: text("user_id")
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull(), // 'owner' | 'admin' | 'member'
-    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'owner' | 'admin' | 'member'
+    joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("org_members_org_user_unique").on(table.orgId, table.userId),
-  ],
+  (table) => [uniqueIndex('org_members_org_user_unique').on(table.orgId, table.userId)],
 );
 
 export const orgMembersRelations = relations(orgMembers, ({ one }) => ({

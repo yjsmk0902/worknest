@@ -1,22 +1,19 @@
-import { useState } from 'react';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
-import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
-import { z } from 'zod';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { apiClient, ApiError } from '../../lib/api-client';
+import { AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { z } from 'zod';
+import { ApiError, apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/register')({
   component: RegisterPage,
 });
 
 const registerSchema = z.object({
-  name: z
-    .string()
-    .min(1, '이름을 입력해주세요.')
-    .max(100, '이름은 100자 이하여야 합니다.'),
+  name: z.string().min(1, '이름을 입력해주세요.').max(100, '이름은 100자 이하여야 합니다.'),
   email: z.string().email('올바른 이메일 주소를 입력해주세요.'),
   password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.'),
 });
@@ -31,21 +28,17 @@ function RegisterPage() {
     email: '',
     password: '',
   });
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof RegisterForm, string>>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof RegisterForm, string>>>({});
 
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterForm) =>
-      apiClient.post('/auth/register', data),
+    mutationFn: (data: RegisterForm) => apiClient.post('/auth/register', data),
     onSuccess: () => {
       navigate({ to: '/onboarding' });
     },
   });
 
   const apiError = registerMutation.error;
-  const isDuplicateEmail =
-    apiError instanceof ApiError && apiError.code === 'EMAIL_ALREADY_EXISTS';
+  const isDuplicateEmail = apiError instanceof ApiError && apiError.code === 'EMAIL_ALREADY_EXISTS';
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,9 +66,7 @@ function RegisterPage() {
     <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-foreground">회원가입</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          새 계정을 만들어 시작하세요
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">새 계정을 만들어 시작하세요</p>
       </div>
 
       {isDuplicateEmail && (
@@ -86,10 +77,7 @@ function RegisterPage() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <p className="text-sm text-destructive">
             이미 사용 중인 이메일입니다.{' '}
-            <Link
-              to="/login"
-              className="font-medium underline hover:no-underline"
-            >
+            <Link to="/login" className="font-medium underline hover:no-underline">
               로그인 페이지
             </Link>
             로 이동하시겠습니까?
@@ -120,9 +108,7 @@ function RegisterPage() {
             disabled={isLoading}
             error={!!fieldErrors.name}
             value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             aria-describedby={fieldErrors.name ? 'name-error' : undefined}
           />
           {fieldErrors.name && (
@@ -144,9 +130,7 @@ function RegisterPage() {
             disabled={isLoading}
             error={!!fieldErrors.email}
             value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
             aria-describedby={fieldErrors.email ? 'email-error' : undefined}
           />
           {fieldErrors.email && (
@@ -168,12 +152,8 @@ function RegisterPage() {
               disabled={isLoading}
               error={!!fieldErrors.password}
               value={formData.password}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, password: e.target.value }))
-              }
-              aria-describedby={
-                fieldErrors.password ? 'password-error' : undefined
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
               className="pr-10"
             />
             <button
@@ -183,16 +163,10 @@ function RegisterPage() {
               aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            8자 이상, 영문/숫자 포함
-          </p>
+          <p className="text-xs text-muted-foreground">8자 이상, 영문/숫자 포함</p>
           {fieldErrors.password && (
             <p id="password-error" className="text-sm text-destructive">
               {fieldErrors.password}
@@ -200,12 +174,7 @@ function RegisterPage() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          disabled={isLoading}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

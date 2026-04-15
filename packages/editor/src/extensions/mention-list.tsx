@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { type KeyboardEvent, forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 export interface MentionUser {
   /** Unique user ID */
@@ -50,21 +44,17 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
 
     useImperativeHandle(ref, () => ({
       onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-        if (event.key === "ArrowUp") {
-          setSelectedIndex((prev) =>
-            prev <= 0 ? items.length - 1 : prev - 1,
-          );
+        if (event.key === 'ArrowUp') {
+          setSelectedIndex((prev) => (prev <= 0 ? items.length - 1 : prev - 1));
           return true;
         }
 
-        if (event.key === "ArrowDown") {
-          setSelectedIndex((prev) =>
-            prev >= items.length - 1 ? 0 : prev + 1,
-          );
+        if (event.key === 'ArrowDown') {
+          setSelectedIndex((prev) => (prev >= items.length - 1 ? 0 : prev + 1));
           return true;
         }
 
-        if (event.key === "Enter") {
+        if (event.key === 'Enter') {
           selectItem(selectedIndex);
           return true;
         }
@@ -88,10 +78,10 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
             type="button"
             key={item.id}
             className={[
-              "flex items-center gap-2 w-full px-3 py-2 text-sm text-left",
-              "hover:bg-accent transition-colors",
-              index === selectedIndex ? "bg-accent" : "",
-            ].join(" ")}
+              'flex items-center gap-2 w-full px-3 py-2 text-sm text-left',
+              'hover:bg-accent transition-colors',
+              index === selectedIndex ? 'bg-accent' : '',
+            ].join(' ')}
             onClick={() => selectItem(index)}
             onMouseEnter={() => setSelectedIndex(index)}
           >
@@ -109,9 +99,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
             <div className="flex flex-col min-w-0">
               <span className="font-medium truncate">{item.name}</span>
               {item.email && (
-                <span className="text-xs text-muted-foreground truncate">
-                  {item.email}
-                </span>
+                <span className="text-xs text-muted-foreground truncate">{item.email}</span>
               )}
             </div>
           </button>
@@ -121,4 +109,4 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
   },
 );
 
-MentionList.displayName = "MentionList";
+MentionList.displayName = 'MentionList';

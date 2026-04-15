@@ -1,22 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CycleOutput, IssueOutput, IssueStatusOutput } from '@worknest/shared';
 import {
+  Button,
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  Button,
+  DialogHeader,
+  DialogTitle,
   Separator,
   toast,
 } from '@worknest/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
-import type {
-  CycleOutput,
-  IssueOutput,
-  IssueStatusOutput,
-} from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -48,11 +44,7 @@ export function CarryOverModal({
   const incompleteIssues = useMemo(() => {
     return issues.filter((issue) => {
       const status = statuses.find((s) => s.id === issue.statusId);
-      return (
-        status &&
-        status.category !== 'completed' &&
-        status.category !== 'cancelled'
-      );
+      return status && status.category !== 'completed' && status.category !== 'cancelled';
     });
   }, [issues, statuses]);
 
@@ -60,9 +52,7 @@ export function CarryOverModal({
   const cyclesQuery = useQuery<CycleOutput[]>({
     queryKey: ['projects', projectId, 'cycles', 'for-carryover'],
     queryFn: async () => {
-      const res = await apiClient.getList<CycleOutput>(
-        `/projects/${projectId}/cycles`,
-      );
+      const res = await apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`);
       return res.data.filter(
         (c) => c.id !== cycleId && (c.status === 'draft' || c.status === 'active'),
       );
@@ -109,8 +99,7 @@ export function CarryOverModal({
         <DialogHeader>
           <DialogTitle>사이클 완료</DialogTitle>
           <DialogDescription>
-            미완료 이슈가 {incompleteIssues.length}개 있습니다. 이 이슈들을
-            어떻게 처리하시겠습니까?
+            미완료 이슈가 {incompleteIssues.length}개 있습니다. 이 이슈들을 어떻게 처리하시겠습니까?
           </DialogDescription>
         </DialogHeader>
 
@@ -144,9 +133,7 @@ export function CarryOverModal({
                       backgroundColor: status?.color ?? '#94a3b8',
                     }}
                   />
-                  <span className="text-xs text-muted-foreground">
-                    {status?.name ?? ''}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{status?.name ?? ''}</span>
                 </span>
               </div>
             );
@@ -155,10 +142,7 @@ export function CarryOverModal({
 
         {/* Target cycle selector */}
         <div className="space-y-2">
-          <label
-            htmlFor="target-cycle"
-            className="text-sm font-medium"
-          >
+          <label htmlFor="target-cycle" className="text-sm font-medium">
             이동 대상
           </label>
           <select
@@ -186,10 +170,7 @@ export function CarryOverModal({
           >
             취소
           </Button>
-          <Button
-            onClick={handleComplete}
-            disabled={completeMutation.isPending}
-          >
+          <Button onClick={handleComplete} disabled={completeMutation.isPending}>
             {completeMutation.isPending ? '처리 중...' : '사이클 완료'}
           </Button>
         </DialogFooter>

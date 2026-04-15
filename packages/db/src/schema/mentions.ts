@@ -1,12 +1,7 @@
-import {
-  pgTable,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { issues } from "./issues";
-import { wikiPages } from "./wiki";
+import { relations } from 'drizzle-orm';
+import { pgTable, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { issues } from './issues';
+import { wikiPages } from './wiki';
 
 /**
  * Issue mentions table.
@@ -16,23 +11,18 @@ import { wikiPages } from "./wiki";
  * between the project tracker and knowledge base.
  */
 export const issueMentions = pgTable(
-  "issue_mentions",
+  'issue_mentions',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    issueId: uuid("issue_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    issueId: uuid('issue_id')
       .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    pageId: uuid("page_id")
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    pageId: uuid('page_id')
       .notNull()
-      .references(() => wikiPages.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => wikiPages.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("issue_mentions_issue_page_unique").on(
-      table.issueId,
-      table.pageId,
-    ),
-  ],
+  (table) => [uniqueIndex('issue_mentions_issue_page_unique').on(table.issueId, table.pageId)],
 );
 
 export const issueMentionsRelations = relations(issueMentions, ({ one }) => ({

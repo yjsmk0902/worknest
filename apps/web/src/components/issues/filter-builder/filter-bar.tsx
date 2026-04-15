@@ -1,12 +1,17 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import type {
+  CycleOutput,
+  FilterField,
+  IssueStatusOutput,
+  IssueTypeOutput,
+} from '@worknest/shared';
 import { Button } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../lib/api-client';
+import { useState } from 'react';
 import { useProjectContext } from '../../../contexts/project-context';
-import { useIssueFilters, type ActiveFilter } from './use-issue-filters';
+import { type ListResponse, apiClient } from '../../../lib/api-client';
 import { FilterChip } from './filter-chip';
 import { FilterPopover } from './filter-popover';
-import type { CycleOutput, FilterField, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
+import { type ActiveFilter, useIssueFilters } from './use-issue-filters';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -27,8 +32,7 @@ interface LabelOutput {
 
 export function FilterBar() {
   const { projectId } = useProjectContext();
-  const { filters, addFilter, removeFilter, hasFilters, clearAllFilters } =
-    useIssueFilters();
+  const { filters, addFilter, removeFilter, hasFilters, clearAllFilters } = useIssueFilters();
 
   const [editingField, setEditingField] = useState<FilterField | null>(null);
   const [editPopoverOpen, setEditPopoverOpen] = useState(false);
@@ -36,40 +40,31 @@ export function FilterBar() {
   // Fetch reference data for chip display
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
   });
 
   const typesQuery = useQuery<IssueTypeOutput[]>({
     queryKey: ['projects', projectId, 'types'],
-    queryFn: () =>
-      apiClient.get<IssueTypeOutput[]>(
-        `/projects/${projectId}/types`,
-      ),
+    queryFn: () => apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
     staleTime: 5 * 60 * 1000,
   });
 
   const membersQuery = useQuery<ListResponse<MemberOutput>>({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
+    queryFn: () => apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
   });
 
   const labelsQuery = useQuery<LabelOutput[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
     staleTime: 5 * 60 * 1000,
   });
 
   const cyclesQuery = useQuery<ListResponse<CycleOutput>>({
     queryKey: ['projects', projectId, 'cycles'],
-    queryFn: () =>
-      apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
+    queryFn: () => apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -79,9 +74,7 @@ export function FilterBar() {
   const labels = labelsQuery.data ?? [];
   const cycles = cyclesQuery.data?.data ?? [];
 
-  const editingFilter = editingField
-    ? filters.find((f) => f.field === editingField)
-    : undefined;
+  const editingFilter = editingField ? filters.find((f) => f.field === editingField) : undefined;
 
   function handleApplyFilter(filter: ActiveFilter) {
     addFilter(filter);

@@ -1,14 +1,11 @@
-import { broadcast } from "./handler";
+import { broadcast } from './handler';
 
 /**
  * Broadcast that a new wiki page was created in a workspace.
  */
-export function broadcastWikiPageCreated(
-  workspaceId: string,
-  data: unknown,
-): void {
+export function broadcastWikiPageCreated(workspaceId: string, data: unknown): void {
   broadcast(`workspace:${workspaceId}`, {
-    type: "wiki_page.created",
+    type: 'wiki_page.created',
     payload: data,
     timestamp: new Date().toISOString(),
   });
@@ -17,12 +14,9 @@ export function broadcastWikiPageCreated(
 /**
  * Broadcast that a wiki page was updated in a workspace.
  */
-export function broadcastWikiPageUpdated(
-  workspaceId: string,
-  data: unknown,
-): void {
+export function broadcastWikiPageUpdated(workspaceId: string, data: unknown): void {
   broadcast(`workspace:${workspaceId}`, {
-    type: "wiki_page.updated",
+    type: 'wiki_page.updated',
     payload: data,
     timestamp: new Date().toISOString(),
   });
@@ -31,12 +25,9 @@ export function broadcastWikiPageUpdated(
 /**
  * Broadcast that a wiki page was deleted from a workspace.
  */
-export function broadcastWikiPageDeleted(
-  workspaceId: string,
-  data: unknown,
-): void {
+export function broadcastWikiPageDeleted(workspaceId: string, data: unknown): void {
   broadcast(`workspace:${workspaceId}`, {
-    type: "wiki_page.deleted",
+    type: 'wiki_page.deleted',
     payload: data,
     timestamp: new Date().toISOString(),
   });

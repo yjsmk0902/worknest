@@ -1,12 +1,12 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import { eq, and } from "drizzle-orm";
-import type { Auth } from "../lib/auth";
-import { workspaceMembers, type Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { SearchService } from "../services/search-service";
-import { searchQuery } from "@worknest/shared";
-import { AppError } from "../lib/errors";
+import { type Database, workspaceMembers } from '@worknest/db';
+import { searchQuery } from '@worknest/shared';
+import { and, eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
+import { SearchService } from '../services/search-service';
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -28,17 +28,17 @@ export async function searchRoutes(
   // ── GET /api/v1/workspaces/:workspaceId/search ──────────────────────
 
   app.get(
-    "/api/v1/workspaces/:workspaceId/search",
+    '/api/v1/workspaces/:workspaceId/search',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Search"],
-        summary: "Search issues, wiki pages, and projects in a workspace",
+        tags: ['Search'],
+        summary: 'Search issues, wiki pages, and projects in a workspace',
       },
     },
     async (request, reply) => {
       const { workspaceId } = workspaceIdParam.parse(request.params);
-      const callerUserId = request.user!.id;
+      const callerUserId = request.user?.id;
 
       // Verify caller is a workspace member
       const member = await db
@@ -54,7 +54,7 @@ export async function searchRoutes(
         .then((rows) => rows[0]);
 
       if (!member) {
-        throw AppError.forbidden("You are not a member of this workspace");
+        throw AppError.forbidden('You are not a member of this workspace');
       }
 
       const query = searchQuery.parse(request.query);

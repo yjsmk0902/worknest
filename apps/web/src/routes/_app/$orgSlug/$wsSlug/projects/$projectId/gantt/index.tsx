@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Plus } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import { z } from 'zod';
-import type { IssueOutput } from '@worknest/shared';
-import { apiClient, type ListResponse } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { AppHeader } from '@/components/layout/app-header';
+import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
+import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
 import { GanttChart } from '@/components/issues/gantt-view/gantt-chart';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
 import { QuickAdd } from '@/components/issues/quick-add';
 import { ViewToolbar } from '@/components/issues/view-toolbar';
-import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
-import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
-import { useHotkeyStore } from '@/stores/hotkey-store';
+import { AppHeader } from '@/components/layout/app-header';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useHotkey } from '@/hooks/use-hotkey';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { useHotkeyStore } from '@/stores/hotkey-store';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import type { IssueOutput } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { AlertTriangle, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
 
 // ── Search param validation ─────────────────────────────────────────────
 
@@ -42,9 +42,7 @@ const ganttSearchSchema = z.object({
   order: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/gantt/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/gantt/')({
   component: GanttPage,
   validateSearch: (search) => ganttSearchSchema.parse(search),
 });
@@ -97,10 +95,7 @@ function GanttPage() {
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -108,10 +103,10 @@ function GanttPage() {
   const issuesQuery = useQuery<ListResponse<IssueOutput>>({
     queryKey: ['projects', projectId, 'gantt-issues', apiParams],
     queryFn: () =>
-      apiClient.getList<IssueOutput>(
-        `/projects/${projectId}/issues`,
-        { ...apiParams, limit: '200' },
-      ),
+      apiClient.getList<IssueOutput>(`/projects/${projectId}/issues`, {
+        ...apiParams,
+        limit: '200',
+      }),
   });
 
   const project = projectQuery.data;
@@ -123,10 +118,7 @@ function GanttPage() {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <AppHeader
-          title=""
-          actions={<Skeleton className="h-9 w-24" />}
-        />
+        <AppHeader title="" actions={<Skeleton className="h-9 w-24" />} />
         <div className="flex-1 p-4">
           <GanttSkeleton />
         </div>
@@ -143,9 +135,7 @@ function GanttPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              간트 차트를 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">간트 차트를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -170,11 +160,7 @@ function GanttPage() {
         title={`${projectPrefix} Gantt`}
         breadcrumbs={[{ label: project?.name ?? '' }]}
         actions={
-          <Button
-            size="sm"
-            onClick={() => setShowQuickAdd(true)}
-            aria-label="이슈 추가"
-          >
+          <Button size="sm" onClick={() => setShowQuickAdd(true)} aria-label="이슈 추가">
             <Plus className="h-4 w-4" />
             <span>이슈</span>
           </Button>
@@ -190,10 +176,7 @@ function GanttPage() {
       {/* Quick Add overlay */}
       {showQuickAdd && (
         <div className="mx-4 mt-2">
-          <QuickAdd
-            projectId={projectId}
-            onClose={() => setShowQuickAdd(false)}
-          />
+          <QuickAdd projectId={projectId} onClose={() => setShowQuickAdd(false)} />
         </div>
       )}
 
@@ -233,10 +216,7 @@ function GanttSkeleton() {
           <Skeleton className="h-4 w-12" />
         </div>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex h-10 items-center gap-2 border-b border-border/50 px-3"
-          >
+          <div key={i} className="flex h-10 items-center gap-2 border-b border-border/50 px-3">
             <Skeleton className="h-2 w-2 rounded-full" />
             <Skeleton className="h-3 w-12" />
             <Skeleton className="h-3 w-32" />
@@ -248,10 +228,7 @@ function GanttSkeleton() {
       <div className="flex-1">
         <div className="h-14 border-b border-border bg-muted/50" />
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex h-10 items-center border-b border-border/30 px-4"
-          >
+          <div key={i} className="flex h-10 items-center border-b border-border/30 px-4">
             <Skeleton
               className="h-6 rounded-md"
               style={{

@@ -59,15 +59,11 @@ export function ProjectCard({
       <span className="text-xs font-mono text-muted-foreground">{prefix}</span>
 
       {/* Name */}
-      <span className="mt-0.5 truncate text-sm font-medium text-foreground">
-        {name}
-      </span>
+      <span className="mt-0.5 truncate text-sm font-medium text-foreground">{name}</span>
 
       {/* Description */}
       {description && (
-        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-          {description}
-        </p>
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{description}</p>
       )}
 
       {/* Meta */}

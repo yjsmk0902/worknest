@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { RefreshCw, X, Loader2, UserPlus, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
 import { Badge } from '@worknest/ui';
-import { apiClient } from '../../lib/api-client';
 import { toast } from '@worknest/ui';
+import { Loader2, Mail, RefreshCw, UserPlus, X } from 'lucide-react';
+import { useState } from 'react';
+import { apiClient } from '../../lib/api-client';
 import { InviteModal } from './invite-modal';
 
 interface Invitation {
@@ -27,15 +27,11 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
 
   const invitationsQuery = useQuery({
     queryKey: ['workspaces', workspaceId, 'invitations'],
-    queryFn: () =>
-      apiClient.getList<Invitation>(
-        `/workspaces/${workspaceId}/invitations`,
-      ),
+    queryFn: () => apiClient.getList<Invitation>(`/workspaces/${workspaceId}/invitations`),
   });
 
   const resendMutation = useMutation({
-    mutationFn: (invitationId: string) =>
-      apiClient.post(`/invitations/${invitationId}/resend`),
+    mutationFn: (invitationId: string) => apiClient.post(`/invitations/${invitationId}/resend`),
     onSuccess: () => {
       toast('초대 메일이 재발송되었습니다.');
     },
@@ -45,8 +41,7 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (invitationId: string) =>
-      apiClient.delete(`/invitations/${invitationId}`),
+    mutationFn: (invitationId: string) => apiClient.delete(`/invitations/${invitationId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['workspaces', workspaceId, 'invitations'],
@@ -83,20 +78,13 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
   }
 
   const invitations = invitationsQuery.data?.data ?? [];
-  const pendingInvitations = invitations.filter(
-    (inv) => !inv.acceptedAt,
-  );
+  const pendingInvitations = invitations.filter((inv) => !inv.acceptedAt);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">
-          대기 중인 초대
-        </h3>
-        <Button
-          size="sm"
-          onClick={() => setInviteModalOpen(true)}
-        >
+        <h3 className="text-lg font-semibold text-foreground">대기 중인 초대</h3>
+        <Button size="sm" onClick={() => setInviteModalOpen(true)}>
           <UserPlus className="h-4 w-4" />
           멤버 초대
         </Button>
@@ -105,9 +93,7 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
       {pendingInvitations.length === 0 ? (
         <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
           <Mail className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            대기 중인 초대가 없습니다.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">대기 중인 초대가 없습니다.</p>
         </div>
       ) : (
         <div className="rounded-md border border-border">
@@ -125,9 +111,7 @@ export function InvitationList({ workspaceId }: InvitationListProps) {
               key={invitation.id}
               className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
             >
-              <div className="flex-1 truncate text-sm">
-                {invitation.email}
-              </div>
+              <div className="flex-1 truncate text-sm">{invitation.email}</div>
               <div className="w-[100px]">
                 <Badge variant="secondary" className="text-xs capitalize">
                   {invitation.role}

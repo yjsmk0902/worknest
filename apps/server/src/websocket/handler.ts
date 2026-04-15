@@ -1,15 +1,16 @@
-import type { FastifyInstance } from "fastify";
-import type { WebSocket } from "@fastify/websocket";
-import { eq, and, isNull } from "drizzle-orm";
-import { issues, projectMembers, wikiPages, wikiSpaceMembers, workspaceMembers, type Database } from "@worknest/db";
-import type { Auth } from "../lib/auth";
+import type { WebSocket } from '@fastify/websocket';
 import {
-  subscribe,
-  unsubscribe,
-  unsubscribeAll,
-  getSubscribers,
-  parseChannel,
-} from "./channels";
+  type Database,
+  issues,
+  projectMembers,
+  wikiPages,
+  wikiSpaceMembers,
+  workspaceMembers,
+} from '@worknest/db';
+import { and, eq, isNull } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import type { Auth } from '../lib/auth';
+import { getSubscribers, parseChannel, subscribe, unsubscribe, unsubscribeAll } from './channels';
 
 // ── Connection Manager ─────────────────────────────────────────────────
 
@@ -37,17 +38,17 @@ function removeConnection(userId: string, ws: WebSocket): void {
 // ── Message Types ──────────────────────────────────────────────────────
 
 interface SubscribeMessage {
-  type: "subscribe";
+  type: 'subscribe';
   channel: string;
 }
 
 interface UnsubscribeMessage {
-  type: "unsubscribe";
+  type: 'unsubscribe';
   channel: string;
 }
 
 interface PingMessage {
-  type: "ping";
+  type: 'ping';
 }
 
 type ClientMessage = SubscribeMessage | UnsubscribeMessage | PingMessage;
@@ -65,11 +66,7 @@ interface ServerEvent {
  * Broadcast an event to all subscribers of a channel.
  * Optionally exclude a specific WebSocket (e.g., the sender).
  */
-export function broadcast(
-  channel: string,
-  event: ServerEvent,
-  exclude?: WebSocket,
-): void {
+export function broadcast(channel: string, event: ServerEvent, exclude?: WebSocket): void {
   const subscribers = getSubscribers(channel);
   const message = JSON.stringify(event);
 
@@ -110,303 +107,302 @@ export async function websocketHandler(
 ): Promise<void> {
   const { auth, db } = opts;
 
-  app.get(
-    "/api/v1/ws",
-    { websocket: true },
-    async (socket: WebSocket, request) => {
-      // ── Authenticate ─────────────────────────────────────────────
-      let userId: string;
-      let userName: string;
+  app.get('/api/v1/ws', { websocket: true }, async (socket: WebSocket, request) => {
+    // ── Authenticate ─────────────────────────────────────────────
+    let userId: string;
+    let _userName: string;
 
-      try {
-        const session = await auth.api.getSession({
-          headers: request.headers as unknown as Headers,
-        });
+    try {
+      const session = await auth.api.getSession({
+        headers: request.headers as unknown as Headers,
+      });
 
-        if (!session?.user) {
-          socket.close(4401, "session_expired");
-          return;
-        }
-
-        userId = session.user.id;
-        userName = session.user.name;
-      } catch {
-        socket.close(4401, "session_expired");
+      if (!session?.user) {
+        socket.close(4401, 'session_expired');
         return;
       }
 
-      // ── Register connection ──────────────────────────────────────
-      addConnection(userId, socket);
+      userId = session.user.id;
+      _userName = session.user.name;
+    } catch {
+      socket.close(4401, 'session_expired');
+      return;
+    }
 
-      // Auto-subscribe to personal channel
-      subscribe(socket, `user:${userId}`);
+    // ── Register connection ──────────────────────────────────────
+    addConnection(userId, socket);
 
-      request.log.info({ userId }, "WebSocket connected");
+    // Auto-subscribe to personal channel
+    subscribe(socket, `user:${userId}`);
 
-      // ── Message handling ─────────────────────────────────────────
-      socket.on("message", async (raw) => {
-        let msg: ClientMessage;
-        try {
-          msg = JSON.parse(raw.toString()) as ClientMessage;
-        } catch {
-          socket.send(
-            JSON.stringify({ type: "error", payload: { message: "Invalid JSON" } }),
-          );
-          return;
-        }
+    request.log.info({ userId }, 'WebSocket connected');
 
-        switch (msg.type) {
-          case "subscribe": {
-            const parsed = msg.channel ? parseChannel(msg.channel) : null;
-            if (!parsed) {
+    // ── Message handling ─────────────────────────────────────────
+    socket.on('message', async (raw) => {
+      let msg: ClientMessage;
+      try {
+        msg = JSON.parse(raw.toString()) as ClientMessage;
+      } catch {
+        socket.send(JSON.stringify({ type: 'error', payload: { message: 'Invalid JSON' } }));
+        return;
+      }
+
+      switch (msg.type) {
+        case 'subscribe': {
+          const parsed = msg.channel ? parseChannel(msg.channel) : null;
+          if (!parsed) {
+            socket.send(
+              JSON.stringify({
+                type: 'error',
+                payload: { message: 'Invalid channel format' },
+              }),
+            );
+            return;
+          }
+
+          // Users can only subscribe to their own personal channel
+          if (parsed.type === 'user') {
+            if (parsed.id !== userId) {
               socket.send(
                 JSON.stringify({
-                  type: "error",
-                  payload: { message: "Invalid channel format" },
+                  type: 'error',
+                  payload: { message: "Cannot subscribe to another user's channel" },
                 }),
               );
               return;
             }
-
-            // Users can only subscribe to their own personal channel
-            if (parsed.type === "user") {
-              if (parsed.id !== userId) {
-                socket.send(
-                  JSON.stringify({
-                    type: "error",
-                    payload: { message: "Cannot subscribe to another user's channel" },
-                  }),
-                );
-                return;
-              }
-            }
-
-            // Verify workspace membership before subscribing
-            if (parsed.type === "workspace") {
-              try {
-                const member = await db
-                  .select({ id: workspaceMembers.id })
-                  .from(workspaceMembers)
-                  .where(
-                    and(
-                      eq(workspaceMembers.workspaceId, parsed.id),
-                      eq(workspaceMembers.userId, userId),
-                    ),
-                  )
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!member) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Not a member of this workspace" },
-                    }),
-                  );
-                  return;
-                }
-              } catch (err) {
-                request.log.error({ err, channel: msg.channel }, "Failed to verify workspace membership");
-                socket.send(
-                  JSON.stringify({
-                    type: "error",
-                    payload: { message: "Authorization check failed" },
-                  }),
-                );
-                return;
-              }
-            }
-
-            // Verify project membership before subscribing
-            if (parsed.type === "project") {
-              try {
-                const member = await db
-                  .select({ id: projectMembers.id })
-                  .from(projectMembers)
-                  .where(
-                    and(
-                      eq(projectMembers.projectId, parsed.id),
-                      eq(projectMembers.userId, userId),
-                    ),
-                  )
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!member) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Not a member of this project" },
-                    }),
-                  );
-                  return;
-                }
-              } catch (err) {
-                request.log.error({ err, channel: msg.channel }, "Failed to verify project membership");
-                socket.send(
-                  JSON.stringify({
-                    type: "error",
-                    payload: { message: "Authorization check failed" },
-                  }),
-                );
-                return;
-              }
-            }
-
-            // Verify project membership before subscribing to an issue channel
-            if (parsed.type === "issue") {
-              try {
-                // Look up the issue to find its project
-                const issue = await db
-                  .select({ projectId: issues.projectId })
-                  .from(issues)
-                  .where(and(eq(issues.id, parsed.id), isNull(issues.deletedAt)))
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!issue) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Issue not found" },
-                    }),
-                  );
-                  return;
-                }
-
-                // Verify user is a member of the project
-                const member = await db
-                  .select({ id: projectMembers.id })
-                  .from(projectMembers)
-                  .where(
-                    and(
-                      eq(projectMembers.projectId, issue.projectId),
-                      eq(projectMembers.userId, userId),
-                    ),
-                  )
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!member) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Not a member of this project" },
-                    }),
-                  );
-                  return;
-                }
-              } catch (err) {
-                request.log.error({ err, channel: msg.channel }, "Failed to verify issue project membership");
-                socket.send(
-                  JSON.stringify({
-                    type: "error",
-                    payload: { message: "Authorization check failed" },
-                  }),
-                );
-                return;
-              }
-            }
-
-            // Verify wiki space membership before subscribing to a page channel
-            if (parsed.type === "page") {
-              try {
-                // Look up the page to find its wiki space
-                const page = await db
-                  .select({ wikiSpaceId: wikiPages.wikiSpaceId })
-                  .from(wikiPages)
-                  .where(eq(wikiPages.id, parsed.id))
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!page) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Page not found" },
-                    }),
-                  );
-                  return;
-                }
-
-                // Verify user is a member of the wiki space
-                const member = await db
-                  .select({ id: wikiSpaceMembers.id })
-                  .from(wikiSpaceMembers)
-                  .where(
-                    and(
-                      eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
-                      eq(wikiSpaceMembers.userId, userId),
-                    ),
-                  )
-                  .limit(1)
-                  .then((rows) => rows[0]);
-
-                if (!member) {
-                  socket.send(
-                    JSON.stringify({
-                      type: "error",
-                      payload: { message: "Not a member of this wiki space" },
-                    }),
-                  );
-                  return;
-                }
-              } catch (err) {
-                request.log.error({ err, channel: msg.channel }, "Failed to verify wiki space membership");
-                socket.send(
-                  JSON.stringify({
-                    type: "error",
-                    payload: { message: "Authorization check failed" },
-                  }),
-                );
-                return;
-              }
-            }
-
-            subscribe(socket, msg.channel);
-            socket.send(
-              JSON.stringify({ type: "subscribed", channel: msg.channel }),
-            );
-            break;
           }
 
-          case "unsubscribe": {
-            if (msg.channel) {
-              unsubscribe(socket, msg.channel);
-              socket.send(
-                JSON.stringify({ type: "unsubscribed", channel: msg.channel }),
+          // Verify workspace membership before subscribing
+          if (parsed.type === 'workspace') {
+            try {
+              const member = await db
+                .select({ id: workspaceMembers.id })
+                .from(workspaceMembers)
+                .where(
+                  and(
+                    eq(workspaceMembers.workspaceId, parsed.id),
+                    eq(workspaceMembers.userId, userId),
+                  ),
+                )
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!member) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Not a member of this workspace' },
+                  }),
+                );
+                return;
+              }
+            } catch (err) {
+              request.log.error(
+                { err, channel: msg.channel },
+                'Failed to verify workspace membership',
               );
+              socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Authorization check failed' },
+                }),
+              );
+              return;
             }
-            break;
           }
 
-          case "ping": {
-            socket.send(JSON.stringify({ type: "pong" }));
-            break;
+          // Verify project membership before subscribing
+          if (parsed.type === 'project') {
+            try {
+              const member = await db
+                .select({ id: projectMembers.id })
+                .from(projectMembers)
+                .where(
+                  and(eq(projectMembers.projectId, parsed.id), eq(projectMembers.userId, userId)),
+                )
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!member) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Not a member of this project' },
+                  }),
+                );
+                return;
+              }
+            } catch (err) {
+              request.log.error(
+                { err, channel: msg.channel },
+                'Failed to verify project membership',
+              );
+              socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Authorization check failed' },
+                }),
+              );
+              return;
+            }
           }
 
-          default:
-            socket.send(
-              JSON.stringify({
-                type: "error",
-                payload: { message: `Unknown message type: ${(msg as { type: string }).type}` },
-              }),
-            );
+          // Verify project membership before subscribing to an issue channel
+          if (parsed.type === 'issue') {
+            try {
+              // Look up the issue to find its project
+              const issue = await db
+                .select({ projectId: issues.projectId })
+                .from(issues)
+                .where(and(eq(issues.id, parsed.id), isNull(issues.deletedAt)))
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!issue) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Issue not found' },
+                  }),
+                );
+                return;
+              }
+
+              // Verify user is a member of the project
+              const member = await db
+                .select({ id: projectMembers.id })
+                .from(projectMembers)
+                .where(
+                  and(
+                    eq(projectMembers.projectId, issue.projectId),
+                    eq(projectMembers.userId, userId),
+                  ),
+                )
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!member) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Not a member of this project' },
+                  }),
+                );
+                return;
+              }
+            } catch (err) {
+              request.log.error(
+                { err, channel: msg.channel },
+                'Failed to verify issue project membership',
+              );
+              socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Authorization check failed' },
+                }),
+              );
+              return;
+            }
+          }
+
+          // Verify wiki space membership before subscribing to a page channel
+          if (parsed.type === 'page') {
+            try {
+              // Look up the page to find its wiki space
+              const page = await db
+                .select({ wikiSpaceId: wikiPages.wikiSpaceId })
+                .from(wikiPages)
+                .where(eq(wikiPages.id, parsed.id))
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!page) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Page not found' },
+                  }),
+                );
+                return;
+              }
+
+              // Verify user is a member of the wiki space
+              const member = await db
+                .select({ id: wikiSpaceMembers.id })
+                .from(wikiSpaceMembers)
+                .where(
+                  and(
+                    eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
+                    eq(wikiSpaceMembers.userId, userId),
+                  ),
+                )
+                .limit(1)
+                .then((rows) => rows[0]);
+
+              if (!member) {
+                socket.send(
+                  JSON.stringify({
+                    type: 'error',
+                    payload: { message: 'Not a member of this wiki space' },
+                  }),
+                );
+                return;
+              }
+            } catch (err) {
+              request.log.error(
+                { err, channel: msg.channel },
+                'Failed to verify wiki space membership',
+              );
+              socket.send(
+                JSON.stringify({
+                  type: 'error',
+                  payload: { message: 'Authorization check failed' },
+                }),
+              );
+              return;
+            }
+          }
+
+          subscribe(socket, msg.channel);
+          socket.send(JSON.stringify({ type: 'subscribed', channel: msg.channel }));
+          break;
         }
-      });
 
-      // ── Cleanup on disconnect ────────────────────────────────────
-      socket.on("close", () => {
-        removeConnection(userId, socket);
-        unsubscribeAll(socket);
-        request.log.info({ userId }, "WebSocket disconnected");
-      });
+        case 'unsubscribe': {
+          if (msg.channel) {
+            unsubscribe(socket, msg.channel);
+            socket.send(JSON.stringify({ type: 'unsubscribed', channel: msg.channel }));
+          }
+          break;
+        }
 
-      socket.on("error", (err) => {
-        request.log.error({ userId, error: err.message }, "WebSocket error");
-        removeConnection(userId, socket);
-        unsubscribeAll(socket);
-      });
-    },
-  );
+        case 'ping': {
+          socket.send(JSON.stringify({ type: 'pong' }));
+          break;
+        }
+
+        default:
+          socket.send(
+            JSON.stringify({
+              type: 'error',
+              payload: { message: `Unknown message type: ${(msg as { type: string }).type}` },
+            }),
+          );
+      }
+    });
+
+    // ── Cleanup on disconnect ────────────────────────────────────
+    socket.on('close', () => {
+      removeConnection(userId, socket);
+      unsubscribeAll(socket);
+      request.log.info({ userId }, 'WebSocket disconnected');
+    });
+
+    socket.on('error', (err) => {
+      request.log.error({ userId, error: err.message }, 'WebSocket error');
+      removeConnection(userId, socket);
+      unsubscribeAll(socket);
+    });
+  });
 }

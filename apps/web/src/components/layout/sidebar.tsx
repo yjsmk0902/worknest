@@ -1,44 +1,32 @@
-import { useState } from 'react';
-import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { Link, useParams } from '@tanstack/react-router';
+import { Avatar, Skeleton } from '@worknest/ui';
+import { Separator } from '@worknest/ui';
+import { toast } from '@worknest/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
+import { Popover, PopoverContent, PopoverTrigger } from '@worknest/ui';
 import {
   Bell,
+  Check,
   ChevronDown,
   CircleUser,
   Loader2,
   LogOut,
+  PanelLeft,
+  PanelLeftClose,
   Plus,
   Settings,
   Star,
   User,
-  Check,
-  PanelLeftClose,
-  PanelLeft,
 } from 'lucide-react';
-import { Avatar, Skeleton } from '@worknest/ui';
-import { Separator } from '@worknest/ui';
-import { toast } from '@worknest/ui';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@worknest/ui';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@worknest/ui';
-import { useUIStore } from '../../stores/ui-store';
-import { useAuthStore } from '../../stores/auth-store';
+import { useState } from 'react';
 import { apiClient } from '../../lib/api-client';
-import { NavItem, CollapsedNavItem } from './sidebar-nav';
-import {
-  SidebarProjects,
-  CollapsedSidebarProjects,
-} from './sidebar-projects';
-import { SidebarWiki, CollapsedSidebarWiki } from './sidebar-wiki';
+import { useAuthStore } from '../../stores/auth-store';
+import { useUIStore } from '../../stores/ui-store';
 import { NotificationBell } from '../notification-bell';
+import { CollapsedNavItem, NavItem } from './sidebar-nav';
+import { CollapsedSidebarProjects, SidebarProjects } from './sidebar-projects';
+import { CollapsedSidebarWiki, SidebarWiki } from './sidebar-wiki';
 
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
@@ -59,7 +47,6 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={200}>
       <nav
-        role="navigation"
         aria-label="Main navigation"
         className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground"
       >
@@ -139,7 +126,6 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
   return (
     <TooltipProvider delayDuration={200}>
       <nav
-        role="navigation"
         aria-label="Main navigation"
         className="fixed left-0 top-0 z-30 flex h-screen w-[48px] flex-col items-center border-r border-sidebar-border bg-sidebar-background py-2 text-sidebar-foreground"
       >
@@ -197,8 +183,7 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
 function InboxNavItem({ orgSlug, wsSlug }: { orgSlug: string; wsSlug: string }) {
   const unreadQuery = useQuery<{ count: number }>({
     queryKey: ['my', 'notifications', 'unread-count'],
-    queryFn: () =>
-      apiClient.get<{ count: number }>('/my/notifications/unread-count'),
+    queryFn: () => apiClient.get<{ count: number }>('/my/notifications/unread-count'),
     staleTime: 30 * 1000,
     refetchInterval: 60 * 1000,
     enabled: !!(orgSlug && wsSlug),
@@ -260,7 +245,11 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
             className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-sidebar-accent transition-colors"
           >
             {currentOrg?.logo ? (
-              <img src={currentOrg.logo} alt={displayOrg} className="h-7 w-7 rounded-lg object-cover" />
+              <img
+                src={currentOrg.logo}
+                alt={displayOrg}
+                className="h-7 w-7 rounded-lg object-cover"
+              />
             ) : (
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground">
                 {initial}
@@ -268,7 +257,9 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right">{displayOrg} · {displayWs}</TooltipContent>
+        <TooltipContent side="right">
+          {displayOrg} · {displayWs}
+        </TooltipContent>
       </Tooltip>
     );
   }
@@ -281,15 +272,23 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
           className="flex h-11 w-full items-center gap-2.5 rounded-lg px-2.5 hover:bg-sidebar-accent transition-colors"
         >
           {currentOrg?.logo ? (
-            <img src={currentOrg.logo} alt={displayOrg} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+            <img
+              src={currentOrg.logo}
+              alt={displayOrg}
+              className="h-8 w-8 shrink-0 rounded-lg object-cover"
+            />
           ) : (
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
               {initial}
             </div>
           )}
           <div className="flex-1 text-left min-w-0">
-            <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">{displayOrg}</p>
-            <p className="truncate text-[11px] leading-tight text-sidebar-foreground/50">{displayWs}</p>
+            <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
+              {displayOrg}
+            </p>
+            <p className="truncate text-[11px] leading-tight text-sidebar-foreground/50">
+              {displayWs}
+            </p>
           </div>
           <ChevronDown className="h-3.5 w-3.5 text-sidebar-foreground/30 shrink-0" />
         </button>
@@ -308,7 +307,10 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
         <Separator className="my-1.5" />
         <button
           type="button"
-          onClick={() => { setOrgPopoverOpen(false); toast('Coming soon'); }}
+          onClick={() => {
+            setOrgPopoverOpen(false);
+            toast('Coming soon');
+          }}
           className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-foreground/60 hover:bg-accent hover:text-foreground transition-colors"
         >
           <Plus className="h-4 w-4" />
@@ -386,7 +388,9 @@ function UserMenu({ collapsed }: { collapsed: boolean }) {
           className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 hover:bg-sidebar-accent transition-colors"
         >
           <Avatar src={currentUser?.avatarUrl} fallback={name} size="sm" />
-          <span className="flex-1 truncate text-left text-[13px] font-medium text-sidebar-foreground">{name}</span>
+          <span className="flex-1 truncate text-left text-[13px] font-medium text-sidebar-foreground">
+            {name}
+          </span>
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[200px] p-1.5">

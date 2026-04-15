@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { SmilePlus } from 'lucide-react';
+import { ALLOWED_EMOJIS } from '@worknest/shared';
 import {
   Popover,
   PopoverContent,
@@ -9,7 +8,8 @@ import {
   TooltipTrigger,
   cn,
 } from '@worknest/ui';
-import { ALLOWED_EMOJIS } from '@worknest/shared';
+import { SmilePlus } from 'lucide-react';
+import { useState } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -40,10 +40,7 @@ interface GroupedReaction {
   selfReacted: boolean;
 }
 
-function groupReactions(
-  reactions: ReactionData[],
-  currentUserId: string,
-): GroupedReaction[] {
+function groupReactions(reactions: ReactionData[], currentUserId: string): GroupedReaction[] {
   const map = new Map<string, GroupedReaction>();
 
   for (const r of reactions) {
@@ -118,7 +115,6 @@ function ReactionPill({
         <button
           type="button"
           onClick={() => onToggle(group.emoji)}
-          role="button"
           aria-label={`${group.emoji} ${group.count}개 리액션`}
           className={cn(
             'inline-flex h-6 cursor-pointer items-center gap-1 rounded-full px-2 text-xs transition-colors',
@@ -144,9 +140,7 @@ export function Reactions({ reactions, currentUserId, onToggle }: ReactionsProps
   const [popoverOpen, setPopoverOpen] = useState(false);
   const grouped = groupReactions(reactions, currentUserId);
 
-  const selfReactedEmojis = new Set(
-    grouped.filter((g) => g.selfReacted).map((g) => g.emoji),
-  );
+  const selfReactedEmojis = new Set(grouped.filter((g) => g.selfReacted).map((g) => g.emoji));
 
   const handleEmojiSelect = (emoji: string) => {
     onToggle(emoji);
@@ -177,10 +171,7 @@ export function Reactions({ reactions, currentUserId, onToggle }: ReactionsProps
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-[180px] p-0" align="start" side="top">
-          <EmojiPicker
-            onSelect={handleEmojiSelect}
-            selfReactedEmojis={selfReactedEmojis}
-          />
+          <EmojiPicker onSelect={handleEmojiSelect} selfReactedEmojis={selfReactedEmojis} />
         </PopoverContent>
       </Popover>
     </div>

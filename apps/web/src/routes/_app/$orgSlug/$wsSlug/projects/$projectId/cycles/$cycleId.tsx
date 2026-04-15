@@ -1,53 +1,45 @@
-import { useState, useMemo, useCallback } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  Edit,
-  MoreHorizontal,
-  Plus,
-  Trash2,
-} from 'lucide-react';
-import {
-  Button,
-  Skeleton,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  toast,
-} from '@worknest/ui';
-import { apiClient, type ListResponse } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { AppHeader } from '@/components/layout/app-header';
-import {
-  CycleStatusBadge,
-  CycleProgressBar,
-  CycleProgressText,
-  formatCycleDateRange,
-} from '@/components/cycles/cycle-list';
-import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
 import { AddIssuesPopover } from '@/components/cycles/add-issues-popover';
 import { CarryOverModal } from '@/components/cycles/carry-over-modal';
+import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
+import {
+  CycleProgressBar,
+  CycleProgressText,
+  CycleStatusBadge,
+  formatCycleDateRange,
+} from '@/components/cycles/cycle-list';
+import { AppHeader } from '@/components/layout/app-header';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type {
   CycleOutput,
   CycleProgressOutput,
   IssueOutput,
   IssueStatusOutput,
 } from '@worknest/shared';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Skeleton,
+  toast,
+} from '@worknest/ui';
+import { AlertTriangle, Edit, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId')({
   component: CycleDetailPage,
 });
 
@@ -75,47 +67,32 @@ function CycleDetailPage() {
   // Fetch project
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch cycle detail
   const cycleQuery = useQuery<CycleOutput>({
     queryKey: ['cycles', cycleId],
-    queryFn: () =>
-      apiClient.get<CycleOutput>(
-        `/cycles/${cycleId}`,
-      ),
+    queryFn: () => apiClient.get<CycleOutput>(`/cycles/${cycleId}`),
   });
 
   // Fetch progress
   const progressQuery = useQuery<CycleProgressOutput>({
     queryKey: ['cycles', cycleId, 'progress'],
-    queryFn: () =>
-      apiClient.get<CycleProgressOutput>(
-        `/cycles/${cycleId}/progress`,
-      ),
+    queryFn: () => apiClient.get<CycleProgressOutput>(`/cycles/${cycleId}/progress`),
   });
 
   // Fetch cycle issues
   const cycleIssuesQuery = useQuery<ListResponse<IssueOutput>>({
     queryKey: ['cycles', cycleId, 'issues'],
-    queryFn: () =>
-      apiClient.getList<IssueOutput>(
-        `/cycles/${cycleId}/issues`,
-      ),
+    queryFn: () => apiClient.getList<IssueOutput>(`/cycles/${cycleId}/issues`),
   });
 
   // Fetch statuses for issue display
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -126,17 +103,11 @@ function CycleDetailPage() {
   const project = projectQuery.data;
   const projectPrefix = project?.prefix ?? '...';
 
-  const existingIssueIds = useMemo(
-    () => new Set(issues.map((i) => i.id)),
-    [issues],
-  );
+  const existingIssueIds = useMemo(() => new Set(issues.map((i) => i.id)), [issues]);
 
   // Activate mutation
   const activateMutation = useMutation({
-    mutationFn: () =>
-      apiClient.post<CycleOutput>(
-        `/cycles/${cycleId}/activate`,
-      ),
+    mutationFn: () => apiClient.post<CycleOutput>(`/cycles/${cycleId}/activate`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cycles', cycleId] });
       queryClient.invalidateQueries({
@@ -155,8 +126,7 @@ function CycleDetailPage() {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: () =>
-      apiClient.delete(`/cycles/${cycleId}`),
+    mutationFn: () => apiClient.delete(`/cycles/${cycleId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'cycles'],
@@ -172,10 +142,7 @@ function CycleDetailPage() {
 
   // Remove issue from cycle
   const removeIssueMutation = useMutation({
-    mutationFn: (issueId: string) =>
-      apiClient.delete(
-        `/cycles/${cycleId}/issues/${issueId}`,
-      ),
+    mutationFn: (issueId: string) => apiClient.delete(`/cycles/${cycleId}/issues/${issueId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['cycles', cycleId, 'issues'],
@@ -194,9 +161,7 @@ function CycleDetailPage() {
 
     const incompleteIssues = issues.filter((issue) => {
       const status = statuses.find((s) => s.id === issue.statusId);
-      return (
-        status && status.category !== 'completed' && status.category !== 'cancelled'
-      );
+      return status && status.category !== 'completed' && status.category !== 'cancelled';
     });
 
     if (incompleteIssues.length > 0) {
@@ -212,21 +177,19 @@ function CycleDetailPage() {
           });
           toast('사이클이 완료되었습니다.');
         })
-        .catch((err: unknown) => toast(err instanceof Error ? err.message : '사이클 완료에 실패했습니다.'));
+        .catch((err: unknown) =>
+          toast(err instanceof Error ? err.message : '사이클 완료에 실패했습니다.'),
+        );
     }
   }, [issues, statuses, cycleId, projectId, queryClient]);
 
   // Loading state
-  const isLoading =
-    projectQuery.isLoading || cycleQuery.isLoading;
+  const isLoading = projectQuery.isLoading || cycleQuery.isLoading;
 
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <AppHeader
-          title=""
-          actions={<Skeleton className="h-9 w-32" />}
-        />
+        <AppHeader title="" actions={<Skeleton className="h-9 w-32" />} />
         <div className="flex-1 p-6 space-y-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-2.5 w-full rounded-full" />
@@ -244,9 +207,7 @@ function CycleDetailPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              사이클을 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">사이클을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -313,9 +274,7 @@ function CycleDetailPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[180px]">
-                <DropdownMenuItem
-                  onClick={() => setEditModalOpen(true)}
-                >
+                <DropdownMenuItem onClick={() => setEditModalOpen(true)}>
                   <Edit className="mr-2 h-4 w-4" />
                   편집
                 </DropdownMenuItem>
@@ -344,11 +303,7 @@ function CycleDetailPage() {
         </div>
 
         {/* Description */}
-        {cycle.description && (
-          <p className="text-sm text-muted-foreground">
-            {cycle.description}
-          </p>
-        )}
+        {cycle.description && <p className="text-sm text-muted-foreground">{cycle.description}</p>}
 
         {/* Progress bar */}
         <CycleProgressBar progress={progress} height="h-2.5" />
@@ -370,18 +325,10 @@ function CycleDetailPage() {
           <div className="rounded-lg border border-border">
             {/* Table header */}
             <div className="flex h-8 items-center border-b border-border bg-muted/50 px-3">
-              <span className="w-[80px] text-xs font-medium text-muted-foreground">
-                키
-              </span>
-              <span className="flex-1 text-xs font-medium text-muted-foreground">
-                제목
-              </span>
-              <span className="w-[120px] text-xs font-medium text-muted-foreground">
-                상태
-              </span>
-              <span className="w-[80px] text-xs font-medium text-muted-foreground">
-                우선순위
-              </span>
+              <span className="w-[80px] text-xs font-medium text-muted-foreground">키</span>
+              <span className="flex-1 text-xs font-medium text-muted-foreground">제목</span>
+              <span className="w-[120px] text-xs font-medium text-muted-foreground">상태</span>
+              <span className="w-[80px] text-xs font-medium text-muted-foreground">우선순위</span>
               <span className="w-[60px]" />
             </div>
 
@@ -405,9 +352,7 @@ function CycleDetailPage() {
                   </span>
 
                   {/* Title */}
-                  <span className="flex-1 truncate text-sm">
-                    {issue.title}
-                  </span>
+                  <span className="flex-1 truncate text-sm">{issue.title}</span>
 
                   {/* Status */}
                   <span className="w-[120px] flex items-center gap-1.5">
@@ -415,9 +360,7 @@ function CycleDetailPage() {
                       className="h-2 w-2 shrink-0 rounded-full"
                       style={{ backgroundColor: status?.color ?? '#94a3b8' }}
                     />
-                    <span className="text-xs truncate">
-                      {status?.name ?? ''}
-                    </span>
+                    <span className="text-xs truncate">{status?.name ?? ''}</span>
                   </span>
 
                   {/* Priority */}
@@ -461,15 +404,12 @@ function CycleDetailPage() {
             <DialogTitle>사이클 삭제</DialogTitle>
             <DialogDescription>
               "{cycle.name}" 사이클을 삭제하시겠습니까?
-              {cycle.status === 'completed' && ' 완료된 사이클의 기록이 영구적으로 삭제됩니다.'}
-              {' '}이슈는 삭제되지 않습니다.
+              {cycle.status === 'completed' && ' 완료된 사이클의 기록이 영구적으로 삭제됩니다.'}{' '}
+              이슈는 삭제되지 않습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               취소
             </Button>
             <Button
@@ -519,10 +459,7 @@ function IssueListSkeleton() {
         >
           <Skeleton className="h-4 w-[70px]" />
           <div className="flex flex-1">
-            <Skeleton
-              className="h-4"
-              style={{ width: `${40 + Math.random() * 40}%` }}
-            />
+            <Skeleton className="h-4" style={{ width: `${40 + Math.random() * 40}%` }} />
           </div>
           <Skeleton className="h-5 w-20 rounded-full" />
           <Skeleton className="h-3 w-16" />

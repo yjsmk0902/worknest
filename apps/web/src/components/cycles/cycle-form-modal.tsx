@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { AlertTriangle } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CreateCycleInput, CycleOutput, UpdateCycleInput } from '@worknest/shared';
 import {
+  Button,
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  Button,
+  DialogHeader,
+  DialogTitle,
   Input,
   Label,
   Separator,
   toast,
 } from '@worknest/ui';
+import { AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
-import type { CycleOutput, CreateCycleInput, UpdateCycleInput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -29,12 +29,7 @@ interface CycleFormModalProps {
 
 // ── Component ───────────────────────────────────────────────────────────
 
-export function CycleFormModal({
-  open,
-  onOpenChange,
-  projectId,
-  cycle,
-}: CycleFormModalProps) {
+export function CycleFormModal({ open, onOpenChange, projectId, cycle }: CycleFormModalProps) {
   const queryClient = useQueryClient();
   const isEdit = !!cycle;
 
@@ -49,9 +44,7 @@ export function CycleFormModal({
   const cyclesQuery = useQuery<CycleOutput[]>({
     queryKey: ['projects', projectId, 'cycles', 'overlap-check'],
     queryFn: async () => {
-      const res = await apiClient.getList<CycleOutput>(
-        `/projects/${projectId}/cycles`,
-      );
+      const res = await apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`);
       return res.data;
     },
     staleTime: 2 * 60 * 1000,
@@ -110,16 +103,13 @@ export function CycleFormModal({
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: (data: UpdateCycleInput) =>
-      apiClient.patch<CycleOutput>(
-        `/cycles/${cycle!.id}`,
-        data,
-      ),
+      apiClient.patch<CycleOutput>(`/cycles/${cycle?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'cycles'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['cycles', cycle!.id],
+        queryKey: ['cycles', cycle?.id],
       });
       toast('사이클이 수정되었습니다.');
       onOpenChange(false);
@@ -181,13 +171,9 @@ export function CycleFormModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[560px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? '사이클 편집' : '사이클 생성'}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? '사이클 편집' : '사이클 생성'}</DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? '사이클 정보를 수정합니다.'
-              : '새로운 사이클을 생성합니다.'}
+            {isEdit ? '사이클 정보를 수정합니다.' : '새로운 사이클을 생성합니다.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -208,9 +194,7 @@ export function CycleFormModal({
               autoFocus
               maxLength={100}
             />
-            {nameError && (
-              <p className="mt-1 text-sm text-destructive">{nameError}</p>
-            )}
+            {nameError && <p className="mt-1 text-sm text-destructive">{nameError}</p>}
           </div>
 
           {/* Description */}
@@ -254,18 +238,13 @@ export function CycleFormModal({
             </div>
           </div>
 
-          {dateError && (
-            <p className="text-sm text-destructive">{dateError}</p>
-          )}
+          {dateError && <p className="text-sm text-destructive">{dateError}</p>}
 
           {/* Overlap warning */}
           {overlappingCycle && (
             <div className="flex items-center gap-2 text-sm text-orange-500 mt-2">
               <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span>
-                이 기간은 &ldquo;{overlappingCycle.name}&rdquo; 사이클과
-                겹칩니다
-              </span>
+              <span>이 기간은 &ldquo;{overlappingCycle.name}&rdquo; 사이클과 겹칩니다</span>
             </div>
           )}
 
@@ -281,11 +260,7 @@ export function CycleFormModal({
               취소
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending
-                ? '저장 중...'
-                : isEdit
-                  ? '저장'
-                  : '사이클 생성'}
+              {isPending ? '저장 중...' : isEdit ? '저장' : '사이클 생성'}
             </Button>
           </DialogFooter>
         </form>

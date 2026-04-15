@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Pagination ─────────────────────────────────────────────────────────
 
@@ -71,7 +71,4 @@ export const slugSchema = z
   .string()
   .min(2)
   .max(50)
-  .regex(
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-    "Slug must be lowercase alphanumeric with hyphens",
-  );
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens');

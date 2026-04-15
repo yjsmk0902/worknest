@@ -1,32 +1,32 @@
-import { randomUUID } from "node:crypto";
-import { eq, and, isNull, lt, desc } from "drizzle-orm";
+import { randomUUID } from 'node:crypto';
 import {
-  organizations,
-  orgMembers,
+  type Database,
   invitations,
+  orgMembers,
+  organizations,
   users,
   workspaceMembers,
-  type Database,
-} from "@worknest/db";
+} from '@worknest/db';
 import type {
-  CreateOrganizationInput,
-  UpdateOrganizationInput,
   CreateOrgInvitationInput,
-  OrgRole,
+  CreateOrganizationInput,
   CursorPaginationQuery,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import { hashToken, generateToken } from "../lib/crypto";
+  OrgRole,
+  UpdateOrganizationInput,
+} from '@worknest/shared';
+import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import { generateToken, hashToken } from '../lib/crypto';
+import { AppError, ErrorCode } from '../lib/errors';
 
 function generateSlug(name: string): string {
   const base = name
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/[\s]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .slice(0, 40);
-  const suffix = randomUUID().replace(/-/g, "").slice(0, 8);
+  const suffix = randomUUID().replace(/-/g, '').slice(0, 8);
   return base ? `${base}-${suffix}` : suffix;
 }
 
@@ -40,7 +40,7 @@ export class OrganizationService {
   async listByUser(userId: string, pagination: CursorPaginationQuery) {
     const { cursor, limit } = pagination;
 
-    let query = this.db
+    const query = this.db
       .select({
         org: organizations,
         member: orgMembers,
@@ -72,9 +72,7 @@ export class OrganizationService {
         role: row.member.role,
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.org.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.org.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -98,9 +96,9 @@ export class OrganizationService {
 
       // Make creator the owner
       await tx.insert(orgMembers).values({
-        orgId: created!.id,
+        orgId: created?.id,
         userId,
-        role: "owner",
+        role: 'owner',
       });
 
       return created!;
@@ -127,7 +125,7 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!org) {
-      throw AppError.notFound("organization");
+      throw AppError.notFound('organization');
     }
 
     return {
@@ -151,17 +149,14 @@ export class OrganizationService {
       .from(organizations)
       .innerJoin(
         orgMembers,
-        and(
-          eq(orgMembers.orgId, organizations.id),
-          eq(orgMembers.userId, userId),
-        ),
+        and(eq(orgMembers.orgId, organizations.id), eq(orgMembers.userId, userId)),
       )
       .where(and(eq(organizations.slug, slug), isNull(organizations.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!row) {
-      throw AppError.notFound("organization");
+      throw AppError.notFound('organization');
     }
 
     return {
@@ -190,7 +185,7 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("organization");
+      throw AppError.notFound('organization');
     }
 
     return {
@@ -214,8 +209,8 @@ export class OrganizationService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!member || member.role !== "owner") {
-      throw AppError.forbidden("Only the owner can delete an organization");
+    if (!member || member.role !== 'owner') {
+      throw AppError.forbidden('Only the owner can delete an organization');
     }
 
     const updated = await this.db
@@ -226,7 +221,7 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("organization");
+      throw AppError.notFound('organization');
     }
   }
 
@@ -274,9 +269,7 @@ export class OrganizationService {
         },
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.member.joinedAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.member.joinedAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -286,8 +279,8 @@ export class OrganizationService {
 
   async updateMemberRole(memberId: string, role: OrgRole, callerUserId: string) {
     // Cannot change to owner via this endpoint
-    if (role === "owner") {
-      throw AppError.forbidden("Cannot assign owner role through this endpoint");
+    if (role === 'owner') {
+      throw AppError.forbidden('Cannot assign owner role through this endpoint');
     }
 
     const member = await this.db
@@ -298,27 +291,22 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Verify caller is admin or owner of the org
     const caller = await this.db
       .select()
       .from(orgMembers)
-      .where(
-        and(
-          eq(orgMembers.orgId, member.orgId),
-          eq(orgMembers.userId, callerUserId),
-        ),
-      )
+      .where(and(eq(orgMembers.orgId, member.orgId), eq(orgMembers.userId, callerUserId)))
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!caller || !["owner", "admin"].includes(caller.role)) {
-      throw AppError.forbidden("Only org owner or admin can change member roles");
+    if (!caller || !['owner', 'admin'].includes(caller.role)) {
+      throw AppError.forbidden('Only org owner or admin can change member roles');
     }
 
-    if (member.role === "owner") {
+    if (member.role === 'owner') {
       throw AppError.forbidden("Cannot change the owner's role");
     }
 
@@ -342,28 +330,23 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Verify caller is admin or owner of the org
     const caller = await this.db
       .select()
       .from(orgMembers)
-      .where(
-        and(
-          eq(orgMembers.orgId, member.orgId),
-          eq(orgMembers.userId, callerUserId),
-        ),
-      )
+      .where(and(eq(orgMembers.orgId, member.orgId), eq(orgMembers.userId, callerUserId)))
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!caller || !["owner", "admin"].includes(caller.role)) {
-      throw AppError.forbidden("Only org owner or admin can remove members");
+    if (!caller || !['owner', 'admin'].includes(caller.role)) {
+      throw AppError.forbidden('Only org owner or admin can remove members');
     }
 
-    if (member.role === "owner") {
-      throw AppError.forbidden("Cannot remove the organization owner");
+    if (member.role === 'owner') {
+      throw AppError.forbidden('Cannot remove the organization owner');
     }
 
     await this.db.delete(orgMembers).where(eq(orgMembers.id, memberId));
@@ -371,26 +354,20 @@ export class OrganizationService {
 
   // ── Create Invitation ──────────────────────────────────────────────
 
-  async createInvitation(
-    orgId: string,
-    invitedById: string,
-    input: CreateOrgInvitationInput,
-  ) {
+  async createInvitation(orgId: string, invitedById: string, input: CreateOrgInvitationInput) {
     // Check if already a member
     const existingMember = await this.db
       .select({ id: orgMembers.id })
       .from(orgMembers)
       .innerJoin(users, eq(orgMembers.userId, users.id))
-      .where(
-        and(
-          eq(orgMembers.orgId, orgId),
-          eq(users.email, input.email),
-        ),
-      )
+      .where(and(eq(orgMembers.orgId, orgId), eq(users.email, input.email)))
       .limit(1);
 
     if (existingMember.length > 0) {
-      throw AppError.conflict(ErrorCode.ALREADY_A_MEMBER, "User is already a member of this organization");
+      throw AppError.conflict(
+        ErrorCode.ALREADY_A_MEMBER,
+        'User is already a member of this organization',
+      );
     }
 
     // Check for existing pending invitation
@@ -409,7 +386,7 @@ export class OrganizationService {
     if (existingInvitation.length > 0) {
       throw AppError.conflict(
         ErrorCode.INVITATION_ALREADY_SENT,
-        "An invitation has already been sent to this email",
+        'An invitation has already been sent to this email',
       );
     }
 
@@ -430,13 +407,13 @@ export class OrganizationService {
 
     return {
       invitation: {
-        id: invitation!.id,
-        email: invitation!.email,
-        role: invitation!.role,
-        invitedBy: invitation!.invitedBy,
-        expiresAt: invitation!.expiresAt.toISOString(),
+        id: invitation?.id,
+        email: invitation?.email,
+        role: invitation?.role,
+        invitedBy: invitation?.invitedBy,
+        expiresAt: invitation?.expiresAt.toISOString(),
         acceptedAt: null,
-        createdAt: invitation!.createdAt.toISOString(),
+        createdAt: invitation?.createdAt.toISOString(),
       },
       token, // Return raw token (for sending via email)
     };
@@ -474,9 +451,7 @@ export class OrganizationService {
         createdAt: inv.createdAt.toISOString(),
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -493,13 +468,13 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!invitation) {
-      throw AppError.notFound("invitation");
+      throw AppError.notFound('invitation');
     }
 
     if (invitation.acceptedAt) {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        "Cannot resend an already accepted invitation",
+        'Cannot resend an already accepted invitation',
       );
     }
 
@@ -508,17 +483,12 @@ export class OrganizationService {
       const caller = await this.db
         .select()
         .from(orgMembers)
-        .where(
-          and(
-            eq(orgMembers.orgId, invitation.orgId),
-            eq(orgMembers.userId, callerUserId),
-          ),
-        )
+        .where(and(eq(orgMembers.orgId, invitation.orgId), eq(orgMembers.userId, callerUserId)))
         .limit(1)
         .then((rows) => rows[0]);
 
-      if (!caller || !["owner", "admin"].includes(caller.role)) {
-        throw AppError.forbidden("Only org owner or admin can resend invitations");
+      if (!caller || !['owner', 'admin'].includes(caller.role)) {
+        throw AppError.forbidden('Only org owner or admin can resend invitations');
       }
     } else if (invitation.workspaceId) {
       const caller = await this.db
@@ -533,8 +503,8 @@ export class OrganizationService {
         .limit(1)
         .then((rows) => rows[0]);
 
-      if (!caller || caller.role !== "admin") {
-        throw AppError.forbidden("Only workspace admin can resend invitations");
+      if (!caller || caller.role !== 'admin') {
+        throw AppError.forbidden('Only workspace admin can resend invitations');
       }
     }
 
@@ -553,13 +523,13 @@ export class OrganizationService {
 
     return {
       invitation: {
-        id: updated!.id,
-        email: updated!.email,
-        role: updated!.role,
-        invitedBy: updated!.invitedBy,
-        expiresAt: updated!.expiresAt.toISOString(),
+        id: updated?.id,
+        email: updated?.email,
+        role: updated?.role,
+        invitedBy: updated?.invitedBy,
+        expiresAt: updated?.expiresAt.toISOString(),
         acceptedAt: null,
-        createdAt: updated!.createdAt.toISOString(),
+        createdAt: updated?.createdAt.toISOString(),
       },
       token, // Return raw token (for sending via email)
     };
@@ -576,7 +546,7 @@ export class OrganizationService {
       .then((rows) => rows[0]);
 
     if (!invitation) {
-      throw AppError.notFound("invitation");
+      throw AppError.notFound('invitation');
     }
 
     // Verify caller has admin+ permission on the relevant org or workspace
@@ -587,18 +557,23 @@ export class OrganizationService {
         .where(and(eq(orgMembers.orgId, invitation.orgId), eq(orgMembers.userId, callerUserId)))
         .limit(1)
         .then((rows) => rows[0]);
-      if (!callerMember || callerMember.role === "member") {
-        throw AppError.forbidden("Only org admins can cancel invitations");
+      if (!callerMember || callerMember.role === 'member') {
+        throw AppError.forbidden('Only org admins can cancel invitations');
       }
     } else if (invitation.workspaceId) {
       const callerMember = await this.db
         .select()
         .from(workspaceMembers)
-        .where(and(eq(workspaceMembers.workspaceId, invitation.workspaceId), eq(workspaceMembers.userId, callerUserId)))
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, invitation.workspaceId),
+            eq(workspaceMembers.userId, callerUserId),
+          ),
+        )
         .limit(1)
         .then((rows) => rows[0]);
-      if (!callerMember || callerMember.role !== "admin") {
-        throw AppError.forbidden("Only workspace admins can cancel invitations");
+      if (!callerMember || callerMember.role !== 'admin') {
+        throw AppError.forbidden('Only workspace admins can cancel invitations');
       }
     }
 
@@ -607,21 +582,13 @@ export class OrganizationService {
 
   // ── Accept Invitation ──────────────────────────────────────────────
 
-  async acceptInvitation(
-    userId: string,
-    token: string,
-  ): Promise<{ orgId: string } | null> {
+  async acceptInvitation(userId: string, token: string): Promise<{ orgId: string } | null> {
     const tokenHash = hashToken(token);
 
     const invitation = await this.db
       .select()
       .from(invitations)
-      .where(
-        and(
-          eq(invitations.tokenHash, tokenHash),
-          isNull(invitations.acceptedAt),
-        ),
-      )
+      .where(and(eq(invitations.tokenHash, tokenHash), isNull(invitations.acceptedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -632,7 +599,7 @@ export class OrganizationService {
 
     // Check expiry
     if (new Date() > invitation.expiresAt) {
-      throw AppError.badRequest(ErrorCode.INVITATION_EXPIRED, "This invitation has expired");
+      throw AppError.badRequest(ErrorCode.INVITATION_EXPIRED, 'This invitation has expired');
     }
 
     // Mark as accepted

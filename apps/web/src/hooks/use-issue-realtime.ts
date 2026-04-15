@@ -54,8 +54,7 @@ export function useIssueRealtime(projectId: string): void {
 
     // Skip if the current user initiated the bulk action to avoid double-update.
     // The mutation's onSuccess already invalidated the cache.
-    const currentUserId =
-      queryClient.getQueryData<{ id: string }>(['my', 'profile'])?.id;
+    const currentUserId = queryClient.getQueryData<{ id: string }>(['my', 'profile'])?.id;
     if (payload?.actorId && payload.actorId === currentUserId) {
       return;
     }

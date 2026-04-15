@@ -1,8 +1,8 @@
-import type { Job } from "bullmq";
-import type { Database } from "@worknest/db";
-import { NotificationService } from "../services/notification-service";
-import type { NotificationJobData } from "../services/notification-service";
-import { sendToUser } from "../websocket/handler";
+import type { Database } from '@worknest/db';
+import type { Job } from 'bullmq';
+import { NotificationService } from '../services/notification-service';
+import type { NotificationJobData } from '../services/notification-service';
+import { sendToUser } from '../websocket/handler';
 
 // ── Processor ────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ export function createNotificationProcessor(db: Database) {
 
       // Send real-time WebSocket event (in-process, no Redis Pub/Sub)
       sendToUser(recipientId, {
-        type: "notification.new",
+        type: 'notification.new',
         payload: {
           id: notification.id,
           userId: notification.userId,

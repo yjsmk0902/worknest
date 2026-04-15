@@ -1,33 +1,33 @@
-import { randomUUID } from "node:crypto";
-import { eq, and, isNull, lt, desc } from "drizzle-orm";
+import { randomUUID } from 'node:crypto';
 import {
-  workspaces,
-  workspaceMembers,
+  type Database,
   invitations,
-  users,
   orgMembers,
   organizations,
-  type Database,
-} from "@worknest/db";
+  users,
+  workspaceMembers,
+  workspaces,
+} from '@worknest/db';
 import type {
   CreateWorkspaceInput,
-  UpdateWorkspaceInput,
   CreateWsInvitationInput,
-  WsRole,
   CursorPaginationQuery,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import { hashToken, generateToken } from "../lib/crypto";
+  UpdateWorkspaceInput,
+  WsRole,
+} from '@worknest/shared';
+import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import { generateToken, hashToken } from '../lib/crypto';
+import { AppError, ErrorCode } from '../lib/errors';
 
 function generateSlug(name: string): string {
   const base = name
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/[\s]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .slice(0, 40);
-  const suffix = randomUUID().replace(/-/g, "").slice(0, 8);
+  const suffix = randomUUID().replace(/-/g, '').slice(0, 8);
   return base ? `${base}-${suffix}` : suffix;
 }
 
@@ -38,11 +38,7 @@ export class WorkspaceService {
 
   // ── List Workspaces for an Org ─────────────────────────────────────
 
-  async listByOrg(
-    orgId: string,
-    userId: string,
-    pagination: CursorPaginationQuery,
-  ) {
+  async listByOrg(orgId: string, userId: string, pagination: CursorPaginationQuery) {
     const { cursor, limit } = pagination;
 
     const rows = await this.db
@@ -79,9 +75,7 @@ export class WorkspaceService {
         role: row.member.role,
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.ws.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.ws.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -98,8 +92,8 @@ export class WorkspaceService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!orgMember || !["owner", "admin"].includes(orgMember.role)) {
-      throw AppError.forbidden("Only org owner or admin can create workspaces");
+    if (!orgMember || !['owner', 'admin'].includes(orgMember.role)) {
+      throw AppError.forbidden('Only org owner or admin can create workspaces');
     }
 
     const slug = generateSlug(input.name);
@@ -119,9 +113,9 @@ export class WorkspaceService {
 
       // Make creator an admin
       await tx.insert(workspaceMembers).values({
-        workspaceId: created!.id,
+        workspaceId: created?.id,
         userId,
-        role: "admin",
+        role: 'admin',
       });
 
       return created!;
@@ -150,7 +144,7 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!ws) {
-      throw AppError.notFound("workspace");
+      throw AppError.notFound('workspace');
     }
 
     return {
@@ -172,17 +166,12 @@ export class WorkspaceService {
     const org = await this.db
       .select({ id: organizations.id })
       .from(organizations)
-      .where(
-        and(
-          eq(organizations.slug, orgSlug),
-          isNull(organizations.deletedAt),
-        ),
-      )
+      .where(and(eq(organizations.slug, orgSlug), isNull(organizations.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!org) {
-      throw AppError.notFound("organization");
+      throw AppError.notFound('organization');
     }
 
     // Find workspace by slug within the org, ensuring user is a member
@@ -194,10 +183,7 @@ export class WorkspaceService {
       .from(workspaces)
       .innerJoin(
         workspaceMembers,
-        and(
-          eq(workspaceMembers.workspaceId, workspaces.id),
-          eq(workspaceMembers.userId, userId),
-        ),
+        and(eq(workspaceMembers.workspaceId, workspaces.id), eq(workspaceMembers.userId, userId)),
       )
       .where(
         and(
@@ -210,7 +196,7 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!row) {
-      throw AppError.notFound("workspace");
+      throw AppError.notFound('workspace');
     }
 
     return {
@@ -244,7 +230,7 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("workspace");
+      throw AppError.notFound('workspace');
     }
 
     return {
@@ -266,17 +252,12 @@ export class WorkspaceService {
     const member = await this.db
       .select()
       .from(workspaceMembers)
-      .where(
-        and(
-          eq(workspaceMembers.workspaceId, id),
-          eq(workspaceMembers.userId, userId),
-        ),
-      )
+      .where(and(eq(workspaceMembers.workspaceId, id), eq(workspaceMembers.userId, userId)))
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!member || member.role !== "admin") {
-      throw AppError.forbidden("Only workspace admin can delete a workspace");
+    if (!member || member.role !== 'admin') {
+      throw AppError.forbidden('Only workspace admin can delete a workspace');
     }
 
     const updated = await this.db
@@ -287,7 +268,7 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("workspace");
+      throw AppError.notFound('workspace');
     }
   }
 
@@ -335,9 +316,7 @@ export class WorkspaceService {
         },
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.member.joinedAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.member.joinedAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -354,7 +333,7 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Verify caller is an admin of the workspace
@@ -370,12 +349,12 @@ export class WorkspaceService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!caller || caller.role !== "admin") {
-      throw AppError.forbidden("Only workspace admin can change member roles");
+    if (!caller || caller.role !== 'admin') {
+      throw AppError.forbidden('Only workspace admin can change member roles');
     }
 
     if (member.userId === callerUserId) {
-      throw AppError.forbidden("Cannot change your own role");
+      throw AppError.forbidden('Cannot change your own role');
     }
 
     const [updated] = await this.db
@@ -398,11 +377,11 @@ export class WorkspaceService {
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     if (member.userId === callerUserId) {
-      throw AppError.forbidden("Cannot remove yourself from the workspace");
+      throw AppError.forbidden('Cannot remove yourself from the workspace');
     }
 
     // Verify caller is an admin of the workspace
@@ -418,37 +397,29 @@ export class WorkspaceService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!caller || caller.role !== "admin") {
-      throw AppError.forbidden("Only workspace admin can remove members");
+    if (!caller || caller.role !== 'admin') {
+      throw AppError.forbidden('Only workspace admin can remove members');
     }
 
-    await this.db
-      .delete(workspaceMembers)
-      .where(eq(workspaceMembers.id, memberId));
+    await this.db.delete(workspaceMembers).where(eq(workspaceMembers.id, memberId));
   }
 
   // ── Create Invitation ──────────────────────────────────────────────
 
-  async createInvitation(
-    wsId: string,
-    invitedById: string,
-    input: CreateWsInvitationInput,
-  ) {
+  async createInvitation(wsId: string, invitedById: string, input: CreateWsInvitationInput) {
     // Check if already a member
     const existingMember = await this.db
       .select({ id: workspaceMembers.id })
       .from(workspaceMembers)
       .innerJoin(users, eq(workspaceMembers.userId, users.id))
-      .where(
-        and(
-          eq(workspaceMembers.workspaceId, wsId),
-          eq(users.email, input.email),
-        ),
-      )
+      .where(and(eq(workspaceMembers.workspaceId, wsId), eq(users.email, input.email)))
       .limit(1);
 
     if (existingMember.length > 0) {
-      throw AppError.conflict(ErrorCode.ALREADY_A_MEMBER, "User is already a member of this workspace");
+      throw AppError.conflict(
+        ErrorCode.ALREADY_A_MEMBER,
+        'User is already a member of this workspace',
+      );
     }
 
     // Check for existing pending invitation
@@ -467,7 +438,7 @@ export class WorkspaceService {
     if (existingInvitation.length > 0) {
       throw AppError.conflict(
         ErrorCode.INVITATION_ALREADY_SENT,
-        "An invitation has already been sent to this email",
+        'An invitation has already been sent to this email',
       );
     }
 
@@ -488,13 +459,13 @@ export class WorkspaceService {
 
     return {
       invitation: {
-        id: invitation!.id,
-        email: invitation!.email,
-        role: invitation!.role,
-        invitedBy: invitation!.invitedBy,
-        expiresAt: invitation!.expiresAt.toISOString(),
+        id: invitation?.id,
+        email: invitation?.email,
+        role: invitation?.role,
+        invitedBy: invitation?.invitedBy,
+        expiresAt: invitation?.expiresAt.toISOString(),
         acceptedAt: null,
-        createdAt: invitation!.createdAt.toISOString(),
+        createdAt: invitation?.createdAt.toISOString(),
       },
       token,
     };
@@ -532,9 +503,7 @@ export class WorkspaceService {
         createdAt: inv.createdAt.toISOString(),
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -542,21 +511,13 @@ export class WorkspaceService {
 
   // ── Accept Invitation ──────────────────────────────────────────────
 
-  async acceptInvitation(
-    userId: string,
-    token: string,
-  ): Promise<{ workspaceId: string } | null> {
+  async acceptInvitation(userId: string, token: string): Promise<{ workspaceId: string } | null> {
     const tokenHash = hashToken(token);
 
     const invitation = await this.db
       .select()
       .from(invitations)
-      .where(
-        and(
-          eq(invitations.tokenHash, tokenHash),
-          isNull(invitations.acceptedAt),
-        ),
-      )
+      .where(and(eq(invitations.tokenHash, tokenHash), isNull(invitations.acceptedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -567,7 +528,7 @@ export class WorkspaceService {
 
     // Check expiry
     if (new Date() > invitation.expiresAt) {
-      throw AppError.badRequest(ErrorCode.INVITATION_EXPIRED, "This invitation has expired");
+      throw AppError.badRequest(ErrorCode.INVITATION_EXPIRED, 'This invitation has expired');
     }
 
     // Mark as accepted

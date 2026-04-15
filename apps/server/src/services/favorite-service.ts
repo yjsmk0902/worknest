@@ -1,30 +1,30 @@
-import { eq, and, asc, desc, isNull } from "drizzle-orm";
 import {
-  favorites,
-  projects,
-  projectMembers,
-  issues,
-  wikiPages,
-  wikiSpaces,
-  wikiSpaceMembers,
   type Database,
-} from "@worknest/db";
+  favorites,
+  issues,
+  projectMembers,
+  projects,
+  wikiPages,
+  wikiSpaceMembers,
+  wikiSpaces,
+} from '@worknest/db';
 import type {
   CreateFavoriteInput,
-  UpdateFavoriteInput,
   FavoriteEntityType,
-} from "@worknest/shared";
-import { generateKeyBetween } from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
+  UpdateFavoriteInput,
+} from '@worknest/shared';
+import { generateKeyBetween } from '@worknest/shared';
+import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
 /** Maps entity type to the corresponding FK column in the favorites table. */
 const ENTITY_TYPE_TO_COLUMN = {
-  project: "projectId",
-  issue: "issueId",
-  page: "pageId",
-  space: "spaceId",
+  project: 'projectId',
+  issue: 'issueId',
+  page: 'pageId',
+  space: 'spaceId',
 } as const;
 
 // ── Service ────────────────────────────────────────────────────────────
@@ -73,20 +73,12 @@ export class FavoriteService {
     const existing = await this.db
       .select({ id: favorites.id })
       .from(favorites)
-      .where(
-        and(
-          eq(favorites.userId, callerUserId),
-          eq(favorites[fkColumn], entityId),
-        ),
-      )
+      .where(and(eq(favorites.userId, callerUserId), eq(favorites[fkColumn], entityId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (existing) {
-      throw AppError.conflict(
-        ErrorCode.ALREADY_A_MEMBER,
-        "This item is already in your favorites",
-      );
+      throw AppError.conflict(ErrorCode.ALREADY_A_MEMBER, 'This item is already in your favorites');
     }
 
     // Find the last favorite to generate a sort_order after it
@@ -98,10 +90,7 @@ export class FavoriteService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    const sortOrder = generateKeyBetween(
-      lastFavorite?.sortOrder ?? null,
-      null,
-    );
+    const sortOrder = generateKeyBetween(lastFavorite?.sortOrder ?? null, null);
 
     // Build the insert values with only the matching FK set
     const insertValues: Record<string, unknown> = {
@@ -127,11 +116,7 @@ export class FavoriteService {
    *
    * Verifies ownership before updating.
    */
-  async update(
-    favoriteId: string,
-    callerUserId: string,
-    input: UpdateFavoriteInput,
-  ) {
+  async update(favoriteId: string, callerUserId: string, input: UpdateFavoriteInput) {
     const existing = await this.getOwnedFavorite(favoriteId, callerUserId);
 
     const [updated] = await this.db
@@ -163,14 +148,12 @@ export class FavoriteService {
     const row = await this.db
       .select()
       .from(favorites)
-      .where(
-        and(eq(favorites.id, favoriteId), eq(favorites.userId, callerUserId)),
-      )
+      .where(and(eq(favorites.id, favoriteId), eq(favorites.userId, callerUserId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!row) {
-      throw AppError.notFound("favorite");
+      throw AppError.notFound('favorite');
     }
 
     return row;
@@ -185,38 +168,35 @@ export class FavoriteService {
     entityId: string,
   ) {
     switch (entityType) {
-      case "project": {
+      case 'project': {
         const project = await this.db
           .select({ id: projects.id })
           .from(projects)
           .where(and(eq(projects.id, entityId), isNull(projects.deletedAt)))
           .limit(1)
           .then((rows) => rows[0]);
-        if (!project) throw AppError.notFound("project");
+        if (!project) throw AppError.notFound('project');
 
         const member = await this.db
           .select({ id: projectMembers.id })
           .from(projectMembers)
           .where(
-            and(
-              eq(projectMembers.projectId, entityId),
-              eq(projectMembers.userId, callerUserId),
-            ),
+            and(eq(projectMembers.projectId, entityId), eq(projectMembers.userId, callerUserId)),
           )
           .limit(1)
           .then((rows) => rows[0]);
-        if (!member) throw AppError.forbidden("You are not a member of this project");
+        if (!member) throw AppError.forbidden('You are not a member of this project');
         break;
       }
 
-      case "issue": {
+      case 'issue': {
         const issue = await this.db
           .select({ id: issues.id, projectId: issues.projectId })
           .from(issues)
           .where(and(eq(issues.id, entityId), isNull(issues.deletedAt)))
           .limit(1)
           .then((rows) => rows[0]);
-        if (!issue) throw AppError.notFound("issue");
+        if (!issue) throw AppError.notFound('issue');
 
         const member = await this.db
           .select({ id: projectMembers.id })
@@ -229,18 +209,18 @@ export class FavoriteService {
           )
           .limit(1)
           .then((rows) => rows[0]);
-        if (!member) throw AppError.forbidden("You are not a member of this project");
+        if (!member) throw AppError.forbidden('You are not a member of this project');
         break;
       }
 
-      case "page": {
+      case 'page': {
         const page = await this.db
           .select({ id: wikiPages.id, wikiSpaceId: wikiPages.wikiSpaceId })
           .from(wikiPages)
           .where(and(eq(wikiPages.id, entityId), isNull(wikiPages.deletedAt)))
           .limit(1)
           .then((rows) => rows[0]);
-        if (!page) throw AppError.notFound("wiki_page");
+        if (!page) throw AppError.notFound('wiki_page');
 
         const member = await this.db
           .select({ id: wikiSpaceMembers.id })
@@ -253,18 +233,18 @@ export class FavoriteService {
           )
           .limit(1)
           .then((rows) => rows[0]);
-        if (!member) throw AppError.forbidden("You are not a member of this wiki space");
+        if (!member) throw AppError.forbidden('You are not a member of this wiki space');
         break;
       }
 
-      case "space": {
+      case 'space': {
         const space = await this.db
           .select({ id: wikiSpaces.id })
           .from(wikiSpaces)
           .where(eq(wikiSpaces.id, entityId))
           .limit(1)
           .then((rows) => rows[0]);
-        if (!space) throw AppError.notFound("wiki_space");
+        if (!space) throw AppError.notFound('wiki_space');
 
         const member = await this.db
           .select({ id: wikiSpaceMembers.id })
@@ -277,7 +257,7 @@ export class FavoriteService {
           )
           .limit(1)
           .then((rows) => rows[0]);
-        if (!member) throw AppError.forbidden("You are not a member of this wiki space");
+        if (!member) throw AppError.forbidden('You are not a member of this wiki space');
         break;
       }
     }
@@ -288,11 +268,11 @@ export class FavoriteService {
    */
   private formatFavorite(row: typeof favorites.$inferSelect) {
     let entityType: FavoriteEntityType;
-    if (row.projectId) entityType = "project";
-    else if (row.issueId) entityType = "issue";
-    else if (row.pageId) entityType = "page";
-    else if (row.spaceId) entityType = "space";
-    else entityType = "project"; // fallback — should not happen
+    if (row.projectId) entityType = 'project';
+    else if (row.issueId) entityType = 'issue';
+    else if (row.pageId) entityType = 'page';
+    else if (row.spaceId) entityType = 'space';
+    else entityType = 'project'; // fallback — should not happen
 
     return {
       id: row.id,
@@ -302,7 +282,7 @@ export class FavoriteService {
       pageId: row.pageId,
       spaceId: row.spaceId,
       entityType,
-      entityName: "Unknown",
+      entityName: 'Unknown',
       sortOrder: row.sortOrder,
       createdAt: row.createdAt.toISOString(),
     };
@@ -323,20 +303,20 @@ export class FavoriteService {
     let entityName: string;
 
     if (fav.projectId) {
-      entityType = "project";
-      entityName = row.projectName ?? "Unknown";
+      entityType = 'project';
+      entityName = row.projectName ?? 'Unknown';
     } else if (fav.issueId) {
-      entityType = "issue";
-      entityName = row.issueName ?? "Unknown";
+      entityType = 'issue';
+      entityName = row.issueName ?? 'Unknown';
     } else if (fav.pageId) {
-      entityType = "page";
-      entityName = row.pageName ?? "Unknown";
+      entityType = 'page';
+      entityName = row.pageName ?? 'Unknown';
     } else if (fav.spaceId) {
-      entityType = "space";
-      entityName = row.spaceName ?? "Unknown";
+      entityType = 'space';
+      entityName = row.spaceName ?? 'Unknown';
     } else {
-      entityType = "project";
-      entityName = "Unknown";
+      entityType = 'project';
+      entityName = 'Unknown';
     }
 
     return {

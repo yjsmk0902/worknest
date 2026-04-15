@@ -1,73 +1,90 @@
-import { eq, and, isNull, lt, desc } from "drizzle-orm";
 import {
-  projects,
-  projectMembers,
+  type Database,
   issueStatuses,
   issueTypes,
+  projectMembers,
+  projects,
   users,
-  type Database,
-} from "@worknest/db";
+} from '@worknest/db';
 import type {
-  CreateProjectInput,
-  UpdateProjectInput,
   AddProjectMemberInput,
-  ProjectRole,
+  CreateProjectInput,
   CursorPaginationQuery,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
+  ProjectRole,
+  UpdateProjectInput,
+} from '@worknest/shared';
+import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
 
 // ── Default Seeds ─────────────────────────────────────────────────────
 
 const DEFAULT_STATUSES = [
-  { name: "Backlog", color: "#6b7280", sortOrder: 0, category: "backlog" as const, isDefault: true },
-  { name: "Todo", color: "#3b82f6", sortOrder: 1, category: "unstarted" as const, isDefault: false },
-  { name: "In Progress", color: "#f59e0b", sortOrder: 2, category: "started" as const, isDefault: false },
-  { name: "Done", color: "#22c55e", sortOrder: 3, category: "completed" as const, isDefault: false },
-  { name: "Cancelled", color: "#ef4444", sortOrder: 4, category: "cancelled" as const, isDefault: false },
+  {
+    name: 'Backlog',
+    color: '#6b7280',
+    sortOrder: 0,
+    category: 'backlog' as const,
+    isDefault: true,
+  },
+  {
+    name: 'Todo',
+    color: '#3b82f6',
+    sortOrder: 1,
+    category: 'unstarted' as const,
+    isDefault: false,
+  },
+  {
+    name: 'In Progress',
+    color: '#f59e0b',
+    sortOrder: 2,
+    category: 'started' as const,
+    isDefault: false,
+  },
+  {
+    name: 'Done',
+    color: '#22c55e',
+    sortOrder: 3,
+    category: 'completed' as const,
+    isDefault: false,
+  },
+  {
+    name: 'Cancelled',
+    color: '#ef4444',
+    sortOrder: 4,
+    category: 'cancelled' as const,
+    isDefault: false,
+  },
 ];
 
 const DEFAULT_TYPES = [
-  { name: "Task", icon: "check-circle", color: "#3b82f6", sortOrder: 0, isDefault: true },
-  { name: "Bug", icon: "bug", color: "#ef4444", sortOrder: 1, isDefault: false },
-  { name: "Story", icon: "book-open", color: "#8b5cf6", sortOrder: 2, isDefault: false },
-  { name: "Epic", icon: "rocket", color: "#f59e0b", sortOrder: 3, isDefault: false },
+  { name: 'Task', icon: 'check-circle', color: '#3b82f6', sortOrder: 0, isDefault: true },
+  { name: 'Bug', icon: 'bug', color: '#ef4444', sortOrder: 1, isDefault: false },
+  { name: 'Story', icon: 'book-open', color: '#8b5cf6', sortOrder: 2, isDefault: false },
+  { name: 'Epic', icon: 'rocket', color: '#f59e0b', sortOrder: 3, isDefault: false },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-async function requireProjectMembership(
-  db: Database,
-  projectId: string,
-  userId: string,
-) {
+async function requireProjectMembership(db: Database, projectId: string, userId: string) {
   const member = await db
     .select()
     .from(projectMembers)
-    .where(
-      and(
-        eq(projectMembers.projectId, projectId),
-        eq(projectMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this project");
+    throw AppError.forbidden('You are not a member of this project');
   }
 
   return member;
 }
 
-async function requireProjectAdmin(
-  db: Database,
-  projectId: string,
-  userId: string,
-) {
+async function requireProjectAdmin(db: Database, projectId: string, userId: string) {
   const member = await requireProjectMembership(db, projectId, userId);
 
-  if (member.role !== "admin") {
-    throw AppError.forbidden("Only project admins can perform this action");
+  if (member.role !== 'admin') {
+    throw AppError.forbidden('Only project admins can perform this action');
   }
 
   return member;
@@ -80,11 +97,7 @@ export class ProjectService {
 
   // ── List Projects by Workspace ────────────────────────────────────
 
-  async listByWorkspace(
-    wsId: string,
-    callerUserId: string,
-    pagination: CursorPaginationQuery,
-  ) {
+  async listByWorkspace(wsId: string, callerUserId: string, pagination: CursorPaginationQuery) {
     const { cursor, limit } = pagination;
 
     const rows = await this.db
@@ -122,9 +135,7 @@ export class ProjectService {
         role: row.member.role,
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.project.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.project.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -149,7 +160,7 @@ export class ProjectService {
     if (existing.length > 0) {
       throw AppError.conflict(
         ErrorCode.PREFIX_ALREADY_EXISTS,
-        "Project prefix already taken in this workspace",
+        'Project prefix already taken in this workspace',
       );
     }
 
@@ -168,15 +179,15 @@ export class ProjectService {
 
       // Make creator an admin
       await tx.insert(projectMembers).values({
-        projectId: created!.id,
+        projectId: created?.id,
         userId: callerUserId,
-        role: "admin",
+        role: 'admin',
       });
 
       // Seed default issue statuses
       await tx.insert(issueStatuses).values(
         DEFAULT_STATUSES.map((s) => ({
-          projectId: created!.id,
+          projectId: created?.id,
           name: s.name,
           color: s.color,
           sortOrder: s.sortOrder,
@@ -188,7 +199,7 @@ export class ProjectService {
       // Seed default issue types
       await tx.insert(issueTypes).values(
         DEFAULT_TYPES.map((t) => ({
-          projectId: created!.id,
+          projectId: created?.id,
           name: t.name,
           icon: t.icon,
           color: t.color,
@@ -226,7 +237,7 @@ export class ProjectService {
       .then((rows) => rows[0]);
 
     if (!project) {
-      throw AppError.notFound("project");
+      throw AppError.notFound('project');
     }
 
     return {
@@ -262,11 +273,7 @@ export class ProjectService {
 
   // ── Update Project ────────────────────────────────────────────────
 
-  async update(
-    projectId: string,
-    callerUserId: string,
-    input: UpdateProjectInput,
-  ) {
+  async update(projectId: string, callerUserId: string, input: UpdateProjectInput) {
     await requireProjectAdmin(this.db, projectId, callerUserId);
 
     const updates: Record<string, unknown> = { updatedAt: new Date() };
@@ -282,7 +289,7 @@ export class ProjectService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("project");
+      throw AppError.notFound('project');
     }
 
     return {
@@ -311,17 +318,13 @@ export class ProjectService {
       .then((rows) => rows[0]);
 
     if (!updated) {
-      throw AppError.notFound("project");
+      throw AppError.notFound('project');
     }
   }
 
   // ── List Members ──────────────────────────────────────────────────
 
-  async listMembers(
-    projectId: string,
-    callerUserId: string,
-    pagination: CursorPaginationQuery,
-  ) {
+  async listMembers(projectId: string, callerUserId: string, pagination: CursorPaginationQuery) {
     await requireProjectMembership(this.db, projectId, callerUserId);
 
     const { cursor, limit } = pagination;
@@ -341,9 +344,7 @@ export class ProjectService {
       .where(
         and(
           eq(projectMembers.projectId, projectId),
-          ...(cursor
-            ? [lt(projectMembers.joinedAt, new Date(cursor))]
-            : []),
+          ...(cursor ? [lt(projectMembers.joinedAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(projectMembers.joinedAt))
@@ -367,9 +368,7 @@ export class ProjectService {
         },
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.member.joinedAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.member.joinedAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -377,29 +376,20 @@ export class ProjectService {
 
   // ── Add Member ────────────────────────────────────────────────────
 
-  async addMember(
-    projectId: string,
-    callerUserId: string,
-    input: AddProjectMemberInput,
-  ) {
+  async addMember(projectId: string, callerUserId: string, input: AddProjectMemberInput) {
     await requireProjectAdmin(this.db, projectId, callerUserId);
 
     // Check if already a member
     const existing = await this.db
       .select({ id: projectMembers.id })
       .from(projectMembers)
-      .where(
-        and(
-          eq(projectMembers.projectId, projectId),
-          eq(projectMembers.userId, input.userId),
-        ),
-      )
+      .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, input.userId)))
       .limit(1);
 
     if (existing.length > 0) {
       throw AppError.conflict(
         ErrorCode.ALREADY_A_MEMBER,
-        "User is already a member of this project",
+        'User is already a member of this project',
       );
     }
 
@@ -426,63 +416,45 @@ export class ProjectService {
       .then((rows) => rows[0]);
 
     return {
-      id: member!.id,
-      projectId: member!.projectId,
-      userId: member!.userId,
-      role: member!.role as ProjectRole,
-      joinedAt: member!.joinedAt.toISOString(),
+      id: member?.id,
+      projectId: member?.projectId,
+      userId: member?.userId,
+      role: member?.role as ProjectRole,
+      joinedAt: member?.joinedAt.toISOString(),
       user: {
-        id: user!.id,
-        email: user!.email,
-        name: user!.name,
-        avatarUrl: user!.avatarUrl,
+        id: user?.id,
+        email: user?.email,
+        name: user?.name,
+        avatarUrl: user?.avatarUrl,
       },
     };
   }
 
   // ── Update Member Role ────────────────────────────────────────────
 
-  async updateMemberRole(
-    projectId: string,
-    callerUserId: string,
-    memberId: string,
-    role: string,
-  ) {
+  async updateMemberRole(projectId: string, callerUserId: string, memberId: string, role: string) {
     await requireProjectAdmin(this.db, projectId, callerUserId);
 
     const member = await this.db
       .select()
       .from(projectMembers)
-      .where(
-        and(
-          eq(projectMembers.id, memberId),
-          eq(projectMembers.projectId, projectId),
-        ),
-      )
+      .where(and(eq(projectMembers.id, memberId), eq(projectMembers.projectId, projectId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Prevent demoting the last admin
-    if (member.role === "admin" && role !== "admin") {
+    if (member.role === 'admin' && role !== 'admin') {
       const adminCount = await this.db
         .select({ id: projectMembers.id })
         .from(projectMembers)
-        .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.role, "admin"),
-          ),
-        );
+        .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.role, 'admin')));
 
       if (adminCount.length <= 1) {
-        throw AppError.badRequest(
-          ErrorCode.VALIDATION_ERROR,
-          "Cannot demote the last admin",
-        );
+        throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Cannot demote the last admin');
       }
     }
 
@@ -497,49 +469,33 @@ export class ProjectService {
 
   // ── Remove Member ─────────────────────────────────────────────────
 
-  async removeMember(
-    projectId: string,
-    callerUserId: string,
-    memberId: string,
-  ) {
+  async removeMember(projectId: string, callerUserId: string, memberId: string) {
     await requireProjectAdmin(this.db, projectId, callerUserId);
 
     const member = await this.db
       .select()
       .from(projectMembers)
-      .where(
-        and(
-          eq(projectMembers.id, memberId),
-          eq(projectMembers.projectId, projectId),
-        ),
-      )
+      .where(and(eq(projectMembers.id, memberId), eq(projectMembers.projectId, projectId)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.notFound("member");
+      throw AppError.notFound('member');
     }
 
     // Can't remove last admin
-    if (member.role === "admin") {
+    if (member.role === 'admin') {
       const adminCount = await this.db
         .select({ id: projectMembers.id })
         .from(projectMembers)
-        .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.role, "admin"),
-          ),
-        );
+        .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.role, 'admin')));
 
       if (adminCount.length <= 1) {
-        throw AppError.forbidden("Cannot remove the last admin of a project");
+        throw AppError.forbidden('Cannot remove the last admin of a project');
       }
     }
 
-    await this.db
-      .delete(projectMembers)
-      .where(eq(projectMembers.id, memberId));
+    await this.db.delete(projectMembers).where(eq(projectMembers.id, memberId));
   }
 
   // ── List for Sidebar ──────────────────────────────────────────────

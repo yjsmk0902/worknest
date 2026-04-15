@@ -1,51 +1,28 @@
 import {
-  eq,
-  and,
-  isNull,
-  desc,
-  count,
-  inArray,
-} from "drizzle-orm";
-import {
-  cycles,
-  cycleIssues,
-  issues,
-  issueStatuses,
-  projectMembers,
   type Database,
-} from "@worknest/db";
-import type {
-  CreateCycleInput,
-  UpdateCycleInput,
-  CompleteCycleInput,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import {
-  broadcastCycleUpdated,
-  broadcastCycleIssueChanged,
-} from "../websocket/cycle-events";
+  cycleIssues,
+  cycles,
+  issueStatuses,
+  issues,
+  projectMembers,
+} from '@worknest/db';
+import type { CompleteCycleInput, CreateCycleInput, UpdateCycleInput } from '@worknest/shared';
+import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
+import { broadcastCycleIssueChanged, broadcastCycleUpdated } from '../websocket/cycle-events';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-async function requireProjectMembership(
-  db: Database,
-  projectId: string,
-  userId: string,
-) {
+async function requireProjectMembership(db: Database, projectId: string, userId: string) {
   const member = await db
     .select({ id: projectMembers.id, role: projectMembers.role })
     .from(projectMembers)
-    .where(
-      and(
-        eq(projectMembers.projectId, projectId),
-        eq(projectMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this project");
+    throw AppError.forbidden('You are not a member of this project');
   }
 
   return member;
@@ -59,7 +36,7 @@ function formatCycle(row: typeof cycles.$inferSelect) {
     description: row.description,
     startDate: row.startDate?.toISOString() ?? null,
     endDate: row.endDate?.toISOString() ?? null,
-    status: row.status as "draft" | "active" | "completed",
+    status: row.status as 'draft' | 'active' | 'completed',
     createdBy: row.createdBy,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -98,11 +75,7 @@ export class CycleService {
 
   // ── Create Cycle ───────────────────────────────────────────────────────
 
-  async create(
-    projectId: string,
-    callerUserId: string,
-    input: CreateCycleInput,
-  ) {
+  async create(projectId: string, callerUserId: string, input: CreateCycleInput) {
     await requireProjectMembership(this.db, projectId, callerUserId);
 
     const [created] = await this.db
@@ -119,7 +92,7 @@ export class CycleService {
 
     const result = formatCycle(created!);
 
-    broadcastCycleUpdated(projectId, { action: "created", cycle: result });
+    broadcastCycleUpdated(projectId, { action: 'created', cycle: result });
 
     return result;
   }
@@ -135,7 +108,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
@@ -145,11 +118,7 @@ export class CycleService {
 
   // ── Update Cycle ───────────────────────────────────────────────────────
 
-  async update(
-    cycleId: string,
-    callerUserId: string,
-    input: UpdateCycleInput,
-  ) {
+  async update(cycleId: string, callerUserId: string, input: UpdateCycleInput) {
     const existing = await this.db
       .select()
       .from(cycles)
@@ -158,7 +127,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
@@ -182,7 +151,7 @@ export class CycleService {
     const result = formatCycle(updated!);
 
     broadcastCycleUpdated(existing.projectId, {
-      action: "updated",
+      action: 'updated',
       cycle: result,
     });
 
@@ -200,22 +169,22 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
 
-    if (existing.status === "active") {
+    if (existing.status === 'active') {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        "Active cycles cannot be deleted. Complete the cycle first.",
+        'Active cycles cannot be deleted. Complete the cycle first.',
       );
     }
 
     await this.db.delete(cycles).where(eq(cycles.id, cycleId));
 
     broadcastCycleUpdated(existing.projectId, {
-      action: "deleted",
+      action: 'deleted',
       cycleId,
     });
   }
@@ -231,17 +200,14 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, existing.projectId, callerUserId);
 
     // Only draft cycles can be activated
-    if (existing.status !== "draft") {
-      throw AppError.badRequest(
-        ErrorCode.VALIDATION_ERROR,
-        "Only draft cycles can be activated",
-      );
+    if (existing.status !== 'draft') {
+      throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Only draft cycles can be activated');
     }
 
     // Check + activate in a transaction to prevent TOCTOU race condition
@@ -249,25 +215,20 @@ export class CycleService {
       const activeCycle = await tx
         .select({ id: cycles.id })
         .from(cycles)
-        .where(
-          and(
-            eq(cycles.projectId, existing.projectId),
-            eq(cycles.status, "active"),
-          ),
-        )
+        .where(and(eq(cycles.projectId, existing.projectId), eq(cycles.status, 'active')))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (activeCycle) {
         throw AppError.conflict(
           ErrorCode.ACTIVE_CYCLE_EXISTS,
-          "An active cycle already exists in this project",
+          'An active cycle already exists in this project',
         );
       }
 
       const [row] = await tx
         .update(cycles)
-        .set({ status: "active", updatedAt: new Date() })
+        .set({ status: 'active', updatedAt: new Date() })
         .where(eq(cycles.id, cycleId))
         .returning();
 
@@ -277,7 +238,7 @@ export class CycleService {
     const result = formatCycle(updated);
 
     broadcastCycleUpdated(existing.projectId, {
-      action: "activated",
+      action: 'activated',
       cycle: result,
     });
 
@@ -295,7 +256,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
@@ -309,14 +270,14 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!issue) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     // Verify issue belongs to the same project as the cycle
     if (issue.projectId !== cycle.projectId) {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        "Issue does not belong to this project",
+        'Issue does not belong to this project',
       );
     }
 
@@ -335,21 +296,15 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (existing) {
-      throw AppError.conflict(
-        ErrorCode.ALREADY_A_MEMBER,
-        "Issue is already in this cycle",
-      );
+      throw AppError.conflict(ErrorCode.ALREADY_A_MEMBER, 'Issue is already in this cycle');
     }
 
-    const [created] = await this.db
-      .insert(cycleIssues)
-      .values({ cycleId, issueId })
-      .returning();
+    const [created] = await this.db.insert(cycleIssues).values({ cycleId, issueId }).returning();
 
     const result = formatCycleIssue(created!);
 
     broadcastCycleIssueChanged(cycle.projectId, {
-      action: "added",
+      action: 'added',
       cycleId,
       cycleIssue: result,
     });
@@ -368,7 +323,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
@@ -387,7 +342,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!entry) {
-      throw AppError.notFound("cycle_issue");
+      throw AppError.notFound('cycle_issue');
     }
 
     // Soft remove
@@ -397,7 +352,7 @@ export class CycleService {
       .where(eq(cycleIssues.id, entry.id));
 
     broadcastCycleIssueChanged(cycle.projectId, {
-      action: "removed",
+      action: 'removed',
       cycleId,
       issueId,
     });
@@ -414,7 +369,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
@@ -451,7 +406,7 @@ export class CycleService {
         descriptionText: row.issue.descriptionText ?? null,
         statusId: row.issue.statusId ?? null,
         typeId: row.issue.typeId ?? null,
-        priority: row.issue.priority ?? "none",
+        priority: row.issue.priority ?? 'none',
         parentId: row.issue.parentId ?? null,
         creatorId: row.issue.creatorId ?? null,
         sortOrder: row.issue.sortOrder,
@@ -476,11 +431,7 @@ export class CycleService {
 
   // ── Complete Cycle ─────────────────────────────────────────────────────
 
-  async complete(
-    cycleId: string,
-    callerUserId: string,
-    input: CompleteCycleInput,
-  ) {
+  async complete(cycleId: string, callerUserId: string, input: CompleteCycleInput) {
     const cycle = await this.db
       .select()
       .from(cycles)
@@ -489,17 +440,14 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
 
     // Only active cycles can be completed
-    if (cycle.status !== "active") {
-      throw AppError.badRequest(
-        ErrorCode.VALIDATION_ERROR,
-        "Only active cycles can be completed",
-      );
+    if (cycle.status !== 'active') {
+      throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Only active cycles can be completed');
     }
 
     // Validate target cycle if provided
@@ -512,13 +460,13 @@ export class CycleService {
         .then((rows) => rows[0]);
 
       if (!targetCycle) {
-        throw AppError.notFound("cycle");
+        throw AppError.notFound('cycle');
       }
 
       if (targetCycle.projectId !== cycle.projectId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
-          "Target cycle must belong to the same project",
+          'Target cycle must belong to the same project',
         );
       }
     }
@@ -527,7 +475,7 @@ export class CycleService {
       // 1. Set cycle status to completed
       const [updated] = await tx
         .update(cycles)
-        .set({ status: "completed", updatedAt: new Date() })
+        .set({ status: 'completed', updatedAt: new Date() })
         .where(eq(cycles.id, cycleId))
         .returning();
 
@@ -540,17 +488,11 @@ export class CycleService {
         .from(cycleIssues)
         .innerJoin(issues, eq(cycleIssues.issueId, issues.id))
         .leftJoin(issueStatuses, eq(issues.statusId, issueStatuses.id))
-        .where(
-          and(
-            eq(cycleIssues.cycleId, cycleId),
-            isNull(cycleIssues.removedAt),
-          ),
-        );
+        .where(and(eq(cycleIssues.cycleId, cycleId), isNull(cycleIssues.removedAt)));
 
       // 3. Find incomplete issues (status category != completed and != cancelled)
       const incompleteEntries = activeEntries.filter(
-        (e) =>
-          e.statusCategory !== "completed" && e.statusCategory !== "cancelled",
+        (e) => e.statusCategory !== 'completed' && e.statusCategory !== 'cancelled',
       );
 
       // 4. If targetCycleId provided, carry over incomplete issues
@@ -579,7 +521,7 @@ export class CycleService {
     const formatted = formatCycle(result);
 
     broadcastCycleUpdated(cycle.projectId, {
-      action: "completed",
+      action: 'completed',
       cycle: formatted,
     });
 
@@ -597,7 +539,7 @@ export class CycleService {
       .then((rows) => rows[0]);
 
     if (!cycle) {
-      throw AppError.notFound("cycle");
+      throw AppError.notFound('cycle');
     }
 
     await requireProjectMembership(this.db, cycle.projectId, callerUserId);
@@ -611,12 +553,7 @@ export class CycleService {
       .from(cycleIssues)
       .innerJoin(issues, eq(cycleIssues.issueId, issues.id))
       .leftJoin(issueStatuses, eq(issues.statusId, issueStatuses.id))
-      .where(
-        and(
-          eq(cycleIssues.cycleId, cycleId),
-          isNull(cycleIssues.removedAt),
-        ),
-      )
+      .where(and(eq(cycleIssues.cycleId, cycleId), isNull(cycleIssues.removedAt)))
       .groupBy(issueStatuses.category);
 
     const byCategory: Record<string, number> = {};
@@ -624,11 +561,11 @@ export class CycleService {
     let completed = 0;
 
     for (const row of rows) {
-      const category = row.category ?? "uncategorized";
+      const category = row.category ?? 'uncategorized';
       const cnt = Number(row.count);
       byCategory[category] = cnt;
       total += cnt;
-      if (category === "completed") {
+      if (category === 'completed') {
         completed += cnt;
       }
     }

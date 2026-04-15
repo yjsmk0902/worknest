@@ -1,4 +1,4 @@
-import type { WebSocket } from "@fastify/websocket";
+import type { WebSocket } from '@fastify/websocket';
 
 // ── Channel Types ──────────────────────────────────────────────────────
 
@@ -10,19 +10,17 @@ import type { WebSocket } from "@fastify/websocket";
  *   user:{id}       — personal notifications
  *   page:{id}       — wiki page real-time updates
  */
-export type ChannelType = "workspace" | "project" | "issue" | "user" | "page";
+export type ChannelType = 'workspace' | 'project' | 'issue' | 'user' | 'page';
 
 /**
  * Parse a channel string into its type and id.
  * Returns null if the format is invalid.
  */
-export function parseChannel(
-  channel: string,
-): { type: ChannelType; id: string } | null {
-  const [type, id] = channel.split(":");
+export function parseChannel(channel: string): { type: ChannelType; id: string } | null {
+  const [type, id] = channel.split(':');
   if (!type || !id) return null;
 
-  const validTypes: ChannelType[] = ["workspace", "project", "issue", "user", "page"];
+  const validTypes: ChannelType[] = ['workspace', 'project', 'issue', 'user', 'page'];
   if (!validTypes.includes(type as ChannelType)) return null;
 
   return { type: type as ChannelType, id };

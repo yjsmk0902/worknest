@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Search Query ────────────────────────────────────────────────────────
 
@@ -14,7 +14,7 @@ export type SearchQuery = z.infer<typeof searchQuery>;
 
 export const searchResultItem = z.object({
   id: z.string().uuid(),
-  type: z.enum(["issue", "page", "project"]),
+  type: z.enum(['issue', 'page', 'project']),
   title: z.string(),
   subtitle: z.string().optional(), // project prefix, space name, etc.
   url: z.string(), // client-side route path

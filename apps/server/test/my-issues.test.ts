@@ -1,29 +1,28 @@
+import { randomUUID } from 'node:crypto';
+import type { FastifyInstance } from 'fastify';
 /**
  * My Issues (My Work) route integration tests.
  *
  * Tests the "My Issues" view -- issues assigned to the current user
  * across all projects in a workspace, grouped by status category.
  */
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
-import type { FastifyInstance } from "fastify";
-import { randomUUID } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  buildTestApp,
   cleanup,
-  createTestUser,
-  createTestWorkspace,
+  createTestIssue,
   createTestOrg,
   createTestProject,
-  createTestIssue,
-  addProjectMember,
+  createTestUser,
+  createTestWorkspace,
   loginAsUser,
-  buildTestApp,
   stores,
-} from "./setup";
+} from './setup';
 
 // ── Build a test app with my-work routes ────────────────────────────────
 
 async function buildMyWorkApp() {
-  const { myWorkRoutes } = await import("../src/routes/my-work");
+  const { myWorkRoutes } = await import('../src/routes/my-work');
 
   const { app, auth, db } = await buildTestApp(
     async (app, { auth, db }) => {
@@ -38,12 +37,12 @@ async function buildMyWorkApp() {
 // ── Helpers ──────────────────────────────────────────────────────────────
 
 function setupWorkspaceWithUser() {
-  const user = createTestUser({ name: "My Work User" });
+  const user = createTestUser({ name: 'My Work User' });
   const org = createTestOrg(user.id);
   const ws = createTestWorkspace(org.id, user.id);
   const project = createTestProject(ws.id, user.id, {
-    name: "My Work Project",
-    prefix: "MW",
+    name: 'My Work Project',
+    prefix: 'MW',
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
@@ -60,7 +59,7 @@ function assignIssueToUser(issueId: string, userId: string) {
 
 // ── Tests ───────────────────────────────────────────────────────────────
 
-describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
+describe('GET /api/v1/workspaces/:workspaceId/my-issues', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -74,22 +73,22 @@ describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
     cleanup();
   });
 
-  it("returns issues assigned to the current user", async () => {
+  it('returns issues assigned to the current user', async () => {
     const { user, ws, project, cookie } = setupWorkspaceWithUser();
 
     // Get the "In Progress" status (started category)
     const startedStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "started",
+      (s) => s.projectId === project.id && s.category === 'started',
     );
 
     const issue = createTestIssue(project.id, user.id, {
-      title: "My assigned issue",
+      title: 'My assigned issue',
       statusId: startedStatus?.id ?? null,
     });
     assignIssueToUser(issue.id, user.id);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/my-issues`,
       headers: { cookie },
     });
@@ -116,33 +115,33 @@ describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
 
     const found = allIssues.find((i: { id: string }) => i.id === issue.id);
     expect(found).toBeDefined();
-    expect(found.title).toBe("My assigned issue");
+    expect(found.title).toBe('My assigned issue');
   });
 
-  it("groups issues by status category", async () => {
+  it('groups issues by status category', async () => {
     const { user, ws, project, cookie } = setupWorkspaceWithUser();
 
     const backlogStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "backlog",
+      (s) => s.projectId === project.id && s.category === 'backlog',
     );
     const completedStatus = stores.issueStatuses.find(
-      (s) => s.projectId === project.id && s.category === "completed",
+      (s) => s.projectId === project.id && s.category === 'completed',
     );
 
     const issue1 = createTestIssue(project.id, user.id, {
-      title: "Backlog issue",
+      title: 'Backlog issue',
       statusId: backlogStatus?.id ?? null,
     });
     assignIssueToUser(issue1.id, user.id);
 
     const issue2 = createTestIssue(project.id, user.id, {
-      title: "Completed issue",
+      title: 'Completed issue',
       statusId: completedStatus?.id ?? null,
     });
     assignIssueToUser(issue2.id, user.id);
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/my-issues`,
       headers: { cookie },
     });
@@ -157,11 +156,11 @@ describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
     expect(completedIds).toContain(issue2.id);
   });
 
-  it("returns empty groups when no issues are assigned", async () => {
+  it('returns empty groups when no issues are assigned', async () => {
     const { ws, cookie } = setupWorkspaceWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/my-issues`,
       headers: { cookie },
     });
@@ -175,29 +174,29 @@ describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
     expect(body.data.cancelled).toHaveLength(0);
   });
 
-  it("does not return issues from other workspaces", async () => {
+  it('does not return issues from other workspaces', async () => {
     const { user, org, ws, project, cookie } = setupWorkspaceWithUser();
 
     // Create issue in current workspace
     const issue1 = createTestIssue(project.id, user.id, {
-      title: "Current WS issue",
+      title: 'Current WS issue',
     });
     assignIssueToUser(issue1.id, user.id);
 
     // Create another workspace with its own project and issue
-    const ws2 = createTestWorkspace(org.id, user.id, { name: "Other WS" });
+    const ws2 = createTestWorkspace(org.id, user.id, { name: 'Other WS' });
     const project2 = createTestProject(ws2.id, user.id, {
-      name: "Other Project",
-      prefix: "OT",
+      name: 'Other Project',
+      prefix: 'OT',
     });
     const issue2 = createTestIssue(project2.id, user.id, {
-      title: "Other WS issue",
+      title: 'Other WS issue',
     });
     assignIssueToUser(issue2.id, user.id);
 
     // Search in ws1 only
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/my-issues`,
       headers: { cookie },
     });
@@ -218,11 +217,11 @@ describe("GET /api/v1/workspaces/:workspaceId/my-issues", () => {
     expect(ids).not.toContain(issue2.id);
   });
 
-  it("returns 401 when not authenticated", async () => {
+  it('returns 401 when not authenticated', async () => {
     const { ws } = setupWorkspaceWithUser();
 
     const res = await app.inject({
-      method: "GET",
+      method: 'GET',
       url: `/api/v1/workspaces/${ws.id}/my-issues`,
     });
 

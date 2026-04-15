@@ -1,24 +1,20 @@
-import { useState, useCallback, useMemo } from 'react';
-import { useParams } from '@tanstack/react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
-  closestCenter,
+  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Plus, Loader2 } from 'lucide-react';
-import { toast } from '@worknest/ui';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import type { WikiPageOutput } from '@worknest/shared';
+import { toast } from '@worknest/ui';
+import { Loader2, Plus } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { PageTreeItem } from './page-tree-item';
 
@@ -40,11 +36,7 @@ interface TreeNode {
 /**
  * Build a flat list of tree nodes from pages, ordered hierarchically.
  */
-function buildTree(
-  pages: WikiPageOutput[],
-  parentId: string | null,
-  level: number,
-): TreeNode[] {
+function buildTree(pages: WikiPageOutput[], parentId: string | null, level: number): TreeNode[] {
   return pages
     .filter((p) => p.parentId === parentId)
     .sort((a, b) => a.sortOrder.localeCompare(b.sortOrder))
@@ -58,10 +50,7 @@ function buildTree(
 /**
  * Flatten tree nodes into a list, respecting expanded state.
  */
-function flattenTree(
-  nodes: TreeNode[],
-  expanded: Set<string>,
-): TreeNode[] {
+function flattenTree(nodes: TreeNode[], expanded: Set<string>): TreeNode[] {
   const result: TreeNode[] = [];
   for (const node of nodes) {
     result.push(node);
@@ -96,14 +85,9 @@ function SortablePageItem({
   onToggle: () => void;
   onClick: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: node.page.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: node.page.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -161,15 +145,9 @@ export function PageTree({
     });
   }, []);
 
-  const tree = useMemo(
-    () => buildTree(pages, null, 0),
-    [pages],
-  );
+  const tree = useMemo(() => buildTree(pages, null, 0), [pages]);
 
-  const flatNodes = useMemo(
-    () => flattenTree(tree, expanded),
-    [tree, expanded],
-  );
+  const flatNodes = useMemo(() => flattenTree(tree, expanded), [tree, expanded]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -188,8 +166,7 @@ export function PageTree({
       pageId: string;
       sortOrder?: string;
       parentId?: string | null;
-    }) =>
-      apiClient.patch(`/wiki-pages/${pageId}`, { sortOrder, parentId }),
+    }) => apiClient.patch(`/wiki-pages/${pageId}`, { sortOrder, parentId }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'pages'],
@@ -230,12 +207,8 @@ export function PageTree({
       const overId = over.id as string;
 
       // Find positions in flat list
-      const activeIndex = flatNodes.findIndex(
-        (n) => n.page.id === activeId,
-      );
-      const overIndex = flatNodes.findIndex(
-        (n) => n.page.id === overId,
-      );
+      const activeIndex = flatNodes.findIndex((n) => n.page.id === activeId);
+      const overIndex = flatNodes.findIndex((n) => n.page.id === overId);
 
       if (activeIndex === -1 || overIndex === -1) return;
 
@@ -255,10 +228,7 @@ export function PageTree({
     return (
       <div className="p-3 space-y-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-8 animate-pulse rounded bg-muted"
-          />
+          <div key={i} className="h-8 animate-pulse rounded bg-muted" />
         ))}
       </div>
     );
@@ -269,9 +239,7 @@ export function PageTree({
       {/* Tree items */}
       <div className="flex-1 overflow-y-auto py-1 px-1">
         {flatNodes.length === 0 ? (
-          <p className="px-3 py-4 text-sm text-muted-foreground text-center">
-            페이지가 없습니다
-          </p>
+          <p className="px-3 py-4 text-sm text-muted-foreground text-center">페이지가 없습니다</p>
         ) : (
           <DndContext
             sensors={sensors}

@@ -1,41 +1,25 @@
-import { eq, and, asc, isNull, sql } from "drizzle-orm";
-import {
-  wikiPages,
-  wikiSpaceMembers,
-  type Database,
-} from "@worknest/db";
-import type {
-  CreateWikiPageInput,
-  UpdateWikiPageInput,
-} from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import { sanitizeContent } from "../lib/sanitize";
-import { extractPlainText } from "../lib/extract-text";
+import { type Database, wikiPages, wikiSpaceMembers } from '@worknest/db';
+import type { CreateWikiPageInput, UpdateWikiPageInput } from '@worknest/shared';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
+import { extractPlainText } from '../lib/extract-text';
+import { sanitizeContent } from '../lib/sanitize';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
 /**
  * Verify that the caller is a member of the wiki space.
  */
-async function requireSpaceMembership(
-  db: Database,
-  spaceId: string,
-  userId: string,
-) {
+async function requireSpaceMembership(db: Database, spaceId: string, userId: string) {
   const member = await db
     .select()
     .from(wikiSpaceMembers)
-    .where(
-      and(
-        eq(wikiSpaceMembers.wikiSpaceId, spaceId),
-        eq(wikiSpaceMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(wikiSpaceMembers.wikiSpaceId, spaceId), eq(wikiSpaceMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this wiki space");
+    throw AppError.forbidden('You are not a member of this wiki space');
   }
 
   return member;
@@ -44,15 +28,11 @@ async function requireSpaceMembership(
 /**
  * Verify that the caller has the 'editor' role in the wiki space.
  */
-async function requireEditorRole(
-  db: Database,
-  spaceId: string,
-  userId: string,
-) {
+async function requireEditorRole(db: Database, spaceId: string, userId: string) {
   const member = await requireSpaceMembership(db, spaceId, userId);
 
-  if (member.role !== "editor") {
-    throw AppError.forbidden("Editor role required for this action");
+  if (member.role !== 'editor') {
+    throw AppError.forbidden('Editor role required for this action');
   }
 
   return member;
@@ -61,10 +41,7 @@ async function requireEditorRole(
 /**
  * Get the spaceId for a page, verifying the page exists and is not deleted.
  */
-async function getPageWithSpaceId(
-  db: Database,
-  pageId: string,
-) {
+async function getPageWithSpaceId(db: Database, pageId: string) {
   const page = await db
     .select()
     .from(wikiPages)
@@ -73,7 +50,7 @@ async function getPageWithSpaceId(
     .then((rows) => rows[0]);
 
   if (!page) {
-    throw AppError.notFound("wiki_page");
+    throw AppError.notFound('wiki_page');
   }
 
   return page;
@@ -139,9 +116,7 @@ export class WikiPageService {
     const rows = await this.db
       .select()
       .from(wikiPages)
-      .where(
-        and(eq(wikiPages.wikiSpaceId, spaceId), isNull(wikiPages.deletedAt)),
-      )
+      .where(and(eq(wikiPages.wikiSpaceId, spaceId), isNull(wikiPages.deletedAt)))
       .orderBy(asc(wikiPages.sortOrder));
 
     return {
@@ -155,11 +130,7 @@ export class WikiPageService {
 
   // ── Create Page ──────────────────────────────────────────────────
 
-  async create(
-    spaceId: string,
-    callerUserId: string,
-    input: CreateWikiPageInput,
-  ) {
+  async create(spaceId: string, callerUserId: string, input: CreateWikiPageInput) {
     await requireEditorRole(this.db, spaceId, callerUserId);
 
     // Validate parentId if provided
@@ -178,7 +149,7 @@ export class WikiPageService {
         .then((rows) => rows[0]);
 
       if (!parent) {
-        throw AppError.notFound("parent_page");
+        throw AppError.notFound('parent_page');
       }
     }
 
@@ -213,11 +184,7 @@ export class WikiPageService {
 
   // ── Update Page ─────────────────────────────────────────────────
 
-  async update(
-    pageId: string,
-    callerUserId: string,
-    input: UpdateWikiPageInput,
-  ) {
+  async update(pageId: string, callerUserId: string, input: UpdateWikiPageInput) {
     const page = await getPageWithSpaceId(this.db, pageId);
     await requireEditorRole(this.db, page.wikiSpaceId, callerUserId);
 
@@ -242,27 +209,20 @@ export class WikiPageService {
         .then((rows) => rows[0]);
 
       if (!parent) {
-        throw AppError.notFound("parent_page");
+        throw AppError.notFound('parent_page');
       }
 
       // Cannot set self as parent
       if (input.parentId === pageId) {
-        throw AppError.badRequest(
-          ErrorCode.CIRCULAR_REFERENCE,
-          "A page cannot be its own parent",
-        );
+        throw AppError.badRequest(ErrorCode.CIRCULAR_REFERENCE, 'A page cannot be its own parent');
       }
 
-      const isCircular = await checkCircularReference(
-        this.db,
-        pageId,
-        input.parentId,
-      );
+      const isCircular = await checkCircularReference(this.db, pageId, input.parentId);
 
       if (isCircular) {
         throw AppError.badRequest(
           ErrorCode.CIRCULAR_REFERENCE,
-          "Moving this page would create a circular reference",
+          'Moving this page would create a circular reference',
         );
       }
     }
@@ -314,26 +274,19 @@ export class WikiPageService {
         .then((rows) => rows[0]);
 
       if (!parent) {
-        throw AppError.notFound("parent_page");
+        throw AppError.notFound('parent_page');
       }
 
       if (newParentId === pageId) {
-        throw AppError.badRequest(
-          ErrorCode.CIRCULAR_REFERENCE,
-          "A page cannot be its own parent",
-        );
+        throw AppError.badRequest(ErrorCode.CIRCULAR_REFERENCE, 'A page cannot be its own parent');
       }
 
-      const isCircular = await checkCircularReference(
-        this.db,
-        pageId,
-        newParentId,
-      );
+      const isCircular = await checkCircularReference(this.db, pageId, newParentId);
 
       if (isCircular) {
         throw AppError.badRequest(
           ErrorCode.CIRCULAR_REFERENCE,
-          "Moving this page would create a circular reference",
+          'Moving this page would create a circular reference',
         );
       }
     }
@@ -362,15 +315,10 @@ export class WikiPageService {
       await tx
         .update(wikiPages)
         .set({ parentId: page.parentId ?? null, updatedAt: new Date() })
-        .where(
-          and(eq(wikiPages.parentId, pageId), isNull(wikiPages.deletedAt)),
-        );
+        .where(and(eq(wikiPages.parentId, pageId), isNull(wikiPages.deletedAt)));
 
       // Soft-delete the page
-      await tx
-        .update(wikiPages)
-        .set({ deletedAt: new Date() })
-        .where(eq(wikiPages.id, pageId));
+      await tx.update(wikiPages).set({ deletedAt: new Date() }).where(eq(wikiPages.id, pageId));
     });
   }
 
@@ -393,9 +341,7 @@ export class WikiPageService {
         updatedAt: wikiPages.updatedAt,
       })
       .from(wikiPages)
-      .where(
-        and(eq(wikiPages.wikiSpaceId, spaceId), isNull(wikiPages.deletedAt)),
-      )
+      .where(and(eq(wikiPages.wikiSpaceId, spaceId), isNull(wikiPages.deletedAt)))
       .orderBy(asc(wikiPages.sortOrder));
 
     return {

@@ -29,10 +29,7 @@ export function ProjectSettingsLayout({
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <AppHeader
-        title="프로젝트 설정"
-        breadcrumbs={[{ label: projectName }]}
-      />
+      <AppHeader title="프로젝트 설정" breadcrumbs={[{ label: projectName }]} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left nav */}

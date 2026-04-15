@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
-import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react';
-import { z } from 'zod';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
-import { apiClient, ApiError } from '../../lib/api-client';
+import { AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { z } from 'zod';
+import { ApiError, apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/login')({
   component: LoginPage,
@@ -43,9 +43,7 @@ function LoginPage() {
     email: '',
     password: '',
   });
-  const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof LoginForm, string>>
-  >({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof LoginForm, string>>>({});
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
@@ -60,8 +58,7 @@ function LoginPage() {
   });
 
   const apiError = loginMutation.error;
-  const isRateLimited =
-    apiError instanceof ApiError && apiError.status === 429;
+  const isRateLimited = apiError instanceof ApiError && apiError.status === 429;
   const isAuthError =
     apiError instanceof ApiError && (apiError.status === 401 || apiError.status === 422);
   const hasError = !!apiError && !isRateLimited && !isAuthError;
@@ -104,9 +101,7 @@ function LoginPage() {
     <div className="mx-auto max-w-[400px] rounded-2xl bg-card p-8 shadow-lg shadow-black/5 ring-1 ring-border/50">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold text-foreground">로그인</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          워크스페이스에 로그인하세요
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">워크스페이스에 로그인하세요</p>
       </div>
 
       {isRateLimited && (
@@ -128,9 +123,7 @@ function LoginPage() {
           className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-          <p className="text-sm text-destructive">
-            이메일 또는 비밀번호가 올바르지 않습니다.
-          </p>
+          <p className="text-sm text-destructive">이메일 또는 비밀번호가 올바르지 않습니다.</p>
         </div>
       )}
 
@@ -159,9 +152,7 @@ function LoginPage() {
             disabled={isLoading || isRateLimited}
             error={!!fieldErrors.email}
             value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
             aria-describedby={fieldErrors.email ? 'email-error' : undefined}
           />
           {fieldErrors.email && (
@@ -183,12 +174,8 @@ function LoginPage() {
               disabled={isLoading || isRateLimited}
               error={!!fieldErrors.password}
               value={formData.password}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, password: e.target.value }))
-              }
-              aria-describedby={
-                fieldErrors.password ? 'password-error' : undefined
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+              aria-describedby={fieldErrors.password ? 'password-error' : undefined}
               className="pr-10"
             />
             <button
@@ -198,11 +185,7 @@ function LoginPage() {
               aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
               tabIndex={-1}
             >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {fieldErrors.password && (
@@ -212,12 +195,7 @@ function LoginPage() {
           )}
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          disabled={isLoading || isRateLimited}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={isLoading || isRateLimited}>
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -231,10 +209,7 @@ function LoginPage() {
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
         계정이 없으신가요?{' '}
-        <Link
-          to="/register"
-          className="font-medium text-primary hover:underline"
-        >
+        <Link to="/register" className="font-medium text-primary hover:underline">
           회원가입
         </Link>
       </p>

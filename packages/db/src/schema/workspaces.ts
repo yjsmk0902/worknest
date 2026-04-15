@@ -1,15 +1,9 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { organizations } from "./organizations";
-import { projects } from "./projects";
-import { wikiSpaces } from "./wiki";
+import { relations, sql } from 'drizzle-orm';
+import { pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { organizations } from './organizations';
+import { projects } from './projects';
+import { users } from './users';
+import { wikiSpaces } from './wiki';
 
 /**
  * Workspaces table.
@@ -19,22 +13,22 @@ import { wikiSpaces } from "./wiki";
  * so deleted workspaces don't block slug reuse within the same org.
  */
 export const workspaces = pgTable(
-  "workspaces",
+  'workspaces',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orgId: uuid("org_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    orgId: uuid('org_id')
       .notNull()
-      .references(() => organizations.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    logo: text("logo"),
-    description: text("description"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    slug: text('slug').notNull(),
+    logo: text('logo'),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("workspaces_org_slug_unique")
+    uniqueIndex('workspaces_org_slug_unique')
       .on(table.orgId, table.slug)
       .where(sql`${table.deletedAt} IS NULL`),
   ],
@@ -58,44 +52,36 @@ export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
  * inviting user is deleted.
  */
 export const workspaceMembers = pgTable(
-  "workspace_members",
+  'workspace_members',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    workspaceId: uuid("workspace_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    workspaceId: uuid('workspace_id')
       .notNull()
-      .references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: text("user_id")
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull(), // 'admin' | 'member' | 'guest'
-    invitedBy: text("invited_by").references(() => users.id, {
-      onDelete: "set null",
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'admin' | 'member' | 'guest'
+    invitedBy: text('invited_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+    joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("workspace_members_ws_user_unique").on(
-      table.workspaceId,
-      table.userId,
-    ),
-  ],
+  (table) => [uniqueIndex('workspace_members_ws_user_unique').on(table.workspaceId, table.userId)],
 );
 
-export const workspaceMembersRelations = relations(
-  workspaceMembers,
-  ({ one }) => ({
-    workspace: one(workspaces, {
-      fields: [workspaceMembers.workspaceId],
-      references: [workspaces.id],
-    }),
-    user: one(users, {
-      fields: [workspaceMembers.userId],
-      references: [users.id],
-    }),
-    inviter: one(users, {
-      fields: [workspaceMembers.invitedBy],
-      references: [users.id],
-      relationName: "inviter",
-    }),
+export const workspaceMembersRelations = relations(workspaceMembers, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [workspaceMembers.workspaceId],
+    references: [workspaces.id],
   }),
-);
+  user: one(users, {
+    fields: [workspaceMembers.userId],
+    references: [users.id],
+  }),
+  inviter: one(users, {
+    fields: [workspaceMembers.invitedBy],
+    references: [users.id],
+    relationName: 'inviter',
+  }),
+}));

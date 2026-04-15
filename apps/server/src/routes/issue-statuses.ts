@@ -1,14 +1,10 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import { eq, and } from "drizzle-orm";
-import type { Auth } from "../lib/auth";
-import {
-  issueStatuses,
-  projectMembers,
-  type Database,
-} from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { AppError } from "../lib/errors";
+import { type Database, issueStatuses, projectMembers } from '@worknest/db';
+import { and, eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -24,7 +20,7 @@ const updateIssueStatusInput = z.object({
   name: z.string().min(1).max(50).optional(),
   color: z
     .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex color")
+    .regex(/^#[0-9a-fA-F]{6}$/, 'Color must be a valid hex color')
     .optional(),
 });
 
@@ -41,12 +37,12 @@ export async function issueStatusRoutes(
   // ── GET /api/v1/projects/:projectId/statuses ──────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/statuses",
+    '/api/v1/projects/:projectId/statuses',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issue Statuses"],
-        summary: "List issue statuses for a project",
+        tags: ['Issue Statuses'],
+        summary: 'List issue statuses for a project',
       },
     },
     async (request, reply) => {
@@ -57,16 +53,13 @@ export async function issueStatusRoutes(
         .select()
         .from(projectMembers)
         .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.userId, request.user!.id),
-          ),
+          and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, request.user?.id)),
         )
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!member) {
-        throw AppError.forbidden("You are not a member of this project");
+        throw AppError.forbidden('You are not a member of this project');
       }
 
       const rows = await db
@@ -92,12 +85,12 @@ export async function issueStatusRoutes(
   // ── PATCH /api/v1/projects/:projectId/statuses/:statusId ──────────
 
   app.patch(
-    "/api/v1/projects/:projectId/statuses/:statusId",
+    '/api/v1/projects/:projectId/statuses/:statusId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Issue Statuses"],
-        summary: "Update an issue status (admin only)",
+        tags: ['Issue Statuses'],
+        summary: 'Update an issue status (admin only)',
       },
     },
     async (request, reply) => {
@@ -109,16 +102,13 @@ export async function issueStatusRoutes(
         .select()
         .from(projectMembers)
         .where(
-          and(
-            eq(projectMembers.projectId, projectId),
-            eq(projectMembers.userId, request.user!.id),
-          ),
+          and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, request.user?.id)),
         )
         .limit(1)
         .then((rows) => rows[0]);
 
-      if (!member || member.role !== "admin") {
-        throw AppError.forbidden("Only project admins can update statuses");
+      if (!member || member.role !== 'admin') {
+        throw AppError.forbidden('Only project admins can update statuses');
       }
 
       const updates: Record<string, unknown> = {};
@@ -128,16 +118,11 @@ export async function issueStatusRoutes(
       const [updated] = await db
         .update(issueStatuses)
         .set(updates)
-        .where(
-          and(
-            eq(issueStatuses.id, statusId),
-            eq(issueStatuses.projectId, projectId),
-          ),
-        )
+        .where(and(eq(issueStatuses.id, statusId), eq(issueStatuses.projectId, projectId)))
         .returning();
 
       if (!updated) {
-        throw AppError.notFound("issue status");
+        throw AppError.notFound('issue status');
       }
 
       return reply.status(200).send({

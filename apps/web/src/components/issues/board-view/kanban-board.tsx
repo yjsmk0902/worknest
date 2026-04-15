@@ -1,25 +1,25 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  type CollisionDetection,
   DndContext,
+  type DragEndEvent,
+  type DragOverEvent,
   DragOverlay,
-  PointerSensor,
+  type DragStartEvent,
   KeyboardSensor,
+  PointerSensor,
   pointerWithin,
   rectIntersection,
   useSensor,
   useSensors,
-  type CollisionDetection,
-  type DragStartEvent,
-  type DragOverEvent,
-  type DragEndEvent,
 } from '@dnd-kit/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Columns3, Plus } from 'lucide-react';
+import { type IssueOutput, type IssueStatusOutput, generateKeyBetween } from '@worknest/shared';
 import { Button, ScrollArea, toast } from '@worknest/ui';
-import { generateKeyBetween, type IssueOutput, type IssueStatusOutput } from '@worknest/shared';
+import { Columns3, Plus } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
-import { KanbanColumn } from './kanban-column';
 import { KanbanCard } from './kanban-card';
+import { KanbanColumn } from './kanban-column';
 
 // ── Safe key generation ──────────────────────────────────────────────
 
@@ -52,13 +52,17 @@ function getIssueSortValue(issue: IssueOutput, field: string | undefined): strin
       return issue.dueDate ?? '\uffff';
     case 'title':
       return issue.title.toLowerCase();
-    case 'manual':
     default:
       return issue.sortOrder;
   }
 }
 
-function sortIssues(a: IssueOutput, b: IssueOutput, field: string | undefined, order: string): number {
+function sortIssues(
+  a: IssueOutput,
+  b: IssueOutput,
+  field: string | undefined,
+  order: string,
+): number {
   const va = getIssueSortValue(a, field);
   const vb = getIssueSortValue(b, field);
   let cmp: number;
@@ -102,9 +106,7 @@ const kanbanCollisionDetection: CollisionDetection = (args) => {
     if (others.length === 0) return pointerCollisions;
 
     // Prefer card droppables for precise positioning within a column
-    const cardHits = others.filter(
-      (c) => !String(c.id).startsWith('column-'),
-    );
+    const cardHits = others.filter((c) => !String(c.id).startsWith('column-'));
     if (cardHits.length > 0) return cardHits;
     return others;
   }
@@ -202,9 +204,7 @@ export function KanbanBoard({
     }) =>
       apiClient.patch(`/projects/${projectId}/issues/${data.issueId}`, {
         ...(data.statusId !== undefined ? { statusId: data.statusId } : {}),
-        ...(data.sortOrder !== undefined
-          ? { sortOrder: data.sortOrder }
-          : {}),
+        ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
       }),
     onError: () => {
       // Rollback: restore from server
@@ -246,13 +246,16 @@ export function KanbanBoard({
 
   // ── DnD handlers ──────────────────────────────────────────────────────
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const id = event.active.id as string;
-    setActiveId(id);
-    // Remember the original statusId before handleDragOver mutates localIssues
-    const issue = localIssues.find((i) => i.id === id);
-    dragOriginalStatusRef.current = issue?.statusId ?? null;
-  }, [localIssues]);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const id = event.active.id as string;
+      setActiveId(id);
+      // Remember the original statusId before handleDragOver mutates localIssues
+      const issue = localIssues.find((i) => i.id === id);
+      dragOriginalStatusRef.current = issue?.statusId ?? null;
+    },
+    [localIssues],
+  );
 
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
@@ -328,10 +331,7 @@ export function KanbanBoard({
         const insertIndex = findSortedInsertIndex(activeIssue, otherIssues, sortField, sortOrder);
         const above = insertIndex > 0 ? otherIssues[insertIndex - 1] : null;
         const below = insertIndex < otherIssues.length ? otherIssues[insertIndex] : null;
-        newSortOrder = safeGenerateKeyBetween(
-          above?.sortOrder ?? null,
-          below?.sortOrder ?? null,
-        );
+        newSortOrder = safeGenerateKeyBetween(above?.sortOrder ?? null, below?.sortOrder ?? null);
       }
 
       // Optimistic update
@@ -373,12 +373,8 @@ export function KanbanBoard({
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <Columns3 className="h-12 w-12 text-muted-foreground" />
-        <h3 className="text-lg font-medium">
-          이슈를 만들어 보드를 시작하세요
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          카드를 드래그하여 상태를 변경할 수 있습니다
-        </p>
+        <h3 className="text-lg font-medium">이슈를 만들어 보드를 시작하세요</h3>
+        <p className="text-sm text-muted-foreground">카드를 드래그하여 상태를 변경할 수 있습니다</p>
         <Button onClick={onCreateClick}>
           <Plus className="h-4 w-4" />
           이슈 만들기
@@ -398,12 +394,7 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <ScrollArea
-        orientation="horizontal"
-        className="h-full"
-        role="region"
-        aria-label="칸반 보드"
-      >
+      <ScrollArea orientation="horizontal" className="h-full" role="region" aria-label="칸반 보드">
         <div className="flex gap-3 px-4 pb-4 h-full">
           {statuses.map((status) => (
             <KanbanColumn

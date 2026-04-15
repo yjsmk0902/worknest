@@ -1,19 +1,20 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { authRateLimit } from "../middleware/rate-limit";
-import { createRequireAuth } from "../middleware/auth";
+import { createHash } from 'node:crypto';
+import type { Database } from '@worknest/db';
 import {
-  registerInput,
-  loginInput,
-  acceptInvitationParams,
-} from "@worknest/shared";
-import { eq } from "drizzle-orm";
-import { invitations as invitationsTable, organizations, workspaces, users as usersTable } from "@worknest/db";
-import { OrganizationService } from "../services/organization-service";
-import { WorkspaceService } from "../services/workspace-service";
-import { AppError, ErrorCode } from "../lib/errors";
-import { createHash } from "node:crypto";
+  invitations as invitationsTable,
+  organizations,
+  users as usersTable,
+  workspaces,
+} from '@worknest/db';
+import { acceptInvitationParams, loginInput, registerInput } from '@worknest/shared';
+import { eq } from 'drizzle-orm';
+import type { FastifyInstance } from 'fastify';
+import type { Auth } from '../lib/auth';
+import { AppError, ErrorCode } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
+import { authRateLimit } from '../middleware/rate-limit';
+import { OrganizationService } from '../services/organization-service';
+import { WorkspaceService } from '../services/workspace-service';
 
 /**
  * Authentication routes.
@@ -33,12 +34,12 @@ export async function authRoutes(
   // ── POST /api/v1/auth/register ─────────────────────────────────────
 
   app.post(
-    "/api/v1/auth/register",
+    '/api/v1/auth/register',
     {
       preHandler: [authRateLimit],
       schema: {
-        tags: ["Auth"],
-        summary: "Register a new account",
+        tags: ['Auth'],
+        summary: 'Register a new account',
       },
     },
     async (request, reply) => {
@@ -57,14 +58,14 @@ export async function authRoutes(
       if (!response.ok) {
         throw AppError.badRequest(
           ErrorCode.EMAIL_ALREADY_EXISTS,
-          "An account with this email already exists",
+          'An account with this email already exists',
         );
       }
 
       // Copy set-cookie headers from Better Auth response
       const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
       for (const cookie of setCookieHeaders) {
-        reply.header("set-cookie", cookie);
+        reply.header('set-cookie', cookie);
       }
 
       const responseBody = await response.json();
@@ -82,12 +83,12 @@ export async function authRoutes(
   // ── POST /api/v1/auth/login ────────────────────────────────────────
 
   app.post(
-    "/api/v1/auth/login",
+    '/api/v1/auth/login',
     {
       preHandler: [authRateLimit],
       schema: {
-        tags: ["Auth"],
-        summary: "Log in with email and password",
+        tags: ['Auth'],
+        summary: 'Log in with email and password',
       },
     },
     async (request, reply) => {
@@ -103,12 +104,12 @@ export async function authRoutes(
       });
 
       if (!response.ok) {
-        throw AppError.unauthorized("Invalid email or password");
+        throw AppError.unauthorized('Invalid email or password');
       }
 
       const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
       for (const cookie of setCookieHeaders) {
-        reply.header("set-cookie", cookie);
+        reply.header('set-cookie', cookie);
       }
 
       const responseBody = await response.json();
@@ -126,12 +127,12 @@ export async function authRoutes(
   // ── POST /api/v1/auth/logout ───────────────────────────────────────
 
   app.post(
-    "/api/v1/auth/logout",
+    '/api/v1/auth/logout',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Auth"],
-        summary: "Log out (invalidate session)",
+        tags: ['Auth'],
+        summary: 'Log out (invalidate session)',
       },
     },
     async (request, reply) => {
@@ -143,15 +144,12 @@ export async function authRoutes(
 
         const setCookieHeaders = response.headers.getSetCookie?.() ?? [];
         for (const cookie of setCookieHeaders) {
-          reply.header("set-cookie", cookie);
+          reply.header('set-cookie', cookie);
         }
       } catch {
         // If signOut fails, manually clear session cookies
-        const cookiePrefix = "worknest";
-        reply.header(
-          "set-cookie",
-          `${cookiePrefix}.session_token=; Path=/; HttpOnly; Max-Age=0`,
-        );
+        const cookiePrefix = 'worknest';
+        reply.header('set-cookie', `${cookiePrefix}.session_token=; Path=/; HttpOnly; Max-Age=0`);
       }
 
       return reply.status(200).send({ data: { success: true } });
@@ -161,16 +159,16 @@ export async function authRoutes(
   // ── GET /api/v1/auth/invitations/:token ─────────────────────────
 
   app.get(
-    "/api/v1/auth/invitations/:token",
+    '/api/v1/auth/invitations/:token',
     {
       schema: {
-        tags: ["Auth"],
-        summary: "Get invitation info by token (no auth required)",
+        tags: ['Auth'],
+        summary: 'Get invitation info by token (no auth required)',
       },
     },
     async (_request, reply) => {
       const { token } = acceptInvitationParams.parse(_request.params);
-      const tokenHash = createHash("sha256").update(token).digest("hex");
+      const tokenHash = createHash('sha256').update(token).digest('hex');
 
       const invitation = await db
         .select()
@@ -180,7 +178,7 @@ export async function authRoutes(
         .then((rows) => rows[0]);
 
       if (!invitation) {
-        throw AppError.notFound("invitation");
+        throw AppError.notFound('invitation');
       }
 
       // Resolve org/workspace name
@@ -232,24 +230,25 @@ export async function authRoutes(
   // ── POST /api/v1/auth/invitations/:token/accept ───────────────────
 
   app.post(
-    "/api/v1/auth/invitations/:token/accept",
+    '/api/v1/auth/invitations/:token/accept',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Auth"],
-        summary: "Accept an invitation by token",
+        tags: ['Auth'],
+        summary: 'Accept an invitation by token',
       },
     },
     async (request, reply) => {
       const { token } = acceptInvitationParams.parse(request.params);
-      const userId = request.user!.id;
+      const userId = request.user?.id;
 
       // Try org invitation first, then workspace
-      const result = await orgService.acceptInvitation(userId, token)
-        ?? await wsService.acceptInvitation(userId, token);
+      const result =
+        (await orgService.acceptInvitation(userId, token)) ??
+        (await wsService.acceptInvitation(userId, token));
 
       if (!result) {
-        throw AppError.notFound("invitation");
+        throw AppError.notFound('invitation');
       }
 
       return reply.status(200).send({ data: result });

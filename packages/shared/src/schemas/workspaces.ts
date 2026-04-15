@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Roles ──────────────────────────────────────────────────────────────
 
-export const wsRole = z.enum(["admin", "member", "guest"]);
+export const wsRole = z.enum(['admin', 'member', 'guest']);
 export type WsRole = z.infer<typeof wsRole>;
 
 // ── Workspace ──────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export type UpdateWsMemberInput = z.infer<typeof updateWsMemberInput>;
 
 export const createWsInvitationInput = z.object({
   email: z.string().email(),
-  role: z.enum(["admin", "member", "guest"]),
+  role: z.enum(['admin', 'member', 'guest']),
 });
 
 export type CreateWsInvitationInput = z.infer<typeof createWsInvitationInput>;

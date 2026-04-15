@@ -1,24 +1,23 @@
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import type { IssueOutput } from '@worknest/shared';
+import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
+import { cn } from '@worknest/ui';
 import {
-  startOfDay,
   addDays,
   differenceInDays,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  eachWeekOfInterval,
+  endOfMonth,
   format,
+  getWeek,
   isToday,
   isWeekend,
+  startOfDay,
   startOfWeek,
-  endOfMonth,
-  eachDayOfInterval,
-  eachWeekOfInterval,
-  eachMonthOfInterval,
-  subDays,
-  getWeek,
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { CalendarRange, Calendar } from 'lucide-react';
-import { Button, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import type { IssueOutput } from '@worknest/shared';
+import { Calendar, CalendarRange } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -76,11 +75,7 @@ function parseDate(value: string | null | undefined): Date | null {
 
 // ── Component ──────────────────────────────────────────────────────────
 
-export function GanttChart({
-  issues,
-  projectPrefix,
-  onIssueClick,
-}: GanttChartProps) {
+export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState<ZoomLevel>('week');
@@ -233,12 +228,7 @@ export function GanttChart({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={scrollToToday}
-                className="gap-1.5"
-              >
+              <Button variant="ghost" size="sm" onClick={scrollToToday} className="gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
                 <span className="text-xs">오늘</span>
               </Button>
@@ -250,8 +240,8 @@ export function GanttChart({
         <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
           <CalendarRange className="h-3.5 w-3.5" />
           <span>
-            {ganttIssues.filter((i) => i._startDate || i._dueDate).length}/
-            {ganttIssues.length}개 이슈에 날짜 설정됨
+            {ganttIssues.filter((i) => i._startDate || i._dueDate).length}/{ganttIssues.length}개
+            이슈에 날짜 설정됨
           </span>
         </div>
       </div>
@@ -270,9 +260,7 @@ export function GanttChart({
             className="sticky top-0 z-10 flex items-end border-b border-border bg-muted/50 px-3"
             style={{ height: HEADER_HEIGHT }}
           >
-            <span className="pb-2 text-xs font-medium text-muted-foreground">
-              이슈
-            </span>
+            <span className="pb-2 text-xs font-medium text-muted-foreground">이슈</span>
           </div>
 
           {/* Issue rows */}
@@ -306,9 +294,7 @@ export function GanttChart({
               </span>
 
               {/* Title */}
-              <span className="truncate text-sm text-foreground">
-                {issue.title}
-              </span>
+              <span className="truncate text-sm text-foreground">{issue.title}</span>
 
               {/* Assignee avatar */}
               {issue.assignees && issue.assignees.length > 0 && (
@@ -324,7 +310,9 @@ export function GanttChart({
                           src={a.user.avatarUrl}
                           alt=""
                           className="absolute inset-0 h-5 w-5 rounded-full object-cover"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
                         />
                       )}
                     </div>
@@ -388,106 +376,104 @@ export function GanttChart({
                     className="relative border-b border-border/30"
                     style={{ height: ROW_HEIGHT }}
                   >
-                    {barStyle && barStyle.milestone ? (
+                    {barStyle?.milestone ? (
                       /* ── Milestone: single date ── */
                       <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => onIssueClick?.(issue.id)}
-                            className="absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer flex items-center gap-1.5"
-                            style={{ left: barStyle.left }}
-                          >
-                            {/* Diamond marker */}
-                            <span
-                              className="h-3.5 w-3.5 shrink-0 rotate-45 rounded-sm shadow-sm transition-transform hover:scale-125"
-                              style={{
-                                backgroundColor: getStatusColor(issue.status),
-                              }}
-                            />
-                            <span className="whitespace-nowrap text-[11px] text-muted-foreground">
-                              {projectPrefix}-{issue.sequenceId}{' '}
-                              <span className="text-muted-foreground/60">
-                                ({barStyle.milestone === 'start' ? '시작일' : '마감일'})
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => onIssueClick?.(issue.id)}
+                              className="absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer flex items-center gap-1.5"
+                              style={{ left: barStyle.left }}
+                            >
+                              {/* Diamond marker */}
+                              <span
+                                className="h-3.5 w-3.5 shrink-0 rotate-45 rounded-sm shadow-sm transition-transform hover:scale-125"
+                                style={{
+                                  backgroundColor: getStatusColor(issue.status),
+                                }}
+                              />
+                              <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                                {projectPrefix}-{issue.sequenceId}{' '}
+                                <span className="text-muted-foreground/60">
+                                  ({barStyle.milestone === 'start' ? '시작일' : '마감일'})
+                                </span>
                               </span>
-                            </span>
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[280px]">
-                          <div className="space-y-1">
-                            <p className="font-medium text-sm">
-                              {projectPrefix}-{issue.sequenceId} {issue.title}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {barStyle.milestone === 'start'
-                                ? `시작: ${format(issue._startDate!, 'yyyy.MM.dd')} · 마감일 미설정`
-                                : `마감: ${format(issue._dueDate!, 'yyyy.MM.dd')} · 시작일 미설정`}
-                            </p>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[280px]">
+                            <div className="space-y-1">
+                              <p className="font-medium text-sm">
+                                {projectPrefix}-{issue.sequenceId} {issue.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {barStyle.milestone === 'start'
+                                  ? `시작: ${format(issue._startDate!, 'yyyy.MM.dd')} · 마감일 미설정`
+                                  : `마감: ${format(issue._dueDate!, 'yyyy.MM.dd')} · 시작일 미설정`}
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       </TooltipProvider>
                     ) : barStyle ? (
                       /* ── Full bar: both dates ── */
                       <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => onIssueClick?.(issue.id)}
-                            className="group absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-md transition-all hover:brightness-110 hover:shadow-md"
-                            style={{
-                              left: barStyle.left,
-                              width: barStyle.width,
-                              height: ROW_HEIGHT - 12,
-                              backgroundColor: getStatusColor(issue.status),
-                              opacity: 0.85,
-                            }}
-                          >
-                            {barStyle.width > 60 && (
-                              <span className="absolute inset-0 flex items-center px-2 text-[11px] font-medium text-white drop-shadow-sm overflow-hidden">
-                                <span className="truncate">
-                                  <span className="opacity-70 mr-1">{projectPrefix}-{issue.sequenceId}</span>
-                                  {issue.title}
-                                </span>
-                              </span>
-                            )}
-                            <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
-                            <span className="absolute right-0 top-0 bottom-0 w-1 rounded-r-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[280px]">
-                          <div className="space-y-1">
-                            <p className="font-medium text-sm">
-                              {projectPrefix}-{issue.sequenceId} {issue.title}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              {issue._startDate && (
-                                <span>
-                                  시작: {format(issue._startDate, 'yyyy.MM.dd')}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => onIssueClick?.(issue.id)}
+                              className="group absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-md transition-all hover:brightness-110 hover:shadow-md"
+                              style={{
+                                left: barStyle.left,
+                                width: barStyle.width,
+                                height: ROW_HEIGHT - 12,
+                                backgroundColor: getStatusColor(issue.status),
+                                opacity: 0.85,
+                              }}
+                            >
+                              {barStyle.width > 60 && (
+                                <span className="absolute inset-0 flex items-center px-2 text-[11px] font-medium text-white drop-shadow-sm overflow-hidden">
+                                  <span className="truncate">
+                                    <span className="opacity-70 mr-1">
+                                      {projectPrefix}-{issue.sequenceId}
+                                    </span>
+                                    {issue.title}
+                                  </span>
                                 </span>
                               )}
-                              {issue._dueDate && (
-                                <span>
-                                  마감: {format(issue._dueDate, 'yyyy.MM.dd')}
-                                </span>
+                              <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
+                              <span className="absolute right-0 top-0 bottom-0 w-1 rounded-r-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[280px]">
+                            <div className="space-y-1">
+                              <p className="font-medium text-sm">
+                                {projectPrefix}-{issue.sequenceId} {issue.title}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {issue._startDate && (
+                                  <span>시작: {format(issue._startDate, 'yyyy.MM.dd')}</span>
+                                )}
+                                {issue._dueDate && (
+                                  <span>마감: {format(issue._dueDate, 'yyyy.MM.dd')}</span>
+                                )}
+                              </div>
+                              {issue.status && (
+                                <div className="flex items-center gap-1.5 text-xs">
+                                  <span
+                                    className="h-2 w-2 rounded-full"
+                                    style={{
+                                      backgroundColor: issue.status.color,
+                                    }}
+                                  />
+                                  <span>{issue.status.name}</span>
+                                </div>
                               )}
                             </div>
-                            {issue.status && (
-                              <div className="flex items-center gap-1.5 text-xs">
-                                <span
-                                  className="h-2 w-2 rounded-full"
-                                  style={{
-                                    backgroundColor: issue.status.color,
-                                  }}
-                                />
-                                <span>{issue.status.name}</span>
-                              </div>
-                            )}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                          </TooltipContent>
+                        </Tooltip>
                       </TooltipProvider>
                     ) : (
                       !hasDates && (
@@ -526,23 +512,17 @@ function TimelineHeader({
   zoom: ZoomLevel;
 }) {
   const months = useMemo(
-    () =>
-      eachMonthOfInterval({ start: timelineStart, end: timelineEnd }),
+    () => eachMonthOfInterval({ start: timelineStart, end: timelineEnd }),
     [timelineStart, timelineEnd],
   );
 
   const weeks = useMemo(
-    () =>
-      eachWeekOfInterval(
-        { start: timelineStart, end: timelineEnd },
-        { locale: ko },
-      ),
+    () => eachWeekOfInterval({ start: timelineStart, end: timelineEnd }, { locale: ko }),
     [timelineStart, timelineEnd],
   );
 
   const days = useMemo(
-    () =>
-      eachDayOfInterval({ start: timelineStart, end: timelineEnd }),
+    () => eachDayOfInterval({ start: timelineStart, end: timelineEnd }),
     [timelineStart, timelineEnd],
   );
 
@@ -640,14 +620,24 @@ function TimelineGrid({
   const totalHeight = Math.max(rowCount * ROW_HEIGHT, 400);
 
   const lines = useMemo(() => {
-    const result: { left: number; isWeekend: boolean; isWeekBorder: boolean; isMonthBorder: boolean }[] = [];
+    const result: {
+      left: number;
+      isWeekend: boolean;
+      isWeekBorder: boolean;
+      isMonthBorder: boolean;
+    }[] = [];
     for (let i = 0; i < totalDays; i++) {
       const day = addDays(timelineStart, i);
       const left = i * dayWidth;
       const weekend = isWeekend(day);
       const isMonday = day.getDay() === 1;
       const isFirstOfMonth = day.getDate() === 1;
-      result.push({ left, isWeekend: weekend, isWeekBorder: isMonday, isMonthBorder: isFirstOfMonth });
+      result.push({
+        left,
+        isWeekend: weekend,
+        isWeekBorder: isMonday,
+        isMonthBorder: isFirstOfMonth,
+      });
     }
     return result;
   }, [timelineStart, totalDays, dayWidth]);

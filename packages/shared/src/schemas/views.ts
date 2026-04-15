@@ -1,31 +1,31 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Filter Primitives ───────────────────────────────────────────────────
 
 export const filterOperator = z.enum([
-  "is",
-  "is_not",
-  "is_empty",
-  "is_not_empty",
-  "includes",
-  "excludes",
-  "contains",
-  "before",
-  "after",
-  "between",
+  'is',
+  'is_not',
+  'is_empty',
+  'is_not_empty',
+  'includes',
+  'excludes',
+  'contains',
+  'before',
+  'after',
+  'between',
 ]);
 
 export type FilterOperator = z.infer<typeof filterOperator>;
 
 export const filterField = z.enum([
-  "statusId",
-  "typeId",
-  "priority",
-  "assigneeId",
-  "labelId",
-  "dueDate",
-  "title",
-  "cycleId",
+  'statusId',
+  'typeId',
+  'priority',
+  'assigneeId',
+  'labelId',
+  'dueDate',
+  'title',
+  'cycleId',
 ]);
 
 export type FilterField = z.infer<typeof filterField>;
@@ -45,26 +45,20 @@ export type ViewFilters = z.infer<typeof viewFilters>;
 
 // ── Sort ────────────────────────────────────────────────────────────────
 
-export const sortField = z.enum([
-  "created_at",
-  "updated_at",
-  "priority",
-  "due_date",
-  "manual",
-]);
+export const sortField = z.enum(['created_at', 'updated_at', 'priority', 'due_date', 'manual']);
 
 export type SortField = z.infer<typeof sortField>;
 
 export const viewSort = z.object({
   field: sortField,
-  direction: z.enum(["asc", "desc"]).default("desc"),
+  direction: z.enum(['asc', 'desc']).default('desc'),
 });
 
 export type ViewSort = z.infer<typeof viewSort>;
 
 // ── View Type ───────────────────────────────────────────────────────────
 
-export const viewType = z.enum(["list", "board", "gantt"]);
+export const viewType = z.enum(['list', 'board', 'gantt']);
 
 export type ViewType = z.infer<typeof viewType>;
 

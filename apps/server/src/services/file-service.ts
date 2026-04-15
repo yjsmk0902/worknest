@@ -1,23 +1,23 @@
-import { eq, and, isNull } from "drizzle-orm";
+import * as crypto from 'node:crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import {
+  type Database,
   files,
-  wikiPages,
-  wikiSpaceMembers,
   issues,
   projectMembers,
-  type Database,
-} from "@worknest/db";
-import { AppError, ErrorCode } from "../lib/errors";
-import * as fs from "node:fs";
-import * as path from "node:path";
-import * as crypto from "node:crypto";
-import { addJob } from "../lib/queue";
+  wikiPages,
+  wikiSpaceMembers,
+} from '@worknest/db';
+import { and, eq, isNull } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
+import { addJob } from '../lib/queue';
 
 // ── Constants ──────────────────────────────────────────────────────────
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
-const BLOCKED_EXTENSIONS = new Set([".exe", ".bat", ".cmd", ".sh", ".ps1"]);
-const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
+const BLOCKED_EXTENSIONS = new Set(['.exe', '.bat', '.cmd', '.sh', '.ps1']);
+const UPLOADS_DIR = path.resolve(process.cwd(), 'uploads');
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ function generateFilePath(originalName: string): string {
  * Detect if a file is an image by its MIME type.
  */
 function isImage(mimeType: string): boolean {
-  return mimeType.startsWith("image/");
+  return mimeType.startsWith('image/');
 }
 
 // ── Serialisation ──────────────────────────────────────────────────────
@@ -86,9 +86,7 @@ export class FileService {
     } else {
       // No parent entity — only the uploader can access
       if (file.uploadedBy !== callerUserId) {
-        throw AppError.forbidden(
-          "You do not have permission to access this file",
-        );
+        throw AppError.forbidden('You do not have permission to access this file');
       }
     }
   }
@@ -96,10 +94,7 @@ export class FileService {
   /**
    * Verify the caller is a member of the wiki space that owns this page.
    */
-  private async requirePageAccess(
-    pageId: string,
-    callerUserId: string,
-  ): Promise<void> {
+  private async requirePageAccess(pageId: string, callerUserId: string): Promise<void> {
     const page = await this.db
       .select({ wikiSpaceId: wikiPages.wikiSpaceId })
       .from(wikiPages)
@@ -108,7 +103,7 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!page) {
-      throw AppError.notFound("wiki_page");
+      throw AppError.notFound('wiki_page');
     }
 
     const member = await this.db
@@ -124,17 +119,14 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.forbidden("You are not a member of this wiki space");
+      throw AppError.forbidden('You are not a member of this wiki space');
     }
   }
 
   /**
    * Verify the caller is a member of the project that owns this issue.
    */
-  private async requireIssueAccess(
-    issueId: string,
-    callerUserId: string,
-  ): Promise<void> {
+  private async requireIssueAccess(issueId: string, callerUserId: string): Promise<void> {
     const issue = await this.db
       .select({ projectId: issues.projectId })
       .from(issues)
@@ -143,23 +135,20 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!issue) {
-      throw AppError.notFound("issue");
+      throw AppError.notFound('issue');
     }
 
     const member = await this.db
       .select({ id: projectMembers.id })
       .from(projectMembers)
       .where(
-        and(
-          eq(projectMembers.projectId, issue.projectId),
-          eq(projectMembers.userId, callerUserId),
-        ),
+        and(eq(projectMembers.projectId, issue.projectId), eq(projectMembers.userId, callerUserId)),
       )
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!member) {
-      throw AppError.forbidden("You are not a member of this project");
+      throw AppError.forbidden('You are not a member of this project');
     }
   }
 
@@ -172,28 +161,25 @@ export class FileService {
       mimetype: string;
       data: Buffer;
     },
-    entityType?: "issue" | "page",
+    entityType?: 'issue' | 'page',
     entityId?: string,
   ) {
     // Validate file size
     if (file.data.length > MAX_FILE_SIZE) {
       throw AppError.badRequest(
         ErrorCode.FILE_TOO_LARGE,
-        `File size exceeds the maximum allowed size of 25MB`,
+        'File size exceeds the maximum allowed size of 25MB',
       );
     }
 
     // Validate file extension
     const ext = path.extname(file.filename).toLowerCase();
     if (BLOCKED_EXTENSIONS.has(ext)) {
-      throw AppError.badRequest(
-        ErrorCode.FILE_TYPE_BLOCKED,
-        `File type ${ext} is not allowed`,
-      );
+      throw AppError.badRequest(ErrorCode.FILE_TYPE_BLOCKED, `File type ${ext} is not allowed`);
     }
 
     // Validate that the referenced entity exists
-    if (entityType === "issue" && entityId) {
+    if (entityType === 'issue' && entityId) {
       const issue = await this.db
         .select({ id: issues.id })
         .from(issues)
@@ -202,9 +188,9 @@ export class FileService {
         .then((rows) => rows[0]);
 
       if (!issue) {
-        throw AppError.notFound("issue");
+        throw AppError.notFound('issue');
       }
-    } else if (entityType === "page" && entityId) {
+    } else if (entityType === 'page' && entityId) {
       const page = await this.db
         .select({ id: wikiPages.id })
         .from(wikiPages)
@@ -213,7 +199,7 @@ export class FileService {
         .then((rows) => rows[0]);
 
       if (!page) {
-        throw AppError.notFound("wiki_page");
+        throw AppError.notFound('wiki_page');
       }
     }
 
@@ -223,8 +209,8 @@ export class FileService {
     fs.writeFileSync(filePath, file.data);
 
     // Insert DB record
-    const issueId = entityType === "issue" ? entityId ?? null : null;
-    const pageId = entityType === "page" ? entityId ?? null : null;
+    const issueId = entityType === 'issue' ? (entityId ?? null) : null;
+    const pageId = entityType === 'page' ? (entityId ?? null) : null;
 
     const [record] = await this.db
       .insert(files)
@@ -241,8 +227,8 @@ export class FileService {
 
     // Queue thumbnail generation for images
     if (isImage(file.mimetype)) {
-      await addJob("image-thumbnail", {
-        fileId: record!.id,
+      await addJob('image-thumbnail', {
+        fileId: record?.id,
         filePath,
         mimeType: file.mimetype,
       });
@@ -256,10 +242,7 @@ export class FileService {
   async listByPageId(pageId: string, callerUserId: string) {
     await this.requirePageAccess(pageId, callerUserId);
 
-    const rows = await this.db
-      .select()
-      .from(files)
-      .where(eq(files.pageId, pageId));
+    const rows = await this.db.select().from(files).where(eq(files.pageId, pageId));
 
     return {
       data: rows.map(toFileOutput),
@@ -281,7 +264,7 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!file) {
-      throw AppError.notFound("file");
+      throw AppError.notFound('file');
     }
 
     await this.requireFileAccess(file, callerUserId);
@@ -300,7 +283,7 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!file) {
-      throw AppError.notFound("file");
+      throw AppError.notFound('file');
     }
 
     await this.requireFileAccess(file, callerUserId);
@@ -319,7 +302,7 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!file) {
-      throw AppError.notFound("file");
+      throw AppError.notFound('file');
     }
 
     return file;
@@ -336,12 +319,12 @@ export class FileService {
       .then((rows) => rows[0]);
 
     if (!file) {
-      throw AppError.notFound("file");
+      throw AppError.notFound('file');
     }
 
     // Only the uploader can delete
     if (file.uploadedBy !== callerUserId) {
-      throw AppError.forbidden("You can only delete files you uploaded");
+      throw AppError.forbidden('You can only delete files you uploaded');
     }
 
     // Delete from disk
@@ -350,10 +333,7 @@ export class FileService {
         fs.unlinkSync(file.path);
       }
       // Also try to delete thumbnail if it exists
-      const thumbnailPath = file.path.replace(
-        /(\.[^.]+)$/,
-        ".thumb.webp",
-      );
+      const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '.thumb.webp');
       if (fs.existsSync(thumbnailPath)) {
         fs.unlinkSync(thumbnailPath);
       }

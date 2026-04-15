@@ -1,26 +1,23 @@
-import { useState, useCallback, useMemo } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  Plus,
-} from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import { z } from 'zod';
-import { apiClient, type ListResponse } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { AppHeader } from '@/components/layout/app-header';
-import { QuickAdd } from '@/components/issues/quick-add';
-import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
-import { IssueListTable } from '@/components/issues/list-view/issue-list-table';
 import { BulkActionBar } from '@/components/issues/bulk-action-bar';
 import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
-import { ViewToolbar } from '@/components/issues/view-toolbar';
 import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
-import { useIssueListShortcuts } from '@/hooks/use-issue-list-shortcuts';
+import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
+import { IssueListTable } from '@/components/issues/list-view/issue-list-table';
+import { QuickAdd } from '@/components/issues/quick-add';
+import { ViewToolbar } from '@/components/issues/view-toolbar';
+import { AppHeader } from '@/components/layout/app-header';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useHotkey } from '@/hooks/use-hotkey';
-import type { IssueOutput } from '@worknest/shared';
+import { useIssueListShortcuts } from '@/hooks/use-issue-list-shortcuts';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { RowSelectionState } from '@tanstack/react-table';
+import type { IssueOutput } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { AlertTriangle, Plus } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { z } from 'zod';
 
 // ── Search param validation ─────────────────────────────────────────────
 
@@ -47,9 +44,7 @@ const issueSearchSchema = z.object({
   order: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/issues/')({
   component: IssueListPage,
   validateSearch: (search) => issueSearchSchema.parse(search),
 });
@@ -75,17 +70,13 @@ function IssueListPage() {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  const { hasFilters, clearAllFilters, apiParams } =
-    useIssueFilters();
+  const { hasFilters, clearAllFilters, apiParams } = useIssueFilters();
   const isManualSort = !apiParams.sort || apiParams.sort === 'manual';
 
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -100,16 +91,11 @@ function IssueListPage() {
       if (pageParam) {
         params.cursor = pageParam as string;
       }
-      return apiClient.getList<IssueOutput>(
-        `/projects/${projectId}/issues`,
-        params,
-      );
+      return apiClient.getList<IssueOutput>(`/projects/${projectId}/issues`, params);
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.pagination.has_more
-        ? lastPage.pagination.next_cursor ?? undefined
-        : undefined,
+      lastPage.pagination.has_more ? (lastPage.pagination.next_cursor ?? undefined) : undefined,
   });
 
   const project = projectQuery.data;
@@ -122,10 +108,7 @@ function IssueListPage() {
   );
 
   // Keyboard shortcut handlers
-  const getIssueId = useCallback(
-    (index: number) => issues[index]?.id,
-    [issues],
-  );
+  const getIssueId = useCallback((index: number) => issues[index]?.id, [issues]);
 
   const handleOpenFullPage = useCallback(
     (issueId: string) => {
@@ -137,12 +120,9 @@ function IssueListPage() {
     [navigate, orgSlug, wsSlug, projectId],
   );
 
-  const handleOpenPanel = useCallback(
-    (issueId: string) => {
-      setSelectedIssueId(issueId);
-    },
-    [],
-  );
+  const handleOpenPanel = useCallback((issueId: string) => {
+    setSelectedIssueId(issueId);
+  }, []);
 
   const handleShowQuickAdd = useCallback(() => {
     setShowQuickAdd(true);
@@ -190,10 +170,7 @@ function IssueListPage() {
   if (projectQuery.isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <AppHeader
-          title=""
-          actions={<Skeleton className="h-9 w-24" />}
-        />
+        <AppHeader title="" actions={<Skeleton className="h-9 w-24" />} />
         <div className="flex-1 p-4">
           <Skeleton className="h-8 w-full rounded-lg" />
         </div>
@@ -209,9 +186,7 @@ function IssueListPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              이슈를 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">이슈를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -236,11 +211,7 @@ function IssueListPage() {
         title={`${projectPrefix} Issues`}
         breadcrumbs={[{ label: project?.name ?? '' }]}
         actions={
-          <Button
-            size="sm"
-            onClick={() => setShowQuickAdd(true)}
-            aria-label="이슈 추가"
-          >
+          <Button size="sm" onClick={() => setShowQuickAdd(true)} aria-label="이슈 추가">
             <Plus className="h-4 w-4" />
             <span>이슈</span>
           </Button>
@@ -259,10 +230,7 @@ function IssueListPage() {
           {/* Quick Add at top */}
           {showQuickAdd && (
             <div className="mb-2">
-              <QuickAdd
-                projectId={projectId}
-                onClose={() => setShowQuickAdd(false)}
-              />
+              <QuickAdd projectId={projectId} onClose={() => setShowQuickAdd(false)} />
             </div>
           )}
 

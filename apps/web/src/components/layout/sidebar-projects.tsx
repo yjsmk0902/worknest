@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Link, useParams } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { Link, useParams } from '@tanstack/react-router';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@worknest/ui';
+import { cn } from '@worknest/ui';
+import { toast } from '@worknest/ui';
 import {
   ChevronDown,
   ChevronRight,
@@ -12,17 +14,11 @@ import {
   RefreshCw,
   Settings,
 } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import { useAuthStore } from '../../stores/auth-store';
+import { useState } from 'react';
 import { apiClient } from '../../lib/api-client';
+import { useAuthStore } from '../../stores/auth-store';
 import { CreateProjectModal } from '../projects/create-project-modal';
 import { CollapsedNavItem } from './sidebar-nav';
-import { toast } from '@worknest/ui';
 
 export interface SidebarProject {
   id: string;
@@ -94,18 +90,13 @@ export function SidebarProjects({
 
   const [sectionOpen, setSectionOpen] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
   const params = useParams({ strict: false }) as { projectId?: string };
 
   const projectsQuery = useQuery({
     queryKey: ['workspaces', wsId, 'projects', 'sidebar'],
-    queryFn: () =>
-      apiClient.getList<SidebarProject>(
-        `/workspaces/${wsId}/projects/sidebar`,
-      ),
+    queryFn: () => apiClient.getList<SidebarProject>(`/workspaces/${wsId}/projects/sidebar`),
     enabled: !!wsId,
     staleTime: 2 * 60 * 1000,
   });
@@ -133,11 +124,7 @@ export function SidebarProjects({
           onClick={() => setSectionOpen((v) => !v)}
           className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
         >
-          {sectionOpen ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
+          {sectionOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           Projects
         </button>
         <button
@@ -179,8 +166,13 @@ export function SidebarProjects({
                         : 'text-sidebar-foreground hover:bg-sidebar-accent',
                     )}
                   >
-                    {project.iconUrl && (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
-                      <img src={project.iconUrl} alt="" className="h-4 w-4 rounded object-cover shrink-0" />
+                    {project.iconUrl &&
+                    (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
+                      <img
+                        src={project.iconUrl}
+                        alt=""
+                        className="h-4 w-4 rounded object-cover shrink-0"
+                      />
                     ) : project.iconUrl ? (
                       <span className="text-[14px] shrink-0">{project.iconUrl}</span>
                     ) : (
@@ -191,11 +183,7 @@ export function SidebarProjects({
                 </div>
 
                 {isExpanded && (
-                  <ProjectSubNav
-                    projectId={project.id}
-                    orgSlug={orgSlug}
-                    wsSlug={wsSlug}
-                  />
+                  <ProjectSubNav projectId={project.id} orgSlug={orgSlug} wsSlug={wsSlug} />
                 )}
               </div>
             );
@@ -238,10 +226,7 @@ export function CollapsedSidebarProjects() {
 
   const projectsQuery = useQuery({
     queryKey: ['workspaces', wsId, 'projects', 'sidebar'],
-    queryFn: () =>
-      apiClient.getList<SidebarProject>(
-        `/workspaces/${wsId}/projects/sidebar`,
-      ),
+    queryFn: () => apiClient.getList<SidebarProject>(`/workspaces/${wsId}/projects/sidebar`),
     enabled: !!wsId,
     staleTime: 2 * 60 * 1000,
   });
@@ -254,14 +239,11 @@ export function CollapsedSidebarProjects() {
         <Tooltip key={project.id}>
           <TooltipTrigger asChild>
             <Link
-              to={
-                orgSlug && wsSlug
-                  ? `/${orgSlug}/${wsSlug}/projects/${project.id}/issues`
-                  : '#'
-              }
+              to={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/projects/${project.id}/issues` : '#'}
               className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
             >
-              {project.iconUrl && (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
+              {project.iconUrl &&
+              (project.iconUrl.startsWith('/api/') || project.iconUrl.startsWith('http')) ? (
                 <img src={project.iconUrl} alt="" className="h-5 w-5 rounded object-cover" />
               ) : project.iconUrl ? (
                 <span className="text-base">{project.iconUrl}</span>

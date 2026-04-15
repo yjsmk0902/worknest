@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Avatar, Skeleton } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../lib/api-client';
 import type { ActivityOutput } from '@worknest/shared';
+import { Avatar, Skeleton } from '@worknest/ui';
+import { type ListResponse, apiClient } from '../../../lib/api-client';
 
 interface IssueActivityProps {
   projectId: string;
@@ -35,17 +35,13 @@ function getActionDescription(activity: ActivityOutput): string {
     case 'type_changed':
       return `타입을 ${oldValue ?? '없음'}에서 ${newValue ?? '없음'}으로 변경`;
     case 'title_changed':
-      return `제목을 변경함`;
+      return '제목을 변경함';
     case 'description_changed':
       return '설명을 수정함';
     case 'due_date_changed':
-      return newValue
-        ? `마감일을 ${newValue}으로 설정`
-        : '마감일을 제거';
+      return newValue ? `마감일을 ${newValue}으로 설정` : '마감일을 제거';
     case 'parent_changed':
-      return newValue
-        ? '상위 이슈를 설정함'
-        : '상위 이슈를 제거함';
+      return newValue ? '상위 이슈를 설정함' : '상위 이슈를 제거함';
     default:
       return action.replace(/_/g, ' ');
   }
@@ -110,9 +106,7 @@ export function IssueActivity({ projectId, issueId }: IssueActivityProps) {
   const activitiesQuery = useQuery<ListResponse<ActivityOutput>>({
     queryKey: ['projects', projectId, 'issues', issueId, 'activities'],
     queryFn: () =>
-      apiClient.getList<ActivityOutput>(
-        `/projects/${projectId}/issues/${issueId}/activities`,
-      ),
+      apiClient.getList<ActivityOutput>(`/projects/${projectId}/issues/${issueId}/activities`),
   });
 
   if (activitiesQuery.isLoading) {
@@ -161,17 +155,13 @@ export function IssueActivity({ projectId, issueId }: IssueActivityProps) {
             {/* Content */}
             <div className="min-w-0 flex-1">
               <p className="text-sm">
-                <span className="font-medium">
-                  {activity.actor?.name ?? '시스템'}
-                </span>
+                <span className="font-medium">{activity.actor?.name ?? '시스템'}</span>
                 <span className="mx-1 text-muted-foreground">·</span>
                 <span className="text-muted-foreground">
                   {formatRelativeTime(activity.createdAt)}
                 </span>
               </p>
-              <p className="text-sm text-muted-foreground">
-                {getActionDescription(activity)}
-              </p>
+              <p className="text-sm text-muted-foreground">{getActionDescription(activity)}</p>
             </div>
           </div>
         ))}

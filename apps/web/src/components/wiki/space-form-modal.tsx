@@ -1,18 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@worknest/ui';
+import type { WikiSpaceOutput } from '@worknest/shared';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@worknest/ui';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import type { WikiSpaceOutput } from '@worknest/shared';
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 
 interface SpaceFormModalProps {
@@ -42,12 +36,7 @@ function generateSlug(name: string): string {
  *
  * Provides name, slug (auto-generated from name), and description fields.
  */
-export function SpaceFormModal({
-  workspaceId,
-  open,
-  onOpenChange,
-  space,
-}: SpaceFormModalProps) {
+export function SpaceFormModal({ workspaceId, open, onOpenChange, space }: SpaceFormModalProps) {
   const queryClient = useQueryClient();
   const isEditing = !!space;
 
@@ -95,11 +84,7 @@ export function SpaceFormModal({
       name: string;
       slug: string;
       description?: string;
-    }) =>
-      apiClient.post<WikiSpaceOutput>(
-        `/workspaces/${workspaceId}/wiki-spaces`,
-        data,
-      ),
+    }) => apiClient.post<WikiSpaceOutput>(`/workspaces/${workspaceId}/wiki-spaces`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['workspaces', workspaceId, 'wiki-spaces'],
@@ -108,11 +93,7 @@ export function SpaceFormModal({
       onOpenChange(false);
     },
     onError: () => {
-      toast(
-        isEditing
-          ? '스페이스 수정에 실패했습니다.'
-          : '스페이스 생성에 실패했습니다.',
-      );
+      toast(isEditing ? '스페이스 수정에 실패했습니다.' : '스페이스 생성에 실패했습니다.');
     },
   });
 
@@ -122,13 +103,13 @@ export function SpaceFormModal({
       name?: string;
       slug?: string;
       description?: string | null;
-    }) => apiClient.patch(`/wiki-spaces/${space!.id}`, data),
+    }) => apiClient.patch(`/wiki-spaces/${space?.id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['workspaces', workspaceId, 'wiki-spaces'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['wiki-spaces', space!.id],
+        queryKey: ['wiki-spaces', space?.id],
       });
       toast('스페이스가 수정되었습니다.');
       onOpenChange(false);
@@ -157,18 +138,13 @@ export function SpaceFormModal({
     }
   }
 
-  const canSubmit =
-    name.trim().length > 0 &&
-    slug.trim().length > 0 &&
-    !mutation.isPending;
+  const canSubmit = name.trim().length > 0 && slug.trim().length > 0 && !mutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? '스페이스 수정' : '스페이스 만들기'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? '스페이스 수정' : '스페이스 만들기'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

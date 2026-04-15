@@ -1,12 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId')({
   component: IssueDetailPage,
 });
 
@@ -24,10 +22,7 @@ function IssueDetailPage() {
   // Fetch project info for prefix
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 

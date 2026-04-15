@@ -1,15 +1,13 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import { Button } from '@worknest/ui';
-import type { ViewOutput } from '@worknest/shared';
 import { apiClient } from '@/lib/api-client';
 import { viewToSearchParams } from '@/lib/view-utils';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import type { ViewOutput } from '@worknest/shared';
+import { Button } from '@worknest/ui';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId')({
   component: ViewRedirectPage,
 });
 
@@ -59,15 +57,8 @@ function ViewRedirectPage() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            뷰를 불러올 수 없습니다.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={() => viewQuery.refetch()}
-          >
+          <p className="mt-2 text-sm text-muted-foreground">뷰를 불러올 수 없습니다.</p>
+          <Button variant="outline" size="sm" className="mt-4" onClick={() => viewQuery.refetch()}>
             다시 시도
           </Button>
         </div>

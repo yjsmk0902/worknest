@@ -1,5 +1,5 @@
-import { eq, and, inArray } from "drizzle-orm";
-import { issueMentions, type Database } from "@worknest/db";
+import { type Database, issueMentions } from '@worknest/db';
+import { eq, inArray } from 'drizzle-orm';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -19,12 +19,12 @@ function extractIssueIds(content: unknown): Set<string> {
   const ids = new Set<string>();
 
   function walk(node: unknown): void {
-    if (!node || typeof node !== "object") return;
+    if (!node || typeof node !== 'object') return;
 
     const n = node as TipTapNode;
 
     // Check if this node is an issue-link with an issueId attribute
-    if (n.type === "issue-link" && n.attrs?.issueId) {
+    if (n.type === 'issue-link' && n.attrs?.issueId) {
       const issueId = String(n.attrs.issueId);
       if (issueId) {
         ids.add(issueId);
@@ -72,9 +72,7 @@ export class MentionService {
 
     // Determine additions and removals
     const toAdd = [...issueIds].filter((id) => !existingIssueIds.has(id));
-    const toRemove = existingMentions.filter(
-      (m) => !issueIds.has(m.issueId),
-    );
+    const toRemove = existingMentions.filter((m) => !issueIds.has(m.issueId));
 
     // Perform inserts and deletes in a transaction for consistency
     if (toAdd.length > 0 || toRemove.length > 0) {
@@ -90,9 +88,7 @@ export class MentionService {
 
         if (toRemove.length > 0) {
           const removeIds = toRemove.map((m) => m.id);
-          await tx
-            .delete(issueMentions)
-            .where(inArray(issueMentions.id, removeIds));
+          await tx.delete(issueMentions).where(inArray(issueMentions.id, removeIds));
         }
       });
     }

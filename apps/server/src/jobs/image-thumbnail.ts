@@ -1,4 +1,4 @@
-import type { Job } from "bullmq";
+import type { Job } from 'bullmq';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -23,13 +23,13 @@ export function createImageThumbnailProcessor() {
     const { filePath, mimeType } = job.data;
 
     // Only process images
-    if (!mimeType.startsWith("image/")) return;
+    if (!mimeType.startsWith('image/')) return;
 
     try {
       // Dynamic import to handle cases where sharp is not installed
-      const sharp = (await import("sharp")).default;
+      const sharp = (await import('sharp')).default;
 
-      const thumbnailPath = filePath.replace(/(\.[^.]+)$/, ".thumb.webp");
+      const thumbnailPath = filePath.replace(/(\.[^.]+)$/, '.thumb.webp');
 
       await sharp(filePath)
         .resize(400, null, { withoutEnlargement: true })
@@ -37,10 +37,7 @@ export function createImageThumbnailProcessor() {
         .toFile(thumbnailPath);
     } catch (error) {
       // Log but don't fail the job — thumbnail is optional
-      console.error(
-        `Failed to generate thumbnail for ${filePath}:`,
-        error,
-      );
+      console.error(`Failed to generate thumbnail for ${filePath}:`, error);
     }
   };
 }

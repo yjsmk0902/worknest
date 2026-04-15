@@ -1,4 +1,4 @@
-import { Node, mergeAttributes, InputRule, PasteRule } from "@tiptap/core";
+import { InputRule, Node, PasteRule, mergeAttributes } from '@tiptap/core';
 
 /**
  * Regex pattern for issue keys like WORK-142, AB-1, PROJ-9999.
@@ -7,7 +7,7 @@ import { Node, mergeAttributes, InputRule, PasteRule } from "@tiptap/core";
 const ISSUE_KEY_REGEX = /([A-Z]{2,5}-\d+)/g;
 const ISSUE_KEY_INPUT_REGEX = /([A-Z]{2,5}-\d+)\s$/;
 
-declare module "@tiptap/core" {
+declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     issueLink: {
       /** Insert an issue link node. */
@@ -26,9 +26,9 @@ declare module "@tiptap/core" {
  * and navigates to the issue page on click.
  */
 export const IssueLink = Node.create({
-  name: "issueLink",
+  name: 'issueLink',
 
-  group: "inline",
+  group: 'inline',
 
   inline: true,
 
@@ -38,9 +38,9 @@ export const IssueLink = Node.create({
     return {
       issueKey: {
         default: null,
-        parseHTML: (element) => element.getAttribute("data-issue-key"),
+        parseHTML: (element) => element.getAttribute('data-issue-key'),
         renderHTML: (attributes) => ({
-          "data-issue-key": attributes.issueKey,
+          'data-issue-key': attributes.issueKey,
         }),
       },
     };
@@ -56,11 +56,11 @@ export const IssueLink = Node.create({
 
   renderHTML({ node, HTMLAttributes }) {
     return [
-      "span",
+      'span',
       mergeAttributes(HTMLAttributes, {
-        "data-type": "issue-link",
+        'data-type': 'issue-link',
         class:
-          "bg-primary/10 text-primary rounded px-1 cursor-pointer font-mono text-sm hover:bg-primary/20 hover:underline",
+          'bg-primary/10 text-primary rounded px-1 cursor-pointer font-mono text-sm hover:bg-primary/20 hover:underline',
       }),
       node.attrs.issueKey,
     ];
@@ -94,7 +94,7 @@ export const IssueLink = Node.create({
           const end = range.to;
 
           const node = this.type.create({ issueKey });
-          tr.replaceWith(start, end, [node, state.schema.text(" ")]);
+          tr.replaceWith(start, end, [node, state.schema.text(' ')]);
         },
       }),
     ];

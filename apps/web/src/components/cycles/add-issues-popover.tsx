@@ -1,18 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Search } from 'lucide-react';
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Separator,
-  toast,
-} from '@worknest/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { CycleIssueOutput, IssueOutput } from '@worknest/shared';
+import { Button, Popover, PopoverContent, PopoverTrigger, Separator, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../lib/api-client';
+import { Check, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { type ListResponse, apiClient } from '../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '../../lib/issue-constants';
-import type { IssueOutput, CycleIssueOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -43,10 +36,7 @@ export function AddIssuesPopover({
   const issuesQuery = useQuery<ListResponse<IssueOutput>>({
     queryKey: ['projects', projectId, 'issues', 'for-cycle-add'],
     queryFn: () =>
-      apiClient.getList<IssueOutput>(
-        `/projects/${projectId}/issues`,
-        { limit: '100' },
-      ),
+      apiClient.getList<IssueOutput>(`/projects/${projectId}/issues`, { limit: '100' }),
     staleTime: 30 * 1000,
     enabled: open,
   });
@@ -59,9 +49,7 @@ export function AddIssuesPopover({
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       const key = `${projectPrefix}-${issue.sequenceId}`.toLowerCase();
-      return (
-        issue.title.toLowerCase().includes(q) || key.includes(q)
-      );
+      return issue.title.toLowerCase().includes(q) || key.includes(q);
     });
   }, [issuesQuery.data, existingIssueIds, searchQuery, projectPrefix]);
 
@@ -70,10 +58,7 @@ export function AddIssuesPopover({
     mutationFn: async (issueIds: string[]) => {
       const results = await Promise.allSettled(
         issueIds.map((issueId) =>
-          apiClient.post<CycleIssueOutput>(
-            `/cycles/${cycleId}/issues`,
-            { issueId },
-          ),
+          apiClient.post<CycleIssueOutput>(`/cycles/${cycleId}/issues`, { issueId }),
         ),
       );
       const failed = results.filter((r) => r.status === 'rejected').length;
@@ -141,7 +126,6 @@ export function AddIssuesPopover({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="이슈 검색..."
-              autoFocus
               className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
@@ -150,23 +134,18 @@ export function AddIssuesPopover({
         {/* Issue list */}
         <div className="max-h-[320px] overflow-y-auto px-1">
           {issuesQuery.isLoading && (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              로딩 중...
-            </div>
+            <div className="py-8 text-center text-sm text-muted-foreground">로딩 중...</div>
           )}
 
           {!issuesQuery.isLoading && availableIssues.length === 0 && (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              {searchQuery
-                ? '검색 결과가 없습니다'
-                : '추가할 수 있는 이슈가 없습니다'}
+              {searchQuery ? '검색 결과가 없습니다' : '추가할 수 있는 이슈가 없습니다'}
             </div>
           )}
 
           {availableIssues.map((issue) => {
             const isSelected = selectedIds.has(issue.id);
-            const priorityConfig =
-              PRIORITY_CONFIG[(issue.priority as Priority) ?? 'none'];
+            const priorityConfig = PRIORITY_CONFIG[(issue.priority as Priority) ?? 'none'];
             const PriorityIcon = priorityConfig?.icon;
 
             return (
@@ -190,9 +169,7 @@ export function AddIssuesPopover({
 
                 {/* Priority icon */}
                 {PriorityIcon && (
-                  <PriorityIcon
-                    className={cn('h-3.5 w-3.5 shrink-0', priorityConfig?.color)}
-                  />
+                  <PriorityIcon className={cn('h-3.5 w-3.5 shrink-0', priorityConfig?.color)} />
                 )}
 
                 {/* Issue key */}
@@ -211,9 +188,7 @@ export function AddIssuesPopover({
 
         {/* Footer */}
         <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-xs text-muted-foreground">
-            {selectedIds.size}개 선택됨
-          </span>
+          <span className="text-xs text-muted-foreground">{selectedIds.size}개 선택됨</span>
           <Button
             size="sm"
             onClick={handleAdd}

@@ -1,25 +1,20 @@
-import { useCallback, useMemo } from 'react';
-import { useNavigate, useLocation, useSearch } from '@tanstack/react-router';
-import {
-  List,
-  Columns3,
-  GanttChart,
-  ArrowUpDown,
-} from 'lucide-react';
+import { useLocation, useNavigate, useSearch } from '@tanstack/react-router';
 import {
   Button,
-  Separator,
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Separator,
 } from '@worknest/ui';
-import { FilterPopover } from './filter-builder/filter-popover';
-import { useIssueFilters, type ActiveFilter } from './filter-builder/use-issue-filters';
+import { ArrowUpDown, Columns3, GanttChart, List } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { SavedViewsDropdown } from '../views/saved-views-dropdown';
+import { FilterPopover } from './filter-builder/filter-popover';
+import { type ActiveFilter, useIssueFilters } from './filter-builder/use-issue-filters';
 
 // ── Sort option types ──────────────────────────────────────────────────
 
@@ -137,7 +132,8 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
   const handleSortChange = useCallback(
     (field: string) => {
       const sortField = field as SortField;
-      const defaultOrder = SORT_OPTIONS.find((opt) => opt.field === sortField)?.defaultOrder ?? 'desc';
+      const defaultOrder =
+        SORT_OPTIONS.find((opt) => opt.field === sortField)?.defaultOrder ?? 'desc';
       navigate({
         search: {
           ...search,
@@ -171,11 +167,7 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
       aria-label="이슈 뷰 제어"
     >
       {/* View Tabs */}
-      <div
-        className="inline-flex rounded-md bg-muted p-0.5"
-        role="tablist"
-        aria-label="뷰 전환"
-      >
+      <div className="inline-flex rounded-md bg-muted p-0.5" role="tablist" aria-label="뷰 전환">
         {VIEW_TABS.map((tab) => {
           const isActive = tab.type === activeView;
           const Icon = tab.icon;
@@ -212,12 +204,7 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
       {/* Sort Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            aria-haspopup="menu"
-          >
+          <Button variant="outline" size="sm" className="gap-1.5" aria-haspopup="menu">
             <ArrowUpDown className="h-3.5 w-3.5" />
             <span className="hidden xl:inline">정렬: {currentSortLabel}</span>
             <span className="xl:hidden">정렬</span>
@@ -258,10 +245,7 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
 
       {/* Issue Count */}
       {totalCount !== undefined && (
-        <span
-          className="ml-auto hidden text-sm text-muted-foreground xl:inline"
-          aria-live="polite"
-        >
+        <span className="ml-auto hidden text-sm text-muted-foreground xl:inline" aria-live="polite">
           {totalCount}개 이슈
         </span>
       )}

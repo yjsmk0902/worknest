@@ -1,15 +1,15 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { z } from "zod";
-import { createRequireAuth } from "../middleware/auth";
-import { CycleService } from "../services/cycle-service";
+import type { Database } from '@worknest/db';
 import {
-  createCycleInput,
-  updateCycleInput,
   addCycleIssueInput,
   completeCycleInput,
-} from "@worknest/shared";
+  createCycleInput,
+  updateCycleInput,
+} from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { CycleService } from '../services/cycle-service';
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -51,17 +51,17 @@ export async function cycleRoutes(
   // ── GET /api/v1/projects/:projectId/cycles ─────────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/cycles",
+    '/api/v1/projects/:projectId/cycles',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "List cycles in a project",
+        tags: ['Cycles'],
+        summary: 'List cycles in a project',
       },
     },
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
-      const result = await service.list(projectId, request.user!.id);
+      const result = await service.list(projectId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -69,18 +69,18 @@ export async function cycleRoutes(
   // ── POST /api/v1/projects/:projectId/cycles ────────────────────────
 
   app.post(
-    "/api/v1/projects/:projectId/cycles",
+    '/api/v1/projects/:projectId/cycles',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Create a new cycle in a project",
+        tags: ['Cycles'],
+        summary: 'Create a new cycle in a project',
       },
     },
     async (request, reply) => {
       const { projectId } = projectParams.parse(request.params);
       const body = createCycleInput.parse(request.body);
-      const cycle = await service.create(projectId, request.user!.id, body);
+      const cycle = await service.create(projectId, request.user?.id, body);
       return reply.status(201).send({ data: cycle });
     },
   );
@@ -88,17 +88,17 @@ export async function cycleRoutes(
   // ── GET /api/v1/cycles/:cycleId ────────────────────────────────────
 
   app.get(
-    "/api/v1/cycles/:cycleId",
+    '/api/v1/cycles/:cycleId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Get a cycle by ID",
+        tags: ['Cycles'],
+        summary: 'Get a cycle by ID',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
-      const cycle = await service.getById(cycleId, request.user!.id);
+      const cycle = await service.getById(cycleId, request.user?.id);
       return reply.status(200).send({ data: cycle });
     },
   );
@@ -106,18 +106,18 @@ export async function cycleRoutes(
   // ── PATCH /api/v1/cycles/:cycleId ──────────────────────────────────
 
   app.patch(
-    "/api/v1/cycles/:cycleId",
+    '/api/v1/cycles/:cycleId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Update a cycle",
+        tags: ['Cycles'],
+        summary: 'Update a cycle',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
       const body = updateCycleInput.parse(request.body);
-      const cycle = await service.update(cycleId, request.user!.id, body);
+      const cycle = await service.update(cycleId, request.user?.id, body);
       return reply.status(200).send({ data: cycle });
     },
   );
@@ -125,17 +125,17 @@ export async function cycleRoutes(
   // ── DELETE /api/v1/cycles/:cycleId ─────────────────────────────────
 
   app.delete(
-    "/api/v1/cycles/:cycleId",
+    '/api/v1/cycles/:cycleId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Delete a draft cycle",
+        tags: ['Cycles'],
+        summary: 'Delete a draft cycle',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
-      await service.delete(cycleId, request.user!.id);
+      await service.delete(cycleId, request.user?.id);
       return reply.status(204).send();
     },
   );
@@ -143,17 +143,17 @@ export async function cycleRoutes(
   // ── POST /api/v1/cycles/:cycleId/activate ──────────────────────────
 
   app.post(
-    "/api/v1/cycles/:cycleId/activate",
+    '/api/v1/cycles/:cycleId/activate',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Activate a cycle (only one active per project)",
+        tags: ['Cycles'],
+        summary: 'Activate a cycle (only one active per project)',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
-      const cycle = await service.activate(cycleId, request.user!.id);
+      const cycle = await service.activate(cycleId, request.user?.id);
       return reply.status(200).send({ data: cycle });
     },
   );
@@ -161,18 +161,18 @@ export async function cycleRoutes(
   // ── POST /api/v1/cycles/:cycleId/complete ──────────────────────────
 
   app.post(
-    "/api/v1/cycles/:cycleId/complete",
+    '/api/v1/cycles/:cycleId/complete',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Complete a cycle with optional carryover to target cycle",
+        tags: ['Cycles'],
+        summary: 'Complete a cycle with optional carryover to target cycle',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
       const body = completeCycleInput.parse(request.body);
-      const cycle = await service.complete(cycleId, request.user!.id, body);
+      const cycle = await service.complete(cycleId, request.user?.id, body);
       return reply.status(200).send({ data: cycle });
     },
   );
@@ -180,17 +180,17 @@ export async function cycleRoutes(
   // ── GET /api/v1/cycles/:cycleId/progress ───────────────────────────
 
   app.get(
-    "/api/v1/cycles/:cycleId/progress",
+    '/api/v1/cycles/:cycleId/progress',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Get cycle progress (issues by status category)",
+        tags: ['Cycles'],
+        summary: 'Get cycle progress (issues by status category)',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
-      const progress = await service.getProgress(cycleId, request.user!.id);
+      const progress = await service.getProgress(cycleId, request.user?.id);
       return reply.status(200).send({ data: progress });
     },
   );
@@ -198,22 +198,18 @@ export async function cycleRoutes(
   // ── POST /api/v1/cycles/:cycleId/issues ────────────────────────────
 
   app.post(
-    "/api/v1/cycles/:cycleId/issues",
+    '/api/v1/cycles/:cycleId/issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Add an issue to a cycle",
+        tags: ['Cycles'],
+        summary: 'Add an issue to a cycle',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
       const { issueId } = addCycleIssueInput.parse(request.body);
-      const cycleIssue = await service.addIssue(
-        cycleId,
-        request.user!.id,
-        issueId,
-      );
+      const cycleIssue = await service.addIssue(cycleId, request.user?.id, issueId);
       return reply.status(201).send({ data: cycleIssue });
     },
   );
@@ -221,17 +217,17 @@ export async function cycleRoutes(
   // ── DELETE /api/v1/cycles/:cycleId/issues/:issueId ─────────────────
 
   app.delete(
-    "/api/v1/cycles/:cycleId/issues/:issueId",
+    '/api/v1/cycles/:cycleId/issues/:issueId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "Remove an issue from a cycle",
+        tags: ['Cycles'],
+        summary: 'Remove an issue from a cycle',
       },
     },
     async (request, reply) => {
       const { cycleId, issueId } = cycleIssueParams.parse(request.params);
-      await service.removeIssue(cycleId, request.user!.id, issueId);
+      await service.removeIssue(cycleId, request.user?.id, issueId);
       return reply.status(204).send();
     },
   );
@@ -239,17 +235,17 @@ export async function cycleRoutes(
   // ── GET /api/v1/cycles/:cycleId/issues ─────────────────────────────
 
   app.get(
-    "/api/v1/cycles/:cycleId/issues",
+    '/api/v1/cycles/:cycleId/issues',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Cycles"],
-        summary: "List active issues in a cycle",
+        tags: ['Cycles'],
+        summary: 'List active issues in a cycle',
       },
     },
     async (request, reply) => {
       const { cycleId } = cycleParams.parse(request.params);
-      const result = await service.listIssues(cycleId, request.user!.id);
+      const result = await service.listIssues(cycleId, request.user?.id);
       return reply.status(200).send(result);
     },
   );

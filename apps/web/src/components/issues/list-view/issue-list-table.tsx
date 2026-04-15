@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
   type RowSelectionState,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { GripVertical, Loader2, CirclePlus, SearchX } from 'lucide-react';
-import { Button, Skeleton, toast } from '@worknest/ui';
-import { cn } from '@worknest/ui';
 import { generateKeyBetween } from '@worknest/shared';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { IssueOutput } from '@worknest/shared';
+import { Skeleton, toast } from '@worknest/ui';
+import { cn } from '@worknest/ui';
+import { CirclePlus, GripVertical, Loader2, SearchX } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { apiClient } from '../../../lib/api-client';
 import { EmptyState } from '../../empty-state';
 import { createIssueColumns } from './columns';
-import { apiClient } from '../../../lib/api-client';
-import type { IssueOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -106,8 +106,7 @@ export function IssueListTable({
     columns,
     state: { rowSelection },
     onRowSelectionChange: (updater) => {
-      const next =
-        typeof updater === 'function' ? updater(rowSelection) : updater;
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
       onRowSelectionChange(next);
     },
     getCoreRowModel: getCoreRowModel(),
@@ -180,34 +179,34 @@ export function IssueListTable({
     setDropTargetId(issueId);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent, targetIssueId: string) => {
-    e.preventDefault();
-    if (!dragId || dragId === targetIssueId) {
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetIssueId: string) => {
+      e.preventDefault();
+      if (!dragId || dragId === targetIssueId) {
+        setDragId(null);
+        setDropTargetId(null);
+        return;
+      }
+
+      const otherIssues = issues.filter((i) => i.id !== dragId);
+      const targetIndex = otherIssues.findIndex((i) => i.id === targetIssueId);
+
+      if (targetIndex < 0) {
+        setDragId(null);
+        setDropTargetId(null);
+        return;
+      }
+
+      const above = targetIndex > 0 ? otherIssues[targetIndex - 1] : null;
+      const below = otherIssues[targetIndex];
+      const newSortOrder = safeGenerateKey(above?.sortOrder ?? null, below?.sortOrder ?? null);
+
+      reorderMutation.mutate({ issueId: dragId, sortOrder: newSortOrder });
       setDragId(null);
       setDropTargetId(null);
-      return;
-    }
-
-    const otherIssues = issues.filter((i) => i.id !== dragId);
-    const targetIndex = otherIssues.findIndex((i) => i.id === targetIssueId);
-
-    if (targetIndex < 0) {
-      setDragId(null);
-      setDropTargetId(null);
-      return;
-    }
-
-    const above = targetIndex > 0 ? otherIssues[targetIndex - 1] : null;
-    const below = otherIssues[targetIndex];
-    const newSortOrder = safeGenerateKey(
-      above?.sortOrder ?? null,
-      below?.sortOrder ?? null,
-    );
-
-    reorderMutation.mutate({ issueId: dragId, sortOrder: newSortOrder });
-    setDragId(null);
-    setDropTargetId(null);
-  }, [dragId, issues, reorderMutation]);
+    },
+    [dragId, issues, reorderMutation],
+  );
 
   const handleDragEnd = useCallback(() => {
     setDragId(null);
@@ -229,11 +228,7 @@ export function IssueListTable({
           icon={SearchX}
           title="조건에 맞는 이슈가 없습니다"
           description="필터 조건을 변경하거나 초기화해보세요"
-          action={
-            onClearFilters
-              ? { label: '필터 초기화', onClick: onClearFilters }
-              : undefined
-          }
+          action={onClearFilters ? { label: '필터 초기화', onClick: onClearFilters } : undefined}
         />
       );
     }
@@ -254,7 +249,11 @@ export function IssueListTable({
   // ── Table render ────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl bg-card shadow-sm ring-1 ring-border/50" role="grid" aria-label="이슈 목록">
+    <div
+      className="rounded-xl bg-card shadow-sm ring-1 ring-border/50"
+      role="grid"
+      aria-label="이슈 목록"
+    >
       {/* Header */}
       <div
         className="flex h-9 items-center border-b border-border/40 px-3"
@@ -271,21 +270,14 @@ export function IssueListTable({
             >
               {header.isPlaceholder
                 ? null
-                : flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
+                : flexRender(header.column.columnDef.header, header.getContext())}
             </div>
           )),
         )}
       </div>
 
       {/* Virtual scrolling body */}
-      <div
-        ref={parentRef}
-        className="overflow-y-auto"
-        style={{ maxHeight: 'calc(100vh - 220px)' }}
-      >
+      <div ref={parentRef} className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
@@ -359,10 +351,7 @@ export function IssueListTable({
                     role="gridcell"
                     className={cn('flex items-center', colClass(cell.column.id))}
                   >
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext(),
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </div>
                 ))}
               </div>
@@ -371,9 +360,7 @@ export function IssueListTable({
         </div>
 
         {/* Scroll sentinel */}
-        {hasNextPage && (
-          <div ref={sentinelRef} className="h-10" />
-        )}
+        {hasNextPage && <div ref={sentinelRef} className="h-10" />}
 
         {/* Loading more indicator */}
         {isFetchingNextPage && (
@@ -413,10 +400,7 @@ function IssueListSkeleton() {
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-[70px]" />
           <div className="flex flex-1 items-center">
-            <Skeleton
-              className="h-4"
-              style={{ width: `${40 + Math.random() * 40}%` }}
-            />
+            <Skeleton className="h-4" style={{ width: `${40 + Math.random() * 40}%` }} />
           </div>
           <Skeleton className="h-5 w-20 rounded-full" />
           <Skeleton className="h-5 w-5 rounded-full" />

@@ -1,15 +1,8 @@
-import {
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { projects } from "./projects";
-import { issues } from "./issues";
+import { relations, sql } from 'drizzle-orm';
+import { index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { issues } from './issues';
+import { projects } from './projects';
+import { users } from './users';
 
 /**
  * Cycles table.
@@ -21,27 +14,27 @@ import { issues } from "./issues";
  * Status values: 'draft' (planning), 'active' (in progress), 'completed' (done).
  */
 export const cycles = pgTable(
-  "cycles",
+  'cycles',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    description: text("description"),
-    startDate: timestamp("start_date", { withTimezone: true }),
-    endDate: timestamp("end_date", { withTimezone: true }),
-    status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'completed'
-    createdBy: text("created_by").references(() => users.id, {
-      onDelete: "set null",
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description'),
+    startDate: timestamp('start_date', { withTimezone: true }),
+    endDate: timestamp('end_date', { withTimezone: true }),
+    status: text('status').notNull().default('draft'), // 'draft' | 'active' | 'completed'
+    createdBy: text('created_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    index("cycles_project_id_idx").on(table.projectId),
+    index('cycles_project_id_idx').on(table.projectId),
     // Only one active cycle per project
-    uniqueIndex("cycles_project_active_unique")
+    uniqueIndex('cycles_project_active_unique')
       .on(table.projectId)
       .where(sql`${table.status} = 'active'`),
   ],
@@ -71,30 +64,29 @@ export const cyclesRelations = relations(cycles, ({ one, many }) => ({
  * automatically carried over from a previous cycle (incomplete items).
  */
 export const cycleIssues = pgTable(
-  "cycle_issues",
+  'cycle_issues',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    cycleId: uuid("cycle_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    cycleId: uuid('cycle_id')
       .notNull()
-      .references(() => cycles.id, { onDelete: "cascade" }),
-    issueId: uuid("issue_id")
+      .references(() => cycles.id, { onDelete: 'cascade' }),
+    issueId: uuid('issue_id')
       .notNull()
-      .references(() => issues.id, { onDelete: "cascade" }),
-    addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
-    removedAt: timestamp("removed_at", { withTimezone: true }),
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull(),
+    removedAt: timestamp('removed_at', { withTimezone: true }),
     // Self-referential FK requires (): AnyColumn cast — Drizzle ORM limitation.
     // See: https://orm.drizzle.team/docs/indexes-constraints#foreign-key
-    carriedFromId: uuid("carried_from_id").references(
-      (): any => cycleIssues.id,
-      { onDelete: "set null" },
-    ),
+    carriedFromId: uuid('carried_from_id').references((): any => cycleIssues.id, {
+      onDelete: 'set null',
+    }),
   },
   (table) => [
     // Prevent duplicate active entries per cycle
-    uniqueIndex("cycle_issues_cycle_issue_active_unique")
+    uniqueIndex('cycle_issues_cycle_issue_active_unique')
       .on(table.cycleId, table.issueId)
       .where(sql`${table.removedAt} IS NULL`),
-    index("cycle_issues_issue_id_idx").on(table.issueId),
+    index('cycle_issues_issue_id_idx').on(table.issueId),
   ],
 );
 
@@ -110,6 +102,6 @@ export const cycleIssuesRelations = relations(cycleIssues, ({ one }) => ({
   carriedFrom: one(cycleIssues, {
     fields: [cycleIssues.carriedFromId],
     references: [cycleIssues.id],
-    relationName: "carriedOver",
+    relationName: 'carriedOver',
   }),
 }));

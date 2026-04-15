@@ -35,10 +35,10 @@
  *    - Entity: none (workspace-level)
  */
 
-import { eq, and, desc, lt, gte, isNull, count } from "drizzle-orm";
-import { notifications, type Database } from "@worknest/db";
-import type { NotificationType } from "@worknest/shared";
-import { addJob } from "../lib/queue";
+import { type Database, notifications } from '@worknest/db';
+import type { NotificationType } from '@worknest/shared';
+import { and, count, desc, eq, gte, isNull, lt } from 'drizzle-orm';
+import { addJob } from '../lib/queue';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -107,9 +107,7 @@ export class NotificationService {
    */
   async dispatchNotification(data: DispatchNotificationData): Promise<void> {
     // Self-exclude: remove the actor from recipients
-    const filteredRecipients = data.recipientIds.filter(
-      (id) => id !== data.actorId,
-    );
+    const filteredRecipients = data.recipientIds.filter((id) => id !== data.actorId);
 
     if (filteredRecipients.length === 0) return;
 
@@ -146,7 +144,7 @@ export class NotificationService {
     if (dedupedRecipients.length === 0) return;
 
     // Enqueue BullMQ job
-    await addJob<NotificationJobData>("notification", {
+    await addJob<NotificationJobData>('notification', {
       type: data.type,
       actorId: data.actorId,
       recipientIds: dedupedRecipients,
@@ -168,9 +166,7 @@ export class NotificationService {
       .where(
         and(
           eq(notifications.userId, userId),
-          ...(cursor
-            ? [lt(notifications.createdAt, new Date(cursor))]
-            : []),
+          ...(cursor ? [lt(notifications.createdAt, new Date(cursor))] : []),
         ),
       )
       .orderBy(desc(notifications.createdAt))
@@ -191,9 +187,7 @@ export class NotificationService {
         createdAt: n.createdAt.toISOString(),
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]!.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -205,12 +199,7 @@ export class NotificationService {
     const [result] = await this.db
       .select({ count: count() })
       .from(notifications)
-      .where(
-        and(
-          eq(notifications.userId, userId),
-          isNull(notifications.readAt),
-        ),
-      );
+      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)));
 
     return result?.count ?? 0;
   }
@@ -221,12 +210,7 @@ export class NotificationService {
     const [updated] = await this.db
       .update(notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(notifications.id, notificationId),
-          eq(notifications.userId, userId),
-        ),
-      )
+      .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)))
       .returning();
 
     return updated ?? null;
@@ -238,12 +222,7 @@ export class NotificationService {
     const result = await this.db
       .update(notifications)
       .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(notifications.userId, userId),
-          isNull(notifications.readAt),
-        ),
-      )
+      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)))
       .returning({ id: notifications.id });
 
     return result.length;
@@ -254,12 +233,7 @@ export class NotificationService {
   async delete(notificationId: string, userId: string): Promise<boolean> {
     const result = await this.db
       .delete(notifications)
-      .where(
-        and(
-          eq(notifications.id, notificationId),
-          eq(notifications.userId, userId),
-        ),
-      )
+      .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)))
       .returning({ id: notifications.id });
 
     return result.length > 0;

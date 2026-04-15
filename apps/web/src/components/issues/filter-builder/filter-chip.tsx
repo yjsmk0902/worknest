@@ -1,9 +1,9 @@
-import { X } from 'lucide-react';
+import type { CycleOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 import { cn } from '@worknest/ui';
+import { X } from 'lucide-react';
+import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
 import type { ActiveFilter } from './use-issue-filters';
 import { getFieldMeta } from './use-issue-filters';
-import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
-import type { CycleOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -40,61 +40,39 @@ function resolveValueDisplay(
   labels: LabelOutput[],
   cycles: CycleOutput[] = [],
 ): string {
-  if (
-    filter.operator === 'is_empty' ||
-    filter.operator === 'is_not_empty'
-  ) {
+  if (filter.operator === 'is_empty' || filter.operator === 'is_not_empty') {
     return '없음';
   }
 
-  const values = Array.isArray(filter.value)
-    ? filter.value
-    : filter.value
-      ? [filter.value]
-      : [];
+  const values = Array.isArray(filter.value) ? filter.value : filter.value ? [filter.value] : [];
 
   if (values.length === 0) return '';
 
   switch (filter.field) {
     case 'statusId': {
-      const names = values
-        .map((id) => statuses.find((s) => s.id === id)?.name ?? id)
-        .join(', ');
+      const names = values.map((id) => statuses.find((s) => s.id === id)?.name ?? id).join(', ');
       return names;
     }
     case 'typeId': {
-      const names = values
-        .map((id) => types.find((t) => t.id === id)?.name ?? id)
-        .join(', ');
+      const names = values.map((id) => types.find((t) => t.id === id)?.name ?? id).join(', ');
       return names;
     }
     case 'priority': {
-      const names = values
-        .map(
-          (p) => PRIORITY_CONFIG[p as Priority]?.label ?? p,
-        )
-        .join(', ');
+      const names = values.map((p) => PRIORITY_CONFIG[p as Priority]?.label ?? p).join(', ');
       return names;
     }
     case 'assigneeId': {
       const names = values
-        .map(
-          (id) =>
-            members.find((m) => m.user.id === id)?.user.name ?? id,
-        )
+        .map((id) => members.find((m) => m.user.id === id)?.user.name ?? id)
         .join(', ');
       return names;
     }
     case 'labelId': {
-      const names = values
-        .map((id) => labels.find((l) => l.id === id)?.name ?? id)
-        .join(', ');
+      const names = values.map((id) => labels.find((l) => l.id === id)?.name ?? id).join(', ');
       return names;
     }
     case 'cycleId': {
-      const names = values
-        .map((id) => cycles.find((c) => c.id === id)?.name ?? id)
-        .join(', ');
+      const names = values.map((id) => cycles.find((c) => c.id === id)?.name ?? id).join(', ');
       return names;
     }
     case 'dueDate': {
@@ -146,14 +124,7 @@ export function FilterChip({
   const fieldMeta = getFieldMeta(filter.field);
   const fieldLabel = fieldMeta?.label ?? filter.field;
   const operatorDisplay = getOperatorDisplay(filter.operator);
-  const valueDisplay = resolveValueDisplay(
-    filter,
-    statuses,
-    types,
-    members,
-    labels,
-    cycles,
-  );
+  const valueDisplay = resolveValueDisplay(filter, statuses, types, members, labels, cycles);
 
   return (
     <button
@@ -163,17 +134,10 @@ export function FilterChip({
         'inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 h-7',
         'cursor-pointer hover:bg-secondary/80 transition-colors',
       )}
-      role="button"
       aria-label={`${fieldLabel}: ${valueDisplay}`}
     >
-      <span className="text-xs font-medium text-muted-foreground">
-        {fieldLabel}:
-      </span>
-      {operatorDisplay && (
-        <span className="text-xs text-muted-foreground">
-          {operatorDisplay}
-        </span>
-      )}
+      <span className="text-xs font-medium text-muted-foreground">{fieldLabel}:</span>
+      {operatorDisplay && <span className="text-xs text-muted-foreground">{operatorDisplay}</span>}
       <span className="text-xs font-medium text-foreground truncate max-w-[120px]">
         {valueDisplay}
       </span>

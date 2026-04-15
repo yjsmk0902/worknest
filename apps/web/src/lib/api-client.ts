@@ -77,7 +77,9 @@ export const apiClient = {
       let errorData: ApiErrorResponse | undefined;
       try {
         errorData = (await response.json()) as ApiErrorResponse;
-      } catch { /* empty */ }
+      } catch {
+        /* empty */
+      }
       throw new ApiError(
         response.status,
         errorData?.error?.code ?? 'UNKNOWN_ERROR',

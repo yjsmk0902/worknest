@@ -1,27 +1,25 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { FileAttachment } from '@/components/file-upload/file-attachment';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { useFileUpload } from '@/hooks/use-file-upload';
+import { apiClient } from '@/lib/api-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, createFileRoute } from '@tanstack/react-router';
 import type { JSONContent } from '@tiptap/core';
-import type { WikiPageOutput, WikiSpaceOutput, FileOutput } from '@worknest/shared';
-import { EditorWithAutosave, SlashCommand, IssueLink, ImageUpload } from '@worknest/editor';
+import { EditorWithAutosave, ImageUpload, IssueLink, SlashCommand } from '@worknest/editor';
+import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import {
   Breadcrumb,
-  BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { FileAttachment } from '@/components/file-upload/file-attachment';
-import { useFileUpload } from '@/hooks/use-file-upload';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
   component: WikiPageEditor,
 });
 
@@ -45,14 +43,12 @@ function WikiPageEditor() {
 
   const pagesQuery = useQuery({
     queryKey: ['wiki-spaces', spaceId, 'pages'],
-    queryFn: () =>
-      apiClient.getList<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`),
+    queryFn: () => apiClient.getList<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`),
   });
 
   const filesQuery = useQuery({
     queryKey: ['wiki-pages', pageId, 'files'],
-    queryFn: () =>
-      apiClient.getList<FileOutput>(`/wiki-pages/${pageId}/files`),
+    queryFn: () => apiClient.getList<FileOutput>(`/wiki-pages/${pageId}/files`),
   });
 
   // ── Title editing ───────────────────────────────────────────────────
@@ -73,8 +69,7 @@ function WikiPageEditor() {
   }, [pageId]);
 
   const updateTitleMutation = useMutation({
-    mutationFn: (newTitle: string) =>
-      apiClient.patch(`/wiki-pages/${pageId}`, { title: newTitle }),
+    mutationFn: (newTitle: string) => apiClient.patch(`/wiki-pages/${pageId}`, { title: newTitle }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'pages'],
@@ -101,19 +96,14 @@ function WikiPageEditor() {
     [updateTitleMutation],
   );
 
-  const handleTitleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLHeadingElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        // Move focus to the editor
-        const editorEl = document.querySelector(
-          '.ProseMirror',
-        ) as HTMLElement | null;
-        editorEl?.focus();
-      }
-    },
-    [],
-  );
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent<HTMLHeadingElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Move focus to the editor
+      const editorEl = document.querySelector('.ProseMirror') as HTMLElement | null;
+      editorEl?.focus();
+    }
+  }, []);
 
   // ── Auto-save ───────────────────────────────────────────────────────
 
@@ -149,7 +139,7 @@ function WikiPageEditor() {
   const files = filesQuery.data?.data ?? [];
 
   const handleFileUploaded = useCallback(
-    (file: FileOutput) => {
+    (_file: FileOutput) => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-pages', pageId, 'files'],
       });
@@ -158,8 +148,7 @@ function WikiPageEditor() {
   );
 
   const deleteFileMutation = useMutation({
-    mutationFn: (fileId: string) =>
-      apiClient.delete(`/files/${fileId}`),
+    mutationFn: (fileId: string) => apiClient.delete(`/files/${fileId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-pages', pageId, 'files'],
@@ -179,9 +168,7 @@ function WikiPageEditor() {
     let current = allPages.find((p) => p.id === pageId);
     while (current) {
       crumbs.unshift(current);
-      current = current.parentId
-        ? allPages.find((p) => p.id === current!.parentId)
-        : undefined;
+      current = current.parentId ? allPages.find((p) => p.id === current?.parentId) : undefined;
     }
     return crumbs;
   }, [allPages, pageId]);
@@ -201,9 +188,7 @@ function WikiPageEditor() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            페이지를 불러올 수 없습니다.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">페이지를 불러올 수 없습니다.</p>
         </div>
       </div>
     );
@@ -245,7 +230,7 @@ function WikiPageEditor() {
             )}
 
             {/* Parent pages */}
-            {breadcrumbPages.slice(0, -1).map((p, i) => (
+            {breadcrumbPages.slice(0, -1).map((p, _i) => (
               <span key={p.id} className="flex items-center">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
@@ -269,9 +254,7 @@ function WikiPageEditor() {
             {/* Current page */}
             {breadcrumbPages.length > 0 && (
               <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {breadcrumbPages[breadcrumbPages.length - 1].title}
-                </BreadcrumbPage>
+                <BreadcrumbPage>{breadcrumbPages[breadcrumbPages.length - 1].title}</BreadcrumbPage>
               </BreadcrumbItem>
             )}
           </BreadcrumbList>

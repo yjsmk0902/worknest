@@ -1,29 +1,21 @@
-import { useState } from 'react';
+import { ImageUpload } from '@/components/settings/image-upload';
+import { SettingsLayout } from '@/components/settings/settings-layout';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Label } from '@worknest/ui';
 import { Skeleton } from '@worknest/ui';
 import { Separator } from '@worknest/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@worknest/ui';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { SettingsLayout } from '@/components/settings/settings-layout';
-import { ImageUpload } from '@/components/settings/image-upload';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { useAuthStore } from '@/stores/auth-store';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/settings/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/')({
   component: WorkspaceSettingsGeneral,
 });
 
@@ -68,15 +60,8 @@ function WorkspaceSettingsGeneral() {
         <div className="flex items-center justify-center p-12">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              설정을 불러올 수 없습니다.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => wsQuery.refetch()}
-            >
+            <p className="mt-2 text-sm text-muted-foreground">설정을 불러올 수 없습니다.</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => wsQuery.refetch()}>
               다시 시도
             </Button>
           </div>
@@ -89,9 +74,7 @@ function WorkspaceSettingsGeneral() {
     <SettingsLayout orgSlug={orgSlug} wsSlug={wsSlug} activeTab="general">
       <GeneralSettingsForm
         workspace={wsQuery.data!}
-        onSaved={() =>
-          queryClient.invalidateQueries({ queryKey: ['workspaces', wsId] })
-        }
+        onSaved={() => queryClient.invalidateQueries({ queryKey: ['workspaces', wsId] })}
       />
     </SettingsLayout>
   );
@@ -112,12 +95,10 @@ function GeneralSettingsForm({
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const hasChanges =
-    formData.name !== workspace.name ||
-    formData.description !== (workspace.description ?? '');
+    formData.name !== workspace.name || formData.description !== (workspace.description ?? '');
 
   const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) =>
-      apiClient.patch(`/workspaces/${workspace.id}`, data),
+    mutationFn: (data: typeof formData) => apiClient.patch(`/workspaces/${workspace.id}`, data),
     onSuccess: () => {
       toast('설정이 저장되었습니다.');
       onSaved();
@@ -148,12 +129,8 @@ function GeneralSettingsForm({
     <div className="max-w-[720px] space-y-8 p-6">
       {/* General section */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground">
-          워크스페이스 설정
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          워크스페이스의 기본 정보를 관리합니다.
-        </p>
+        <h2 className="text-lg font-semibold text-foreground">워크스페이스 설정</h2>
+        <p className="text-sm text-muted-foreground">워크스페이스의 기본 정보를 관리합니다.</p>
       </div>
 
       <Separator />
@@ -184,23 +161,15 @@ function GeneralSettingsForm({
           <Input
             id="ws-name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
             disabled={updateMutation.isPending}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="ws-slug">워크스페이스 URL (slug)</Label>
-          <Input
-            id="ws-slug"
-            value={workspace.slug}
-            disabled
-          />
-          <p className="text-xs text-muted-foreground">
-            slug는 자동 생성되며 변경할 수 없습니다.
-          </p>
+          <Input id="ws-slug" value={workspace.slug} disabled />
+          <p className="text-xs text-muted-foreground">slug는 자동 생성되며 변경할 수 없습니다.</p>
         </div>
 
         <div className="space-y-2">
@@ -220,10 +189,7 @@ function GeneralSettingsForm({
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={!hasChanges || updateMutation.isPending}
-        >
+        <Button type="submit" disabled={!hasChanges || updateMutation.isPending}>
           {updateMutation.isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -245,9 +211,7 @@ function GeneralSettingsForm({
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-foreground">
-              워크스페이스 삭제
-            </p>
+            <p className="text-sm font-medium text-foreground">워크스페이스 삭제</p>
             <p className="mt-1 text-sm text-muted-foreground">
               이 워크스페이스와 모든 데이터가 삭제됩니다.
             </p>
@@ -255,11 +219,7 @@ function GeneralSettingsForm({
               이 작업은 30일 이내에 복구할 수 있습니다.
             </p>
           </div>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
+          <Button variant="destructive" size="sm" onClick={() => setDeleteDialogOpen(true)}>
             워크스페이스 삭제
           </Button>
         </div>
@@ -274,15 +234,12 @@ function GeneralSettingsForm({
 
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              정말 &quot;{workspace.name}&quot; 워크스페이스를
-              삭제하시겠습니까? 모든 프로젝트, 이슈, Wiki 페이지가
-              삭제됩니다. 30일 이내에 복구할 수 있습니다.
+              정말 &quot;{workspace.name}&quot; 워크스페이스를 삭제하시겠습니까? 모든 프로젝트,
+              이슈, Wiki 페이지가 삭제됩니다. 30일 이내에 복구할 수 있습니다.
             </p>
 
             <div className="space-y-2">
-              <Label htmlFor="delete-confirm">
-                확인을 위해 워크스페이스 이름을 입력해주세요:
-              </Label>
+              <Label htmlFor="delete-confirm">확인을 위해 워크스페이스 이름을 입력해주세요:</Label>
               <Input
                 id="delete-confirm"
                 placeholder={workspace.name}
@@ -306,10 +263,7 @@ function GeneralSettingsForm({
             </Button>
             <Button
               variant="destructive"
-              disabled={
-                deleteConfirmText !== workspace.name ||
-                deleteMutation.isPending
-              }
+              disabled={deleteConfirmText !== workspace.name || deleteMutation.isPending}
               onClick={() => deleteMutation.mutate()}
             >
               {deleteMutation.isPending ? (

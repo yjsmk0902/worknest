@@ -1,4 +1,4 @@
-import type { ViewOutput, FilterCondition } from '@worknest/shared';
+import type { FilterCondition, ViewOutput } from '@worknest/shared';
 import type { IssueSearchParams } from '../components/issues/filter-builder/use-issue-filters';
 
 // ── Sort field display labels ──────────────────────────────────────────
@@ -16,9 +16,7 @@ const SORT_DIRECTION_LABELS: Record<string, string> = {
   desc: '내림차순',
 };
 
-export function getSortDisplayText(
-  sort: ViewOutput['sort'],
-): string {
+export function getSortDisplayText(sort: ViewOutput['sort']): string {
   if (!sort) return '기본 정렬';
   const fieldLabel = SORT_FIELD_LABELS[sort.field] ?? sort.field;
   const dirLabel = SORT_DIRECTION_LABELS[sort.direction] ?? sort.direction;
@@ -27,15 +25,11 @@ export function getSortDisplayText(
 
 // ── Convert View filters to URL search params ──────────────────────────
 
-export function viewToSearchParams(
-  view: Pick<ViewOutput, 'filters' | 'sort'>,
-): IssueSearchParams {
+export function viewToSearchParams(view: Pick<ViewOutput, 'filters' | 'sort'>): IssueSearchParams {
   const params: IssueSearchParams = {};
 
   for (const condition of view.filters) {
-    const vals = Array.isArray(condition.value)
-      ? condition.value.join(',')
-      : condition.value;
+    const vals = Array.isArray(condition.value) ? condition.value.join(',') : condition.value;
 
     switch (condition.field) {
       case 'statusId':
@@ -52,8 +46,7 @@ export function viewToSearchParams(
         break;
       case 'assigneeId':
         if (condition.operator === 'is_empty') params.assigneeEmpty = true;
-        else if (condition.operator === 'is_not')
-          params.assigneeIdNot = vals;
+        else if (condition.operator === 'is_not') params.assigneeIdNot = vals;
         else params.assigneeId = vals;
         break;
       case 'labelId':

@@ -1,11 +1,7 @@
 import { Link } from '@tanstack/react-router';
-import { ChevronRight } from 'lucide-react';
 import { cn } from '@worknest/ui';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@worknest/ui';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@worknest/ui';
+import { ChevronRight } from 'lucide-react';
 
 export function SectionLabel({
   children,
@@ -33,14 +29,7 @@ export interface NavItemProps {
   expandable?: boolean;
 }
 
-export function NavItem({
-  icon,
-  label,
-  href,
-  badge,
-  active,
-  expandable,
-}: NavItemProps) {
+export function NavItem({ icon, label, href, badge, active, expandable }: NavItemProps) {
   return (
     <Link
       to={href}
@@ -57,9 +46,7 @@ export function NavItem({
           {badge}
         </span>
       )}
-      {expandable && (
-        <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/30" />
-      )}
+      {expandable && <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/30" />}
     </Link>
   );
 }

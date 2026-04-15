@@ -1,7 +1,7 @@
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { Database } from "./index";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import type { Database } from './index';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,15 +22,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * ```
  */
 export async function runMigrations(db: Database): Promise<void> {
-  const migrationsFolder = path.join(__dirname, "migrations");
+  const migrationsFolder = path.join(__dirname, 'migrations');
 
-  console.log("[migrate] Running pending migrations...");
+  console.log('[migrate] Running pending migrations...');
 
   try {
     await migrate(db, { migrationsFolder });
-    console.log("[migrate] All migrations applied successfully.");
+    console.log('[migrate] All migrations applied successfully.');
   } catch (error) {
-    console.error("[migrate] Migration failed:", error);
+    console.error('[migrate] Migration failed:', error);
     throw error;
   }
 }

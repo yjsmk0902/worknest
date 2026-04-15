@@ -1,13 +1,13 @@
+import { randomUUID } from 'node:crypto';
 /**
  * Organization route tests.
  *
  * Tests service-level logic through the OrganizationService,
  * verifying business rules for CRUD, membership, and invitations.
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { OrganizationService } from "../src/services/organization-service";
-import { AppError, ErrorCode } from "../src/lib/errors";
-import { randomUUID } from "node:crypto";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AppError, ErrorCode } from '../src/lib/errors';
+import { OrganizationService } from '../src/services/organization-service';
 
 // ── In-memory test data ───────────────────────────────────────────────
 
@@ -49,16 +49,16 @@ interface MockUser {
   avatarUrl: string | null;
 }
 
-let orgs: MockOrg[];
-let members: MockOrgMember[];
-let invitations: MockInvitation[];
-let users: MockUser[];
+let _orgs: MockOrg[];
+let _members: MockOrgMember[];
+let _invitations: MockInvitation[];
+let _users: MockUser[];
 
 function resetStores() {
-  orgs = [];
-  members = [];
-  invitations = [];
-  users = [];
+  _orgs = [];
+  _members = [];
+  _invitations = [];
+  _users = [];
 }
 
 // ── Mock DB ───────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ function createMockDb() {
 
 // ── Tests via Service spying ──────────────────────────────────────────
 
-describe("OrganizationService.create", () => {
+describe('OrganizationService.create', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -86,53 +86,53 @@ describe("OrganizationService.create", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("creates an organization and returns correct output shape", async () => {
+  it('creates an organization and returns correct output shape', async () => {
     const orgId = randomUUID();
     const userId = randomUUID();
 
-    vi.spyOn(service, "create").mockResolvedValueOnce({
+    vi.spyOn(service, 'create').mockResolvedValueOnce({
       id: orgId,
-      name: "My Org",
-      slug: "my-org",
+      name: 'My Org',
+      slug: 'my-org',
       logo: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
     const result = await service.create(userId, {
-      name: "My Org",
-      slug: "my-org",
+      name: 'My Org',
+      slug: 'my-org',
     });
 
     expect(result.id).toBe(orgId);
-    expect(result.name).toBe("My Org");
-    expect(result.slug).toBe("my-org");
+    expect(result.name).toBe('My Org');
+    expect(result.slug).toBe('my-org');
     expect(result.logo).toBeNull();
     expect(result.createdAt).toBeDefined();
     expect(result.updatedAt).toBeDefined();
   });
 
-  it("rejects creation when slug already exists", async () => {
+  it('rejects creation when slug already exists', async () => {
     const userId = randomUUID();
 
-    vi.spyOn(service, "create").mockRejectedValueOnce(
-      AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Organization slug already taken"),
+    vi.spyOn(service, 'create').mockRejectedValueOnce(
+      AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, 'Organization slug already taken'),
     );
 
-    await expect(
-      service.create(userId, { name: "Dup Org", slug: "taken-slug" }),
-    ).rejects.toThrow("Organization slug already taken");
+    await expect(service.create(userId, { name: 'Dup Org', slug: 'taken-slug' })).rejects.toThrow(
+      'Organization slug already taken',
+    );
   });
 
-  it("rejects creation with missing name", () => {
+  it('rejects creation with missing name', () => {
     // This is validated by Zod at the route level, but let's verify the schema
-    const { createOrganizationInput } = require("@worknest/shared");
-    const result = createOrganizationInput.safeParse({ slug: "valid-slug" });
+    const { createOrganizationInput } = require('@worknest/shared');
+    const result = createOrganizationInput.safeParse({ slug: 'valid-slug' });
     expect(result.success).toBe(false);
   });
 });
 
-describe("OrganizationService.listByUser", () => {
+describe('OrganizationService.listByUser', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -140,19 +140,19 @@ describe("OrganizationService.listByUser", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("returns only organizations the user is a member of", async () => {
+  it('returns only organizations the user is a member of', async () => {
     const userId = randomUUID();
 
-    vi.spyOn(service, "listByUser").mockResolvedValueOnce({
+    vi.spyOn(service, 'listByUser').mockResolvedValueOnce({
       data: [
         {
           id: randomUUID(),
-          name: "User Org",
-          slug: "user-org",
+          name: 'User Org',
+          slug: 'user-org',
           logo: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          role: "owner",
+          role: 'owner',
         },
       ],
       pagination: { next_cursor: null, has_more: false },
@@ -160,14 +160,14 @@ describe("OrganizationService.listByUser", () => {
 
     const result = await service.listByUser(userId, { limit: 20 });
     expect(result.data).toHaveLength(1);
-    expect(result.data[0]!.name).toBe("User Org");
+    expect(result.data[0]?.name).toBe('User Org');
     expect(result.pagination.has_more).toBe(false);
   });
 
-  it("returns empty list when user has no organizations", async () => {
+  it('returns empty list when user has no organizations', async () => {
     const userId = randomUUID();
 
-    vi.spyOn(service, "listByUser").mockResolvedValueOnce({
+    vi.spyOn(service, 'listByUser').mockResolvedValueOnce({
       data: [],
       pagination: { next_cursor: null, has_more: false },
     });
@@ -176,20 +176,20 @@ describe("OrganizationService.listByUser", () => {
     expect(result.data).toHaveLength(0);
   });
 
-  it("supports cursor-based pagination", async () => {
+  it('supports cursor-based pagination', async () => {
     const userId = randomUUID();
     const cursorId = randomUUID();
 
-    vi.spyOn(service, "listByUser").mockResolvedValueOnce({
+    vi.spyOn(service, 'listByUser').mockResolvedValueOnce({
       data: [
         {
           id: randomUUID(),
-          name: "Page 2 Org",
-          slug: "page-2",
+          name: 'Page 2 Org',
+          slug: 'page-2',
           logo: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          role: "member",
+          role: 'member',
         },
       ],
       pagination: { next_cursor: null, has_more: false },
@@ -204,7 +204,7 @@ describe("OrganizationService.listByUser", () => {
   });
 });
 
-describe("OrganizationService.getById", () => {
+describe('OrganizationService.getById', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -212,13 +212,13 @@ describe("OrganizationService.getById", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("returns organization details when found", async () => {
+  it('returns organization details when found', async () => {
     const orgId = randomUUID();
 
-    vi.spyOn(service, "getById").mockResolvedValueOnce({
+    vi.spyOn(service, 'getById').mockResolvedValueOnce({
       id: orgId,
-      name: "Found Org",
-      slug: "found-org",
+      name: 'Found Org',
+      slug: 'found-org',
       logo: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -226,21 +226,17 @@ describe("OrganizationService.getById", () => {
 
     const result = await service.getById(orgId);
     expect(result.id).toBe(orgId);
-    expect(result.name).toBe("Found Org");
+    expect(result.name).toBe('Found Org');
   });
 
-  it("throws 404 when organization does not exist", async () => {
-    vi.spyOn(service, "getById").mockRejectedValueOnce(
-      AppError.notFound("organization"),
-    );
+  it('throws 404 when organization does not exist', async () => {
+    vi.spyOn(service, 'getById').mockRejectedValueOnce(AppError.notFound('organization'));
 
-    await expect(service.getById(randomUUID())).rejects.toThrow(
-      "organization not found",
-    );
+    await expect(service.getById(randomUUID())).rejects.toThrow('organization not found');
   });
 });
 
-describe("OrganizationService.update", () => {
+describe('OrganizationService.update', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -248,46 +244,44 @@ describe("OrganizationService.update", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("updates organization name", async () => {
+  it('updates organization name', async () => {
     const orgId = randomUUID();
 
-    vi.spyOn(service, "update").mockResolvedValueOnce({
+    vi.spyOn(service, 'update').mockResolvedValueOnce({
       id: orgId,
-      name: "Updated Name",
-      slug: "orig-slug",
+      name: 'Updated Name',
+      slug: 'orig-slug',
       logo: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
-    const result = await service.update(orgId, { name: "Updated Name" });
-    expect(result.name).toBe("Updated Name");
+    const result = await service.update(orgId, { name: 'Updated Name' });
+    expect(result.name).toBe('Updated Name');
   });
 
-  it("rejects slug update when new slug is already taken", async () => {
+  it('rejects slug update when new slug is already taken', async () => {
     const orgId = randomUUID();
 
-    vi.spyOn(service, "update").mockRejectedValueOnce(
-      AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, "Organization slug already taken"),
+    vi.spyOn(service, 'update').mockRejectedValueOnce(
+      AppError.conflict(ErrorCode.SLUG_ALREADY_EXISTS, 'Organization slug already taken'),
     );
 
-    await expect(
-      service.update(orgId, { slug: "taken-slug" }),
-    ).rejects.toThrow("Organization slug already taken");
+    await expect(service.update(orgId, { slug: 'taken-slug' })).rejects.toThrow(
+      'Organization slug already taken',
+    );
   });
 
-  it("throws 404 when updating a non-existent organization", async () => {
-    vi.spyOn(service, "update").mockRejectedValueOnce(
-      AppError.notFound("organization"),
-    );
+  it('throws 404 when updating a non-existent organization', async () => {
+    vi.spyOn(service, 'update').mockRejectedValueOnce(AppError.notFound('organization'));
 
-    await expect(
-      service.update(randomUUID(), { name: "Nope" }),
-    ).rejects.toThrow("organization not found");
+    await expect(service.update(randomUUID(), { name: 'Nope' })).rejects.toThrow(
+      'organization not found',
+    );
   });
 });
 
-describe("OrganizationService.softDelete", () => {
+describe('OrganizationService.softDelete', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -295,42 +289,38 @@ describe("OrganizationService.softDelete", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("allows the owner to delete an organization", async () => {
+  it('allows the owner to delete an organization', async () => {
     const orgId = randomUUID();
     const ownerId = randomUUID();
 
-    vi.spyOn(service, "softDelete").mockResolvedValueOnce(undefined);
+    vi.spyOn(service, 'softDelete').mockResolvedValueOnce(undefined);
 
-    await expect(
-      service.softDelete(orgId, ownerId),
-    ).resolves.toBeUndefined();
+    await expect(service.softDelete(orgId, ownerId)).resolves.toBeUndefined();
   });
 
-  it("rejects deletion by a non-owner member", async () => {
+  it('rejects deletion by a non-owner member', async () => {
     const orgId = randomUUID();
     const memberId = randomUUID();
 
-    vi.spyOn(service, "softDelete").mockRejectedValueOnce(
-      AppError.forbidden("Only the owner can delete an organization"),
+    vi.spyOn(service, 'softDelete').mockRejectedValueOnce(
+      AppError.forbidden('Only the owner can delete an organization'),
     );
 
-    await expect(
-      service.softDelete(orgId, memberId),
-    ).rejects.toThrow("Only the owner can delete an organization");
+    await expect(service.softDelete(orgId, memberId)).rejects.toThrow(
+      'Only the owner can delete an organization',
+    );
   });
 
-  it("throws 404 when deleting a non-existent organization", async () => {
-    vi.spyOn(service, "softDelete").mockRejectedValueOnce(
-      AppError.notFound("organization"),
-    );
+  it('throws 404 when deleting a non-existent organization', async () => {
+    vi.spyOn(service, 'softDelete').mockRejectedValueOnce(AppError.notFound('organization'));
 
-    await expect(
-      service.softDelete(randomUUID(), randomUUID()),
-    ).rejects.toThrow("organization not found");
+    await expect(service.softDelete(randomUUID(), randomUUID())).rejects.toThrow(
+      'organization not found',
+    );
   });
 });
 
-describe("OrganizationService.listMembers", () => {
+describe('OrganizationService.listMembers', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -338,23 +328,23 @@ describe("OrganizationService.listMembers", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("returns members with user details", async () => {
+  it('returns members with user details', async () => {
     const orgId = randomUUID();
     const memberId = randomUUID();
     const userId = randomUUID();
 
-    vi.spyOn(service, "listMembers").mockResolvedValueOnce({
+    vi.spyOn(service, 'listMembers').mockResolvedValueOnce({
       data: [
         {
           id: memberId,
           orgId,
           userId,
-          role: "owner" as const,
+          role: 'owner' as const,
           joinedAt: new Date().toISOString(),
           user: {
             id: userId,
-            email: "owner@test.com",
-            name: "Owner",
+            email: 'owner@test.com',
+            name: 'Owner',
             avatarUrl: null,
           },
         },
@@ -364,12 +354,12 @@ describe("OrganizationService.listMembers", () => {
 
     const result = await service.listMembers(orgId, { limit: 20 });
     expect(result.data).toHaveLength(1);
-    expect(result.data[0]!.role).toBe("owner");
-    expect(result.data[0]!.user.email).toBe("owner@test.com");
+    expect(result.data[0]?.role).toBe('owner');
+    expect(result.data[0]?.user.email).toBe('owner@test.com');
   });
 });
 
-describe("OrganizationService.updateMemberRole", () => {
+describe('OrganizationService.updateMemberRole', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -380,54 +370,52 @@ describe("OrganizationService.updateMemberRole", () => {
   it("changes a member's role to admin", async () => {
     const memberId = randomUUID();
 
-    vi.spyOn(service, "updateMemberRole").mockResolvedValueOnce({
+    vi.spyOn(service, 'updateMemberRole').mockResolvedValueOnce({
       id: memberId,
       orgId: randomUUID(),
       userId: randomUUID(),
-      role: "admin",
+      role: 'admin',
       joinedAt: new Date(),
     } as never);
 
-    const result = await service.updateMemberRole(memberId, "admin");
+    const result = await service.updateMemberRole(memberId, 'admin');
     expect(result).toBeDefined();
   });
 
-  it("rejects assigning the owner role", async () => {
+  it('rejects assigning the owner role', async () => {
     const memberId = randomUUID();
 
-    vi.spyOn(service, "updateMemberRole").mockRejectedValueOnce(
-      AppError.forbidden("Cannot assign owner role through this endpoint"),
+    vi.spyOn(service, 'updateMemberRole').mockRejectedValueOnce(
+      AppError.forbidden('Cannot assign owner role through this endpoint'),
     );
 
-    await expect(
-      service.updateMemberRole(memberId, "owner"),
-    ).rejects.toThrow("Cannot assign owner role through this endpoint");
+    await expect(service.updateMemberRole(memberId, 'owner')).rejects.toThrow(
+      'Cannot assign owner role through this endpoint',
+    );
   });
 
   it("rejects changing the owner's role", async () => {
     const memberId = randomUUID();
 
-    vi.spyOn(service, "updateMemberRole").mockRejectedValueOnce(
+    vi.spyOn(service, 'updateMemberRole').mockRejectedValueOnce(
       AppError.forbidden("Cannot change the owner's role"),
     );
 
-    await expect(
-      service.updateMemberRole(memberId, "member"),
-    ).rejects.toThrow("Cannot change the owner's role");
+    await expect(service.updateMemberRole(memberId, 'member')).rejects.toThrow(
+      "Cannot change the owner's role",
+    );
   });
 
-  it("throws 404 for non-existent member", async () => {
-    vi.spyOn(service, "updateMemberRole").mockRejectedValueOnce(
-      AppError.notFound("member"),
-    );
+  it('throws 404 for non-existent member', async () => {
+    vi.spyOn(service, 'updateMemberRole').mockRejectedValueOnce(AppError.notFound('member'));
 
-    await expect(
-      service.updateMemberRole(randomUUID(), "admin"),
-    ).rejects.toThrow("member not found");
+    await expect(service.updateMemberRole(randomUUID(), 'admin')).rejects.toThrow(
+      'member not found',
+    );
   });
 });
 
-describe("OrganizationService.removeMember", () => {
+describe('OrganizationService.removeMember', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -435,38 +423,34 @@ describe("OrganizationService.removeMember", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("removes a regular member", async () => {
+  it('removes a regular member', async () => {
     const memberId = randomUUID();
 
-    vi.spyOn(service, "removeMember").mockResolvedValueOnce(undefined);
+    vi.spyOn(service, 'removeMember').mockResolvedValueOnce(undefined);
 
     await expect(service.removeMember(memberId)).resolves.toBeUndefined();
   });
 
-  it("rejects removing the organization owner", async () => {
+  it('rejects removing the organization owner', async () => {
     const memberId = randomUUID();
 
-    vi.spyOn(service, "removeMember").mockRejectedValueOnce(
-      AppError.forbidden("Cannot remove the organization owner"),
+    vi.spyOn(service, 'removeMember').mockRejectedValueOnce(
+      AppError.forbidden('Cannot remove the organization owner'),
     );
 
     await expect(service.removeMember(memberId)).rejects.toThrow(
-      "Cannot remove the organization owner",
+      'Cannot remove the organization owner',
     );
   });
 
-  it("throws 404 for non-existent member", async () => {
-    vi.spyOn(service, "removeMember").mockRejectedValueOnce(
-      AppError.notFound("member"),
-    );
+  it('throws 404 for non-existent member', async () => {
+    vi.spyOn(service, 'removeMember').mockRejectedValueOnce(AppError.notFound('member'));
 
-    await expect(service.removeMember(randomUUID())).rejects.toThrow(
-      "member not found",
-    );
+    await expect(service.removeMember(randomUUID())).rejects.toThrow('member not found');
   });
 });
 
-describe("OrganizationService.createInvitation", () => {
+describe('OrganizationService.createInvitation', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -474,31 +458,31 @@ describe("OrganizationService.createInvitation", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("creates an invitation with a 7-day expiry", async () => {
+  it('creates an invitation with a 7-day expiry', async () => {
     const orgId = randomUUID();
     const inviterId = randomUUID();
     const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    vi.spyOn(service, "createInvitation").mockResolvedValueOnce({
+    vi.spyOn(service, 'createInvitation').mockResolvedValueOnce({
       invitation: {
         id: randomUUID(),
-        email: "invite@test.com",
-        role: "member",
+        email: 'invite@test.com',
+        role: 'member',
         invitedBy: inviterId,
         expiresAt: sevenDaysFromNow.toISOString(),
         acceptedAt: null,
         createdAt: new Date().toISOString(),
       },
-      token: "raw-token-value",
+      token: 'raw-token-value',
     });
 
     const result = await service.createInvitation(orgId, inviterId, {
-      email: "invite@test.com",
-      role: "member",
+      email: 'invite@test.com',
+      role: 'member',
     });
 
-    expect(result.invitation.email).toBe("invite@test.com");
-    expect(result.invitation.role).toBe("member");
+    expect(result.invitation.email).toBe('invite@test.com');
+    expect(result.invitation.role).toBe('member');
     expect(result.token).toBeDefined();
     expect(result.invitation.acceptedAt).toBeNull();
 
@@ -510,46 +494,46 @@ describe("OrganizationService.createInvitation", () => {
     expect(diff).toBeLessThanOrEqual(7 * 24 * 60 * 60 * 1000 + 60000);
   });
 
-  it("rejects invitation when user is already a member", async () => {
+  it('rejects invitation when user is already a member', async () => {
     const orgId = randomUUID();
     const inviterId = randomUUID();
 
-    vi.spyOn(service, "createInvitation").mockRejectedValueOnce(
+    vi.spyOn(service, 'createInvitation').mockRejectedValueOnce(
       AppError.conflict(
         ErrorCode.ALREADY_A_MEMBER,
-        "User is already a member of this organization",
+        'User is already a member of this organization',
       ),
     );
 
     await expect(
       service.createInvitation(orgId, inviterId, {
-        email: "member@test.com",
-        role: "member",
+        email: 'member@test.com',
+        role: 'member',
       }),
-    ).rejects.toThrow("User is already a member of this organization");
+    ).rejects.toThrow('User is already a member of this organization');
   });
 
-  it("rejects duplicate pending invitation to same email", async () => {
+  it('rejects duplicate pending invitation to same email', async () => {
     const orgId = randomUUID();
     const inviterId = randomUUID();
 
-    vi.spyOn(service, "createInvitation").mockRejectedValueOnce(
+    vi.spyOn(service, 'createInvitation').mockRejectedValueOnce(
       AppError.conflict(
         ErrorCode.INVITATION_ALREADY_SENT,
-        "An invitation has already been sent to this email",
+        'An invitation has already been sent to this email',
       ),
     );
 
     await expect(
       service.createInvitation(orgId, inviterId, {
-        email: "dup@test.com",
-        role: "admin",
+        email: 'dup@test.com',
+        role: 'admin',
       }),
-    ).rejects.toThrow("An invitation has already been sent to this email");
+    ).rejects.toThrow('An invitation has already been sent to this email');
   });
 });
 
-describe("OrganizationService.cancelInvitation", () => {
+describe('OrganizationService.cancelInvitation', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -557,28 +541,22 @@ describe("OrganizationService.cancelInvitation", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("cancels an existing invitation", async () => {
+  it('cancels an existing invitation', async () => {
     const invitationId = randomUUID();
 
-    vi.spyOn(service, "cancelInvitation").mockResolvedValueOnce(undefined);
+    vi.spyOn(service, 'cancelInvitation').mockResolvedValueOnce(undefined);
 
-    await expect(
-      service.cancelInvitation(invitationId),
-    ).resolves.toBeUndefined();
+    await expect(service.cancelInvitation(invitationId)).resolves.toBeUndefined();
   });
 
-  it("throws 404 when invitation does not exist", async () => {
-    vi.spyOn(service, "cancelInvitation").mockRejectedValueOnce(
-      AppError.notFound("invitation"),
-    );
+  it('throws 404 when invitation does not exist', async () => {
+    vi.spyOn(service, 'cancelInvitation').mockRejectedValueOnce(AppError.notFound('invitation'));
 
-    await expect(
-      service.cancelInvitation(randomUUID()),
-    ).rejects.toThrow("invitation not found");
+    await expect(service.cancelInvitation(randomUUID())).rejects.toThrow('invitation not found');
   });
 });
 
-describe("OrganizationService.acceptInvitation", () => {
+describe('OrganizationService.acceptInvitation', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -586,39 +564,39 @@ describe("OrganizationService.acceptInvitation", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("accepts a valid invitation and creates membership", async () => {
+  it('accepts a valid invitation and creates membership', async () => {
     const userId = randomUUID();
     const orgId = randomUUID();
 
-    vi.spyOn(service, "acceptInvitation").mockResolvedValueOnce({ orgId });
+    vi.spyOn(service, 'acceptInvitation').mockResolvedValueOnce({ orgId });
 
-    const result = await service.acceptInvitation(userId, "valid-token");
+    const result = await service.acceptInvitation(userId, 'valid-token');
     expect(result).toEqual({ orgId });
   });
 
-  it("returns null when token is not found", async () => {
+  it('returns null when token is not found', async () => {
     const userId = randomUUID();
 
-    vi.spyOn(service, "acceptInvitation").mockResolvedValueOnce(null);
+    vi.spyOn(service, 'acceptInvitation').mockResolvedValueOnce(null);
 
-    const result = await service.acceptInvitation(userId, "bad-token");
+    const result = await service.acceptInvitation(userId, 'bad-token');
     expect(result).toBeNull();
   });
 
-  it("throws error when invitation has expired", async () => {
+  it('throws error when invitation has expired', async () => {
     const userId = randomUUID();
 
-    vi.spyOn(service, "acceptInvitation").mockRejectedValueOnce(
-      AppError.badRequest(ErrorCode.INVITATION_EXPIRED, "This invitation has expired"),
+    vi.spyOn(service, 'acceptInvitation').mockRejectedValueOnce(
+      AppError.badRequest(ErrorCode.INVITATION_EXPIRED, 'This invitation has expired'),
     );
 
-    await expect(
-      service.acceptInvitation(userId, "expired-token"),
-    ).rejects.toThrow("This invitation has expired");
+    await expect(service.acceptInvitation(userId, 'expired-token')).rejects.toThrow(
+      'This invitation has expired',
+    );
   });
 });
 
-describe("OrganizationService.listInvitations", () => {
+describe('OrganizationService.listInvitations', () => {
   let service: OrganizationService;
 
   beforeEach(() => {
@@ -626,15 +604,15 @@ describe("OrganizationService.listInvitations", () => {
     service = new OrganizationService(createMockDb());
   });
 
-  it("lists pending invitations with pagination", async () => {
+  it('lists pending invitations with pagination', async () => {
     const orgId = randomUUID();
 
-    vi.spyOn(service, "listInvitations").mockResolvedValueOnce({
+    vi.spyOn(service, 'listInvitations').mockResolvedValueOnce({
       data: [
         {
           id: randomUUID(),
-          email: "pending@test.com",
-          role: "member",
+          email: 'pending@test.com',
+          role: 'member',
           invitedBy: randomUUID(),
           expiresAt: new Date().toISOString(),
           acceptedAt: null,
@@ -646,13 +624,13 @@ describe("OrganizationService.listInvitations", () => {
 
     const result = await service.listInvitations(orgId, { limit: 20 });
     expect(result.data).toHaveLength(1);
-    expect(result.data[0]!.acceptedAt).toBeNull();
+    expect(result.data[0]?.acceptedAt).toBeNull();
   });
 
-  it("returns empty list when there are no pending invitations", async () => {
+  it('returns empty list when there are no pending invitations', async () => {
     const orgId = randomUUID();
 
-    vi.spyOn(service, "listInvitations").mockResolvedValueOnce({
+    vi.spyOn(service, 'listInvitations').mockResolvedValueOnce({
       data: [],
       pagination: { next_cursor: null, has_more: false },
     });

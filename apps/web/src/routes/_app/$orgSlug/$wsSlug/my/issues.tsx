@@ -1,23 +1,16 @@
-import { useState, useCallback, useMemo } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import {
-  ChevronRight,
-  ChevronDown,
-  CircleUser,
-  AlertTriangle,
-} from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import type { StatusCategory } from '@worknest/shared';
-import { apiClient } from '@/lib/api-client';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '@/lib/issue-constants';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import type { StatusCategory } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { AlertTriangle, ChevronDown, ChevronRight, CircleUser } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/my/issues',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/my/issues')({
   component: MyIssuesPage,
 });
 
@@ -80,21 +73,18 @@ function MyIssuesPage() {
   const navigate = useNavigate();
 
   // Default accordion state per category
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () => {
-      const state: Record<string, boolean> = {};
-      for (const cat of CATEGORY_ORDER) {
-        state[cat] = CATEGORY_CONFIG[cat].defaultOpen;
-      }
-      return state;
-    },
-  );
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    const state: Record<string, boolean> = {};
+    for (const cat of CATEGORY_ORDER) {
+      state[cat] = CATEGORY_CONFIG[cat].defaultOpen;
+    }
+    return state;
+  });
 
   // Fetch my issues
   const myIssuesQuery = useQuery<GroupedIssues>({
     queryKey: ['workspaces', wsId, 'my-issues'],
-    queryFn: () =>
-      apiClient.get<GroupedIssues>(`/workspaces/${wsId}/my-issues`),
+    queryFn: () => apiClient.get<GroupedIssues>(`/workspaces/${wsId}/my-issues`),
     staleTime: 30 * 1000,
   });
 
@@ -125,10 +115,7 @@ function MyIssuesPage() {
   // Total issue count
   const totalIssues = useMemo(() => {
     if (!myIssuesQuery.data) return 0;
-    return CATEGORY_ORDER.reduce(
-      (sum, cat) => sum + (myIssuesQuery.data[cat]?.length ?? 0),
-      0,
-    );
+    return CATEGORY_ORDER.reduce((sum, cat) => sum + (myIssuesQuery.data[cat]?.length ?? 0), 0);
   }, [myIssuesQuery.data]);
 
   // Loading state
@@ -138,20 +125,13 @@ function MyIssuesPage() {
         <div className="px-6 py-4">
           <h1 className="text-2xl font-semibold">내 이슈</h1>
         </div>
-        <div
-          className="flex-1 space-y-1 px-2"
-          aria-busy="true"
-          aria-label="이슈 로딩 중"
-        >
+        <div className="flex-1 space-y-1 px-2" aria-busy="true" aria-label="이슈 로딩 중">
           {/* Accordion header skeletons */}
           {[1, 2].map((i) => (
             <div key={`header-${i}`}>
               <Skeleton className="mx-6 mb-1 h-10 rounded-md" />
               {[1, 2, 3].map((j) => (
-                <Skeleton
-                  key={`row-${i}-${j}`}
-                  className="mx-6 h-10"
-                />
+                <Skeleton key={`row-${i}-${j}`} className="mx-6 h-10" />
               ))}
             </div>
           ))}
@@ -170,9 +150,7 @@ function MyIssuesPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              이슈를 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">이슈를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -197,9 +175,7 @@ function MyIssuesPage() {
         <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16">
           <CircleUser className="h-12 w-12 text-muted-foreground/50" />
           <p className="text-lg font-medium">할당된 이슈가 없습니다</p>
-          <p className="text-sm text-muted-foreground">
-            이슈에 할당되면 여기에 표시됩니다
-          </p>
+          <p className="text-sm text-muted-foreground">이슈에 할당되면 여기에 표시됩니다</p>
           <Button
             variant="outline"
             className="mt-4"
@@ -238,11 +214,7 @@ function MyIssuesPage() {
           const isOpen = openSections[category];
 
           return (
-            <div
-              key={category}
-              role="region"
-              aria-label={`${config.label} 이슈`}
-            >
+            <div key={category} role="region" aria-label={`${config.label} 이슈`}>
               {/* Accordion header */}
               <button
                 type="button"
@@ -256,12 +228,8 @@ function MyIssuesPage() {
                 ) : (
                   <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-150" />
                 )}
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${config.color}`}
-                />
-                <span className="text-sm font-medium text-foreground">
-                  {config.label}
-                </span>
+                <span className={`h-2.5 w-2.5 rounded-full ${config.color}`} />
+                <span className="text-sm font-medium text-foreground">{config.label}</span>
                 <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                   {issues.length}
                 </span>
@@ -312,9 +280,7 @@ function MyIssuesPage() {
                         )}
 
                         {/* Priority icon */}
-                        <PriorityIcon
-                          className={`h-4 w-4 shrink-0 ${priorityConfig.color}`}
-                        />
+                        <PriorityIcon className={`h-4 w-4 shrink-0 ${priorityConfig.color}`} />
                       </button>
                     );
                   })}

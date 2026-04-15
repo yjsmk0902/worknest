@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import type { JSONContent } from '@tiptap/core';
 import LinkExtension from '@tiptap/extension-link';
 import Mention from '@tiptap/extension-mention';
-import { MoreHorizontal, Pencil, Reply, Trash2 } from 'lucide-react';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import type { MentionQueryFn } from '@worknest/editor';
 import {
   Avatar,
   Button,
-  cn,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,9 +17,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  cn,
 } from '@worknest/ui';
-import type { JSONContent } from '@tiptap/core';
-import type { MentionQueryFn } from '@worknest/editor';
+import { MoreHorizontal, Pencil, Reply, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { formatRelativeTime } from '../../lib/format-time';
 import { CommentEditor } from './comment-editor';
 import { Reactions } from './reactions';
@@ -143,10 +143,7 @@ export function CommentItem({
 
   return (
     <div
-      className={cn(
-        'group relative',
-        isReply && 'ml-8 border-l-2 border-border pl-4',
-      )}
+      className={cn('group relative', isReply && 'ml-8 border-l-2 border-border pl-4')}
       role="article"
       aria-label={`${authorName} 댓글`}
     >
@@ -163,9 +160,7 @@ export function CommentItem({
         <div className="min-w-0 flex-1">
           {/* Header */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
-              {authorName}
-            </span>
+            <span className="text-sm font-medium text-foreground">{authorName}</span>
             <span className="text-muted-foreground mx-0.5">&middot;</span>
             <span className="text-xs text-muted-foreground">
               {formatRelativeTime(comment.createdAt)}
@@ -173,9 +168,7 @@ export function CommentItem({
             {comment.createdAt !== comment.updatedAt && (
               <span className="text-xs text-muted-foreground">(수정됨)</span>
             )}
-            {editing && (
-              <span className="text-xs text-muted-foreground">(수정 중)</span>
-            )}
+            {editing && <span className="text-xs text-muted-foreground">(수정 중)</span>}
 
             {/* More menu - hover visible */}
             <div className="ml-auto">
@@ -218,9 +211,7 @@ export function CommentItem({
 
           {/* Reply reference */}
           {isReply && comment.parentId && (
-            <p className="mt-0.5 text-xs italic text-muted-foreground">
-              &rarr; 원본 댓글에 답글
-            </p>
+            <p className="mt-0.5 text-xs italic text-muted-foreground">&rarr; 원본 댓글에 답글</p>
           )}
 
           {/* Body */}
@@ -260,10 +251,7 @@ export function CommentItem({
             <DialogDescription>삭제하시겠습니까?</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               취소
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>

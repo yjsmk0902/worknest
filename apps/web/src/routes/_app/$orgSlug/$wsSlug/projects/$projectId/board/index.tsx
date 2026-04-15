@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Plus } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import { z } from 'zod';
-import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
-import { apiClient, type ListResponse } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { AppHeader } from '@/components/layout/app-header';
 import { KanbanBoard } from '@/components/issues/board-view/kanban-board';
+import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
+import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
 import { QuickAdd } from '@/components/issues/quick-add';
 import { ViewToolbar } from '@/components/issues/view-toolbar';
-import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
-import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
-import { useHotkeyStore } from '@/stores/hotkey-store';
+import { AppHeader } from '@/components/layout/app-header';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useHotkey } from '@/hooks/use-hotkey';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { useHotkeyStore } from '@/stores/hotkey-store';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { AlertTriangle, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
 
 // ── Search param validation ─────────────────────────────────────────────
 
@@ -42,9 +42,7 @@ const boardSearchSchema = z.object({
   order: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/board/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/board/')({
   component: BoardPage,
   validateSearch: (search) => boardSearchSchema.parse(search),
 });
@@ -104,20 +102,14 @@ function BoardPage() {
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch statuses
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -125,20 +117,16 @@ function BoardPage() {
   const issuesQuery = useQuery<ListResponse<IssueOutput>>({
     queryKey: ['projects', projectId, 'board-issues', apiParams],
     queryFn: () =>
-      apiClient.getList<IssueOutput>(
-        `/projects/${projectId}/issues`,
-        { ...apiParams, limit: '100' },
-      ),
+      apiClient.getList<IssueOutput>(`/projects/${projectId}/issues`, {
+        ...apiParams,
+        limit: '100',
+      }),
   });
 
   // Fetch stats for column counts (with active filters)
   const statsQuery = useQuery<StatsResponse>({
     queryKey: ['projects', projectId, 'issues', 'stats', apiParams],
-    queryFn: () =>
-      apiClient.get<StatsResponse>(
-        `/projects/${projectId}/issues/stats`,
-        apiParams,
-      ),
+    queryFn: () => apiClient.get<StatsResponse>(`/projects/${projectId}/issues/stats`, apiParams),
     staleTime: 30 * 1000,
   });
 
@@ -149,18 +137,12 @@ function BoardPage() {
   const projectPrefix = project?.prefix ?? '...';
 
   // Loading state
-  const isLoading =
-    projectQuery.isLoading ||
-    statusesQuery.isLoading ||
-    issuesQuery.isLoading;
+  const isLoading = projectQuery.isLoading || statusesQuery.isLoading || issuesQuery.isLoading;
 
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <AppHeader
-          title=""
-          actions={<Skeleton className="h-9 w-24" />}
-        />
+        <AppHeader title="" actions={<Skeleton className="h-9 w-24" />} />
         <div className="flex-1 p-4">
           <BoardSkeleton />
         </div>
@@ -169,10 +151,7 @@ function BoardPage() {
   }
 
   // Error state
-  const isError =
-    projectQuery.isError ||
-    statusesQuery.isError ||
-    issuesQuery.isError;
+  const isError = projectQuery.isError || statusesQuery.isError || issuesQuery.isError;
 
   if (isError) {
     return (
@@ -181,9 +160,7 @@ function BoardPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              보드를 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">보드를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -209,11 +186,7 @@ function BoardPage() {
         title={`${projectPrefix} Board`}
         breadcrumbs={[{ label: project?.name ?? '' }]}
         actions={
-          <Button
-            size="sm"
-            onClick={() => setShowQuickAdd(true)}
-            aria-label="이슈 추가"
-          >
+          <Button size="sm" onClick={() => setShowQuickAdd(true)} aria-label="이슈 추가">
             <Plus className="h-4 w-4" />
             <span>이슈</span>
           </Button>
@@ -229,10 +202,7 @@ function BoardPage() {
       {/* Quick Add overlay */}
       {showQuickAdd && (
         <div className="mx-4 mt-2">
-          <QuickAdd
-            projectId={projectId}
-            onClose={() => setShowQuickAdd(false)}
-          />
+          <QuickAdd projectId={projectId} onClose={() => setShowQuickAdd(false)} />
         </div>
       )}
 
@@ -289,10 +259,7 @@ function BoardSkeleton() {
           {/* Cards skeleton */}
           <div className="flex-1 px-2 py-1 space-y-2">
             {Array.from({ length: Math.max(1, 3 - i) }).map((_, j) => (
-              <div
-                key={j}
-                className="rounded-md border border-border bg-card p-3 space-y-2"
-              >
+              <div key={j} className="rounded-md border border-border bg-card p-3 space-y-2">
                 <Skeleton className="h-3 w-12" />
                 <Skeleton className="h-4 w-full" />
                 <div className="flex items-center gap-2">

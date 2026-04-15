@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Plus } from 'lucide-react';
-import { cn } from '@worknest/ui';
 import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
-import { KanbanCard } from './kanban-card';
+import { cn } from '@worknest/ui';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import { QuickAdd } from '../quick-add';
+import { KanbanCard } from './kanban-card';
 
 interface KanbanColumnProps {
   status: IssueStatusOutput;
@@ -40,13 +40,14 @@ export function KanbanColumn({
   });
 
   // Check if the over card is in this column
-  const overCardInThisColumn = overCardId
-    ? issues.some((i) => i.id === overCardId)
-    : false;
+  const overCardInThisColumn = overCardId ? issues.some((i) => i.id === overCardId) : false;
 
   // Show placeholder at the end if dragging over column (not a specific card)
   const showEndPlaceholder =
-    activeId && isOver && !overCardInThisColumn && !issues.some((i) => i.id === activeId && issues.length === 1);
+    activeId &&
+    isOver &&
+    !overCardInThisColumn &&
+    !issues.some((i) => i.id === activeId && issues.length === 1);
 
   return (
     <div
@@ -61,12 +62,8 @@ export function KanbanColumn({
           className="w-2.5 h-2.5 rounded-full shrink-0"
           style={{ backgroundColor: status.color }}
         />
-        <span className="text-sm font-medium text-foreground truncate">
-          {status.name}
-        </span>
-        <span className="text-xs text-muted-foreground ml-auto">
-          {count}
-        </span>
+        <span className="text-sm font-medium text-foreground truncate">{status.name}</span>
+        <span className="text-xs text-muted-foreground ml-auto">{count}</span>
       </div>
 
       {/* Card area */}
@@ -78,9 +75,7 @@ export function KanbanColumn({
       >
         {issues.length === 0 && !showQuickAdd && !showEndPlaceholder && (
           <div className="flex flex-1 items-center justify-center min-h-[80px]">
-            <span className="text-sm text-muted-foreground">
-              이슈 없음
-            </span>
+            <span className="text-sm text-muted-foreground">이슈 없음</span>
           </div>
         )}
 
@@ -95,11 +90,7 @@ export function KanbanColumn({
                 <div className="mb-2 h-[140px] rounded-xl border-2 border-dashed border-primary/30 bg-primary/5" />
               )}
               <div className={cn('mb-2', isBeingDragged && 'opacity-0 pointer-events-none')}>
-                <KanbanCard
-                  issue={issue}
-                  projectPrefix={projectPrefix}
-                  onClick={onCardClick}
-                />
+                <KanbanCard issue={issue} projectPrefix={projectPrefix} onClick={onCardClick} />
               </div>
             </div>
           );

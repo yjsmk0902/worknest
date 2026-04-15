@@ -1,5 +1,5 @@
-import type { FastifyReply, FastifyRequest, preHandlerHookHandler } from "fastify";
-import { AppError, ErrorCode } from "../lib/errors";
+import type { FastifyReply, FastifyRequest, preHandlerHookHandler } from 'fastify';
+import { AppError } from '../lib/errors';
 
 // ── In-Memory Rate Limiter ─────────────────────────────────────────────
 
@@ -78,11 +78,8 @@ interface RateLimitOptions {
  * Create a rate-limiting preHandler with the given configuration.
  */
 export function createRateLimit(opts: RateLimitOptions): preHandlerHookHandler {
-  return async function rateLimit(
-    request: FastifyRequest,
-    _reply: FastifyReply,
-  ): Promise<void> {
-    const prefix = opts.prefix ?? "global";
+  return async function rateLimit(request: FastifyRequest, _reply: FastifyReply): Promise<void> {
+    const prefix = opts.prefix ?? 'global';
     const key = `${prefix}:${getClientKey(request)}`;
 
     const allowed = limiter.check(key, opts.maxRequests, opts.windowMs);
@@ -98,12 +95,12 @@ export function createRateLimit(opts: RateLimitOptions): preHandlerHookHandler {
 export const globalRateLimit = createRateLimit({
   maxRequests: 1000,
   windowMs: 60_000,
-  prefix: "global",
+  prefix: 'global',
 });
 
 /** Auth rate limit: 10 requests per 15 minutes */
 export const authRateLimit = createRateLimit({
   maxRequests: 10,
   windowMs: 15 * 60_000,
-  prefix: "auth",
+  prefix: 'auth',
 });

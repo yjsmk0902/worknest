@@ -1,16 +1,14 @@
-import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle, FileText, Plus } from 'lucide-react';
-import { Button } from '@worknest/ui';
-import { toast } from '@worknest/ui';
-import type { WikiSpaceOutput, WikiPageOutput } from '@worknest/shared';
-import { apiClient } from '@/lib/api-client';
 import { PageTree } from '@/components/wiki/page-tree/page-tree';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Outlet, createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
+import type { WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
+import { Button } from '@worknest/ui';
+import { toast } from '@worknest/ui';
+import { AlertTriangle, FileText, Loader2, Plus } from 'lucide-react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/wiki/$spaceId',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId')({
   component: WikiSpaceLayout,
 });
 
@@ -24,14 +22,12 @@ function WikiSpaceLayout() {
 
   const spaceQuery = useQuery<WikiSpaceOutput>({
     queryKey: ['wiki-spaces', spaceId],
-    queryFn: () =>
-      apiClient.get(`/wiki-spaces/${spaceId}`),
+    queryFn: () => apiClient.get(`/wiki-spaces/${spaceId}`),
   });
 
   const pagesQuery = useQuery({
     queryKey: ['wiki-spaces', spaceId, 'pages'],
-    queryFn: () =>
-      apiClient.getList<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`),
+    queryFn: () => apiClient.getList<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`),
     enabled: !!spaceId,
   });
 
@@ -48,9 +44,7 @@ function WikiSpaceLayout() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            스페이스를 불러올 수 없습니다.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">스페이스를 불러올 수 없습니다.</p>
         </div>
       </div>
     );
@@ -93,12 +87,8 @@ function WikiSpaceLayout() {
         {/* Panel header */}
         <div className="h-12 flex items-center justify-between px-3 border-b border-border shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-semibold truncate">
-              {space.name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {pages.length} pages
-            </span>
+            <span className="text-sm font-semibold truncate">{space.name}</span>
+            <span className="text-xs text-muted-foreground">{pages.length} pages</span>
           </div>
         </div>
 

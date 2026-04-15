@@ -1,10 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import {
-  subscribe,
-  unsubscribe,
-  getConnectionState,
-  onStateChange,
-} from '../lib/websocket';
+import { getConnectionState, onStateChange, subscribe, unsubscribe } from '../lib/websocket';
 
 /**
  * Subscribe to WebSocket channels on mount and unsubscribe on unmount.

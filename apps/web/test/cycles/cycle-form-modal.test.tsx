@@ -1,3 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 /**
  * CycleFormModal component tests.
  *
@@ -6,10 +9,7 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ─────────────────────────────────────────────────────────────
 
@@ -17,7 +17,7 @@ const mockPost = vi.fn();
 const mockPatch = vi.fn();
 const mockGetList = vi.fn();
 
-vi.mock("../../src/lib/api-client", () => ({
+vi.mock('../../src/lib/api-client', () => ({
   apiClient: {
     get: vi.fn(),
     getList: (...args: unknown[]) => mockGetList(...args),
@@ -30,7 +30,7 @@ vi.mock("../../src/lib/api-client", () => ({
     code: string;
     constructor(status: number, code: string, message: string) {
       super(message);
-      this.name = "ApiError";
+      this.name = 'ApiError';
       this.status = status;
       this.code = code;
     }
@@ -39,7 +39,7 @@ vi.mock("../../src/lib/api-client", () => ({
 
 const mockToast = vi.fn();
 
-vi.mock("@worknest/ui", () => ({
+vi.mock('@worknest/ui', () => ({
   Dialog: ({
     children,
     open,
@@ -47,22 +47,22 @@ vi.mock("@worknest/ui", () => ({
     children: React.ReactNode;
     open: boolean;
     onOpenChange?: (v: boolean) => void;
-  }) => (open ? React.createElement("div", { "data-testid": "dialog" }, children) : null),
+  }) => (open ? React.createElement('div', { 'data-testid': 'dialog' }, children) : null),
   DialogContent: ({
     children,
     className,
   }: {
     children: React.ReactNode;
     className?: string;
-  }) => React.createElement("div", { className }, children),
+  }) => React.createElement('div', { className }, children),
   DialogHeader: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", null, children),
+    React.createElement('div', null, children),
   DialogTitle: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("h2", null, children),
+    React.createElement('h2', null, children),
   DialogDescription: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("p", null, children),
+    React.createElement('p', null, children),
   DialogFooter: ({ children }: { children: React.ReactNode }) =>
-    React.createElement("div", { "data-testid": "dialog-footer" }, children),
+    React.createElement('div', { 'data-testid': 'dialog-footer' }, children),
   Button: ({
     children,
     onClick,
@@ -79,8 +79,8 @@ vi.mock("@worknest/ui", () => ({
     [key: string]: unknown;
   }) =>
     React.createElement(
-      "button",
-      { onClick, type, "data-variant": variant, disabled, ...rest },
+      'button',
+      { onClick, type, 'data-variant': variant, disabled, ...rest },
       children,
     ),
   Input: ({
@@ -102,11 +102,11 @@ vi.mock("@worknest/ui", () => ({
     maxLength?: number;
     [key: string]: unknown;
   }) =>
-    React.createElement("input", {
+    React.createElement('input', {
       id,
       value,
       onChange,
-      type: type ?? "text",
+      type: type ?? 'text',
       placeholder,
       autoFocus,
       maxLength,
@@ -118,23 +118,24 @@ vi.mock("@worknest/ui", () => ({
   }: {
     children: React.ReactNode;
     htmlFor?: string;
-  }) => React.createElement("label", { htmlFor }, children),
-  Separator: () => React.createElement("hr"),
+  }) => React.createElement('label', { htmlFor }, children),
+  Separator: () => React.createElement('hr'),
   toast: (...args: unknown[]) => mockToast(...args),
 }));
 
-vi.mock("lucide-react", () => {
-  const icon = (testId: string) =>
+vi.mock('lucide-react', () => {
+  const icon =
+    (testId: string) =>
     ({ className }: { className?: string }) =>
-      React.createElement("span", { "data-testid": testId, className });
+      React.createElement('span', { 'data-testid': testId, className });
   return {
-    AlertTriangle: icon("alert-triangle-icon"),
+    AlertTriangle: icon('alert-triangle-icon'),
   };
 });
 
 // ── Import component after mocks ────────────────────────────────────
 
-import { CycleFormModal } from "../../src/components/cycles/cycle-form-modal";
+import { CycleFormModal } from '../../src/components/cycles/cycle-form-modal';
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ function renderModal(props: Partial<React.ComponentProps<typeof CycleFormModal>>
   const defaultProps = {
     open: true,
     onOpenChange: vi.fn(),
-    projectId: "proj-1",
+    projectId: 'proj-1',
     ...props,
   };
 
@@ -172,7 +173,7 @@ function renderModal(props: Partial<React.ComponentProps<typeof CycleFormModal>>
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
-describe("CycleFormModal", () => {
+describe('CycleFormModal', () => {
   beforeEach(() => {
     mockPost.mockReset();
     mockPatch.mockReset();
@@ -182,65 +183,65 @@ describe("CycleFormModal", () => {
     mockGetList.mockResolvedValue({ data: [], pagination: { next_cursor: null, has_more: false } });
   });
 
-  it("renders create form with empty fields when no cycle provided", () => {
+  it('renders create form with empty fields when no cycle provided', () => {
     renderModal();
 
-    expect(screen.getByText("사이클 생성")).toBeDefined();
-    expect(screen.getByText("새로운 사이클을 생성합니다.")).toBeDefined();
+    expect(screen.getByText('사이클 생성')).toBeDefined();
+    expect(screen.getByText('새로운 사이클을 생성합니다.')).toBeDefined();
 
-    const nameInput = screen.getByPlaceholderText("사이클 이름을 입력하세요") as HTMLInputElement;
-    expect(nameInput.value).toBe("");
+    const nameInput = screen.getByPlaceholderText('사이클 이름을 입력하세요') as HTMLInputElement;
+    expect(nameInput.value).toBe('');
 
     const descInput = screen.getByPlaceholderText(
-      "사이클 목표나 설명을 입력하세요 (선택)",
+      '사이클 목표나 설명을 입력하세요 (선택)',
     ) as HTMLTextAreaElement;
-    expect(descInput.value).toBe("");
+    expect(descInput.value).toBe('');
   });
 
-  it("renders edit form with pre-filled data when cycle is provided", () => {
+  it('renders edit form with pre-filled data when cycle is provided', () => {
     const cycle = {
-      id: "cycle-1",
-      projectId: "proj-1",
-      name: "Sprint 1",
-      description: "First sprint",
-      status: "active",
-      startDate: "2026-04-01",
-      endDate: "2026-04-14",
-      createdAt: "2026-04-01T00:00:00Z",
-      updatedAt: "2026-04-01T00:00:00Z",
+      id: 'cycle-1',
+      projectId: 'proj-1',
+      name: 'Sprint 1',
+      description: 'First sprint',
+      status: 'active',
+      startDate: '2026-04-01',
+      endDate: '2026-04-14',
+      createdAt: '2026-04-01T00:00:00Z',
+      updatedAt: '2026-04-01T00:00:00Z',
     };
 
     renderModal({ cycle: cycle as never });
 
-    expect(screen.getByText("사이클 편집")).toBeDefined();
-    expect(screen.getByText("사이클 정보를 수정합니다.")).toBeDefined();
+    expect(screen.getByText('사이클 편집')).toBeDefined();
+    expect(screen.getByText('사이클 정보를 수정합니다.')).toBeDefined();
 
-    const nameInput = screen.getByPlaceholderText("사이클 이름을 입력하세요") as HTMLInputElement;
-    expect(nameInput.value).toBe("Sprint 1");
+    const nameInput = screen.getByPlaceholderText('사이클 이름을 입력하세요') as HTMLInputElement;
+    expect(nameInput.value).toBe('Sprint 1');
 
     const descInput = screen.getByPlaceholderText(
-      "사이클 목표나 설명을 입력하세요 (선택)",
+      '사이클 목표나 설명을 입력하세요 (선택)',
     ) as HTMLTextAreaElement;
-    expect(descInput.value).toBe("First sprint");
+    expect(descInput.value).toBe('First sprint');
   });
 
-  it("shows validation error when name is empty on submit", () => {
+  it('shows validation error when name is empty on submit', () => {
     renderModal();
 
-    const form = screen.getByPlaceholderText("사이클 이름을 입력하세요").closest("form")!;
+    const form = screen.getByPlaceholderText('사이클 이름을 입력하세요').closest('form')!;
     fireEvent.submit(form);
 
-    expect(screen.getByText("사이클 이름은 필수입니다")).toBeDefined();
+    expect(screen.getByText('사이클 이름은 필수입니다')).toBeDefined();
   });
 
-  it("calls create API on submit for new cycle", async () => {
-    mockPost.mockResolvedValue({ id: "new-cycle", name: "New Sprint" });
+  it('calls create API on submit for new cycle', async () => {
+    mockPost.mockResolvedValue({ id: 'new-cycle', name: 'New Sprint' });
     renderModal();
 
-    const nameInput = screen.getByPlaceholderText("사이클 이름을 입력하세요");
-    fireEvent.change(nameInput, { target: { value: "New Sprint" } });
+    const nameInput = screen.getByPlaceholderText('사이클 이름을 입력하세요');
+    fireEvent.change(nameInput, { target: { value: 'New Sprint' } });
 
-    const form = nameInput.closest("form")!;
+    const form = nameInput.closest('form')!;
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -248,32 +249,32 @@ describe("CycleFormModal", () => {
     });
 
     expect(mockPost).toHaveBeenCalledWith(
-      "/projects/proj-1/cycles",
-      expect.objectContaining({ name: "New Sprint" }),
+      '/projects/proj-1/cycles',
+      expect.objectContaining({ name: 'New Sprint' }),
     );
   });
 
-  it("calls update API on submit for existing cycle", async () => {
-    mockPatch.mockResolvedValue({ id: "cycle-1", name: "Updated Sprint" });
+  it('calls update API on submit for existing cycle', async () => {
+    mockPatch.mockResolvedValue({ id: 'cycle-1', name: 'Updated Sprint' });
 
     const cycle = {
-      id: "cycle-1",
-      projectId: "proj-1",
-      name: "Sprint 1",
+      id: 'cycle-1',
+      projectId: 'proj-1',
+      name: 'Sprint 1',
       description: null,
-      status: "draft",
+      status: 'draft',
       startDate: null,
       endDate: null,
-      createdAt: "2026-04-01T00:00:00Z",
-      updatedAt: "2026-04-01T00:00:00Z",
+      createdAt: '2026-04-01T00:00:00Z',
+      updatedAt: '2026-04-01T00:00:00Z',
     };
 
     renderModal({ cycle: cycle as never });
 
-    const nameInput = screen.getByPlaceholderText("사이클 이름을 입력하세요");
-    fireEvent.change(nameInput, { target: { value: "Updated Sprint" } });
+    const nameInput = screen.getByPlaceholderText('사이클 이름을 입력하세요');
+    fireEvent.change(nameInput, { target: { value: 'Updated Sprint' } });
 
-    const form = nameInput.closest("form")!;
+    const form = nameInput.closest('form')!;
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -281,29 +282,29 @@ describe("CycleFormModal", () => {
     });
 
     expect(mockPatch).toHaveBeenCalledWith(
-      "/cycles/cycle-1",
-      expect.objectContaining({ name: "Updated Sprint" }),
+      '/cycles/cycle-1',
+      expect.objectContaining({ name: 'Updated Sprint' }),
     );
   });
 
-  it("cancel button calls onOpenChange(false)", () => {
+  it('cancel button calls onOpenChange(false)', () => {
     const onOpenChange = vi.fn();
     renderModal({ onOpenChange });
 
-    fireEvent.click(screen.getByText("취소"));
+    fireEvent.click(screen.getByText('취소'));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it("shows date overlap warning when dates conflict with existing cycle", async () => {
+  it('shows date overlap warning when dates conflict with existing cycle', async () => {
     // Simulate existing cycle in date range
     mockGetList.mockResolvedValue({
       data: [
         {
-          id: "existing-cycle",
-          name: "Existing Sprint",
-          status: "active",
-          startDate: "2026-04-05",
-          endDate: "2026-04-15",
+          id: 'existing-cycle',
+          name: 'Existing Sprint',
+          status: 'active',
+          startDate: '2026-04-05',
+          endDate: '2026-04-15',
         },
       ],
       pagination: { next_cursor: null, has_more: false },
@@ -317,11 +318,11 @@ describe("CycleFormModal", () => {
     });
 
     // Set overlapping dates
-    const startDateInput = screen.getByLabelText("시작일") as HTMLInputElement;
-    const endDateInput = screen.getByLabelText("종료일") as HTMLInputElement;
+    const startDateInput = screen.getByLabelText('시작일') as HTMLInputElement;
+    const endDateInput = screen.getByLabelText('종료일') as HTMLInputElement;
 
-    fireEvent.change(startDateInput, { target: { value: "2026-04-01" } });
-    fireEvent.change(endDateInput, { target: { value: "2026-04-10" } });
+    fireEvent.change(startDateInput, { target: { value: '2026-04-01' } });
+    fireEvent.change(endDateInput, { target: { value: '2026-04-10' } });
 
     await waitFor(() => {
       expect(screen.getByText(/Existing Sprint/)).toBeDefined();
@@ -329,10 +330,10 @@ describe("CycleFormModal", () => {
     });
   });
 
-  it("does not render when open is false", () => {
+  it('does not render when open is false', () => {
     renderModal({ open: false });
 
-    expect(screen.queryByText("사이클 생성")).toBeNull();
-    expect(screen.queryByText("사이클 편집")).toBeNull();
+    expect(screen.queryByText('사이클 생성')).toBeNull();
+    expect(screen.queryByText('사이클 편집')).toBeNull();
   });
 });

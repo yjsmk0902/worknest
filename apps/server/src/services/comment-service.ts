@@ -1,33 +1,25 @@
-import { eq, and, asc, isNull, inArray } from "drizzle-orm";
 import {
+  type Database,
   comments,
+  issues,
+  projectMembers,
   reactions,
   users,
-  issues,
   wikiPages,
   wikiSpaceMembers,
-  projectMembers,
-  type Database,
-} from "@worknest/db";
-import type {
-  CreateCommentInput,
-  UpdateCommentInput,
-  ToggleReactionInput,
-} from "@worknest/shared";
-import { ALLOWED_EMOJIS } from "@worknest/shared";
-import { AppError, ErrorCode } from "../lib/errors";
-import { sanitizeContent } from "../lib/sanitize";
+} from '@worknest/db';
+import type { CreateCommentInput, ToggleReactionInput, UpdateCommentInput } from '@worknest/shared';
+import { ALLOWED_EMOJIS } from '@worknest/shared';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
+import { AppError, ErrorCode } from '../lib/errors';
+import { sanitizeContent } from '../lib/sanitize';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
 /**
  * Verify that the caller is a member of the project owning the issue.
  */
-async function requireProjectMembershipForIssue(
-  db: Database,
-  issueId: string,
-  userId: string,
-) {
+async function requireProjectMembershipForIssue(db: Database, issueId: string, userId: string) {
   const issue = await db
     .select({
       id: issues.id,
@@ -39,23 +31,18 @@ async function requireProjectMembershipForIssue(
     .then((rows) => rows[0]);
 
   if (!issue) {
-    throw AppError.notFound("issue");
+    throw AppError.notFound('issue');
   }
 
   const member = await db
     .select({ id: projectMembers.id })
     .from(projectMembers)
-    .where(
-      and(
-        eq(projectMembers.projectId, issue.projectId),
-        eq(projectMembers.userId, userId),
-      ),
-    )
+    .where(and(eq(projectMembers.projectId, issue.projectId), eq(projectMembers.userId, userId)))
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this project");
+    throw AppError.forbidden('You are not a member of this project');
   }
 
   return issue;
@@ -64,11 +51,7 @@ async function requireProjectMembershipForIssue(
 /**
  * Verify that the caller is a member of the wiki space owning the page.
  */
-async function requireSpaceMembershipForPage(
-  db: Database,
-  pageId: string,
-  userId: string,
-) {
+async function requireSpaceMembershipForPage(db: Database, pageId: string, userId: string) {
   const page = await db
     .select({
       id: wikiPages.id,
@@ -80,23 +63,20 @@ async function requireSpaceMembershipForPage(
     .then((rows) => rows[0]);
 
   if (!page) {
-    throw AppError.notFound("wiki_page");
+    throw AppError.notFound('wiki_page');
   }
 
   const member = await db
     .select({ id: wikiSpaceMembers.id })
     .from(wikiSpaceMembers)
     .where(
-      and(
-        eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId),
-        eq(wikiSpaceMembers.userId, userId),
-      ),
+      and(eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId), eq(wikiSpaceMembers.userId, userId)),
     )
     .limit(1)
     .then((rows) => rows[0]);
 
   if (!member) {
-    throw AppError.forbidden("You are not a member of this wiki space");
+    throw AppError.forbidden('You are not a member of this wiki space');
   }
 
   return page;
@@ -160,9 +140,7 @@ export class CommentService {
       })
       .from(comments)
       .leftJoin(users, eq(comments.authorId, users.id))
-      .where(
-        and(eq(comments.issueId, issueId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.issueId, issueId), isNull(comments.deletedAt)))
       .orderBy(asc(comments.createdAt));
 
     // Fetch reactions for all comments in one query
@@ -197,9 +175,7 @@ export class CommentService {
       })
       .from(comments)
       .leftJoin(users, eq(comments.authorId, users.id))
-      .where(
-        and(eq(comments.pageId, pageId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.pageId, pageId), isNull(comments.deletedAt)))
       .orderBy(asc(comments.createdAt));
 
     // Fetch reactions for all comments in one query
@@ -219,17 +195,12 @@ export class CommentService {
 
   // ── Create Comment ───────────────────────────────────────────────
 
-  async create(
-    callerUserId: string,
-    input: CreateCommentInput,
-    issueId?: string,
-    pageId?: string,
-  ) {
+  async create(callerUserId: string, input: CreateCommentInput, issueId?: string, pageId?: string) {
     // Validate exactly one parent target
     if ((!issueId && !pageId) || (issueId && pageId)) {
       throw AppError.badRequest(
         ErrorCode.VALIDATION_ERROR,
-        "Comment must belong to exactly one of issue or page",
+        'Comment must belong to exactly one of issue or page',
       );
     }
 
@@ -250,27 +221,25 @@ export class CommentService {
           pageId: comments.pageId,
         })
         .from(comments)
-        .where(
-          and(eq(comments.id, input.parentId), isNull(comments.deletedAt)),
-        )
+        .where(and(eq(comments.id, input.parentId), isNull(comments.deletedAt)))
         .limit(1)
         .then((rows) => rows[0]);
 
       if (!parent) {
-        throw AppError.notFound("comment");
+        throw AppError.notFound('comment');
       }
 
       // Ensure parent belongs to the same target
       if (issueId && parent.issueId !== issueId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
-          "Parent comment does not belong to this issue",
+          'Parent comment does not belong to this issue',
         );
       }
       if (pageId && parent.pageId !== pageId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
-          "Parent comment does not belong to this page",
+          'Parent comment does not belong to this page',
         );
       }
 
@@ -278,7 +247,7 @@ export class CommentService {
       if (parent.parentId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
-          "Nested replies are not allowed. You can only reply to top-level comments.",
+          'Nested replies are not allowed. You can only reply to top-level comments.',
         );
       }
     }
@@ -328,34 +297,22 @@ export class CommentService {
       })
       .from(comments)
       .leftJoin(users, eq(comments.authorId, users.id))
-      .where(
-        and(eq(comments.id, commentId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!row) {
-      throw AppError.notFound("comment");
+      throw AppError.notFound('comment');
     }
 
     // Verify membership based on the comment's parent resource
     if (row.comment.issueId) {
-      await requireProjectMembershipForIssue(
-        this.db,
-        row.comment.issueId,
-        callerUserId,
-      );
+      await requireProjectMembershipForIssue(this.db, row.comment.issueId, callerUserId);
     } else if (row.comment.pageId) {
-      await requireSpaceMembershipForPage(
-        this.db,
-        row.comment.pageId,
-        callerUserId,
-      );
+      await requireSpaceMembershipForPage(this.db, row.comment.pageId, callerUserId);
     }
 
-    const reactionsByComment = await this.getReactionsForComments([
-      commentId,
-    ]);
+    const reactionsByComment = await this.getReactionsForComments([commentId]);
 
     return toCommentOutput(
       row.comment,
@@ -366,27 +323,21 @@ export class CommentService {
 
   // ── Update Comment ───────────────────────────────────────────────
 
-  async update(
-    commentId: string,
-    callerUserId: string,
-    input: UpdateCommentInput,
-  ) {
+  async update(commentId: string, callerUserId: string, input: UpdateCommentInput) {
     const existing = await this.db
       .select()
       .from(comments)
-      .where(
-        and(eq(comments.id, commentId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("comment");
+      throw AppError.notFound('comment');
     }
 
     // Only the author can update
     if (existing.authorId !== callerUserId) {
-      throw AppError.forbidden("Only the author can update this comment");
+      throw AppError.forbidden('Only the author can update this comment');
     }
 
     const sanitized = sanitizeContent(input.content);
@@ -413,15 +364,9 @@ export class CommentService {
       .limit(1)
       .then((rows) => rows[0]);
 
-    const reactionsByComment = await this.getReactionsForComments([
-      commentId,
-    ]);
+    const reactionsByComment = await this.getReactionsForComments([commentId]);
 
-    return toCommentOutput(
-      updated!,
-      author ?? null,
-      reactionsByComment.get(commentId) ?? [],
-    );
+    return toCommentOutput(updated!, author ?? null, reactionsByComment.get(commentId) ?? []);
   }
 
   // ── Delete Comment (soft delete) ─────────────────────────────────
@@ -430,63 +375,44 @@ export class CommentService {
     const existing = await this.db
       .select()
       .from(comments)
-      .where(
-        and(eq(comments.id, commentId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("comment");
+      throw AppError.notFound('comment');
     }
 
     // Only the author can delete
     if (existing.authorId !== callerUserId) {
-      throw AppError.forbidden("Only the author can delete this comment");
+      throw AppError.forbidden('Only the author can delete this comment');
     }
 
-    await this.db
-      .update(comments)
-      .set({ deletedAt: new Date() })
-      .where(eq(comments.id, commentId));
+    await this.db.update(comments).set({ deletedAt: new Date() }).where(eq(comments.id, commentId));
 
     return existing;
   }
 
   // ── Toggle Reaction ──────────────────────────────────────────────
 
-  async toggleReaction(
-    commentId: string,
-    callerUserId: string,
-    input: ToggleReactionInput,
-  ) {
+  async toggleReaction(commentId: string, callerUserId: string, input: ToggleReactionInput) {
     // Verify comment exists and is not deleted
     const comment = await this.db
       .select()
       .from(comments)
-      .where(
-        and(eq(comments.id, commentId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!comment) {
-      throw AppError.notFound("comment");
+      throw AppError.notFound('comment');
     }
 
     // Verify membership
     if (comment.issueId) {
-      await requireProjectMembershipForIssue(
-        this.db,
-        comment.issueId,
-        callerUserId,
-      );
+      await requireProjectMembershipForIssue(this.db, comment.issueId, callerUserId);
     } else if (comment.pageId) {
-      await requireSpaceMembershipForPage(
-        this.db,
-        comment.pageId,
-        callerUserId,
-      );
+      await requireSpaceMembershipForPage(this.db, comment.pageId, callerUserId);
     }
 
     // Check if reaction already exists
@@ -505,9 +431,7 @@ export class CommentService {
 
     if (existing) {
       // Remove existing reaction
-      await this.db
-        .delete(reactions)
-        .where(eq(reactions.id, existing.id));
+      await this.db.delete(reactions).where(eq(reactions.id, existing.id));
 
       return { added: false, commentId, emoji: input.emoji };
     }
@@ -524,46 +448,29 @@ export class CommentService {
 
   // ── Remove Reaction ──────────────────────────────────────────────
 
-  async removeReaction(
-    commentId: string,
-    callerUserId: string,
-    emoji: string,
-  ) {
+  async removeReaction(commentId: string, callerUserId: string, emoji: string) {
     // Validate emoji
     if (!ALLOWED_EMOJIS.includes(emoji as (typeof ALLOWED_EMOJIS)[number])) {
-      throw AppError.badRequest(
-        ErrorCode.VALIDATION_ERROR,
-        "Invalid emoji",
-      );
+      throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Invalid emoji');
     }
 
     // Verify comment exists and is not deleted
     const comment = await this.db
       .select()
       .from(comments)
-      .where(
-        and(eq(comments.id, commentId), isNull(comments.deletedAt)),
-      )
+      .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)))
       .limit(1)
       .then((rows) => rows[0]);
 
     if (!comment) {
-      throw AppError.notFound("comment");
+      throw AppError.notFound('comment');
     }
 
     // Verify membership
     if (comment.issueId) {
-      await requireProjectMembershipForIssue(
-        this.db,
-        comment.issueId,
-        callerUserId,
-      );
+      await requireProjectMembershipForIssue(this.db, comment.issueId, callerUserId);
     } else if (comment.pageId) {
-      await requireSpaceMembershipForPage(
-        this.db,
-        comment.pageId,
-        callerUserId,
-      );
+      await requireSpaceMembershipForPage(this.db, comment.pageId, callerUserId);
     }
 
     const existing = await this.db
@@ -580,12 +487,10 @@ export class CommentService {
       .then((rows) => rows[0]);
 
     if (!existing) {
-      throw AppError.notFound("reaction");
+      throw AppError.notFound('reaction');
     }
 
-    await this.db
-      .delete(reactions)
-      .where(eq(reactions.id, existing.id));
+    await this.db.delete(reactions).where(eq(reactions.id, existing.id));
   }
 
   // ── List Reactions (grouped) ─────────────────────────────────────
@@ -637,7 +542,7 @@ export class CommentService {
   getChannel(comment: { issueId: string | null; pageId: string | null }): string {
     if (comment.issueId) return `issue:${comment.issueId}`;
     if (comment.pageId) return `page:${comment.pageId}`;
-    throw AppError.internal("Comment has no parent resource");
+    throw AppError.internal('Comment has no parent resource');
   }
 
   // ── Private: batch-load reactions ────────────────────────────────

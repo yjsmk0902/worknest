@@ -84,7 +84,7 @@ export async function commentRoutes(
     },
     async (request, reply) => {
       const { issueId } = issueIdParam.parse(request.params);
-      const result = await service.listByIssue(issueId, request.user!.id);
+      const result = await service.listByIssue(issueId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -103,7 +103,7 @@ export async function commentRoutes(
     async (request, reply) => {
       const { issueId } = issueIdParam.parse(request.params);
       const body = createCommentInput.parse(request.body);
-      const comment = await service.create(request.user!.id, body, issueId, undefined);
+      const comment = await service.create(request.user?.id, body, issueId, undefined);
 
       // Broadcast via WebSocket
       broadcastCommentCreated(`issue:${issueId}`, comment);
@@ -113,7 +113,7 @@ export async function commentRoutes(
         .then(([summary, assigneeIds]) => {
           if (!summary) return;
 
-          const actorId = request.user!.id;
+          const actorId = request.user?.id;
 
           // Extract mentioned user IDs from TipTap content
           const mentionedIds = extractMentionedUserIds(body.content);
@@ -166,7 +166,7 @@ export async function commentRoutes(
     },
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
-      const result = await service.listByPage(pageId, request.user!.id);
+      const result = await service.listByPage(pageId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -185,7 +185,7 @@ export async function commentRoutes(
     async (request, reply) => {
       const { pageId } = pageIdParam.parse(request.params);
       const body = createCommentInput.parse(request.body);
-      const comment = await service.create(request.user!.id, body, undefined, pageId);
+      const comment = await service.create(request.user?.id, body, undefined, pageId);
 
       // Broadcast via WebSocket
       broadcastCommentCreated(`page:${pageId}`, comment);
@@ -207,7 +207,7 @@ export async function commentRoutes(
     },
     async (request, reply) => {
       const { commentId } = commentIdParam.parse(request.params);
-      const comment = await service.getById(commentId, request.user!.id);
+      const comment = await service.getById(commentId, request.user?.id);
       return reply.status(200).send({ data: comment });
     },
   );
@@ -226,7 +226,7 @@ export async function commentRoutes(
     async (request, reply) => {
       const { commentId } = commentIdParam.parse(request.params);
       const body = updateCommentInput.parse(request.body);
-      const comment = await service.update(commentId, request.user!.id, body);
+      const comment = await service.update(commentId, request.user?.id, body);
 
       // Broadcast via WebSocket
       const channel = service.getChannel(comment);
@@ -249,7 +249,7 @@ export async function commentRoutes(
     },
     async (request, reply) => {
       const { commentId } = commentIdParam.parse(request.params);
-      const deleted = await service.delete(commentId, request.user!.id);
+      const deleted = await service.delete(commentId, request.user?.id);
 
       // Broadcast via WebSocket
       const channel = service.getChannel(deleted);
@@ -273,16 +273,16 @@ export async function commentRoutes(
     async (request, reply) => {
       const { commentId } = commentIdParam.parse(request.params);
       const body = toggleReactionInput.parse(request.body);
-      const result = await service.toggleReaction(commentId, request.user!.id, body);
+      const result = await service.toggleReaction(commentId, request.user?.id, body);
 
       // Get comment for channel info
-      const comment = await service.getById(commentId, request.user!.id);
+      const comment = await service.getById(commentId, request.user?.id);
       const channel = service.getChannel(comment);
       broadcastReactionToggled(channel, {
         commentId,
         emoji: result.emoji,
         added: result.added,
-        userId: request.user!.id,
+        userId: request.user?.id,
       });
 
       return reply.status(200).send({ data: result });
@@ -304,16 +304,16 @@ export async function commentRoutes(
       const { commentId, emoji } = reactionEmojiParam.parse(request.params);
 
       // Get comment info before deletion for the broadcast channel
-      const comment = await service.getById(commentId, request.user!.id);
+      const comment = await service.getById(commentId, request.user?.id);
 
-      await service.removeReaction(commentId, request.user!.id, emoji);
+      await service.removeReaction(commentId, request.user?.id, emoji);
 
       const channel = service.getChannel(comment);
       broadcastReactionToggled(channel, {
         commentId,
         emoji,
         added: false,
-        userId: request.user!.id,
+        userId: request.user?.id,
       });
 
       return reply.status(204).send();

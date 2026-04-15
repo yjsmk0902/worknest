@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ── Favorite Entity Type ────────────────────────────────────────────────
 
-export const favoriteEntityType = z.enum(["project", "issue", "page", "space"]);
+export const favoriteEntityType = z.enum(['project', 'issue', 'page', 'space']);
 
 export type FavoriteEntityType = z.infer<typeof favoriteEntityType>;
 

@@ -1,13 +1,10 @@
-import type { FastifyInstance } from "fastify";
-import { z } from "zod";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { createRequireAuth } from "../middleware/auth";
-import { ViewService } from "../services/view-service";
-import {
-  createViewInput,
-  updateViewInput,
-} from "@worknest/shared";
+import type { Database } from '@worknest/db';
+import { createViewInput, updateViewInput } from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { createRequireAuth } from '../middleware/auth';
+import { ViewService } from '../services/view-service';
 
 // ── Param schemas ──────────────────────────────────────────────────────
 
@@ -30,17 +27,17 @@ export async function viewRoutes(
   // ── GET /api/v1/projects/:projectId/views ────────────────────────
 
   app.get(
-    "/api/v1/projects/:projectId/views",
+    '/api/v1/projects/:projectId/views',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Views"],
-        summary: "List views for a project",
+        tags: ['Views'],
+        summary: 'List views for a project',
       },
     },
     async (request, reply) => {
       const { projectId } = projectIdParam.parse(request.params);
-      const result = await service.list(projectId, request.user!.id);
+      const result = await service.list(projectId, request.user?.id);
       return reply.status(200).send(result);
     },
   );
@@ -48,18 +45,18 @@ export async function viewRoutes(
   // ── POST /api/v1/projects/:projectId/views ───────────────────────
 
   app.post(
-    "/api/v1/projects/:projectId/views",
+    '/api/v1/projects/:projectId/views',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Views"],
-        summary: "Create a new view",
+        tags: ['Views'],
+        summary: 'Create a new view',
       },
     },
     async (request, reply) => {
       const { projectId } = projectIdParam.parse(request.params);
       const body = createViewInput.parse(request.body);
-      const view = await service.create(projectId, request.user!.id, body);
+      const view = await service.create(projectId, request.user?.id, body);
       return reply.status(201).send({ data: view });
     },
   );
@@ -67,17 +64,17 @@ export async function viewRoutes(
   // ── GET /api/v1/views/:viewId ───────────────────────────────────
 
   app.get(
-    "/api/v1/views/:viewId",
+    '/api/v1/views/:viewId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Views"],
-        summary: "Get a view by ID",
+        tags: ['Views'],
+        summary: 'Get a view by ID',
       },
     },
     async (request, reply) => {
       const { viewId } = viewIdParam.parse(request.params);
-      const view = await service.getById(viewId, request.user!.id);
+      const view = await service.getById(viewId, request.user?.id);
       return reply.status(200).send({ data: view });
     },
   );
@@ -85,18 +82,18 @@ export async function viewRoutes(
   // ── PATCH /api/v1/views/:viewId ──────────────────────────────────
 
   app.patch(
-    "/api/v1/views/:viewId",
+    '/api/v1/views/:viewId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Views"],
-        summary: "Update a view",
+        tags: ['Views'],
+        summary: 'Update a view',
       },
     },
     async (request, reply) => {
       const { viewId } = viewIdParam.parse(request.params);
       const body = updateViewInput.parse(request.body);
-      const view = await service.update(viewId, request.user!.id, body);
+      const view = await service.update(viewId, request.user?.id, body);
       return reply.status(200).send({ data: view });
     },
   );
@@ -104,17 +101,17 @@ export async function viewRoutes(
   // ── DELETE /api/v1/views/:viewId ─────────────────────────────────
 
   app.delete(
-    "/api/v1/views/:viewId",
+    '/api/v1/views/:viewId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Views"],
-        summary: "Delete a view",
+        tags: ['Views'],
+        summary: 'Delete a view',
       },
     },
     async (request, reply) => {
       const { viewId } = viewIdParam.parse(request.params);
-      await service.delete(viewId, request.user!.id);
+      await service.delete(viewId, request.user?.id);
       return reply.status(204).send();
     },
   );

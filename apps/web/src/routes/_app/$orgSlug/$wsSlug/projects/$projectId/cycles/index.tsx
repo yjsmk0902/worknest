@@ -1,23 +1,18 @@
-import { useState, useMemo } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Plus } from 'lucide-react';
-import { Button, Skeleton } from '@worknest/ui';
-import { apiClient, type ListResponse } from '@/lib/api-client';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { AppHeader } from '@/components/layout/app-header';
-import {
-  CycleList,
-  CycleEmptyState,
-} from '@/components/cycles/cycle-list';
 import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
+import { CycleEmptyState, CycleList } from '@/components/cycles/cycle-list';
+import { AppHeader } from '@/components/layout/app-header';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { type ListResponse, apiClient } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
 import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
+import { Button, Skeleton } from '@worknest/ui';
+import { AlertTriangle, Plus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/',
-)({
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/')({
   component: CycleListPage,
 });
 
@@ -41,18 +36,14 @@ function CycleListPage() {
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
     queryKey: ['projects', projectId],
-    queryFn: () =>
-      apiClient.get<ProjectOutput>(
-        `/workspaces/${wsId}/projects/${projectId}`,
-      ),
+    queryFn: () => apiClient.get<ProjectOutput>(`/workspaces/${wsId}/projects/${projectId}`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch cycles
   const cyclesQuery = useQuery<ListResponse<CycleOutput>>({
     queryKey: ['projects', projectId, 'cycles'],
-    queryFn: () =>
-      apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
+    queryFn: () => apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`),
   });
 
   // Fetch progress for each cycle
@@ -64,9 +55,7 @@ function CycleListPage() {
       const results = await Promise.all(
         cycles.map(async (c) => {
           try {
-            const progress = await apiClient.get<CycleProgressOutput>(
-              `/cycles/${c.id}/progress`,
-            );
+            const progress = await apiClient.get<CycleProgressOutput>(`/cycles/${c.id}/progress`);
             return [c.id, progress] as const;
           } catch {
             return [c.id, { total: 0, completed: 0, byCategory: {} }] as const;
@@ -104,10 +93,7 @@ function CycleListPage() {
   if (projectQuery.isLoading || cyclesQuery.isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <AppHeader
-          title=""
-          actions={<Skeleton className="h-9 w-32" />}
-        />
+        <AppHeader title="" actions={<Skeleton className="h-9 w-32" />} />
         <div className="flex-1 p-6">
           <CycleListSkeleton />
         </div>
@@ -123,9 +109,7 @@ function CycleListPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              사이클을 불러올 수 없습니다.
-            </p>
+            <p className="mt-2 text-sm text-muted-foreground">사이클을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -160,9 +144,7 @@ function CycleListPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {sortedCycles.length === 0 ? (
-          <CycleEmptyState
-            onCreateClick={() => setCreateModalOpen(true)}
-          />
+          <CycleEmptyState onCreateClick={() => setCreateModalOpen(true)} />
         ) : (
           <CycleList
             cycles={sortedCycles}
@@ -190,10 +172,7 @@ function CycleListSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-border p-4 space-y-3"
-        >
+        <div key={i} className="rounded-lg border border-border p-4 space-y-3">
           <div className="flex items-center gap-3">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-5 w-16 rounded-full" />

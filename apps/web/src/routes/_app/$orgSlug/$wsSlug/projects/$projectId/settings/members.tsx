@@ -1,15 +1,9 @@
-import { useState } from 'react';
+import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
+import { useProjectContext } from '@/contexts/project-context';
+import { useWorkspaceContext } from '@/contexts/workspace-context';
+import { apiClient } from '@/lib/api-client';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Search,
-  MoreHorizontal,
-  Loader2,
-  Users,
-  UserPlus,
-  AlertTriangle,
-  X,
-} from 'lucide-react';
 import { Button } from '@worknest/ui';
 import { Input } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
@@ -19,10 +13,10 @@ import { Separator } from '@worknest/ui';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@worknest/ui';
 import {
   DropdownMenu,
@@ -31,16 +25,14 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { apiClient } from '@/lib/api-client';
-import { ProjectSettingsLayout } from '@/components/projects/settings-layout';
-import { useWorkspaceContext } from '@/contexts/workspace-context';
-import { useProjectContext } from '@/contexts/project-context';
+import { AlertTriangle, Loader2, MoreHorizontal, Search, UserPlus, Users, X } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute(
-  '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members',
-)({
-  component: ProjectSettingsMembers,
-});
+export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members')(
+  {
+    component: ProjectSettingsMembers,
+  },
+);
 
 interface ProjectMember {
   id: string;
@@ -78,16 +70,11 @@ function ProjectSettingsMembers() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
-  const [removeMember, setRemoveMember] = useState<ProjectMember | null>(
-    null,
-  );
+  const [removeMember, setRemoveMember] = useState<ProjectMember | null>(null);
 
   const membersQuery = useQuery({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<ProjectMember>(
-        `/projects/${projectId}/members`,
-      ),
+    queryFn: () => apiClient.getList<ProjectMember>(`/projects/${projectId}/members`),
   });
 
   const updateRoleMutation = useMutation({
@@ -97,11 +84,7 @@ function ProjectSettingsMembers() {
     }: {
       memberId: string;
       role: string;
-    }) =>
-      apiClient.patch(
-        `/projects/${projectId}/members/${memberId}`,
-        { role },
-      ),
+    }) => apiClient.patch(`/projects/${projectId}/members/${memberId}`, { role }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'members'],
@@ -147,9 +130,7 @@ function ProjectSettingsMembers() {
         {/* Header */}
         <div>
           <h2 className="text-lg font-semibold text-foreground">멤버</h2>
-          <p className="text-sm text-muted-foreground">
-            프로젝트 멤버를 관리합니다.
-          </p>
+          <p className="text-sm text-muted-foreground">프로젝트 멤버를 관리합니다.</p>
         </div>
 
         {/* Search + add member */}
@@ -190,9 +171,7 @@ function ProjectSettingsMembers() {
         {/* Error */}
         {membersQuery.isError && (
           <div className="rounded-md border border-destructive/20 bg-destructive/5 p-8 text-center">
-            <p className="text-sm text-destructive">
-              멤버 목록을 불러올 수 없습니다.
-            </p>
+            <p className="text-sm text-destructive">멤버 목록을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -205,96 +184,77 @@ function ProjectSettingsMembers() {
         )}
 
         {/* Members table */}
-        {membersQuery.isSuccess && (
-          <>
-            {filteredMembers.length === 0 ? (
-              <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
-                <Users className="mx-auto h-8 w-8 text-muted-foreground" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {searchQuery
-                    ? '검색 결과가 없습니다.'
-                    : '아직 다른 멤버가 없습니다'}
-                </p>
-                {!searchQuery && (
-                  <Button
-                    size="sm"
-                    className="mt-4"
-                    onClick={() => setAddMemberModalOpen(true)}
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    멤버 추가
-                  </Button>
-                )}
+        {membersQuery.isSuccess &&
+          (filteredMembers.length === 0 ? (
+            <div className="rounded-md border border-border bg-muted/50 p-8 text-center">
+              <Users className="mx-auto h-8 w-8 text-muted-foreground" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                {searchQuery ? '검색 결과가 없습니다.' : '아직 다른 멤버가 없습니다'}
+              </p>
+              {!searchQuery && (
+                <Button size="sm" className="mt-4" onClick={() => setAddMemberModalOpen(true)}>
+                  <UserPlus className="h-4 w-4" />
+                  멤버 추가
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-md border border-border">
+              {/* Table header */}
+              <div className="flex items-center border-b border-border px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="flex-1">이름</div>
+                <div className="w-[200px]">이메일</div>
+                <div className="w-[120px]">역할</div>
+                <div className="w-[48px]" />
               </div>
-            ) : (
-              <div className="rounded-md border border-border">
-                {/* Table header */}
-                <div className="flex items-center border-b border-border px-4 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  <div className="flex-1">이름</div>
-                  <div className="w-[200px]">이메일</div>
-                  <div className="w-[120px]">역할</div>
-                  <div className="w-[48px]" />
-                </div>
 
-                {/* Member rows */}
-                {filteredMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
-                    style={{ minHeight: '56px' }}
-                  >
-                    <div className="flex flex-1 items-center gap-3">
-                      <Avatar
-                        src={member.user.avatarUrl}
-                        fallback={member.user.name}
-                        size="md"
-                      />
-                      <span className="truncate text-sm font-medium">
-                        {member.user.name}
-                      </span>
-                    </div>
-                    <div className="w-[200px] truncate text-sm text-muted-foreground">
-                      {member.user.email}
-                    </div>
-                    <div className="w-[120px]">
-                      <RoleSelect
-                        value={member.role}
-                        onChange={(role) =>
-                          updateRoleMutation.mutate({
-                            memberId: member.id,
-                            role,
-                          })
-                        }
-                        disabled={updateRoleMutation.isPending}
-                      />
-                    </div>
-                    <div className="w-[48px] text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="작업 메뉴"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => setRemoveMember(member)}
-                          >
-                            멤버 제거
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+              {/* Member rows */}
+              {filteredMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center border-b border-border px-4 py-3 last:border-b-0 hover:bg-accent/50"
+                  style={{ minHeight: '56px' }}
+                >
+                  <div className="flex flex-1 items-center gap-3">
+                    <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="md" />
+                    <span className="truncate text-sm font-medium">{member.user.name}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+                  <div className="w-[200px] truncate text-sm text-muted-foreground">
+                    {member.user.email}
+                  </div>
+                  <div className="w-[120px]">
+                    <RoleSelect
+                      value={member.role}
+                      onChange={(role) =>
+                        updateRoleMutation.mutate({
+                          memberId: member.id,
+                          role,
+                        })
+                      }
+                      disabled={updateRoleMutation.isPending}
+                    />
+                  </div>
+                  <div className="w-[48px] text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" aria-label="작업 메뉴">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setRemoveMember(member)}
+                        >
+                          멤버 제거
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
       </div>
 
       {/* Add Member Modal */}
@@ -324,12 +284,10 @@ function ProjectSettingsMembers() {
           </DialogHeader>
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              &quot;{removeMember?.user.name}&quot; 님을 프로젝트에서
-              제거하시겠습니까?
+              &quot;{removeMember?.user.name}&quot; 님을 프로젝트에서 제거하시겠습니까?
             </p>
             <p className="text-sm text-muted-foreground">
-              이 멤버의 이슈 할당은 유지되지만, 프로젝트에 더 이상 접근할 수
-              없습니다.
+              이 멤버의 이슈 할당은 유지되지만, 프로젝트에 더 이상 접근할 수 없습니다.
             </p>
           </div>
           <DialogFooter>
@@ -400,14 +358,8 @@ function RoleSelect({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
         {['member', 'viewer'].map((role) => (
-          <DropdownMenuItem
-            key={role}
-            onClick={() => onChange(role)}
-            className="capitalize"
-          >
-            {role === value && (
-              <span className="mr-2 text-primary">&#10003;</span>
-            )}
+          <DropdownMenuItem key={role} onClick={() => onChange(role)} className="capitalize">
+            {role === value && <span className="mr-2 text-primary">&#10003;</span>}
             {role}
           </DropdownMenuItem>
         ))}
@@ -440,8 +392,7 @@ function AddMemberModal({
   // Fetch workspace members to search from
   const wsMembersQuery = useQuery({
     queryKey: ['workspaces', wsId, 'members'],
-    queryFn: () =>
-      apiClient.getList<WorkspaceMember>(`/workspaces/${wsId}/members`),
+    queryFn: () => apiClient.getList<WorkspaceMember>(`/workspaces/${wsId}/members`),
     enabled: open,
   });
 
@@ -518,9 +469,7 @@ function AddMemberModal({
       <DialogContent className="max-w-[480px]">
         <DialogHeader>
           <DialogTitle>멤버 추가</DialogTitle>
-          <DialogDescription>
-            워크스페이스 멤버를 프로젝트에 추가합니다.
-          </DialogDescription>
+          <DialogDescription>워크스페이스 멤버를 프로젝트에 추가합니다.</DialogDescription>
         </DialogHeader>
 
         {addMemberMutation.error && (
@@ -529,9 +478,7 @@ function AddMemberModal({
             className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
           >
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-            <p className="text-sm text-destructive">
-              {addMemberMutation.error.message}
-            </p>
+            <p className="text-sm text-destructive">{addMemberMutation.error.message}</p>
           </div>
         )}
 
@@ -559,24 +506,16 @@ function AddMemberModal({
                     className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-accent"
                     onClick={() => handleSelectUser(member)}
                   >
-                    <Avatar
-                      src={member.user.avatarUrl}
-                      fallback={member.user.name}
-                      size="sm"
-                    />
+                    <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="sm" />
                     <span className="font-medium">{member.user.name}</span>
-                    <span className="text-muted-foreground">
-                      {member.user.email}
-                    </span>
+                    <span className="text-muted-foreground">{member.user.email}</span>
                   </button>
                 ))}
               </div>
             )}
 
             {searchQuery.length > 0 && availableMembers.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                검색 결과가 없습니다.
-              </p>
+              <p className="text-xs text-muted-foreground">검색 결과가 없습니다.</p>
             )}
           </div>
 
@@ -610,9 +549,7 @@ function AddMemberModal({
             <select
               id="add-member-role"
               value={role}
-              onChange={(e) =>
-                setRole(e.target.value as 'member' | 'viewer')
-              }
+              onChange={(e) => setRole(e.target.value as 'member' | 'viewer')}
               disabled={addMemberMutation.isPending}
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -632,9 +569,7 @@ function AddMemberModal({
             </Button>
             <Button
               type="submit"
-              disabled={
-                selectedUsers.length === 0 || addMemberMutation.isPending
-              }
+              disabled={selectedUsers.length === 0 || addMemberMutation.isPending}
             >
               {addMemberMutation.isPending ? (
                 <>

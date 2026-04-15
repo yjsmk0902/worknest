@@ -1,6 +1,6 @@
+import type { IssueOutput } from '@worknest/shared';
 import { cn } from '@worknest/ui';
 import { Avatar } from '@worknest/ui';
-import type { IssueOutput } from '@worknest/shared';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
 
 interface DragOverlayCardProps {
@@ -8,14 +8,10 @@ interface DragOverlayCardProps {
   projectPrefix: string;
 }
 
-export function DragOverlayCard({
-  issue,
-  projectPrefix,
-}: DragOverlayCardProps) {
+export function DragOverlayCard({ issue, projectPrefix }: DragOverlayCardProps) {
   const issueKey = `${projectPrefix}-${issue.sequenceId}`;
 
-  const priorityConfig =
-    PRIORITY_CONFIG[issue.priority as Priority] ?? PRIORITY_CONFIG.none;
+  const priorityConfig = PRIORITY_CONFIG[issue.priority as Priority] ?? PRIORITY_CONFIG.none;
   const PriorityIcon = priorityConfig.icon;
   const showPriority = issue.priority !== 'none';
 
@@ -24,11 +20,7 @@ export function DragOverlayCard({
   const assignees = issue.assignees?.slice(0, 2) ?? [];
   const extraAssignees = (issue.assignees?.length ?? 0) - 2;
 
-  const hasMetaRow =
-    showPriority ||
-    assignees.length > 0 ||
-    labels.length > 0 ||
-    dueInfo !== null;
+  const hasMetaRow = showPriority || assignees.length > 0 || labels.length > 0 || dueInfo !== null;
 
   return (
     <div
@@ -39,23 +31,15 @@ export function DragOverlayCard({
       )}
     >
       {/* Issue key */}
-      <span className="text-xs font-mono text-muted-foreground">
-        {issueKey}
-      </span>
+      <span className="text-xs font-mono text-muted-foreground">{issueKey}</span>
 
       {/* Title */}
-      <p className="mt-1 text-sm font-medium line-clamp-2">
-        {issue.title}
-      </p>
+      <p className="mt-1 text-sm font-medium line-clamp-2">{issue.title}</p>
 
       {/* Meta row */}
       {hasMetaRow && (
         <div className="flex items-center gap-2 mt-2">
-          {showPriority && (
-            <PriorityIcon
-              className={cn('w-4 h-4', priorityConfig.color)}
-            />
-          )}
+          {showPriority && <PriorityIcon className={cn('w-4 h-4', priorityConfig.color)} />}
 
           {labels.length > 0 && (
             <div className="flex items-center gap-1">
@@ -88,10 +72,7 @@ export function DragOverlayCard({
                   key={a.id}
                   src={a.user.avatarUrl}
                   fallback={a.user.name}
-                  className={cn(
-                    'w-5 h-5 text-[10px]',
-                    i > 0 && '-ml-1',
-                  )}
+                  className={cn('w-5 h-5 text-[10px]', i > 0 && '-ml-1')}
                 />
               ))}
               {extraAssignees > 0 && (

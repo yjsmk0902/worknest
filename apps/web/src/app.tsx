@@ -1,10 +1,10 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { Search, AlertTriangle } from 'lucide-react';
-import { queryClient } from './lib/query-client';
-import { routeTree } from './routeTree.gen';
+import { AlertTriangle, Search } from 'lucide-react';
 import { ErrorBoundary } from './components/error-boundary';
 import { ErrorPage } from './components/error-page';
+import { queryClient } from './lib/query-client';
+import { routeTree } from './routeTree.gen';
 
 function NotFoundComponent() {
   return (

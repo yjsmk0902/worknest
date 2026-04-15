@@ -94,9 +94,7 @@ function AppLayout() {
     setAutoRedirecting(true);
     const firstOrg = orgs[0];
     apiClient
-      .getList<{ id: string; slug: string }>(
-        `/organizations/${firstOrg.id}/workspaces`,
-      )
+      .getList<{ id: string; slug: string }>(`/organizations/${firstOrg.id}/workspaces`)
       .then((res) => {
         if (res.data.length > 0) {
           const ws = res.data[0];

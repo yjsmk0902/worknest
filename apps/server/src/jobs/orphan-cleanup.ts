@@ -1,13 +1,11 @@
-import type { Job } from "bullmq";
-import { and, isNull, lt, inArray } from "drizzle-orm";
-import { files, type Database } from "@worknest/db";
-import * as fs from "node:fs";
+import * as fs from 'node:fs';
+import { type Database, files } from '@worknest/db';
+import type { Job } from 'bullmq';
+import { and, inArray, isNull, lt } from 'drizzle-orm';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
-interface OrphanCleanupJobData {
-  // No data needed — runs on schedule
-}
+type OrphanCleanupJobData = {};
 
 // ── Processor ────────────────────────────────────────────────────────────
 
@@ -30,13 +28,7 @@ export function createOrphanCleanupProcessor(db: Database) {
     const orphans = await db
       .select()
       .from(files)
-      .where(
-        and(
-          isNull(files.issueId),
-          isNull(files.pageId),
-          lt(files.createdAt, cutoff),
-        ),
-      );
+      .where(and(isNull(files.issueId), isNull(files.pageId), lt(files.createdAt, cutoff)));
 
     if (orphans.length === 0) return;
 
@@ -47,10 +39,7 @@ export function createOrphanCleanupProcessor(db: Database) {
           fs.unlinkSync(orphan.path);
         }
         // Also try to delete thumbnail
-        const thumbnailPath = orphan.path.replace(
-          /(\.[^.]+)$/,
-          ".thumb.webp",
-        );
+        const thumbnailPath = orphan.path.replace(/(\.[^.]+)$/, '.thumb.webp');
         if (fs.existsSync(thumbnailPath)) {
           fs.unlinkSync(thumbnailPath);
         }

@@ -1,11 +1,11 @@
-import type { FastifyInstance } from "fastify";
-import type { Auth } from "../lib/auth";
-import type { Database } from "@worknest/db";
-import { z } from "zod";
-import { createRequireAuth } from "../middleware/auth";
-import { NotificationService } from "../services/notification-service";
-import { cursorPaginationQuery } from "@worknest/shared";
-import { AppError } from "../lib/errors";
+import type { Database } from '@worknest/db';
+import { cursorPaginationQuery } from '@worknest/shared';
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import type { Auth } from '../lib/auth';
+import { AppError } from '../lib/errors';
+import { createRequireAuth } from '../middleware/auth';
+import { NotificationService } from '../services/notification-service';
 
 // ── Param Schemas ──────────────────────────────────────────────────────
 
@@ -33,16 +33,16 @@ export async function notificationRoutes(
   // ── GET /api/v1/my/notifications ──────────────────────────────────
 
   app.get(
-    "/api/v1/my/notifications",
+    '/api/v1/my/notifications',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Notifications"],
-        summary: "List notifications for current user",
+        tags: ['Notifications'],
+        summary: 'List notifications for current user',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const { cursor, limit } = cursorPaginationQuery.parse(request.query);
 
       const result = await service.list(userId, cursor, limit);
@@ -53,16 +53,16 @@ export async function notificationRoutes(
   // ── GET /api/v1/my/notifications/unread-count ─────────────────────
 
   app.get(
-    "/api/v1/my/notifications/unread-count",
+    '/api/v1/my/notifications/unread-count',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Notifications"],
-        summary: "Get unread notification count",
+        tags: ['Notifications'],
+        summary: 'Get unread notification count',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const count = await service.getUnreadCount(userId);
       return reply.status(200).send({ data: { count } });
     },
@@ -71,21 +71,21 @@ export async function notificationRoutes(
   // ── PATCH /api/v1/notifications/:notificationId ───────────────────
 
   app.patch(
-    "/api/v1/notifications/:notificationId",
+    '/api/v1/notifications/:notificationId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Notifications"],
-        summary: "Mark a notification as read",
+        tags: ['Notifications'],
+        summary: 'Mark a notification as read',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const { notificationId } = notificationParams.parse(request.params);
 
       const updated = await service.markAsRead(notificationId, userId);
       if (!updated) {
-        throw AppError.notFound("notification");
+        throw AppError.notFound('notification');
       }
 
       return reply.status(200).send({
@@ -106,16 +106,16 @@ export async function notificationRoutes(
   // ── PATCH /api/v1/my/notifications/read-all ───────────────────────
 
   app.patch(
-    "/api/v1/my/notifications/read-all",
+    '/api/v1/my/notifications/read-all',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Notifications"],
-        summary: "Mark all notifications as read",
+        tags: ['Notifications'],
+        summary: 'Mark all notifications as read',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const updatedCount = await service.markAllAsRead(userId);
 
       return reply.status(200).send({
@@ -127,21 +127,21 @@ export async function notificationRoutes(
   // ── DELETE /api/v1/notifications/:notificationId ──────────────────
 
   app.delete(
-    "/api/v1/notifications/:notificationId",
+    '/api/v1/notifications/:notificationId',
     {
       preHandler: [requireAuth],
       schema: {
-        tags: ["Notifications"],
-        summary: "Delete a notification",
+        tags: ['Notifications'],
+        summary: 'Delete a notification',
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = request.user?.id;
       const { notificationId } = notificationParams.parse(request.params);
 
       const deleted = await service.delete(notificationId, userId);
       if (!deleted) {
-        throw AppError.notFound("notification");
+        throw AppError.notFound('notification');
       }
 
       return reply.status(204).send();

@@ -1,30 +1,27 @@
-import { Extension, type Editor } from "@tiptap/core";
-import { ReactRenderer } from "@tiptap/react";
-import Suggestion, { type SuggestionOptions, type Range } from "@tiptap/suggestion";
+import { type Editor, Extension } from '@tiptap/core';
+import { ReactRenderer } from '@tiptap/react';
+import Suggestion, { type SuggestionOptions, type Range } from '@tiptap/suggestion';
 import {
-  SlashCommandList,
-  getSlashCommandItems,
   type SlashCommandItem,
+  SlashCommandList,
   type SlashCommandListRef,
-} from "./slash-command-list";
+  getSlashCommandItems,
+} from './slash-command-list';
 
 /**
  * Creates a floating container positioned relative to the cursor.
  * Same pattern as the mention extension.
  */
 function createFloatingContainer() {
-  const container = document.createElement("div");
-  container.style.position = "absolute";
-  container.style.zIndex = "50";
-  container.style.pointerEvents = "auto";
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.zIndex = '50';
+  container.style.pointerEvents = 'auto';
   document.body.appendChild(container);
   return container;
 }
 
-function updateFloatingPosition(
-  container: HTMLElement,
-  clientRect: (() => DOMRect) | null,
-) {
+function updateFloatingPosition(container: HTMLElement, clientRect: (() => DOMRect) | null) {
   if (!clientRect) return;
   const rect = clientRect();
   container.style.left = `${rect.left + window.scrollX}px`;
@@ -39,12 +36,12 @@ function updateFloatingPosition(
  * Supports search filtering and keyboard navigation.
  */
 export const SlashCommand = Extension.create({
-  name: "slashCommand",
+  name: 'slashCommand',
 
   addOptions() {
     return {
       suggestion: {
-        char: "/",
+        char: '/',
         startOfLine: false,
         items: ({ query }: { query: string }) => {
           const allItems = getSlashCommandItems();
@@ -71,18 +68,13 @@ export const SlashCommand = Extension.create({
                     (props.command as (item: SlashCommandItem) => void)(item);
                   },
                 },
-                editor: props.editor as Parameters<
-                  typeof ReactRenderer
-                >[1]["editor"],
+                editor: props.editor as Parameters<typeof ReactRenderer>[1]['editor'],
               });
 
               container = createFloatingContainer();
               container.appendChild(component.element);
 
-              updateFloatingPosition(
-                container,
-                props.clientRect as (() => DOMRect) | null,
-              );
+              updateFloatingPosition(container, props.clientRect as (() => DOMRect) | null);
             },
 
             onUpdate: (props: Record<string, unknown>) => {
@@ -94,24 +86,20 @@ export const SlashCommand = Extension.create({
               });
 
               if (container) {
-                updateFloatingPosition(
-                  container,
-                  props.clientRect as (() => DOMRect) | null,
-                );
+                updateFloatingPosition(container, props.clientRect as (() => DOMRect) | null);
               }
             },
 
             onKeyDown: (props: { event: KeyboardEvent }) => {
-              if (props.event.key === "Escape") {
+              if (props.event.key === 'Escape') {
                 container?.remove();
                 container = null;
                 return true;
               }
 
               return (
-                component?.ref?.onKeyDown(
-                  props as unknown as { event: React.KeyboardEvent },
-                ) ?? false
+                component?.ref?.onKeyDown(props as unknown as { event: React.KeyboardEvent }) ??
+                false
               );
             },
 

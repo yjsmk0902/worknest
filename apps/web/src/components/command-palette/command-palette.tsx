@@ -204,9 +204,12 @@ export function CommandPalette() {
       keywords: ['로그아웃', 'logout', 'signout'],
       action: () => {
         close();
-        apiClient.post('/auth/logout').catch(() => {}).finally(() => {
-          window.location.href = '/login';
-        });
+        apiClient
+          .post('/auth/logout')
+          .catch(() => {})
+          .finally(() => {
+            window.location.href = '/login';
+          });
       },
     },
   ];
@@ -221,16 +224,13 @@ export function CommandPalette() {
 
   // ── Issue ID direct navigation ────────────────────────────────────────
 
-  const handleIssueIdNavigate = useCallback(
-    (key: string) => {
-      // Issue key (e.g., "PROJ-123") cannot be used directly as a URL because
-      // routes expect project UUID, not the prefix. Instead, search for the
-      // issue and let the user click the search result.
-      setInputValue(key);
-      // The debounced search will trigger automatically and show the matching issue
-    },
-    [],
-  );
+  const handleIssueIdNavigate = useCallback((key: string) => {
+    // Issue key (e.g., "PROJ-123") cannot be used directly as a URL because
+    // routes expect project UUID, not the prefix. Instead, search for the
+    // issue and let the user click the search result.
+    setInputValue(key);
+    // The debounced search will trigger automatically and show the matching issue
+  }, []);
 
   // ── Render ────────────────────────────────────────────────────────────
 

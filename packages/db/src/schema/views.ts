@@ -1,14 +1,7 @@
-import {
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { users } from "./users";
-import { projects } from "./projects";
+import { relations } from 'drizzle-orm';
+import { index, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { projects } from './projects';
+import { users } from './users';
 
 /**
  * Views table.
@@ -24,26 +17,26 @@ import { projects } from "./projects";
  * kanban-style board view.
  */
 export const views = pgTable(
-  "views",
+  'views',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    createdBy: text("created_by").references(() => users.id, {
-      onDelete: "set null",
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    createdBy: text('created_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    filters: jsonb("filters"),
-    sort: jsonb("sort"),
-    groupBy: text("group_by"),
-    type: text("type").notNull(), // 'list' | 'board'
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    filters: jsonb('filters'),
+    sort: jsonb('sort'),
+    groupBy: text('group_by'),
+    type: text('type').notNull(), // 'list' | 'board'
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    index("views_project_id_idx").on(table.projectId),
-    index("views_project_created_by_idx").on(table.projectId, table.createdBy),
+    index('views_project_id_idx').on(table.projectId),
+    index('views_project_created_by_idx').on(table.projectId, table.createdBy),
   ],
 );
 

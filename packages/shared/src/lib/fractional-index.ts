@@ -96,9 +96,7 @@ function decrementInteger(c: string): string | undefined {
  */
 function fractionalMidpoint(a: string, b: string | undefined): string {
   if (b !== undefined && a >= b) {
-    throw new Error(
-      `fractionalMidpoint: a must be < b, got a="${a}", b="${b}"`,
-    );
+    throw new Error(`fractionalMidpoint: a must be < b, got a="${a}", b="${b}"`);
   }
 
   if (a === b) {
@@ -248,9 +246,7 @@ export function generateKeyBetween(
     throw new Error(`Invalid sort key: ${b}`);
   }
   if (a != null && b != null && a >= b) {
-    throw new Error(
-      `First key must be strictly less than second key: ${a} >= ${b}`,
-    );
+    throw new Error(`First key must be strictly less than second key: ${a} >= ${b}`);
   }
 
   // Both null -> return default key
@@ -292,7 +288,7 @@ export function generateKeyBetween(
         // At max integer, extend the fractional part
         return intA + fracA + BASE_62_DIGITS[Math.floor(BASE / 2)];
       }
-      return nextInt + '0';
+      return `${nextInt}0`;
     }
 
     // Find midpoint between fracA and "infinity" (conceptual upper bound)
@@ -322,7 +318,7 @@ export function generateKeyBetween(
   // Different integer parts: check if there's an integer between them
   const nextInt = incrementInteger(intA);
   if (nextInt != null && nextInt < intB) {
-    return nextInt + '0';
+    return `${nextInt}0`;
   }
 
   // Adjacent integers (e.g., 'a' and 'b'). Generate within a's integer

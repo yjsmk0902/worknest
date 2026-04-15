@@ -1,8 +1,8 @@
 import { createColumnHelper } from '@tanstack/react-table';
-import { cn } from '@worknest/ui';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@worknest/ui';
-import { StatusCell, PriorityCell, AssigneeCell, TypeCell } from './inline-edit-cells';
 import type { IssueOutput } from '@worknest/shared';
+import { cn } from '@worknest/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
+import { AssigneeCell, PriorityCell, StatusCell, TypeCell } from './inline-edit-cells';
 
 const MAX_SELECTION = 50;
 
@@ -13,9 +13,10 @@ function formatDateTime(dateStr: string | null): string {
   const d = new Date(dateStr);
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
-  const date = now.getFullYear() === d.getFullYear()
-    ? `${pad(d.getMonth() + 1)}/${pad(d.getDate())}`
-    : `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+  const date =
+    now.getFullYear() === d.getFullYear()
+      ? `${pad(d.getMonth() + 1)}/${pad(d.getDate())}`
+      : `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
   const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
   return hasTime ? `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}` : date;
 }
@@ -30,9 +31,7 @@ function formatDueDate(dateStr: string | null): {
 
   const date = new Date(dateStr);
   const now = new Date();
-  const diffDays = Math.ceil(
-    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   const formatted = formatDateTime(dateStr);
 
@@ -49,10 +48,7 @@ function formatDueDate(dateStr: string | null): {
 
 const columnHelper = createColumnHelper<IssueOutput>();
 
-export function createIssueColumns(
-  projectPrefix: string,
-  projectId: string,
-) {
+export function createIssueColumns(projectPrefix: string, projectId: string) {
   return [
     // Checkbox column
     columnHelper.display({
@@ -60,9 +56,7 @@ export function createIssueColumns(
       size: 40,
       header: ({ table }) => {
         const allRows = table.getRowModel().rows;
-        const selectedCount = Object.keys(
-          table.getState().rowSelection,
-        ).length;
+        const selectedCount = Object.keys(table.getState().rowSelection).length;
         const isAllSelected = table.getIsAllPageRowsSelected();
         const isSomeSelected = table.getIsSomePageRowsSelected();
         const isOverLimit = allRows.length > MAX_SELECTION;
@@ -84,13 +78,9 @@ export function createIssueColumns(
                       if (e.target.checked && isOverLimit) {
                         // Select only the first MAX_SELECTION rows
                         const next: Record<string, boolean> = {};
-                        for (
-                          let i = 0;
-                          i < Math.min(allRows.length, MAX_SELECTION);
-                          i++
-                        ) {
+                        for (let i = 0; i < Math.min(allRows.length, MAX_SELECTION); i++) {
                           const row = allRows[i];
-                          if (row && row.getCanSelect()) {
+                          if (row?.getCanSelect()) {
                             next[row.id] = true;
                           }
                         }
@@ -104,9 +94,7 @@ export function createIssueColumns(
                   />
                 </TooltipTrigger>
                 {isOverLimit && selectedCount < MAX_SELECTION && (
-                  <TooltipContent>
-                    최대 {MAX_SELECTION}건까지 선택 가능
-                  </TooltipContent>
+                  <TooltipContent>최대 {MAX_SELECTION}건까지 선택 가능</TooltipContent>
                 )}
               </Tooltip>
             </TooltipProvider>
@@ -114,9 +102,7 @@ export function createIssueColumns(
         );
       },
       cell: ({ row, table }) => {
-        const selectedCount = Object.keys(
-          table.getState().rowSelection,
-        ).length;
+        const selectedCount = Object.keys(table.getState().rowSelection).length;
         const isSelected = row.getIsSelected();
         const atLimit = selectedCount >= MAX_SELECTION && !isSelected;
 
@@ -135,11 +121,7 @@ export function createIssueColumns(
                     aria-label={`${projectPrefix}-${row.original.sequenceId} 선택`}
                   />
                 </TooltipTrigger>
-                {atLimit && (
-                  <TooltipContent>
-                    최대 {MAX_SELECTION}건까지 선택 가능
-                  </TooltipContent>
-                )}
+                {atLimit && <TooltipContent>최대 {MAX_SELECTION}건까지 선택 가능</TooltipContent>}
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -152,9 +134,7 @@ export function createIssueColumns(
       id: 'priority',
       size: 40,
       header: () => null,
-      cell: ({ row }) => (
-        <PriorityCell issue={row.original} projectId={projectId} />
-      ),
+      cell: ({ row }) => <PriorityCell issue={row.original} projectId={projectId} />,
     }),
 
     // Issue key column
@@ -168,14 +148,8 @@ export function createIssueColumns(
       ),
       cell: ({ row }) => {
         const isTemp = row.original.id.startsWith('temp-');
-        const key = isTemp
-          ? '...'
-          : `${projectPrefix}-${row.original.sequenceId}`;
-        return (
-          <span className="font-mono text-xs text-muted-foreground">
-            {key}
-          </span>
-        );
+        const key = isTemp ? '...' : `${projectPrefix}-${row.original.sequenceId}`;
+        return <span className="font-mono text-xs text-muted-foreground">{key}</span>;
       },
     }),
 
@@ -212,9 +186,7 @@ export function createIssueColumns(
                   </span>
                 ))}
                 {labels.length > 3 && (
-                  <span className="text-xs text-muted-foreground">
-                    +{labels.length - 3}
-                  </span>
+                  <span className="text-xs text-muted-foreground">+{labels.length - 3}</span>
                 )}
               </div>
             )}
@@ -232,9 +204,7 @@ export function createIssueColumns(
           Status
         </span>
       ),
-      cell: ({ row }) => (
-        <StatusCell issue={row.original} projectId={projectId} />
-      ),
+      cell: ({ row }) => <StatusCell issue={row.original} projectId={projectId} />,
     }),
 
     // Type column
@@ -246,9 +216,7 @@ export function createIssueColumns(
           Type
         </span>
       ),
-      cell: ({ row }) => (
-        <TypeCell issue={row.original} projectId={projectId} />
-      ),
+      cell: ({ row }) => <TypeCell issue={row.original} projectId={projectId} />,
     }),
 
     // Assignee column
@@ -260,9 +228,7 @@ export function createIssueColumns(
           Assignee
         </span>
       ),
-      cell: ({ row }) => (
-        <AssigneeCell issue={row.original} projectId={projectId} showName />
-      ),
+      cell: ({ row }) => <AssigneeCell issue={row.original} projectId={projectId} showName />,
     }),
 
     // Cycle column
@@ -318,7 +284,12 @@ export function createIssueColumns(
       cell: ({ row }) => {
         const text = formatDateTime(row.original.startDate);
         return (
-          <span className={cn('text-xs', row.original.startDate ? 'text-muted-foreground' : 'text-muted-foreground/50')}>
+          <span
+            className={cn(
+              'text-xs',
+              row.original.startDate ? 'text-muted-foreground' : 'text-muted-foreground/50',
+            )}
+          >
             {text}
           </span>
         );

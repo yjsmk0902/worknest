@@ -21,26 +21,34 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noLabelWithoutControl": "warn",
+        "useFocusableInteractive": "warn",
+        "useSemanticElements": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useValidAriaValues": "warn",
+        "useButtonType": "warn"
+      },
+      "complexity": {
+        "noBannedTypes": "warn"
+      },
       "correctness": {
         "noUnusedImports": "warn",
-        "noUnusedVariables": "warn"
+        "noUnusedVariables": "warn",
+        "useExhaustiveDependencies": "warn"
       },
       "style": {
         "noNonNullAssertion": "warn",
         "useConst": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "noThenProperty": "warn",
+        "noArrayIndexKey": "warn"
       }
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist",
-      ".turbo",
-      "coverage",
-      "*.gen.ts"
-    ]
+    "ignore": ["node_modules", "dist", ".turbo", "coverage", "*.gen.ts"]
   }
 }

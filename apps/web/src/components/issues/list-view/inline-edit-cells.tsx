@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bug, BookOpen, Check, CheckCircle, Rocket, Search, type LucideIcon } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { IssueOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 import {
   Avatar,
   DropdownMenu,
@@ -14,9 +13,10 @@ import {
   toast,
 } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../lib/api-client';
+import { BookOpen, Bug, Check, CheckCircle, type LucideIcon, Rocket, Search } from 'lucide-react';
+import { useState } from 'react';
+import { type ListResponse, apiClient } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
-import type { IssueOutput, IssueStatusOutput, IssueTypeOutput } from '@worknest/shared';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -33,10 +33,7 @@ function useInlineUpdate(projectId: string, issueId: string) {
 
   return useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      apiClient.patch<IssueOutput>(
-        `/projects/${projectId}/issues/${issueId}`,
-        data,
-      ),
+      apiClient.patch<IssueOutput>(`/projects/${projectId}/issues/${issueId}`, data),
     onMutate: async (newData) => {
       // Optimistically update the issue in the list cache
       const listKey = ['projects', projectId, 'issues'];
@@ -45,23 +42,18 @@ function useInlineUpdate(projectId: string, issueId: string) {
       queryClient.setQueriesData<{
         pages: Array<{ data: IssueOutput[]; pagination: unknown }>;
         pageParams: unknown[];
-      }>(
-        { queryKey: listKey },
-        (old) => {
-          if (!old?.pages) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              data: page.data.map((issue) =>
-                issue.id === issueId
-                  ? { ...issue, ...newData }
-                  : issue,
-              ),
-            })),
-          };
-        },
-      );
+      }>({ queryKey: listKey }, (old) => {
+        if (!old?.pages) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((issue) =>
+              issue.id === issueId ? { ...issue, ...newData } : issue,
+            ),
+          })),
+        };
+      });
 
       // Also update single issue cache if it exists
       const detailKey = ['projects', projectId, 'issues', issueId];
@@ -102,10 +94,7 @@ export function StatusCell({ issue, projectId }: StatusCellProps) {
 
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -133,11 +122,7 @@ export function StatusCell({ issue, projectId }: StatusCellProps) {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[200px] p-1"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent align="start" className="w-[200px] p-1" onClick={(e) => e.stopPropagation()}>
         {statuses.map((status) => (
           <button
             key={status.id}
@@ -153,9 +138,7 @@ export function StatusCell({ issue, projectId }: StatusCellProps) {
               style={{ backgroundColor: status.color }}
             />
             <span className="flex-1 text-left">{status.name}</span>
-            {status.id === issue.statusId && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
+            {status.id === issue.statusId && <Check className="h-4 w-4 text-primary" />}
           </button>
         ))}
       </PopoverContent>
@@ -187,10 +170,7 @@ export function PriorityCell({ issue, projectId }: PriorityCellProps) {
           <PriorityIcon className={cn('h-4 w-4', config.color)} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <DropdownMenuContent align="start" onClick={(e) => e.stopPropagation()}>
         {(Object.keys(PRIORITY_CONFIG) as Priority[]).map((priority) => {
           const pConfig = PRIORITY_CONFIG[priority];
           const PIcon = pConfig.icon;
@@ -202,9 +182,7 @@ export function PriorityCell({ issue, projectId }: PriorityCellProps) {
             >
               <PIcon className={cn('h-4 w-4', pConfig.color)} />
               <span className="flex-1">{pConfig.label}</span>
-              {priority === current && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
+              {priority === current && <Check className="h-4 w-4 text-primary" />}
             </DropdownMenuItem>
           );
         })}
@@ -228,8 +206,7 @@ export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) 
 
   const membersQuery = useQuery<ListResponse<MemberOutput>>({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
+    queryFn: () => apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -254,17 +231,13 @@ export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) 
 
   const removeAssignee = useMutation({
     mutationFn: (userId: string) =>
-      apiClient.delete(
-        `/projects/${projectId}/issues/${issue.id}/assignees/${userId}`,
-      ),
+      apiClient.delete(`/projects/${projectId}/issues/${issue.id}/assignees/${userId}`),
     onSuccess: invalidateIssues,
     onError: () => toast('담당자 제거에 실패했습니다.'),
   });
 
   const members = membersQuery.data?.data ?? [];
-  const assigneeUserIds = new Set(
-    issue.assignees?.map((a) => a.user.id) ?? [],
-  );
+  const assigneeUserIds = new Set(issue.assignees?.map((a) => a.user.id) ?? []);
 
   const filtered = members.filter(
     (m) =>
@@ -322,11 +295,7 @@ export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) 
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[240px] p-2"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent align="start" className="w-[240px] p-2" onClick={(e) => e.stopPropagation()}>
         <div className="mb-2 flex items-center gap-2 rounded-md border border-border px-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -334,7 +303,6 @@ export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="멤버 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -354,14 +322,8 @@ export function AssigneeCell({ issue, projectId, showName }: AssigneeCellProps) 
                 }}
                 className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
               >
-                <Avatar
-                  src={member.user.avatarUrl}
-                  fallback={member.user.name}
-                  size="sm"
-                />
-                <span className="flex-1 truncate text-left">
-                  {member.user.name}
-                </span>
+                <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="sm" />
+                <span className="flex-1 truncate text-left">{member.user.name}</span>
                 {isAssigned && <Check className="h-4 w-4 text-primary" />}
               </button>
             );
@@ -397,7 +359,11 @@ const ISSUE_TYPE_ICONS: Record<string, LucideIcon> = {
   rocket: Rocket,
 };
 
-function IssueTypeIcon({ icon, color, className }: { icon: string; color?: string; className?: string }) {
+function IssueTypeIcon({
+  icon,
+  color,
+  className,
+}: { icon: string; color?: string; className?: string }) {
   const IconComponent = ISSUE_TYPE_ICONS[icon];
   if (IconComponent) {
     return <IconComponent className={className} style={color ? { color } : undefined} />;
@@ -418,8 +384,7 @@ export function TypeCell({ issue, projectId }: TypeCellProps) {
 
   const typesQuery = useQuery<IssueTypeOutput[]>({
     queryKey: ['projects', projectId, 'types'],
-    queryFn: () =>
-      apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
+    queryFn: () => apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -436,7 +401,11 @@ export function TypeCell({ issue, projectId }: TypeCellProps) {
         >
           {issue.type ? (
             <>
-              <IssueTypeIcon icon={issue.type.icon} color={issue.type.color} className="h-3.5 w-3.5 shrink-0" />
+              <IssueTypeIcon
+                icon={issue.type.icon}
+                color={issue.type.color}
+                className="h-3.5 w-3.5 shrink-0"
+              />
               <span className="truncate">{issue.type.name}</span>
             </>
           ) : (
@@ -444,11 +413,7 @@ export function TypeCell({ issue, projectId }: TypeCellProps) {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[200px] p-1"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent align="start" className="w-[200px] p-1" onClick={(e) => e.stopPropagation()}>
         {types.map((type) => (
           <button
             key={type.id}
@@ -461,9 +426,7 @@ export function TypeCell({ issue, projectId }: TypeCellProps) {
           >
             <IssueTypeIcon icon={type.icon} color={type.color} className="h-4 w-4 shrink-0" />
             <span className="flex-1 text-left">{type.name}</span>
-            {type.id === issue.typeId && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
+            {type.id === issue.typeId && <Check className="h-4 w-4 text-primary" />}
           </button>
         ))}
       </PopoverContent>
@@ -492,8 +455,7 @@ export function LabelCell({ issue, projectId }: LabelCellProps) {
 
   const labelsQuery = useQuery<LabelOutput[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
     staleTime: 5 * 60 * 1000,
     enabled: open,
   });
@@ -516,9 +478,7 @@ export function LabelCell({ issue, projectId }: LabelCellProps) {
 
   const removeLabel = useMutation({
     mutationFn: (labelId: string) =>
-      apiClient.delete(
-        `/projects/${projectId}/issues/${issue.id}/labels/${labelId}`,
-      ),
+      apiClient.delete(`/projects/${projectId}/issues/${issue.id}/labels/${labelId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['projects', projectId, 'issues'],
@@ -531,14 +491,10 @@ export function LabelCell({ issue, projectId }: LabelCellProps) {
   });
 
   const labels = labelsQuery.data ?? [];
-  const issueLabelIds = new Set(
-    issue.labels?.map((l) => l.labelId) ?? [],
-  );
+  const issueLabelIds = new Set(issue.labels?.map((l) => l.labelId) ?? []);
   const issueLabels = issue.labels ?? [];
 
-  const filtered = labels.filter((l) =>
-    l.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = labels.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -569,19 +525,13 @@ export function LabelCell({ issue, projectId }: LabelCellProps) {
                 </span>
               ))}
               {issueLabels.length > 2 && (
-                <span className="text-[10px] text-muted-foreground">
-                  +{issueLabels.length - 2}
-                </span>
+                <span className="text-[10px] text-muted-foreground">+{issueLabels.length - 2}</span>
               )}
             </div>
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-[240px] p-2"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent align="start" className="w-[240px] p-2" onClick={(e) => e.stopPropagation()}>
         <div className="mb-2 flex items-center gap-2 rounded-md border border-border px-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -589,7 +539,6 @@ export function LabelCell({ issue, projectId }: LabelCellProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="라벨 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>

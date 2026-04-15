@@ -1,7 +1,7 @@
-import { useEffect, useCallback } from 'react';
+import type { RowSelectionState } from '@tanstack/react-table';
+import { useCallback, useEffect } from 'react';
 import { useHotkeyStore } from '../stores/hotkey-store';
 import { useHotkey } from './use-hotkey';
-import type { RowSelectionState } from '@tanstack/react-table';
 
 interface UseIssueListShortcutsOptions {
   issueCount: number;

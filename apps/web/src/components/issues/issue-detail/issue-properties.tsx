@@ -1,32 +1,17 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  Calendar,
-  Check,
-  ChevronDown,
-  CircleCheck,
-  RefreshCw,
-  Search,
-  X,
-} from 'lucide-react';
-import {
-  Avatar,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Separator,
-  toast,
-} from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import { apiClient, type ListResponse } from '../../../lib/api-client';
-import { PRIORITY_CONFIG, getTypeIcon, type Priority } from '../../../lib/issue-constants';
 import type {
   CycleOutput,
   IssueOutput,
   IssueStatusOutput,
   IssueTypeOutput,
 } from '@worknest/shared';
+import { Avatar, Popover, PopoverContent, PopoverTrigger, Separator, toast } from '@worknest/ui';
+import { cn } from '@worknest/ui';
+import { Calendar, Check, ChevronDown, RefreshCw, Search, X } from 'lucide-react';
+import { useState } from 'react';
+import { apiClient } from '../../../lib/api-client';
+import { PRIORITY_CONFIG, type Priority, getTypeIcon } from '../../../lib/issue-constants';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -58,48 +43,34 @@ interface IssuePropertiesProps {
 
 // ── Main Component ──────────────────────────────────────────────────────
 
-export function IssueProperties({
-  issue,
-  projectId,
-  mode,
-  orgSlug,
-  wsSlug,
-}: IssuePropertiesProps) {
+export function IssueProperties({ issue, projectId, mode, orgSlug, wsSlug }: IssuePropertiesProps) {
   const queryClient = useQueryClient();
 
   // Fetch statuses
   const statusesQuery = useQuery<IssueStatusOutput[]>({
     queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.get<IssueStatusOutput[]>(
-        `/projects/${projectId}/statuses`,
-      ),
+    queryFn: () => apiClient.get<IssueStatusOutput[]>(`/projects/${projectId}/statuses`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch types
   const typesQuery = useQuery<IssueTypeOutput[]>({
     queryKey: ['projects', projectId, 'types'],
-    queryFn: () =>
-      apiClient.get<IssueTypeOutput[]>(
-        `/projects/${projectId}/types`,
-      ),
+    queryFn: () => apiClient.get<IssueTypeOutput[]>(`/projects/${projectId}/types`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch labels
   const labelsQuery = useQuery<LabelOutput[]>({
     queryKey: ['projects', projectId, 'labels'],
-    queryFn: () =>
-      apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
+    queryFn: () => apiClient.get<LabelOutput[]>(`/projects/${projectId}/labels`),
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch members
   const membersQuery = useQuery<{ data: MemberOutput[] }>({
     queryKey: ['projects', projectId, 'members'],
-    queryFn: () =>
-      apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
+    queryFn: () => apiClient.getList<MemberOutput>(`/projects/${projectId}/members`),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -111,22 +82,14 @@ export function IssueProperties({
     queryKey: ['issues', issue.id, 'cycles'],
     queryFn: async () => {
       // Fetch all non-completed cycles, then check membership in parallel
-      const cyclesRes = await apiClient.getList<CycleOutput>(
-        `/projects/${projectId}/cycles`,
-      );
-      const activeCycles = cyclesRes.data.filter(
-        (c) => c.status !== 'completed',
-      );
+      const cyclesRes = await apiClient.getList<CycleOutput>(`/projects/${projectId}/cycles`);
+      const activeCycles = cyclesRes.data.filter((c) => c.status !== 'completed');
 
       const checks = await Promise.all(
         activeCycles.map(async (cycle) => {
           try {
-            const issuesRes = await apiClient.getList<IssueOutput>(
-              `/cycles/${cycle.id}/issues`,
-            );
-            return issuesRes.data.some((i) => i.id === issue.id)
-              ? cycle
-              : null;
+            const issuesRes = await apiClient.getList<IssueOutput>(`/cycles/${cycle.id}/issues`);
+            return issuesRes.data.some((i) => i.id === issue.id) ? cycle : null;
           } catch {
             return null;
           }
@@ -143,10 +106,7 @@ export function IssueProperties({
   // Update issue mutation
   const updateMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      apiClient.patch<IssueOutput>(
-        `/projects/${projectId}/issues/${issue.id}`,
-        data,
-      ),
+      apiClient.patch<IssueOutput>(`/projects/${projectId}/issues/${issue.id}`, data),
     onMutate: async (newData) => {
       const queryKey = ['projects', projectId, 'issues', issue.id];
       await queryClient.cancelQueries({ queryKey });
@@ -202,9 +162,7 @@ export function IssueProperties({
 
   const removeAssigneeMutation = useMutation({
     mutationFn: (userId: string) =>
-      apiClient.delete(
-        `/projects/${projectId}/issues/${issue.id}/assignees/${userId}`,
-      ),
+      apiClient.delete(`/projects/${projectId}/issues/${issue.id}/assignees/${userId}`),
     onSuccess: invalidateAll,
     onError: () => toast('담당자 제거에 실패했습니다.'),
   });
@@ -221,9 +179,7 @@ export function IssueProperties({
 
   const removeLabelMutation = useMutation({
     mutationFn: (labelId: string) =>
-      apiClient.delete(
-        `/projects/${projectId}/issues/${issue.id}/labels/${labelId}`,
-      ),
+      apiClient.delete(`/projects/${projectId}/issues/${issue.id}/labels/${labelId}`),
     onSuccess: invalidateAll,
     onError: () => toast('라벨 제거에 실패했습니다.'),
   });
@@ -233,12 +189,8 @@ export function IssueProperties({
   const allLabels = labelsQuery.data ?? [];
   const members = membersQuery.data?.data ?? [];
 
-  const assigneeUserIds = new Set(
-    issue.assignees?.map((a) => a.user.id) ?? [],
-  );
-  const issueLabelIds = new Set(
-    issue.labels?.map((l) => l.label.id) ?? [],
-  );
+  const assigneeUserIds = new Set(issue.assignees?.map((a) => a.user.id) ?? []);
+  const issueLabelIds = new Set(issue.labels?.map((l) => l.label.id) ?? []);
 
   const containerClass =
     mode === 'panel'
@@ -356,9 +308,7 @@ export function IssueProperties({
       />
 
       {/* Priority */}
-      <span className="self-center text-sm text-muted-foreground">
-        우선순위
-      </span>
+      <span className="self-center text-sm text-muted-foreground">우선순위</span>
       <PrioritySelect
         current={issue.priority as Priority}
         onChange={(priority) => updateMutation.mutate({ priority })}
@@ -478,9 +428,7 @@ function StatusSelect({
               style={{ backgroundColor: status.color }}
             />
             <span className="flex-1 text-left">{status.name}</span>
-            {status.id === currentStatusId && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
+            {status.id === currentStatusId && <Check className="h-4 w-4 text-primary" />}
           </button>
         ))}
       </PopoverContent>
@@ -529,9 +477,7 @@ function PrioritySelect({
             >
               <PIcon className={cn('h-4 w-4', pConfig.color)} />
               <span className="flex-1 text-left">{pConfig.label}</span>
-              {priority === current && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
+              {priority === current && <Check className="h-4 w-4 text-primary" />}
             </button>
           );
         })}
@@ -582,9 +528,7 @@ function TypeSelect({
             >
               <TypeIcon className="h-4 w-4" style={{ color: type.color }} />
               <span className="flex-1 text-left">{type.name}</span>
-              {type.id === currentTypeId && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
+              {type.id === currentTypeId && <Check className="h-4 w-4 text-primary" />}
             </button>
           );
         })}
@@ -635,9 +579,7 @@ function AssigneePicker({
               />
               <span className="truncate">{issueAssignees[0].user.name}</span>
               {issueAssignees.length > 1 && (
-                <span className="text-muted-foreground">
-                  +{issueAssignees.length - 1}
-                </span>
+                <span className="text-muted-foreground">+{issueAssignees.length - 1}</span>
               )}
             </div>
           )}
@@ -652,7 +594,6 @@ function AssigneePicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="멤버 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -672,14 +613,8 @@ function AssigneePicker({
                 }}
                 className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
               >
-                <Avatar
-                  src={member.user.avatarUrl}
-                  fallback={member.user.name}
-                  size="sm"
-                />
-                <span className="flex-1 truncate text-left">
-                  {member.user.name}
-                </span>
+                <Avatar src={member.user.avatarUrl} fallback={member.user.name} size="sm" />
+                <span className="flex-1 truncate text-left">{member.user.name}</span>
                 {isAssigned && <Check className="h-4 w-4 text-primary" />}
               </button>
             );
@@ -724,9 +659,7 @@ function LabelPicker({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  const filtered = allLabels.filter((l) =>
-    l.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = allLabels.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -766,7 +699,6 @@ function LabelPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="라벨 검색..."
-            autoFocus
             className="h-8 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -827,7 +759,10 @@ function DateRangePicker({
         max={dueLocal || undefined}
         onChange={(e) => {
           const v = e.target.value;
-          if (!v) { onChangeStart(null); return; }
+          if (!v) {
+            onChangeStart(null);
+            return;
+          }
           if (dueLocal && v > dueLocal) return;
           onChangeStart(toISOStartOfDay(v));
         }}
@@ -841,7 +776,10 @@ function DateRangePicker({
         min={startLocal || undefined}
         onChange={(e) => {
           const v = e.target.value;
-          if (!v) { onChangeDue(null); return; }
+          if (!v) {
+            onChangeDue(null);
+            return;
+          }
           if (startLocal && v < startLocal) return;
           onChangeDue(toISOEndOfDay(v));
         }}
@@ -851,7 +789,10 @@ function DateRangePicker({
       {hasAny && (
         <button
           type="button"
-          onClick={() => { onChangeStart(null); onChangeDue(null); }}
+          onClick={() => {
+            onChangeStart(null);
+            onChangeDue(null);
+          }}
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-accent"
           aria-label="날짜 제거"
         >
@@ -902,8 +843,7 @@ function CyclePicker({
   });
 
   const addToCycle = useMutation({
-    mutationFn: (cycleId: string) =>
-      apiClient.post(`/cycles/${cycleId}/issues`, { issueId }),
+    mutationFn: (cycleId: string) => apiClient.post(`/cycles/${cycleId}/issues`, { issueId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', issueId, 'cycles'] });
       toast('사이클에 추가되었습니다.');
@@ -912,8 +852,7 @@ function CyclePicker({
   });
 
   const removeFromCycle = useMutation({
-    mutationFn: (cycleId: string) =>
-      apiClient.delete(`/cycles/${cycleId}/issues/${issueId}`),
+    mutationFn: (cycleId: string) => apiClient.delete(`/cycles/${cycleId}/issues/${issueId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', issueId, 'cycles'] });
       toast('사이클에서 제거되었습니다.');
@@ -921,9 +860,7 @@ function CyclePicker({
     onError: () => toast('사이클 제거에 실패했습니다.'),
   });
 
-  const allCycles = (allCyclesQuery.data?.data ?? []).filter(
-    (c) => c.status !== 'completed',
-  );
+  const allCycles = (allCyclesQuery.data?.data ?? []).filter((c) => c.status !== 'completed');
   const issueCycleIds = new Set(issueCycles.map((c) => c.id));
 
   return (
@@ -976,13 +913,9 @@ function CyclePicker({
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-[240px] p-2">
-          <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">
-            사이클
-          </p>
+          <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">사이클</p>
           {allCycles.length === 0 && (
-            <p className="px-2 py-3 text-sm text-muted-foreground text-center">
-              사이클이 없습니다
-            </p>
+            <p className="px-2 py-3 text-sm text-muted-foreground text-center">사이클이 없습니다</p>
           )}
           <div className="max-h-[240px] overflow-y-auto">
             {allCycles.map((cycle) => {
@@ -1003,7 +936,9 @@ function CyclePicker({
                 >
                   <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="flex-1 text-left truncate">{cycle.name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">{cycle.status}</span>
+                  <span className="text-[10px] text-muted-foreground capitalize">
+                    {cycle.status}
+                  </span>
                   {isInCycle && <Check className="h-4 w-4 text-primary" />}
                 </button>
               );

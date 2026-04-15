@@ -1,16 +1,8 @@
-import {
-  index,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
-import { users } from "./users";
-import { workspaces } from "./workspaces";
-import { comments } from "./comments";
+import { relations, sql } from 'drizzle-orm';
+import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { comments } from './comments';
+import { users } from './users';
+import { workspaces } from './workspaces';
 
 /**
  * Wiki spaces table.
@@ -19,27 +11,24 @@ import { comments } from "./comments";
  * slug within its workspace for URL-friendly routing (e.g. /wiki/engineering).
  */
 export const wikiSpaces = pgTable(
-  "wiki_spaces",
+  'wiki_spaces',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    workspaceId: uuid("workspace_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    workspaceId: uuid('workspace_id')
       .notNull()
-      .references(() => workspaces.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    description: text("description"),
-    slug: text("slug").notNull(),
-    createdBy: text("created_by").references(() => users.id, {
-      onDelete: "set null",
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description'),
+    slug: text('slug').notNull(),
+    createdBy: text('created_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("wiki_spaces_workspace_slug_unique").on(
-      table.workspaceId,
-      table.slug,
-    ),
-    index("wiki_spaces_workspace_id_idx").on(table.workspaceId),
+    uniqueIndex('wiki_spaces_workspace_slug_unique').on(table.workspaceId, table.slug),
+    index('wiki_spaces_workspace_id_idx').on(table.workspaceId),
   ],
 );
 
@@ -63,39 +52,33 @@ export const wikiSpacesRelations = relations(wikiSpaces, ({ one, many }) => ({
  * access: 'editor' can create/update pages, 'viewer' has read-only access.
  */
 export const wikiSpaceMembers = pgTable(
-  "wiki_space_members",
+  'wiki_space_members',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    wikiSpaceId: uuid("wiki_space_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    wikiSpaceId: uuid('wiki_space_id')
       .notNull()
-      .references(() => wikiSpaces.id, { onDelete: "cascade" }),
-    userId: text("user_id")
+      .references(() => wikiSpaces.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull().default("editor"), // 'editor' | 'viewer'
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+      .references(() => users.id, { onDelete: 'cascade' }),
+    role: text('role').notNull().default('editor'), // 'editor' | 'viewer'
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("wiki_space_members_space_user_unique").on(
-      table.wikiSpaceId,
-      table.userId,
-    ),
+    uniqueIndex('wiki_space_members_space_user_unique').on(table.wikiSpaceId, table.userId),
   ],
 );
 
-export const wikiSpaceMembersRelations = relations(
-  wikiSpaceMembers,
-  ({ one }) => ({
-    wikiSpace: one(wikiSpaces, {
-      fields: [wikiSpaceMembers.wikiSpaceId],
-      references: [wikiSpaces.id],
-    }),
-    user: one(users, {
-      fields: [wikiSpaceMembers.userId],
-      references: [users.id],
-    }),
+export const wikiSpaceMembersRelations = relations(wikiSpaceMembers, ({ one }) => ({
+  wikiSpace: one(wikiSpaces, {
+    fields: [wikiSpaceMembers.wikiSpaceId],
+    references: [wikiSpaces.id],
   }),
-);
+  user: one(users, {
+    fields: [wikiSpaceMembers.userId],
+    references: [users.id],
+  }),
+}));
 
 /**
  * Wiki pages table.
@@ -112,32 +95,32 @@ export const wikiSpaceMembersRelations = relations(
  * `sort_order` uses text-based fractional indexing for drag-and-drop reordering.
  */
 export const wikiPages = pgTable(
-  "wiki_pages",
+  'wiki_pages',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    wikiSpaceId: uuid("wiki_space_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    wikiSpaceId: uuid('wiki_space_id')
       .notNull()
-      .references(() => wikiSpaces.id, { onDelete: "cascade" }),
-    title: text("title").notNull(),
-    slug: text("slug").notNull(),
-    content: jsonb("content"),
-    contentFormat: text("content_format").notNull().default("json"), // 'json' | 'yjs'
-    contentText: text("content_text"),
-    parentId: uuid("parent_id"),
-    sortOrder: text("sort_order").notNull().default("a0"),
-    createdBy: text("created_by").references(() => users.id, {
-      onDelete: "set null",
+      .references(() => wikiSpaces.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    slug: text('slug').notNull(),
+    content: jsonb('content'),
+    contentFormat: text('content_format').notNull().default('json'), // 'json' | 'yjs'
+    contentText: text('content_text'),
+    parentId: uuid('parent_id'),
+    sortOrder: text('sort_order').notNull().default('a0'),
+    createdBy: text('created_by').references(() => users.id, {
+      onDelete: 'set null',
     }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (table) => [
-    index("wiki_pages_space_id_idx").on(table.wikiSpaceId),
-    index("wiki_pages_parent_id_idx").on(table.parentId),
+    index('wiki_pages_space_id_idx').on(table.wikiSpaceId),
+    index('wiki_pages_parent_id_idx').on(table.parentId),
     // Partial unique index enforced via raw SQL migration:
     // UNIQUE(wiki_space_id, slug) WHERE deleted_at IS NULL
-    uniqueIndex("wiki_pages_space_slug_unique")
+    uniqueIndex('wiki_pages_space_slug_unique')
       .on(table.wikiSpaceId, table.slug)
       .where(sql`${table.deletedAt} IS NULL`),
   ],
@@ -155,8 +138,8 @@ export const wikiPagesRelations = relations(wikiPages, ({ one, many }) => ({
   parent: one(wikiPages, {
     fields: [wikiPages.parentId],
     references: [wikiPages.id],
-    relationName: "subPages",
+    relationName: 'subPages',
   }),
-  children: many(wikiPages, { relationName: "subPages" }),
+  children: many(wikiPages, { relationName: 'subPages' }),
   comments: many(comments),
 }));
