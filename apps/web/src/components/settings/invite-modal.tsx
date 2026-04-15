@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, Copy, Check } from 'lucide-react';
 import { z } from 'zod';
 import {
   Dialog,
@@ -55,18 +55,22 @@ export function InviteModal({
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<keyof InviteForm, string>>
   >({});
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const inviteMutation = useMutation({
     mutationFn: (data: InviteForm) =>
-      apiClient.post(`/workspaces/${workspaceId}/invitations`, data),
-    onSuccess: () => {
+      apiClient.post<{ invitation: unknown; token: string }>(
+        `/workspaces/${workspaceId}/invitations`,
+        data,
+      ),
+    onSuccess: (result) => {
       queryClient.invalidateQueries({
         queryKey: ['workspaces', workspaceId, 'invitations'],
       });
-      toast('초대 메일이 발송되었습니다.');
-      setFormData({ email: '', role: 'member' });
-      setFieldErrors({});
-      onOpenChange(false);
+      // Show the token so admin can share it
+      setInviteToken(result.token);
+      toast('초대가 생성되었습니다.');
     },
     onError: () => {
       // Error is shown in the form
@@ -105,6 +109,43 @@ export function InviteModal({
           </DialogDescription>
         </DialogHeader>
 
+        {inviteToken ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              아래 초대 코드를 상대방에게 전달하세요.
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-sm font-mono break-all">
+                {inviteToken}
+              </code>
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteToken);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <DialogFooter>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setInviteToken(null);
+                  setFormData({ email: '', role: 'member' });
+                  onOpenChange(false);
+                }}
+              >
+                완료
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+        <>
         {inviteMutation.error && (
           <div
             role="alert"
@@ -181,6 +222,8 @@ export function InviteModal({
             </Button>
           </DialogFooter>
         </form>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );

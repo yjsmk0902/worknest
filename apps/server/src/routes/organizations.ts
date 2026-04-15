@@ -228,6 +228,34 @@ export async function organizationRoutes(
     },
   );
 
+  // ── POST /api/v1/invitations/accept ─────────────────────────────────
+
+  app.post(
+    "/api/v1/invitations/accept",
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ["Organizations"],
+        summary: "Accept an invitation using its token",
+      },
+    },
+    async (request, reply) => {
+      const { token } = z
+        .object({ token: z.string().min(1) })
+        .parse(request.body);
+      const result = await service.acceptInvitation(request.user!.id, token);
+      if (!result) {
+        return reply.status(404).send({
+          error: {
+            code: "NOT_FOUND",
+            message: "Invalid or expired invitation token",
+          },
+        });
+      }
+      return reply.status(200).send({ data: result });
+    },
+  );
+
   // ── PATCH /api/v1/org-members/:id ──────────────────────────────────
 
   app.patch(

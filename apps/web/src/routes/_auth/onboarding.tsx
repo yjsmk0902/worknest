@@ -42,6 +42,27 @@ function OnboardingPage() {
   const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [inviteError, setInviteError] = useState('');
+
+  const acceptInviteMutation = useMutation({
+    mutationFn: (token: string) =>
+      apiClient.post<{ orgId: string }>('/invitations/accept', { token }),
+    onSuccess: () => {
+      // Invitation accepted — go to app (will auto-redirect to workspace)
+      window.location.href = '/orgs';
+    },
+    onError: (err) => {
+      if (err instanceof ApiError) {
+        setInviteError(
+          err.code === 'NOT_FOUND'
+            ? '유효하지 않거나 만료된 초대 코드입니다.'
+            : err.message,
+        );
+      } else {
+        setInviteError('초대 수락에 실패했습니다.');
+      }
+    },
+  });
 
   // Step 2: Workspace
   const [wsData, setWsData] = useState({ name: '' });
@@ -249,25 +270,41 @@ function OnboardingPage() {
               </form>
             ) : (
               <div className="space-y-4">
+                {inviteError && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
+                  >
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    <p className="text-sm text-destructive">{inviteError}</p>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="invite-code">초대 코드</Label>
                   <Input
                     id="invite-code"
                     placeholder="초대 코드를 입력하세요"
+                    disabled={acceptInviteMutation.isPending}
                     value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
+                    onChange={(e) => {
+                      setInviteCode(e.target.value);
+                      if (inviteError) setInviteError('');
+                    }}
                   />
                 </div>
                 <Button
                   className="w-full"
-                  disabled={!inviteCode.trim()}
-                  onClick={() => {
-                    // TODO: Accept invitation API call
-                    // POST /api/v1/invitations/accept { token: inviteCode }
-                    alert('초대 수락 기능은 곧 지원될 예정입니다.');
-                  }}
+                  disabled={!inviteCode.trim() || acceptInviteMutation.isPending}
+                  onClick={() => acceptInviteMutation.mutate(inviteCode.trim())}
                 >
-                  조직 참여
+                  {acceptInviteMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      참여 중...
+                    </>
+                  ) : (
+                    '조직 참여'
+                  )}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
                   조직 관리자에게 초대 코드를 받으세요
