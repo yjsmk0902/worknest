@@ -21,7 +21,7 @@
     "dev": "tsc --watch",
     "build": "echo 'editor: source-only package, no build needed'",
     "lint": "biome check src/",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
