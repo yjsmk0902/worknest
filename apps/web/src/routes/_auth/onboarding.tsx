@@ -33,6 +33,7 @@ const wsSchema = z.object({
 
 function OnboardingPage() {
   const [step, setStep] = useState(1);
+  const [orgTab, setOrgTab] = useState<'create' | 'join'>('create');
 
   // Step 1: Org
   const [orgData, setOrgData] = useState({ name: '' });
@@ -40,6 +41,7 @@ function OnboardingPage() {
     useState<Partial<Record<string, string>>>();
   const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
 
   // Step 2: Workspace
   const [wsData, setWsData] = useState({ name: '' });
@@ -116,9 +118,11 @@ function OnboardingPage() {
 
   function handleSkip() {
     if (step === 1) {
-      window.location.href = '/orgs';
+      // Cannot skip org creation — required to enter the app
+      return;
     } else if (step === 2) {
-      setStep(3);
+      // Auto-create a default workspace when skipping
+      createWsMutation.mutate({ name: '기본 워크스페이스' });
     } else {
       handleFinish();
     }
@@ -132,13 +136,15 @@ function OnboardingPage() {
           <span>
             {step} / {TOTAL_STEPS} 단계
           </span>
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            건너뛰기
-          </button>
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              건너뛰기
+            </button>
+          )}
         </div>
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-secondary">
           <div
@@ -149,7 +155,7 @@ function OnboardingPage() {
       </div>
 
       <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
-        {/* Step 1: Org Creation */}
+        {/* Step 1: Org Creation or Join */}
         {step === 1 && (
           <>
             <div className="mb-6 flex items-start gap-3">
@@ -158,15 +164,41 @@ function OnboardingPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
-                  조직 만들기
+                  조직 설정
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  팀이 사용할 조직을 만들어 시작하세요.
+                  새 조직을 만들거나 기존 조직에 참여하세요.
                 </p>
               </div>
             </div>
 
-            {createOrgMutation.error && (
+            {/* Tab selector */}
+            <div className="mb-4 flex rounded-lg bg-muted p-1">
+              <button
+                type="button"
+                onClick={() => setOrgTab('create')}
+                className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${
+                  orgTab === 'create'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                새 조직 만들기
+              </button>
+              <button
+                type="button"
+                onClick={() => setOrgTab('join')}
+                className={`flex-1 rounded-md py-2 text-sm font-medium transition-all ${
+                  orgTab === 'join'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                초대 코드로 참여
+              </button>
+            </div>
+
+            {createOrgMutation.error && orgTab === 'create' && (
               <div
                 role="alert"
                 className="mb-4 flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
@@ -178,42 +210,70 @@ function OnboardingPage() {
               </div>
             )}
 
-            <form onSubmit={handleOrgSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="org-name" error={!!orgErrors?.name}>
-                  조직 이름
-                </Label>
-                <Input
-                  id="org-name"
-                  placeholder="Acme Corporation"
-                  disabled={createOrgMutation.isPending}
-                  error={!!orgErrors?.name}
-                  value={orgData.name}
-                  onChange={(e) => {
-                    const name = e.target.value;
-                    setOrgData({ name });
-                  }}
-                />
-                {orgErrors?.name && (
-                  <p className="text-sm text-destructive">{orgErrors.name}</p>
-                )}
-              </div>
+            {orgTab === 'create' ? (
+              <form onSubmit={handleOrgSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="org-name" error={!!orgErrors?.name}>
+                    조직 이름
+                  </Label>
+                  <Input
+                    id="org-name"
+                    placeholder="Acme Corporation"
+                    disabled={createOrgMutation.isPending}
+                    error={!!orgErrors?.name}
+                    value={orgData.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      setOrgData({ name });
+                    }}
+                  />
+                  {orgErrors?.name && (
+                    <p className="text-sm text-destructive">{orgErrors.name}</p>
+                  )}
+                </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={createOrgMutation.isPending}
-              >
-                {createOrgMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    생성 중...
-                  </>
-                ) : (
-                  '조직 만들기'
-                )}
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={createOrgMutation.isPending}
+                >
+                  {createOrgMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      생성 중...
+                    </>
+                  ) : (
+                    '조직 만들기'
+                  )}
+                </Button>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invite-code">초대 코드</Label>
+                  <Input
+                    id="invite-code"
+                    placeholder="초대 코드를 입력하세요"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  disabled={!inviteCode.trim()}
+                  onClick={() => {
+                    // TODO: Accept invitation API call
+                    // POST /api/v1/invitations/accept { token: inviteCode }
+                    alert('초대 수락 기능은 곧 지원될 예정입니다.');
+                  }}
+                >
+                  조직 참여
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  조직 관리자에게 초대 코드를 받으세요
+                </p>
+              </div>
+            )}
           </>
         )}
 
