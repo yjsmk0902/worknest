@@ -68,10 +68,8 @@ COPY packages/db/package.json packages/db/
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate \
     && pnpm install --frozen-lockfile --prod
 
-# Copy compiled output from build stage
+# Copy compiled output from build stage (shared/db are bundled by tsup)
 COPY --from=build /app/apps/server/dist apps/server/dist
-COPY --from=build /app/packages/shared/dist packages/shared/dist
-COPY --from=build /app/packages/db/dist packages/db/dist
 
 # Copy Drizzle migration files (needed for runtime migrations)
 COPY --from=build /app/packages/db/src/migrations packages/db/src/migrations
