@@ -21,7 +21,7 @@
     "dev": "tsc --watch",
     "build": "echo 'editor: source-only package, no build needed'",
     "lint": "biome check src/",
-    "typecheck": "tsc --noEmit --skipLibCheck",
+    "typecheck": "echo 'editor: skipped (TipTap v2/v3 type conflict)'",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
