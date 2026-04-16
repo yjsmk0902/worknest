@@ -17,8 +17,9 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { Loader2, MoreHorizontal, Search, Users } from 'lucide-react';
+import { Loader2, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
+import { OrgInviteModal } from '@/components/settings/org-invite-modal';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/org/members')({
   component: OrgSettingsMembers,
@@ -55,6 +56,7 @@ function OrgSettingsMembers() {
   const { orgId } = useWorkspaceContext();
   const currentUser = useAuthStore((s) => s.currentUser);
   const [search, setSearch] = useState('');
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const membersQuery = useQuery({
     queryKey: ['organizations', orgId, 'members'],
@@ -91,7 +93,15 @@ function OrgSettingsMembers() {
               className="pl-9"
             />
           </div>
+          <Button onClick={() => setInviteOpen(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            멤버 초대
+          </Button>
         </div>
+
+        {orgId && (
+          <OrgInviteModal orgId={orgId} open={inviteOpen} onOpenChange={setInviteOpen} />
+        )}
 
         {membersQuery.isLoading && (
           <div className="space-y-3">
