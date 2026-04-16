@@ -11,7 +11,8 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "test": "turbo run test --filter=!@worknest/e2e",
+    "test:e2e": "turbo run test --filter=@worknest/e2e",
     "clean": "turbo run clean",
     "format": "biome format --write .",
     "check": "biome check --write ."
