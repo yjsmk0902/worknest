@@ -255,11 +255,11 @@ describe('updateProfileInput schema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects invalid avatarUrl', () => {
+  it('accepts any avatarUrl string', () => {
     const result = updateProfileInput.safeParse({
-      avatarUrl: 'not-a-url',
+      avatarUrl: '/api/v1/files/123/serve',
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 
@@ -611,28 +611,11 @@ describe('createOrganizationInput schema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects missing slug', () => {
+  it('accepts name-only input (slug auto-generated)', () => {
     const result = createOrganizationInput.safeParse({
       name: 'My Organization',
     });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid slug format', () => {
-    const result = createOrganizationInput.safeParse({
-      name: 'My Organization',
-      slug: 'My Org!',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid logo URL', () => {
-    const result = createOrganizationInput.safeParse({
-      name: 'My Organization',
-      slug: 'my-org',
-      logo: 'not-a-url',
-    });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 
@@ -656,9 +639,9 @@ describe('updateOrganizationInput schema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('rejects invalid slug in update', () => {
+  it('rejects name exceeding max length', () => {
     const result = updateOrganizationInput.safeParse({
-      slug: 'INVALID',
+      name: 'a'.repeat(101),
     });
     expect(result.success).toBe(false);
   });
@@ -853,11 +836,11 @@ describe('createWorkspaceInput schema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects missing slug', () => {
+  it('accepts name-only input (slug auto-generated)', () => {
     const result = createWorkspaceInput.safeParse({
       name: 'My Workspace',
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 
   it('rejects description longer than 500 characters', () => {
@@ -899,9 +882,9 @@ describe('updateWorkspaceInput schema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('rejects invalid slug in update', () => {
+  it('rejects name exceeding max length', () => {
     const result = updateWorkspaceInput.safeParse({
-      slug: 'BAD SLUG',
+      name: 'a'.repeat(101),
     });
     expect(result.success).toBe(false);
   });
