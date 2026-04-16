@@ -27,21 +27,26 @@ function AppLayout() {
   const isMediumViewport = useMediaQuery('(min-width: 1024px) and (max-width: 1279px)');
   const isLargeViewport = useMediaQuery('(min-width: 1280px)');
 
+  // Track previous viewport state to only react on transitions (not every render)
+  const prevMediumRef = useRef(isMediumViewport);
+  const prevLargeRef = useRef(isLargeViewport);
+
   useEffect(() => {
-    if (isMediumViewport && !sidebarCollapsed) {
+    // Only auto-collapse when TRANSITIONING into medium viewport
+    if (isMediumViewport && !prevMediumRef.current) {
       setSidebarCollapsed(true);
-      // Track that the collapse was system-initiated
       try {
         sessionStorage.setItem('sidebar-system-collapsed', 'true');
       } catch {
         // sessionStorage unavailable
       }
     }
-  }, [isMediumViewport, sidebarCollapsed, setSidebarCollapsed]);
+    prevMediumRef.current = isMediumViewport;
+  }, [isMediumViewport, setSidebarCollapsed]);
 
   useEffect(() => {
-    if (isLargeViewport && sidebarCollapsed) {
-      // Only auto-expand if the collapse was system-initiated, not user-initiated
+    // Only auto-expand when TRANSITIONING into large viewport
+    if (isLargeViewport && !prevLargeRef.current) {
       try {
         if (sessionStorage.getItem('sidebar-system-collapsed') === 'true') {
           sessionStorage.removeItem('sidebar-system-collapsed');
@@ -51,7 +56,8 @@ function AppLayout() {
         // sessionStorage unavailable
       }
     }
-  }, [isLargeViewport, sidebarCollapsed, setSidebarCollapsed]);
+    prevLargeRef.current = isLargeViewport;
+  }, [isLargeViewport, setSidebarCollapsed]);
 
   const profileQuery = useQuery<User>({
     queryKey: ['my', 'profile'],
