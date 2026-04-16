@@ -109,6 +109,24 @@
 
 ---
 
+## 기술 부채 (별도 정리 필요)
+
+### 테스트 스위트 정비 (우선순위: 중)
+현재 `apps/server` vitest에서 62개 테스트가 실패 중. CI에서 non-blocking으로 처리.
+
+**실패 원인 카테고리:**
+- **Mock DB 격리 부족** (대부분): 이슈 필터/정렬/페이지네이션 테스트들이 전체 데이터(20/40/50개)를 반환하여 expected 1/2/3/5와 불일치
+- **Rate limiting 상태 유지**: auth 테스트가 429를 반환 (테스트 간 리셋 안 됨)
+- **Better Auth 모킹**: register/login 400·401 반환
+- **Error 코드 불일치**: 위키 순환 참조가 400 대신 403 반환
+
+### 타입 오류 정리 (우선순위: 낮)
+- `apps/server`: Drizzle ORM `strict` 타입과 `request.user!.id` 패턴 충돌 → 수십 개 에러
+- `apps/web`: 라우트 타입(`Link to="..."`), 배열 인덱스 undefined 체크 → ~30개
+- `packages/editor`: TipTap `@tiptap/pm` v2/v3 버전 충돌 → 버전 통일 필요
+
+현재 CI에서 typecheck 제외하고 build(tsup + Vite)로 대체 검증.
+
 ## 구현 순서
 
 ```
