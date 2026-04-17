@@ -16,6 +16,7 @@ import { AlertTriangle, Check, Copy, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { z } from 'zod';
 import { apiClient } from '../../lib/api-client';
+import { copyToClipboard } from '../../lib/clipboard';
 
 interface InviteModalProps {
   workspaceId: string;
@@ -112,10 +113,14 @@ export function InviteModal({ workspaceId, open, onOpenChange }: InviteModalProp
                 variant="outline"
                 size="icon"
                 className="shrink-0"
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteToken);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
+                onClick={async () => {
+                  const ok = await copyToClipboard(inviteToken);
+                  if (ok) {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  } else {
+                    toast('복사에 실패했습니다.');
+                  }
                 }}
               >
                 {copied ? (

@@ -2,6 +2,7 @@ import { ImageUpload } from '@/components/settings/image-upload';
 import { SettingsLayout } from '@/components/settings/settings-layout';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { apiClient } from '@/lib/api-client';
+import { copyToClipboard } from '@/lib/clipboard';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
@@ -121,10 +122,14 @@ function OrgSettingsForm({
     updateMutation.mutate(formData);
   }
 
-  function copyTag() {
-    navigator.clipboard.writeText(org.tag);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  async function copyTag() {
+    const ok = await copyToClipboard(org.tag);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      toast('복사에 실패했습니다.');
+    }
   }
 
   return (
