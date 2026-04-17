@@ -1,10 +1,4 @@
-import {
-  type Database,
-  joinRequests,
-  orgMembers,
-  organizations,
-  users,
-} from '@worknest/db';
+import { type Database, joinRequests, orgMembers, organizations, users } from '@worknest/db';
 import type { CursorPaginationQuery } from '@worknest/shared';
 import { and, desc, eq, isNull, lt } from 'drizzle-orm';
 import { AppError, ErrorCode } from '../lib/errors';
@@ -87,22 +81,12 @@ export class JoinRequestService {
     const adminMembers = await this.db
       .select({ userId: orgMembers.userId })
       .from(orgMembers)
-      .where(
-        and(
-          eq(orgMembers.orgId, orgId),
-          eq(orgMembers.role, 'owner'),
-        ),
-      );
+      .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.role, 'owner')));
 
     const adminMembersAdditional = await this.db
       .select({ userId: orgMembers.userId })
       .from(orgMembers)
-      .where(
-        and(
-          eq(orgMembers.orgId, orgId),
-          eq(orgMembers.role, 'admin'),
-        ),
-      );
+      .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.role, 'admin')));
 
     const recipientIds = [
       ...adminMembers.map((m) => m.userId),
@@ -184,9 +168,7 @@ export class JoinRequestService {
         },
       })),
       pagination: {
-        next_cursor: hasMore
-          ? items[items.length - 1]?.request.createdAt.toISOString()
-          : null,
+        next_cursor: hasMore ? items[items.length - 1]?.request.createdAt.toISOString() : null,
         has_more: hasMore,
       },
     };
@@ -197,11 +179,7 @@ export class JoinRequestService {
   /**
    * Approve or reject a join request. Reviewer must be admin/owner of the org.
    */
-  async reviewRequest(
-    requestId: string,
-    reviewerId: string,
-    action: 'approve' | 'reject',
-  ) {
+  async reviewRequest(requestId: string, reviewerId: string, action: 'approve' | 'reject') {
     const request = await this.db
       .select()
       .from(joinRequests)
@@ -224,9 +202,7 @@ export class JoinRequestService {
     const reviewerMember = await this.db
       .select()
       .from(orgMembers)
-      .where(
-        and(eq(orgMembers.orgId, request.orgId), eq(orgMembers.userId, reviewerId)),
-      )
+      .where(and(eq(orgMembers.orgId, request.orgId), eq(orgMembers.userId, reviewerId)))
       .limit(1)
       .then((rows) => rows[0]);
 

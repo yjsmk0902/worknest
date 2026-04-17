@@ -15,9 +15,9 @@ import type {
   UpdateOrganizationInput,
 } from '@worknest/shared';
 import { and, count, desc, eq, ilike, isNull, lt, sql } from 'drizzle-orm';
-import { escapeLikePattern } from '../lib/escape-like';
 import { generateToken, hashToken } from '../lib/crypto';
 import { AppError, ErrorCode } from '../lib/errors';
+import { escapeLikePattern } from '../lib/escape-like';
 
 function generateSlug(name: string): string {
   const base = name
