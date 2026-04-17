@@ -43,17 +43,14 @@ export class OrganizationService {
    * Retries up to 5 times to ensure uniqueness.
    */
   private async generateTag(): Promise<string> {
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const maxRetries = 5;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      const tag =
-        letters.charAt(Math.floor(Math.random() * 26)) +
-        letters.charAt(Math.floor(Math.random() * 26)) +
-        letters.charAt(Math.floor(Math.random() * 26)) +
-        letters.charAt(Math.floor(Math.random() * 26)) +
-        '-' +
-        String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+      let tag = '';
+      for (let i = 0; i < 15; i++) {
+        tag += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
 
       const existing = await this.db
         .select({ id: organizations.id })

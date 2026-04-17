@@ -6,21 +6,21 @@ ALTER TABLE "organizations" ADD COLUMN "tag" text;
 ALTER TABLE "organizations" ADD COLUMN "description" text;
 ALTER TABLE "organizations" ADD COLUMN "show_member_count" boolean NOT NULL DEFAULT true;
 
--- 2. Backfill existing orgs with random tags (XXXX-0000 format)
+-- 2. Backfill existing orgs with random 15-char alphanumeric tags
 DO $$
 DECLARE
   r RECORD;
   new_tag TEXT;
   tag_exists BOOLEAN;
+  chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  i INT;
 BEGIN
   FOR r IN SELECT id FROM organizations WHERE tag IS NULL LOOP
     LOOP
-      new_tag := chr(65 + floor(random() * 26)::int)
-              || chr(65 + floor(random() * 26)::int)
-              || chr(65 + floor(random() * 26)::int)
-              || chr(65 + floor(random() * 26)::int)
-              || '-'
-              || lpad(floor(random() * 10000)::text, 4, '0');
+      new_tag := '';
+      FOR i IN 1..15 LOOP
+        new_tag := new_tag || substr(chars, floor(random() * 36 + 1)::int, 1);
+      END LOOP;
 
       SELECT EXISTS(
         SELECT 1 FROM organizations WHERE tag = new_tag AND deleted_at IS NULL
