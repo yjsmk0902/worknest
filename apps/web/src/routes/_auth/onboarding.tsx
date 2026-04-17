@@ -1,21 +1,21 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Button } from '@worknest/ui';
-import { Input } from '@worknest/ui';
-import { Label } from '@worknest/ui';
+import { Avatar, Button, Input, Label, toast } from '@worknest/ui';
 import {
   AlertTriangle,
   Building2,
+  Check,
   FileText,
   FolderKanban,
   Loader2,
   Rocket,
+  Search,
   UserPlus,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
-import { ApiError, apiClient } from '../../lib/api-client';
+import { apiClient } from '../../lib/api-client';
 
 export const Route = createFileRoute('/_auth/onboarding')({
   component: OnboardingPage,
@@ -40,24 +40,61 @@ function OnboardingPage() {
   const [orgErrors, setOrgErrors] = useState<Partial<Record<string, string>>>();
   const [createdOrgId, setCreatedOrgId] = useState('');
   const [createdOrgSlug, setCreatedOrgSlug] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
-  const [inviteError, setInviteError] = useState('');
 
-  const acceptInviteMutation = useMutation({
-    mutationFn: (token: string) =>
-      apiClient.post<{ orgId: string }>('/invitations/accept', { token }),
+  // Join tab state
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [joinMessage, setJoinMessage] = useState('');
+  const [joinSuccess, setJoinSuccess] = useState(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchInput(value);
+    setSelectedOrgId(null);
+    setJoinMessage('');
+    setJoinSuccess(false);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedQuery(value.trim());
+    }, 300);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const searchQuery = useQuery({
+    queryKey: ['organizations', 'search', debouncedQuery],
+    queryFn: () =>
+      apiClient.get<{
+        data: Array<{
+          id: string;
+          name: string;
+          tag: string;
+          slug: string;
+          description: string | null;
+          logo: string | null;
+          memberCount: number | null;
+        }>;
+      }>('/organizations/search', { q: debouncedQuery }),
+    enabled: debouncedQuery.length > 0,
+  });
+
+  const joinRequestMutation = useMutation({
+    mutationFn: (data: { orgId: string; message?: string }) =>
+      apiClient.post(`/organizations/${data.orgId}/join-requests`, {
+        message: data.message || undefined,
+      }),
     onSuccess: () => {
-      // Invitation accepted — go to app (will auto-redirect to workspace)
-      window.location.href = '/orgs';
+      setJoinSuccess(true);
+      setSelectedOrgId(null);
+      setJoinMessage('');
     },
-    onError: (err) => {
-      if (err instanceof ApiError) {
-        setInviteError(
-          err.code === 'NOT_FOUND' ? '유효하지 않거나 만료된 초대 코드입니다.' : err.message,
-        );
-      } else {
-        setInviteError('초대 수락에 실패했습니다.');
-      }
+    onError: () => {
+      toast.error('참여 요청에 실패했습니다.');
     },
   });
 
@@ -210,7 +247,7 @@ function OnboardingPage() {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                초대 코드로 참여
+                조직 참여하기
               </button>
             </div>
 
@@ -257,45 +294,135 @@ function OnboardingPage() {
               </form>
             ) : (
               <div className="space-y-4">
-                {inviteError && (
-                  <div
-                    role="alert"
-                    className="flex items-start gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3"
-                  >
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                    <p className="text-sm text-destructive">{inviteError}</p>
+                {joinSuccess && (
+                  <div className="flex items-start gap-2 rounded-md border border-green-500/20 bg-green-500/10 p-3">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+                    <p className="text-sm text-green-700 dark:text-green-400">
+                      참여 요청이 전송되었습니다. 관리자의 승인을 기다려주세요.
+                    </p>
                   </div>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="invite-code">초대 코드</Label>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="invite-code"
-                    placeholder="초대 코드를 입력하세요"
-                    disabled={acceptInviteMutation.isPending}
-                    value={inviteCode}
-                    onChange={(e) => {
-                      setInviteCode(e.target.value);
-                      if (inviteError) setInviteError('');
-                    }}
+                    placeholder="조직 이름 또는 태그(#XXXX-0000)로 검색"
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-9"
                   />
                 </div>
-                <Button
-                  className="w-full"
-                  disabled={!inviteCode.trim() || acceptInviteMutation.isPending}
-                  onClick={() => acceptInviteMutation.mutate(inviteCode.trim())}
-                >
-                  {acceptInviteMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      참여 중...
-                    </>
+
+                {searchQuery.isLoading && debouncedQuery.length > 0 && (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+
+                {searchQuery.data &&
+                  !searchQuery.isLoading &&
+                  (searchQuery.data.data.length === 0 ? (
+                    <div className="py-6 text-center">
+                      <Search className="mx-auto h-8 w-8 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        검색 결과가 없습니다. 조직 이름이나 태그(#XXXX-0000)로 검색하세요.
+                      </p>
+                    </div>
                   ) : (
-                    '조직 참여'
-                  )}
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  조직 관리자에게 초대 코드를 받으세요
-                </p>
+                    <div className="max-h-[280px] space-y-2 overflow-y-auto">
+                      {searchQuery.data.data.map((org) => (
+                        <div
+                          key={org.id}
+                          className="rounded-lg border border-border p-3 transition-colors hover:bg-accent"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar src={org.logo} fallback={org.name} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {org.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                #{org.tag}
+                                {org.memberCount != null && (
+                                  <span className="ml-2">{org.memberCount}명</span>
+                                )}
+                              </p>
+                              {org.description && (
+                                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                  {org.description}
+                                </p>
+                              )}
+                            </div>
+                            {selectedOrgId !== org.id && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedOrgId(org.id);
+                                  setJoinMessage('');
+                                  setJoinSuccess(false);
+                                }}
+                              >
+                                참여 요청
+                              </Button>
+                            )}
+                          </div>
+
+                          {selectedOrgId === org.id && (
+                            <div className="mt-3 space-y-2 border-t border-border pt-3">
+                              <textarea
+                                placeholder="가입 메시지 (선택사항)"
+                                maxLength={500}
+                                value={joinMessage}
+                                onChange={(e) => setJoinMessage(e.target.value)}
+                                rows={3}
+                                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">
+                                  {joinMessage.length}/500
+                                </span>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setSelectedOrgId(null)}
+                                  >
+                                    취소
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    disabled={joinRequestMutation.isPending}
+                                    onClick={() =>
+                                      joinRequestMutation.mutate({
+                                        orgId: org.id,
+                                        message: joinMessage.trim() || undefined,
+                                      })
+                                    }
+                                  >
+                                    {joinRequestMutation.isPending ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        전송 중...
+                                      </>
+                                    ) : (
+                                      '요청 보내기'
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+
+                {!debouncedQuery && !joinSuccess && (
+                  <p className="py-4 text-center text-xs text-muted-foreground">
+                    조직 이름이나 태그(#XXXX-0000)로 검색하세요
+                  </p>
+                )}
               </div>
             )}
           </>

@@ -14,7 +14,8 @@ import type {
   OrgRole,
   UpdateOrganizationInput,
 } from '@worknest/shared';
-import { and, desc, eq, isNull, lt } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, isNull, lt, sql } from 'drizzle-orm';
+import { escapeLikePattern } from '../lib/escape-like';
 import { generateToken, hashToken } from '../lib/crypto';
 import { AppError, ErrorCode } from '../lib/errors';
 
@@ -34,6 +35,38 @@ function generateSlug(name: string): string {
 
 export class OrganizationService {
   constructor(private db: Database) {}
+
+  // ── Generate Tag ──────────────────────────────────────────────────
+
+  /**
+   * Generate a unique org tag in XXXX-0000 format (4 uppercase letters + 4 digits).
+   * Retries up to 5 times to ensure uniqueness.
+   */
+  private async generateTag(): Promise<string> {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const maxRetries = 5;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const tag =
+        letters.charAt(Math.floor(Math.random() * 26)) +
+        letters.charAt(Math.floor(Math.random() * 26)) +
+        letters.charAt(Math.floor(Math.random() * 26)) +
+        letters.charAt(Math.floor(Math.random() * 26)) +
+        '-' +
+        String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+
+      const existing = await this.db
+        .select({ id: organizations.id })
+        .from(organizations)
+        .where(and(eq(organizations.tag, tag), isNull(organizations.deletedAt)))
+        .limit(1)
+        .then((rows) => rows[0]);
+
+      if (!existing) return tag;
+    }
+
+    throw AppError.internal('Failed to generate unique organization tag');
+  }
 
   // ── List User's Orgs ───────────────────────────────────────────────
 
@@ -66,6 +99,8 @@ export class OrganizationService {
         id: row.org.id,
         name: row.org.name,
         slug: row.org.slug,
+        tag: row.org.tag,
+        description: row.org.description,
         logo: row.org.logo,
         createdAt: row.org.createdAt.toISOString(),
         updatedAt: row.org.updatedAt.toISOString(),
@@ -82,6 +117,7 @@ export class OrganizationService {
 
   async create(userId: string, input: CreateOrganizationInput) {
     const slug = generateSlug(input.name);
+    const tag = await this.generateTag();
 
     // Create org + owner membership atomically
     const org = await this.db.transaction(async (tx) => {
@@ -90,6 +126,8 @@ export class OrganizationService {
         .values({
           name: input.name,
           slug,
+          tag,
+          description: input.description ?? null,
           logo: input.logo ?? null,
         })
         .returning();
@@ -108,6 +146,8 @@ export class OrganizationService {
       id: org.id,
       name: org.name,
       slug: org.slug,
+      tag: org.tag,
+      description: org.description,
       logo: org.logo,
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
@@ -132,6 +172,8 @@ export class OrganizationService {
       id: org.id,
       name: org.name,
       slug: org.slug,
+      tag: org.tag,
+      description: org.description,
       logo: org.logo,
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
@@ -163,6 +205,8 @@ export class OrganizationService {
       id: row.org.id,
       name: row.org.name,
       slug: row.org.slug,
+      tag: row.org.tag,
+      description: row.org.description,
       logo: row.org.logo,
       role: row.member.role,
       createdAt: row.org.createdAt.toISOString(),
@@ -176,6 +220,8 @@ export class OrganizationService {
     const updates: Record<string, unknown> = { updatedAt: new Date() };
     if (input.name !== undefined) updates.name = input.name;
     if (input.logo !== undefined) updates.logo = input.logo;
+    if (input.description !== undefined) updates.description = input.description;
+    if (input.showMemberCount !== undefined) updates.showMemberCount = input.showMemberCount;
 
     const updated = await this.db
       .update(organizations)
@@ -192,9 +238,75 @@ export class OrganizationService {
       id: updated.id,
       name: updated.name,
       slug: updated.slug,
+      tag: updated.tag,
+      description: updated.description,
       logo: updated.logo,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
+    };
+  }
+
+  // ── Search Organizations ───────────────────────────────────────────
+
+  /**
+   * Search non-deleted organizations by tag (exact match if prefixed with #)
+   * or by name (ILIKE). Returns basic org info with member count when allowed.
+   */
+  async searchOrganizations(query: string) {
+    const isTagSearch = query.startsWith('#');
+    const searchTerm = isTagSearch ? query.slice(1) : query;
+
+    const conditions = [isNull(organizations.deletedAt)];
+
+    if (isTagSearch) {
+      conditions.push(eq(organizations.tag, searchTerm.toUpperCase()));
+    } else {
+      conditions.push(ilike(organizations.name, `%${escapeLikePattern(searchTerm)}%`));
+    }
+
+    const rows = await this.db
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        tag: organizations.tag,
+        slug: organizations.slug,
+        description: organizations.description,
+        logo: organizations.logo,
+        showMemberCount: organizations.showMemberCount,
+      })
+      .from(organizations)
+      .where(and(...conditions))
+      .limit(20);
+
+    // Fetch member counts for orgs that allow it
+    const orgIds = rows.filter((r) => r.showMemberCount).map((r) => r.id);
+    const memberCounts = new Map<string, number>();
+
+    if (orgIds.length > 0) {
+      const counts = await this.db
+        .select({
+          orgId: orgMembers.orgId,
+          count: count(),
+        })
+        .from(orgMembers)
+        .where(sql`${orgMembers.orgId} IN ${orgIds}`)
+        .groupBy(orgMembers.orgId);
+
+      for (const row of counts) {
+        memberCounts.set(row.orgId, row.count);
+      }
+    }
+
+    return {
+      data: rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        tag: row.tag,
+        slug: row.slug,
+        description: row.description,
+        logo: row.logo,
+        memberCount: row.showMemberCount ? (memberCounts.get(row.id) ?? 0) : null,
+      })),
     };
   }
 

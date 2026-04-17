@@ -1,3 +1,4 @@
+import { JoinRequestList } from '@/components/settings/join-request-list';
 import { SettingsLayout } from '@/components/settings/settings-layout';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { apiClient } from '@/lib/api-client';
@@ -17,9 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { Loader2, MoreHorizontal, Search, UserPlus, Users } from 'lucide-react';
+import { Loader2, MoreHorizontal, Search, Users } from 'lucide-react';
 import { useState } from 'react';
-import { OrgInviteModal } from '@/components/settings/org-invite-modal';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/settings/org/members')({
   component: OrgSettingsMembers,
@@ -56,7 +56,6 @@ function OrgSettingsMembers() {
   const { orgId } = useWorkspaceContext();
   const currentUser = useAuthStore((s) => s.currentUser);
   const [search, setSearch] = useState('');
-  const [inviteOpen, setInviteOpen] = useState(false);
 
   const membersQuery = useQuery({
     queryKey: ['organizations', orgId, 'members'],
@@ -93,15 +92,7 @@ function OrgSettingsMembers() {
               className="pl-9"
             />
           </div>
-          <Button onClick={() => setInviteOpen(true)} className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            멤버 초대
-          </Button>
         </div>
-
-        {orgId && (
-          <OrgInviteModal orgId={orgId} open={inviteOpen} onOpenChange={setInviteOpen} />
-        )}
 
         {membersQuery.isLoading && (
           <div className="space-y-3">
@@ -137,6 +128,17 @@ function OrgSettingsMembers() {
             />
           ))}
         </div>
+
+        {orgId && (
+          <>
+            <Separator />
+            <div>
+              <h3 className="text-base font-semibold text-foreground">가입 요청</h3>
+              <p className="text-sm text-muted-foreground">조직 가입을 요청한 사용자 목록입니다.</p>
+            </div>
+            <JoinRequestList orgId={orgId} />
+          </>
+        )}
       </div>
     </SettingsLayout>
   );

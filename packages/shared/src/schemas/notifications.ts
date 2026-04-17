@@ -8,6 +8,9 @@ export const notificationType = z.enum([
   'commented',
   'status_changed',
   'invited',
+  'join_request_received',
+  'join_request_approved',
+  'join_request_rejected',
 ]);
 
 export type NotificationType = z.infer<typeof notificationType>;

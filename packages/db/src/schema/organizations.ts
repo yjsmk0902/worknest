@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { users } from './users';
 import { workspaces } from './workspaces';
 
@@ -7,7 +7,8 @@ import { workspaces } from './workspaces';
  * Organizations table.
  *
  * Top-level tenant entity. Uses soft delete with a partial unique index on
- * `slug` so that deleted orgs don't block slug reuse.
+ * `slug` so that deleted orgs don't block slug reuse. The `tag` column is a
+ * unique human-friendly code (e.g. ABCD-1234) used for org discovery.
  */
 export const organizations = pgTable(
   'organizations',
@@ -15,6 +16,9 @@ export const organizations = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
     slug: text('slug').notNull(),
+    tag: text('tag').notNull(),
+    description: text('description'),
+    showMemberCount: boolean('show_member_count').notNull().default(true),
     logo: text('logo'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -22,6 +26,7 @@ export const organizations = pgTable(
   },
   (table) => [
     uniqueIndex('organizations_slug_unique').on(table.slug).where(sql`${table.deletedAt} IS NULL`),
+    uniqueIndex('organizations_tag_unique').on(table.tag).where(sql`${table.deletedAt} IS NULL`),
   ],
 );
 

@@ -4,6 +4,7 @@ export { sessions, accounts, verifications } from './auth';
 export { organizations, orgMembers } from './organizations';
 export { workspaces, workspaceMembers } from './workspaces';
 export { invitations } from './invitations';
+export { joinRequests } from './join-requests';
 export { projects, projectMembers } from './projects';
 export {
   issueStatuses,
@@ -31,6 +32,7 @@ export {
   workspaceMembersRelations,
 } from './workspaces';
 export { invitationsRelations } from './invitations';
+export { joinRequestsRelations } from './join-requests';
 export { projectsRelations, projectMembersRelations } from './projects';
 export {
   issueStatusesRelations,

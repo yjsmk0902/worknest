@@ -32,6 +32,7 @@ import { healthRoutes } from './routes/health';
 import { issueStatusRoutes } from './routes/issue-statuses';
 import { issueTypeRoutes } from './routes/issue-types';
 import { issueRoutes } from './routes/issues';
+import { joinRequestRoutes } from './routes/join-requests';
 import { labelRoutes } from './routes/labels';
 import { myWorkRoutes } from './routes/my-work';
 import { notificationRoutes } from './routes/notifications';
@@ -214,6 +215,7 @@ async function main() {
   await authRoutes(app, { auth, db });
   await profileRoutes(app, { auth, db });
   await organizationRoutes(app, { auth, db });
+  await joinRequestRoutes(app, { auth, db });
   await workspaceRoutes(app, { auth, db });
   await projectRoutes(app, { auth, db });
   await issueStatusRoutes(app, { auth, db });

@@ -3,6 +3,7 @@ import {
   createOrgInvitationInput,
   createOrganizationInput,
   cursorPaginationQuery,
+  searchOrganizationsQuery,
   updateOrgMemberInput,
   updateOrganizationInput,
   uuidParam,
@@ -76,6 +77,24 @@ export async function organizationRoutes(
       const { slug } = request.params as { slug: string };
       const org = await service.getBySlug(slug, request.user?.id);
       return reply.status(200).send({ data: org });
+    },
+  );
+
+  // ── GET /api/v1/organizations/search ────────────────────────────────
+
+  app.get(
+    '/api/v1/organizations/search',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Organizations'],
+        summary: 'Search organizations by name or tag (prefix with # for tag search)',
+      },
+    },
+    async (request, reply) => {
+      const { q } = searchOrganizationsQuery.parse(request.query);
+      const result = await service.searchOrganizations(q);
+      return reply.status(200).send(result);
     },
   );
 
