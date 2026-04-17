@@ -69,8 +69,8 @@ function OnboardingPage() {
   const searchQuery = useQuery({
     queryKey: ['organizations', 'search', debouncedQuery],
     queryFn: () =>
-      apiClient.get<{
-        data: Array<{
+      apiClient.get<
+        Array<{
           id: string;
           name: string;
           tag: string;
@@ -78,8 +78,8 @@ function OnboardingPage() {
           description: string | null;
           logo: string | null;
           memberCount: number | null;
-        }>;
-      }>('/organizations/search', { q: debouncedQuery }),
+        }>
+      >('/organizations/search', { q: debouncedQuery }),
     enabled: debouncedQuery.length > 0,
   });
 
@@ -321,7 +321,7 @@ function OnboardingPage() {
 
                 {searchQuery.data &&
                   !searchQuery.isLoading &&
-                  (searchQuery.data.data.length === 0 ? (
+                  (searchQuery.data.length === 0 ? (
                     <div className="py-6 text-center">
                       <Search className="mx-auto h-8 w-8 text-muted-foreground" />
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -330,7 +330,7 @@ function OnboardingPage() {
                     </div>
                   ) : (
                     <div className="max-h-[280px] space-y-2 overflow-y-auto">
-                      {searchQuery.data.data.map((org) => (
+                      {searchQuery.data.map((org) => (
                         <div
                           key={org.id}
                           className="rounded-lg border border-border p-3 transition-colors hover:bg-accent"
