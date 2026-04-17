@@ -653,6 +653,8 @@ describe('organizationOutput schema', () => {
       id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'My Org',
       slug: 'my-org',
+      tag: 'ABCDEFGHIJKLMNO',
+      description: null,
       logo: null,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
