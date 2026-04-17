@@ -31,6 +31,7 @@ export const organizationOutput = z.object({
   tag: z.string(),
   description: z.string().nullable(),
   logo: z.string().nullable(),
+  showMemberCount: z.boolean().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

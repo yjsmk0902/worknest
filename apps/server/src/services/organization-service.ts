@@ -146,6 +146,7 @@ export class OrganizationService {
       tag: org.tag,
       description: org.description,
       logo: org.logo,
+      showMemberCount: org.showMemberCount,
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
     };
@@ -172,6 +173,7 @@ export class OrganizationService {
       tag: org.tag,
       description: org.description,
       logo: org.logo,
+      showMemberCount: org.showMemberCount,
       createdAt: org.createdAt.toISOString(),
       updatedAt: org.updatedAt.toISOString(),
     };
@@ -205,6 +207,7 @@ export class OrganizationService {
       tag: row.org.tag,
       description: row.org.description,
       logo: row.org.logo,
+      showMemberCount: row.org.showMemberCount,
       role: row.member.role,
       createdAt: row.org.createdAt.toISOString(),
       updatedAt: row.org.updatedAt.toISOString(),
@@ -238,6 +241,7 @@ export class OrganizationService {
       tag: updated.tag,
       description: updated.description,
       logo: updated.logo,
+      showMemberCount: updated.showMemberCount,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
     };
