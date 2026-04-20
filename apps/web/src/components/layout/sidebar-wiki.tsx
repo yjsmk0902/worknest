@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from '@tanstack/react-router';
 import type { WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
-import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 import { CollapsedNavItem } from './sidebar-nav';
@@ -38,23 +38,31 @@ export function SidebarWiki({ orgSlug, wsSlug, wsId }: SidebarWikiProps) {
 
   return (
     <>
-      {/* Section header */}
-      <div className="flex items-center mb-1 px-2.5">
+      {/* Section header — matches nav-item scale */}
+      <div className="group relative flex items-center">
         <button
           type="button"
           onClick={() => setSectionOpen((v) => !v)}
-          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
+          className="flex h-7 flex-1 items-center gap-[10px] rounded-md px-2 text-[13px] text-[color:var(--fg-mid)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
         >
-          {sectionOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          Wiki
+          <span className="grid h-[15px] w-[15px] shrink-0 place-items-center text-[color:var(--fg-dim)]">
+            <BookOpen className="h-[15px] w-[15px]" />
+          </span>
+          <span className="flex-1 text-left">위키</span>
+          {sectionOpen ? (
+            <ChevronDown className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
+          ) : (
+            <ChevronRight className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
+          )}
         </button>
         <Link
           to="/$orgSlug/$wsSlug/wiki"
           params={{ orgSlug, wsSlug }}
-          className="ml-auto flex h-5 w-5 items-center justify-center rounded text-sidebar-foreground/30 hover:text-sidebar-foreground/60 hover:bg-sidebar-accent transition-colors"
+          className="absolute right-1 grid h-5 w-5 place-items-center rounded text-[color:var(--fg-dim)] opacity-0 transition-opacity hover:bg-[color:var(--bg-hover)] hover:text-foreground group-hover:opacity-100"
           aria-label="스페이스 추가"
+          onClick={(e) => e.stopPropagation()}
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-[13px] w-[13px]" />
         </Link>
       </div>
 

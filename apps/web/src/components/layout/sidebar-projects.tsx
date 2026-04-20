@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   Folder,
+  FolderKanban,
   GanttChart,
   Kanban,
   List,
@@ -117,23 +118,33 @@ export function SidebarProjects({
 
   return (
     <>
-      {/* Section header */}
-      <div className="flex items-center mb-1 px-2.5">
+      {/* Section header — matches nav-item scale with chevron + icon */}
+      <div className="group relative flex items-center">
         <button
           type="button"
           onClick={() => setSectionOpen((v) => !v)}
-          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors"
+          className="flex h-7 flex-1 items-center gap-[10px] rounded-md px-2 text-[13px] text-[color:var(--fg-mid)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
         >
-          {sectionOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          Projects
+          <span className="grid h-[15px] w-[15px] shrink-0 place-items-center text-[color:var(--fg-dim)]">
+            <FolderKanban className="h-[15px] w-[15px]" />
+          </span>
+          <span className="flex-1 text-left">프로젝트</span>
+          {sectionOpen ? (
+            <ChevronDown className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
+          ) : (
+            <ChevronRight className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
+          )}
         </button>
         <button
           type="button"
-          onClick={() => setCreateModalOpen(true)}
-          className="ml-auto flex h-5 w-5 items-center justify-center rounded text-sidebar-foreground/30 hover:text-sidebar-foreground/60 hover:bg-sidebar-accent transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCreateModalOpen(true);
+          }}
+          className="absolute right-1 grid h-5 w-5 place-items-center rounded text-[color:var(--fg-dim)] opacity-0 transition-opacity hover:bg-[color:var(--bg-hover)] hover:text-foreground group-hover:opacity-100"
           aria-label="프로젝트 추가"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-[13px] w-[13px]" />
         </button>
       </div>
 
