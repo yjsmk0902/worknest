@@ -31,6 +31,8 @@ const wsSchema = z.object({
   name: z.string().min(1, '워크스페이스 이름을 입력해주세요.').max(100, '100자 이하여야 합니다.'),
 });
 
+const DEFAULT_JOIN_MESSAGE = '가입을 요청합니다.';
+
 function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [orgTab, setOrgTab] = useState<'create' | 'join'>('create');
@@ -45,14 +47,14 @@ function OnboardingPage() {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [joinMessage, setJoinMessage] = useState('');
+  const [joinMessage, setJoinMessage] = useState(DEFAULT_JOIN_MESSAGE);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearchInput(value);
     setSelectedOrgId(null);
-    setJoinMessage('');
+    setJoinMessage(DEFAULT_JOIN_MESSAGE);
     setJoinSuccess(false);
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
@@ -91,7 +93,7 @@ function OnboardingPage() {
     onSuccess: () => {
       setJoinSuccess(true);
       setSelectedOrgId(null);
-      setJoinMessage('');
+      setJoinMessage(DEFAULT_JOIN_MESSAGE);
     },
     onError: () => {
       toast.error('참여 요청에 실패했습니다.');
@@ -381,7 +383,7 @@ function OnboardingPage() {
                                 variant="outline"
                                 onClick={() => {
                                   setSelectedOrgId(org.id);
-                                  setJoinMessage('');
+                                  setJoinMessage(DEFAULT_JOIN_MESSAGE);
                                   setJoinSuccess(false);
                                 }}
                               >
