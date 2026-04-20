@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { StatusCategory } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
-import { AlertTriangle, ChevronDown, ChevronRight, CircleUser } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { AlertTriangle, CircleUser } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
@@ -43,20 +43,7 @@ interface MyIssue {
 
 type GroupedIssues = Record<StatusCategory, MyIssue[]>;
 
-// ── Status category display config ─────────────────────────────────────
-
-const CATEGORY_CONFIG: Record<
-  StatusCategory,
-  { label: string; color: string; defaultOpen: boolean }
-> = {
-  started: { label: 'In Progress', color: 'bg-yellow-500', defaultOpen: true },
-  unstarted: { label: 'Todo', color: 'bg-blue-500', defaultOpen: true },
-  backlog: { label: 'Backlog', color: 'bg-gray-400', defaultOpen: false },
-  completed: { label: 'Done', color: 'bg-green-500', defaultOpen: false },
-  cancelled: { label: 'Cancelled', color: 'bg-red-400', defaultOpen: false },
-};
-
-// Category display order
+// Status category display order when flattening grouped response
 const CATEGORY_ORDER: StatusCategory[] = [
   'started',
   'unstarted',
@@ -72,31 +59,12 @@ function MyIssuesPage() {
   const { wsId } = useWorkspaceContext();
   const navigate = useNavigate();
 
-  // Default accordion state per category
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-    const state: Record<string, boolean> = {};
-    for (const cat of CATEGORY_ORDER) {
-      state[cat] = CATEGORY_CONFIG[cat].defaultOpen;
-    }
-    return state;
-  });
-
-  // Fetch my issues
   const myIssuesQuery = useQuery<GroupedIssues>({
     queryKey: ['workspaces', wsId, 'my-issues'],
     queryFn: () => apiClient.get<GroupedIssues>(`/workspaces/${wsId}/my-issues`),
     staleTime: 30 * 1000,
   });
 
-  // Toggle accordion section
-  const toggleSection = useCallback((category: string) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [category]: !prev[category],
-    }));
-  }, []);
-
-  // Navigate to issue detail
   const handleIssueClick = useCallback(
     (issue: MyIssue) => {
       navigate({
@@ -112,28 +80,28 @@ function MyIssuesPage() {
     [navigate, orgSlug, wsSlug],
   );
 
-  // Total issue count
-  const totalIssues = useMemo(() => {
-    if (!myIssuesQuery.data) return 0;
-    return CATEGORY_ORDER.reduce((sum, cat) => sum + (myIssuesQuery.data[cat]?.length ?? 0), 0);
+  // Flatten grouped issues in a sensible order
+  const issues = useMemo(() => {
+    if (!myIssuesQuery.data) return [];
+    return CATEGORY_ORDER.flatMap((cat) => myIssuesQuery.data[cat] ?? []);
   }, [myIssuesQuery.data]);
+
+  const totalIssues = issues.length;
 
   // Loading state
   if (myIssuesQuery.isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-semibold">내 이슈</h1>
+        <div className="px-10 pt-10 pb-6">
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="mt-2 h-4 w-48" />
         </div>
-        <div className="flex-1 space-y-1 px-2" aria-busy="true" aria-label="이슈 로딩 중">
-          {/* Accordion header skeletons */}
-          {[1, 2].map((i) => (
-            <div key={`header-${i}`}>
-              <Skeleton className="mx-6 mb-1 h-10 rounded-md" />
-              {[1, 2, 3].map((j) => (
-                <Skeleton key={`row-${i}-${j}`} className="mx-6 h-10" />
-              ))}
-            </div>
+        <div className="flex-1" aria-busy="true" aria-label="이슈 로딩 중">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton
+              key={`row-${i}`}
+              className="mx-0 h-[52px] rounded-none border-b border-[color:var(--border-subtle)]"
+            />
           ))}
         </div>
       </div>
@@ -144,13 +112,15 @@ function MyIssuesPage() {
   if (myIssuesQuery.isError) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-semibold">내 이슈</h1>
+        <div className="px-10 pt-10 pb-6">
+          <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
+            내 이슈
+          </h1>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-            <p className="mt-2 text-sm text-muted-foreground">이슈를 불러올 수 없습니다.</p>
+            <AlertTriangle className="mx-auto h-8 w-8 text-[color:var(--priority-urgent)]" />
+            <p className="mt-2 text-sm text-[color:var(--fg-3)]">이슈를 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -169,13 +139,16 @@ function MyIssuesPage() {
   if (totalIssues === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-semibold">내 이슈</h1>
+        <div className="px-10 pt-10 pb-6">
+          <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
+            내 이슈
+          </h1>
+          <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">나에게 할당된 이슈 0개</p>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16">
-          <CircleUser className="h-12 w-12 text-muted-foreground/50" />
-          <p className="text-lg font-medium">할당된 이슈가 없습니다</p>
-          <p className="text-sm text-muted-foreground">이슈에 할당되면 여기에 표시됩니다</p>
+          <CircleUser className="h-12 w-12 text-[color:var(--fg-4)]" />
+          <p className="text-lg font-medium text-[color:var(--fg-1)]">할당된 이슈가 없습니다</p>
+          <p className="text-sm text-[color:var(--fg-3)]">이슈에 할당되면 여기에 표시됩니다</p>
           <Button
             variant="outline"
             className="mt-4"
@@ -193,100 +166,80 @@ function MyIssuesPage() {
     );
   }
 
-  const grouped = myIssuesQuery.data!;
-
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="px-6 py-4">
-        <h1 className="text-2xl font-semibold">내 이슈</h1>
+      <div className="px-10 pt-10 pb-8">
+        <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
+          내 이슈
+        </h1>
+        <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">
+          나에게 할당된 이슈 {totalIssues}개
+        </p>
       </div>
 
-      {/* Accordion sections */}
-      <div className="flex-1 overflow-y-auto pb-4">
-        {CATEGORY_ORDER.map((category) => {
-          const issues = grouped[category] ?? [];
-          if (issues.length === 0 && !CATEGORY_CONFIG[category].defaultOpen) {
-            return null;
-          }
-
-          const config = CATEGORY_CONFIG[category];
-          const isOpen = openSections[category];
+      {/* Flat list */}
+      <div className="flex-1 overflow-y-auto">
+        {issues.map((issue) => {
+          const priorityKey = (issue.priority || 'none') as Priority;
+          const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
+          const PriorityIcon = priorityConfig.icon;
+          const issueKey = `${issue.project.prefix}-${issue.sequenceId}`;
+          const statusCategory = issue.status?.category as StatusCategory | undefined;
 
           return (
-            <div key={category} role="region" aria-label={`${config.label} 이슈`}>
-              {/* Accordion header */}
-              <button
-                type="button"
-                onClick={() => toggleSection(category)}
-                className="mx-6 mb-1 flex h-10 w-[calc(100%-3rem)] cursor-pointer items-center gap-2 rounded-md bg-muted/30 px-4 hover:bg-muted/50"
-                aria-expanded={isOpen}
-                aria-controls={`section-${category}`}
-              >
-                {isOpen ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-150" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-150" />
-                )}
-                <span className={`h-2.5 w-2.5 rounded-full ${config.color}`} />
-                <span className="text-sm font-medium text-foreground">{config.label}</span>
-                <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                  {issues.length}
-                </span>
-              </button>
+            <button
+              key={issue.id}
+              type="button"
+              onClick={() => handleIssueClick(issue)}
+              className="group flex h-[52px] w-full cursor-pointer items-center gap-4 border-b border-[color:var(--border-subtle)] px-6 text-left transition-colors hover:bg-[color:var(--bg-2)]"
+            >
+              {/* Priority indicator */}
+              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                <PriorityIcon className={`h-[14px] w-[14px] ${priorityConfig.color}`} />
+              </span>
 
-              {/* Issue rows */}
-              {isOpen && (
-                <div id={`section-${category}`}>
-                  {issues.map((issue) => {
-                    const priorityKey = (issue.priority || 'none') as Priority;
-                    const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
-                    const PriorityIcon = priorityConfig.icon;
-                    const issueKey = `${issue.project.prefix}-${issue.sequenceId}`;
+              {/* Issue key (monospace) */}
+              <span className="w-[72px] shrink-0 font-mono text-[11.5px] text-[color:var(--fg-4)]">
+                {issueKey}
+              </span>
 
-                    return (
-                      <button
-                        key={issue.id}
-                        type="button"
-                        className="flex h-10 w-full cursor-pointer items-center gap-2 border-b border-border/50 px-6 transition-colors hover:bg-accent/50"
-                        onClick={() => handleIssueClick(issue)}
-                      >
-                        {/* Project prefix */}
-                        <span className="w-10 shrink-0 text-left font-mono text-xs text-muted-foreground">
-                          {issue.project.prefix}
-                        </span>
-
-                        {/* Issue key */}
-                        <span className="w-20 shrink-0 text-left font-mono text-xs text-muted-foreground">
-                          {issueKey}
-                        </span>
-
-                        {/* Title */}
-                        <span className="min-w-0 flex-1 truncate text-left text-sm text-foreground">
-                          {issue.title}
-                        </span>
-
-                        {/* Status badge */}
-                        {issue.status && (
-                          <span className="flex shrink-0 items-center gap-1.5">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ backgroundColor: issue.status.color }}
-                            />
-                            <span className="text-xs text-muted-foreground">
-                              {issue.status.name}
-                            </span>
-                          </span>
-                        )}
-
-                        {/* Priority icon */}
-                        <PriorityIcon className={`h-4 w-4 shrink-0 ${priorityConfig.color}`} />
-                      </button>
-                    );
-                  })}
-                </div>
+              {/* Status dot */}
+              {issue.status ? (
+                <span
+                  className={`relative h-3 w-3 shrink-0 rounded-full border-[1.5px] ${
+                    statusCategory === 'completed' ? 'border-transparent' : ''
+                  }`}
+                  style={{
+                    borderColor:
+                      statusCategory === 'completed' ? 'transparent' : issue.status.color,
+                    background:
+                      statusCategory === 'completed' || statusCategory === 'cancelled'
+                        ? issue.status.color
+                        : statusCategory === 'started'
+                          ? `conic-gradient(${issue.status.color} 60%, transparent 60%)`
+                          : 'transparent',
+                  }}
+                  aria-label={issue.status.name}
+                  title={issue.status.name}
+                />
+              ) : (
+                <span
+                  className="h-3 w-3 shrink-0 rounded-full border-[1.5px] border-[color:var(--fg-4)]"
+                  aria-hidden="true"
+                />
               )}
-            </div>
+
+              {/* Title */}
+              <span className="min-w-0 flex-1 truncate text-[13px] text-[color:var(--fg-1)]">
+                {issue.title}
+              </span>
+
+              {/* Assignee avatar — placeholder (backend doesn't return assignees on this endpoint yet) */}
+              <span className="ml-auto grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[color:var(--amber-500)] text-[10px] font-semibold text-[color:var(--accent-fg)]">
+                양
+              </span>
+            </button>
           );
         })}
       </div>
