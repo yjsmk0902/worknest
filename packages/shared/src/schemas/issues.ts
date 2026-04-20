@@ -5,6 +5,20 @@ import { z } from 'zod';
 export const priorityEnum = z.enum(['urgent', 'high', 'medium', 'low', 'none']);
 export type Priority = z.infer<typeof priorityEnum>;
 
+// ── Status Category ──────────────────────────────────────────────────────
+// Declared here so issueOutput can reference it via forward usage.
+
+export const statusCategory = z.enum([
+  'backlog',
+  'unstarted',
+  'started',
+  'review',
+  'completed',
+  'cancelled',
+]);
+
+export type StatusCategory = z.infer<typeof statusCategory>;
+
 // ── Issue Input ──────────────────────────────────────────────────────────
 
 export const createIssueInput = z.object({
@@ -69,6 +83,7 @@ export const issueOutput = z.object({
       id: z.string().uuid(),
       name: z.string(),
       color: z.string(),
+      category: statusCategory,
     })
     .nullable()
     .optional(),
@@ -187,17 +202,8 @@ export const bulkUpdateInput = z.object({
 export type BulkUpdateInput = z.infer<typeof bulkUpdateInput>;
 
 // ── Issue Status / Type ──────────────────────────────────────────────────
-
-export const statusCategory = z.enum([
-  'backlog',
-  'unstarted',
-  'started',
-  'review',
-  'completed',
-  'cancelled',
-]);
-
-export type StatusCategory = z.infer<typeof statusCategory>;
+// (statusCategory is hoisted to the top of this file so that issueOutput
+// can reference it for the nested status object.)
 
 export const issueStatusOutput = z.object({
   id: z.string().uuid(),

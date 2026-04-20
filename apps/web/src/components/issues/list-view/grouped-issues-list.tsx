@@ -1,9 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import type { IssueOutput, IssueStatusOutput, StatusCategory } from '@worknest/shared';
+import type { IssueOutput, StatusCategory } from '@worknest/shared';
 import { Avatar } from '@worknest/ui';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { apiClient } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
 import {
   CATEGORY_CONFIG,
@@ -23,28 +21,13 @@ interface GroupedIssuesListProps {
 
 export function GroupedIssuesList({
   issues,
-  projectId,
   projectPrefix,
   activeIssueId,
   onRowClick,
   onAddIssue,
 }: GroupedIssuesListProps) {
-  const statusesQuery = useQuery<{ data: IssueStatusOutput[] }>({
-    queryKey: ['projects', projectId, 'statuses'],
-    queryFn: () =>
-      apiClient.getList<IssueStatusOutput>(`/projects/${projectId}/statuses`),
-    staleTime: 60 * 1000,
-  });
-
-  const statusCategoryMap = useMemo(() => {
-    const map = new Map<string, StatusCategory>();
-    for (const s of statusesQuery.data?.data ?? []) {
-      map.set(s.id, s.category as StatusCategory);
-    }
-    return map;
-  }, [statusesQuery.data]);
-
-  // Group issues by category (fallback to 'backlog' if status unknown)
+  // Group issues by their status.category (now emitted by the API directly).
+  // Issues with no status fall into backlog.
   const grouped = useMemo(() => {
     const out: Record<GroupCategory, IssueOutput[]> = {
       started: [],
@@ -55,11 +38,11 @@ export function GroupedIssuesList({
       cancelled: [],
     };
     for (const issue of issues) {
-      const cat = (issue.statusId && statusCategoryMap.get(issue.statusId)) || 'backlog';
-      out[cat as GroupCategory]?.push(issue);
+      const cat = (issue.status?.category as GroupCategory | undefined) || 'backlog';
+      out[cat]?.push(issue);
     }
     return out;
-  }, [issues, statusCategoryMap]);
+  }, [issues]);
 
   const [collapsed, setCollapsed] = useState<Set<GroupCategory>>(() => {
     const init = new Set<GroupCategory>();
@@ -122,7 +105,6 @@ export function GroupedIssuesList({
                     key={issue.id}
                     issue={issue}
                     projectPrefix={projectPrefix}
-                    statusCategoryMap={statusCategoryMap}
                     active={activeIssueId === issue.id}
                     onClick={() => onRowClick(issue.id)}
                   />
@@ -141,17 +123,16 @@ export function GroupedIssuesList({
 interface IssueRowProps {
   issue: IssueOutput;
   projectPrefix: string;
-  statusCategoryMap: Map<string, StatusCategory>;
   active: boolean;
   onClick: () => void;
 }
 
-function IssueRow({ issue, projectPrefix, statusCategoryMap, active, onClick }: IssueRowProps) {
+function IssueRow({ issue, projectPrefix, active, onClick }: IssueRowProps) {
   const priorityKey = (issue.priority || 'none') as Priority;
   const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
   const PriorityIcon = priorityConfig.icon;
   const issueKey = `${projectPrefix}-${issue.sequenceId}`;
-  const category = issue.statusId ? statusCategoryMap.get(issue.statusId) : undefined;
+  const category = issue.status?.category as StatusCategory | undefined;
   const labels = issue.labels ?? [];
   const assignees = issue.assignees ?? [];
   const primaryAssignee = assignees[0];
@@ -177,11 +158,7 @@ function IssueRow({ issue, projectPrefix, statusCategoryMap, active, onClick }: 
       </span>
 
       {/* Status */}
-      <CategoryGlyph
-        category={category}
-        color={issue.status?.color}
-        size={13}
-      />
+      <CategoryGlyph category={category} color={issue.status?.color} size={13} />
 
       {/* Title */}
       <span className="min-w-0 flex-1 truncate">{issue.title}</span>

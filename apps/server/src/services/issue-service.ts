@@ -138,6 +138,7 @@ export class IssueService {
           id: issueStatuses.id,
           name: issueStatuses.name,
           color: issueStatuses.color,
+          category: issueStatuses.category,
         },
         type: {
           id: issueTypes.id,
@@ -219,7 +220,7 @@ export class IssueService {
   private formatIssue(
     row: {
       issue: typeof issues.$inferSelect;
-      status: { id: string; name: string; color: string } | null;
+      status: { id: string; name: string; color: string; category: string } | null;
       type: { id: string; name: string; icon: string; color: string } | null;
       creator: {
         id: string;
@@ -261,7 +262,12 @@ export class IssueService {
       createdAt: row.issue.createdAt.toISOString(),
       updatedAt: row.issue.updatedAt.toISOString(),
       status: row.status?.id
-        ? { id: row.status.id, name: row.status.name, color: row.status.color }
+        ? {
+            id: row.status.id,
+            name: row.status.name,
+            color: row.status.color,
+            category: row.status.category,
+          }
         : null,
       type: row.type?.id
         ? {
@@ -667,6 +673,7 @@ export class IssueService {
           id: issueStatuses.id,
           name: issueStatuses.name,
           color: issueStatuses.color,
+          category: issueStatuses.category,
         },
         type: {
           id: issueTypes.id,
@@ -1179,6 +1186,7 @@ export class IssueService {
           id: issueStatuses.id,
           name: issueStatuses.name,
           color: issueStatuses.color,
+          category: issueStatuses.category,
         },
         type: {
           id: issueTypes.id,
