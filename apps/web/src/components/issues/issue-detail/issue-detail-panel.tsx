@@ -126,12 +126,12 @@ export function IssueDetailPanel({
   if (mode === 'panel') {
     return (
       <>
-        {/* Blurred backdrop — click to close */}
+        {/* Subtle backdrop — click to close */}
         <button
           type="button"
           aria-label="닫기"
           onClick={onClose}
-          className="fixed inset-0 z-30 cursor-default bg-[color:var(--bg-overlay)] backdrop-blur-md"
+          className="fixed inset-0 z-30 cursor-default bg-[rgba(0,0,0,0.25)] backdrop-blur-[2px]"
         />
         <div className="fixed inset-y-0 right-0 z-40 flex w-[640px] flex-col border-l border-[color:var(--border)] bg-[color:var(--bg-1)] shadow-[var(--shadow-lg)]">
         {/* Panel Header */}

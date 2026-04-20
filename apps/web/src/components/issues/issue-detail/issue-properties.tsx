@@ -402,7 +402,7 @@ function StatusSelect({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-8 items-center gap-2 rounded-md border border-border px-2 text-sm hover:bg-accent"
+          className="flex h-8 items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
           <span
             className="h-2 w-2 shrink-0 rounded-full"
@@ -454,7 +454,7 @@ function PrioritySelect({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-8 items-center gap-2 rounded-md border border-border px-2 text-sm hover:bg-accent"
+          className="flex h-8 items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
           <PriorityIcon className={cn('h-4 w-4', config.color)} />
           <span>{config.label}</span>
@@ -506,7 +506,7 @@ function TypeSelect({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-8 items-center gap-2 rounded-md border border-border px-2 text-sm hover:bg-accent"
+          className="flex h-8 items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
           <CurrentIcon className="h-4 w-4 text-muted-foreground" />
           <span>{current?.name ?? '타입 없음'}</span>
@@ -566,7 +566,7 @@ function AssigneePicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex min-h-[32px] items-center gap-2 rounded-md border border-border px-2 text-sm hover:bg-accent"
+          className="flex min-h-[32px] items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
           {issueAssignees.length === 0 ? (
             <span className="text-muted-foreground">담당자 없음</span>
