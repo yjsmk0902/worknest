@@ -32,8 +32,11 @@ jobs:
           gcloud compute ssh worknest-server \
             --zone=asia-northeast3-a \
             --command="
+              set -e &&
               cd /home/worknest &&
               sudo git pull origin main &&
-              sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans &&
-              sudo docker image prune -f
+              sudo docker builder prune -af --filter 'until=24h' || true &&
+              BUILDX_NO_DEFAULT_ATTESTATIONS=1 sudo -E docker compose -f docker-compose.prod.yml up -d --build --remove-orphans &&
+              sudo docker image prune -af &&
+              sudo docker builder prune -af
             "
