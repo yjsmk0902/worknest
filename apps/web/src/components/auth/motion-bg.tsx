@@ -70,10 +70,10 @@ export function MotionBG() {
           const dx = x - mouse.x;
           const dy = y - mouse.y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          mouseInfluence = Math.max(0, 1 - d / 180);
+          mouseInfluence = Math.max(0, 1 - d / 200);
         }
-        const alpha = 0.05 + wave * 0.08 + mouseInfluence * 0.55;
-        const r = 1 + mouseInfluence * 2.2;
+        const alpha = 0.12 + wave * 0.15 + mouseInfluence * 0.6;
+        const r = 1.3 + mouseInfluence * 2.4;
         const color = mouseInfluence > 0.2 ? accent : base;
         ctx.fillStyle = color + alpha.toFixed(3) + ')';
         ctx.beginPath();
