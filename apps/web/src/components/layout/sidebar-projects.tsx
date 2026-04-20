@@ -40,14 +40,14 @@ function ProjectSubNav({
   const base = `/${orgSlug}/${wsSlug}/projects/${projectId}`;
 
   const issueSubItems = [
-    { icon: <List className="h-3.5 w-3.5" />, label: 'List', href: `${base}/issues` },
-    { icon: <Kanban className="h-3.5 w-3.5" />, label: 'Board', href: `${base}/board` },
-    { icon: <GanttChart className="h-3.5 w-3.5" />, label: 'Gantt', href: `${base}/gantt` },
+    { icon: <List className="h-3.5 w-3.5" />, label: '리스트', href: `${base}/issues` },
+    { icon: <Kanban className="h-3.5 w-3.5" />, label: '보드', href: `${base}/board` },
+    { icon: <GanttChart className="h-3.5 w-3.5" />, label: '간트', href: `${base}/gantt` },
   ];
 
   const otherItems = [
-    { icon: <RefreshCw className="h-3.5 w-3.5" />, label: 'Cycles', href: `${base}/cycles` },
-    { icon: <Settings className="h-3.5 w-3.5" />, label: 'Settings', href: `${base}/settings` },
+    { icon: <RefreshCw className="h-3.5 w-3.5" />, label: '사이클', href: `${base}/cycles` },
+    { icon: <Settings className="h-3.5 w-3.5" />, label: '설정', href: `${base}/settings` },
   ];
 
   const linkClass =
@@ -58,7 +58,7 @@ function ProjectSubNav({
       {/* Issues group — always expanded */}
       <div className="flex h-[30px] items-center gap-2 px-2 text-[12px] font-medium text-sidebar-foreground/60">
         <List className="h-3.5 w-3.5" />
-        <span>Issues</span>
+        <span>이슈</span>
       </div>
       <div className="ml-5 border-l border-sidebar-border/50 pl-2">
         {issueSubItems.map((item) => (
