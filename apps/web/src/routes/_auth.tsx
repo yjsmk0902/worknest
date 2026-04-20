@@ -36,18 +36,18 @@ function AuthLayout() {
       {/* Right form pane — brand lockup above the form */}
       <div className="flex flex-1 items-center justify-center overflow-auto px-14 py-16">
         <div className="flex w-full max-w-[560px] flex-col items-center">
-          {/* Brand lockup — logo + WorkNest wordmark stacked above the card */}
-          <div className="mb-10 flex flex-col items-center gap-3">
+          {/* Brand lockup — WorkNest wordmark + logo, inline (text left, logo right) */}
+          <div className="mb-10 flex items-center gap-3">
+            <span className="text-[28px] font-semibold tracking-[-0.02em] text-[color:var(--fg-1)]">
+              WorkNest
+            </span>
             <img
               src="/worknest-logo-crop.png"
               alt=""
               aria-hidden="true"
-              className="h-[72px] w-auto object-contain"
+              className="h-[48px] w-auto object-contain"
               draggable={false}
             />
-            <span className="text-[22px] font-semibold tracking-[-0.02em] text-[color:var(--fg-1)]">
-              WorkNest
-            </span>
           </div>
           <Outlet />
         </div>
