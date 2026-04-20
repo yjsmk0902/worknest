@@ -64,3 +64,15 @@ export {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 } from './components/breadcrumb';
+export { Kbd, type KbdProps } from './components/kbd';
+export {
+  StatusIndicator,
+  type StatusIndicatorProps,
+  type StatusKind,
+} from './components/status-indicator';
+export {
+  PriorityIndicator,
+  type PriorityIndicatorProps,
+  type PriorityKind,
+} from './components/priority-indicator';
+export { Chip, chipVariants, type ChipProps } from './components/chip';
