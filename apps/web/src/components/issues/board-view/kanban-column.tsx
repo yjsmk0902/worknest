@@ -52,18 +52,20 @@ export function KanbanColumn({
   return (
     <div
       className={cn(
-        'flex flex-col min-w-[360px] max-w-[420px] w-[360px] shrink-0 rounded-xl bg-muted/40 h-full',
-        isOver && 'ring-2 ring-primary/20 bg-primary/5',
+        'flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--panel)]',
+        isOver && 'ring-2 ring-[color:var(--accent-soft)]',
       )}
     >
       {/* Column header */}
-      <div className="flex h-10 items-center gap-2 px-3">
+      <div className="flex h-10 items-center gap-2 border-b border-[color:var(--border-subtle)] px-3 text-[12px] font-medium text-foreground">
         <span
-          className="w-2.5 h-2.5 rounded-full shrink-0"
+          className="h-[10px] w-[10px] shrink-0 rounded-full"
           style={{ backgroundColor: status.color }}
         />
-        <span className="text-sm font-medium text-foreground truncate">{status.name}</span>
-        <span className="text-xs text-muted-foreground ml-auto">{count}</span>
+        <span className="truncate">{status.name}</span>
+        <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">
+          {count}
+        </span>
       </div>
 
       {/* Card area */}
@@ -71,11 +73,11 @@ export function KanbanColumn({
         ref={setNodeRef}
         role="list"
         aria-label={`${status.name} 컬럼, ${count}개 이슈`}
-        className="flex-1 overflow-y-auto px-2 py-1 min-h-[100px]"
+        className="flex min-h-0 flex-1 flex-col gap-[6px] overflow-y-auto p-2"
       >
         {issues.length === 0 && !showQuickAdd && !showEndPlaceholder && (
-          <div className="flex flex-1 items-center justify-center min-h-[80px]">
-            <span className="text-sm text-muted-foreground">이슈 없음</span>
+          <div className="flex flex-1 items-center justify-center py-5">
+            <span className="text-[12px] text-[color:var(--fg-faint)]">이슈 없음</span>
           </div>
         )}
 
@@ -85,25 +87,23 @@ export function KanbanColumn({
 
           return (
             <div key={issue.id}>
-              {/* Placeholder before this card */}
               {isDropTarget && !isBeingDragged && (
-                <div className="mb-2 h-[140px] rounded-xl border-2 border-dashed border-primary/30 bg-primary/5" />
+                <div className="mb-[6px] h-[120px] rounded-md border-2 border-dashed border-[color:var(--accent-soft)] bg-[color:var(--accent-soft)]/40" />
               )}
-              <div className={cn('mb-2', isBeingDragged && 'opacity-0 pointer-events-none')}>
+              <div className={cn(isBeingDragged && 'pointer-events-none opacity-0')}>
                 <KanbanCard issue={issue} projectPrefix={projectPrefix} onClick={onCardClick} />
               </div>
             </div>
           );
         })}
 
-        {/* Placeholder at end of column */}
         {showEndPlaceholder && (
-          <div className="mb-2 h-[140px] rounded-xl border-2 border-dashed border-primary/30 bg-primary/5" />
+          <div className="h-[120px] rounded-md border-2 border-dashed border-[color:var(--accent-soft)] bg-[color:var(--accent-soft)]/40" />
         )}
       </div>
 
       {/* Quick Add at bottom */}
-      <div className="mt-auto border-t border-border p-2">
+      <div className="mt-auto border-t border-[color:var(--border-subtle)] p-2">
         {showQuickAdd ? (
           <QuickAdd
             projectId={projectId}
@@ -114,10 +114,10 @@ export function KanbanColumn({
           <button
             type="button"
             onClick={() => setShowQuickAdd(true)}
-            className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent"
+            className="flex w-full items-center gap-[6px] rounded-md px-2 py-1.5 text-[12px] text-[color:var(--fg-faint)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
             aria-label={`${status.name}에 이슈 추가`}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-[11px] w-[11px]" /> 이슈 추가
           </button>
         )}
       </div>

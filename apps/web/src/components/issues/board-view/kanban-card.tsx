@@ -87,24 +87,18 @@ export function KanbanCard({
         }
       }}
       className={cn(
-        'flex flex-col rounded-xl p-3.5 h-[140px] cursor-grab',
-        'shadow-sm ring-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5',
-        issue.priority === 'urgent' &&
-          'bg-red-50 ring-red-200/60 dark:bg-red-950/30 dark:ring-red-800/40',
-        issue.priority === 'high' &&
-          'bg-orange-50 ring-orange-200/60 dark:bg-orange-950/30 dark:ring-orange-800/40',
-        issue.priority === 'medium' &&
-          'bg-amber-50 ring-amber-200/60 dark:bg-yellow-950/30 dark:ring-yellow-800/40',
-        issue.priority === 'low' &&
-          'bg-blue-50 ring-blue-200/60 dark:bg-blue-950/30 dark:ring-blue-800/40',
-        (issue.priority === 'none' || !issue.priority) && 'bg-card ring-border/50',
+        'flex flex-col gap-2 cursor-grab rounded-md border bg-[color:var(--bg-elev)] px-[11px] py-[10px] text-[12.5px]',
+        'border-[color:var(--border-subtle)] transition-colors duration-150',
+        'hover:border-[color:var(--border)] active:scale-[0.995]',
         isDragging && 'opacity-0 pointer-events-none',
         isTemp && 'pointer-events-none opacity-70',
       )}
     >
       {/* Top row: key + type + labels + priority */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-mono text-muted-foreground shrink-0">{issueKey}</span>
+        <span className="shrink-0 font-mono text-[10.5px] text-[color:var(--fg-faint)]">
+          {issueKey}
+        </span>
         {TypeIcon && (
           <TypeIcon className="h-3.5 w-3.5 shrink-0" style={{ color: issue.type?.color }} />
         )}
@@ -134,13 +128,10 @@ export function KanbanCard({
       </div>
 
       {/* Title */}
-      <p className="mt-1 text-sm font-medium line-clamp-2">{issue.title}</p>
-
-      {/* Spacer */}
-      <div className="flex-1" />
+      <p className="line-clamp-2 text-[12.5px] leading-[1.38] text-foreground">{issue.title}</p>
 
       {/* Bottom row: dates + cycle + assignees */}
-      <div className="flex items-center gap-2 mt-1.5">
+      <div className="mt-auto flex items-center gap-2 text-[11px] text-[color:var(--fg-dim)]">
         <span
           className={cn(
             'text-xs shrink-0',
