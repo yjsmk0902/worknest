@@ -48,67 +48,61 @@ export function Sidebar() {
     <TooltipProvider delayDuration={200}>
       <nav
         aria-label="Main navigation"
-        className="fixed left-0 top-0 z-30 flex h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-background text-sidebar-foreground"
+        className="fixed left-0 top-0 z-30 flex h-screen w-[248px] flex-col border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)] text-foreground"
       >
         {/* Header: Org/WS + bell */}
-        <div className="flex items-center gap-1 px-2 pt-3 pb-1">
-          <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 px-[10px] pt-[10px] pb-[6px]">
+          <div className="min-w-0 flex-1">
             <OrgWorkspaceSelector collapsed={false} />
           </div>
           <NotificationBell />
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto px-2 pt-1 pb-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-[6px] pb-2 pt-1">
           {/* My Work */}
-          <div className="mb-1 px-2.5 pt-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
-              My Work
+          <div className="flex items-center justify-between px-[10px] pb-[6px] pt-3">
+            <span className="text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]">
+              내 작업
             </span>
           </div>
           <InboxNavItem orgSlug={orgSlug} wsSlug={wsSlug} />
           <NavItem
             icon={<CircleUser className="h-4 w-4" />}
-            label="My Issues"
+            label="내 이슈"
             href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/issues` : '#'}
           />
           <NavItem
             icon={<Star className="h-4 w-4" />}
-            label="Favorites"
+            label="즐겨찾기"
             href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/favorites` : '#'}
           />
 
-          <div className="my-2 mx-2.5 border-t border-sidebar-border" />
-
           {/* Projects */}
           <SidebarProjects orgSlug={orgSlug} wsSlug={wsSlug} />
-
-          <div className="my-2 mx-2.5 border-t border-sidebar-border" />
 
           {/* Wiki */}
           <SidebarWiki orgSlug={orgSlug} wsSlug={wsSlug} wsId={currentWorkspace?.id} />
         </div>
 
         {/* Footer: User + collapse */}
-        <div className="border-t border-sidebar-border px-2 py-2">
-          <div className="flex items-center">
-            <div className="flex-1 min-w-0">
-              <UserMenu collapsed={false} />
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={toggleSidebar}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                  aria-label="사이드바 접기"
-                >
-                  <PanelLeftClose className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top">사이드바 접기</TooltipContent>
-            </Tooltip>
+        <div className="mt-auto flex items-center gap-2 border-t border-[color:var(--border-subtle)] px-[10px] py-2">
+          <div className="min-w-0 flex-1">
+            <UserMenu collapsed={false} />
           </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-sm text-[color:var(--fg-dim)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
+                aria-label="사이드바 접기"
+              >
+                <PanelLeftClose className="h-[14px] w-[14px]" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">사이드바 접기</TooltipContent>
+          </Tooltip>
         </div>
       </nav>
     </TooltipProvider>
@@ -269,28 +263,27 @@ function OrgWorkspaceSelector({ collapsed }: { collapsed: boolean }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-11 w-full items-center gap-2.5 rounded-lg px-2.5 hover:bg-sidebar-accent transition-colors"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-[6px] transition-colors hover:bg-[color:var(--bg-hover)]"
         >
           {currentOrg?.logo ? (
             <img
               src={currentOrg.logo}
               alt={displayOrg}
-              className="h-8 w-8 shrink-0 rounded-lg object-cover"
+              className="h-[22px] w-[22px] shrink-0 rounded-[6px] object-cover"
             />
           ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
+            <div
+              className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[6px] bg-[color:var(--accent)] text-[11px] font-semibold text-[color:var(--accent-fg)]"
+              style={{ boxShadow: '0 0 0 1px oklch(0% 0 0 / 0.1) inset' }}
+            >
               {initial}
             </div>
           )}
-          <div className="flex-1 text-left min-w-0">
-            <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
-              {displayOrg}
-            </p>
-            <p className="truncate text-[11px] leading-tight text-sidebar-foreground/50">
-              {displayWs}
-            </p>
+          <div className="min-w-0 flex-1 text-left leading-[1.15]">
+            <p className="truncate text-[13px] font-semibold text-foreground">{displayOrg}</p>
+            <p className="truncate text-[11px] text-[color:var(--fg-dim)]">{displayWs}</p>
           </div>
-          <ChevronDown className="h-3.5 w-3.5 text-sidebar-foreground/30 shrink-0" />
+          <ChevronDown className="h-[14px] w-[14px] shrink-0 text-[color:var(--fg-faint)]" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[260px] p-1.5">

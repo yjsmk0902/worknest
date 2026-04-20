@@ -11,8 +11,8 @@ export function SectionLabel({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between mt-5 mb-1 px-3">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
+    <div className="group flex items-center justify-between px-[10px] pt-3 pb-[6px]">
+      <span className="text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]">
         {children}
       </span>
       {action}
@@ -29,24 +29,27 @@ export interface NavItemProps {
   expandable?: boolean;
 }
 
-export function NavItem({ icon, label, href, badge, active, expandable }: NavItemProps) {
+export function NavItem({ icon, label, href, badge, expandable }: NavItemProps) {
   return (
     <Link
       to={href}
       className={cn(
-        'flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors',
-        'text-sidebar-foreground hover:bg-sidebar-accent',
-        'data-[status=active]:bg-primary/10 data-[status=active]:text-primary data-[status=active]:font-semibold',
+        'relative flex h-7 items-center gap-[10px] rounded-md px-2 text-[13px] transition-colors',
+        'text-[color:var(--fg-mid)] hover:bg-[color:var(--bg-hover)] hover:text-foreground',
+        'data-[status=active]:bg-[color:var(--bg-sel)] data-[status=active]:text-foreground data-[status=active]:font-medium',
+        'data-[status=active]:before:absolute data-[status=active]:before:left-[-6px] data-[status=active]:before:top-[6px] data-[status=active]:before:bottom-[6px] data-[status=active]:before:w-[2px] data-[status=active]:before:rounded-[2px] data-[status=active]:before:bg-[color:var(--accent)]',
       )}
     >
-      <span className="flex h-4 w-4 items-center justify-center shrink-0">{icon}</span>
+      <span className="flex h-[15px] w-[15px] shrink-0 items-center justify-center text-[color:var(--fg-dim)] [&>svg]:h-[15px] [&>svg]:w-[15px]">
+        {icon}
+      </span>
       <span className="flex-1 truncate">{label}</span>
       {badge != null && badge > 0 && (
-        <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
-          {badge}
-        </span>
+        <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">{badge}</span>
       )}
-      {expandable && <ChevronRight className="h-3.5 w-3.5 text-sidebar-foreground/30" />}
+      {expandable && (
+        <ChevronRight className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
+      )}
     </Link>
   );
 }
