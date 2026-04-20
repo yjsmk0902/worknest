@@ -18,15 +18,15 @@ function AuthLayout() {
         <MotionBG />
 
         {/* Brand lockup — logo + wordmark (stacked) */}
-        <div className="relative z-[2] flex flex-col items-start gap-3 pointer-events-none">
+        <div className="relative z-[2] flex flex-col items-start gap-4 pointer-events-none">
           <img
             src="/worknest-logo.png"
             alt=""
             aria-hidden="true"
-            className="h-[88px] w-auto object-contain"
+            className="h-[140px] w-auto -ml-2 object-contain"
             draggable={false}
           />
-          <span className="text-[26px] font-semibold leading-none tracking-[-0.02em] text-[color:var(--fg-1)]">
+          <span className="text-[32px] font-semibold leading-none tracking-[-0.025em] text-[color:var(--fg-1)]">
             WorkNest
           </span>
         </div>
