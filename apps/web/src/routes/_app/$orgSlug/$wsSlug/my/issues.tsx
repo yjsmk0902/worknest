@@ -1,3 +1,4 @@
+import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { apiClient } from '@/lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '@/lib/issue-constants';
@@ -6,7 +7,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { StatusCategory } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
 import { AlertTriangle, CircleUser } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
@@ -59,26 +60,35 @@ function MyIssuesPage() {
   const { wsId } = useWorkspaceContext();
   const navigate = useNavigate();
 
+  const [selected, setSelected] = useState<{
+    issueId: string;
+    projectId: string;
+    projectPrefix: string;
+  } | null>(null);
+
   const myIssuesQuery = useQuery<GroupedIssues>({
     queryKey: ['workspaces', wsId, 'my-issues'],
     queryFn: () => apiClient.get<GroupedIssues>(`/workspaces/${wsId}/my-issues`),
     staleTime: 30 * 1000,
   });
 
-  const handleIssueClick = useCallback(
-    (issue: MyIssue) => {
-      navigate({
-        to: '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId',
-        params: {
-          orgSlug,
-          wsSlug,
-          projectId: issue.projectId,
-          issueId: issue.id,
-        },
-      });
-    },
-    [navigate, orgSlug, wsSlug],
-  );
+  const handleIssueClick = useCallback((issue: MyIssue) => {
+    setSelected({
+      issueId: issue.id,
+      projectId: issue.projectId,
+      projectPrefix: issue.project.prefix,
+    });
+  }, []);
+
+  // Esc to close panel
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelected(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected]);
 
   // Flatten grouped issues in a sensible order
   const issues = useMemo(() => {
@@ -207,9 +217,7 @@ function MyIssuesPage() {
               {/* Status dot */}
               {issue.status ? (
                 <span
-                  className={`relative h-3 w-3 shrink-0 rounded-full border-[1.5px] ${
-                    statusCategory === 'completed' ? 'border-transparent' : ''
-                  }`}
+                  className="relative h-3 w-3 shrink-0 rounded-full border-[1.5px]"
                   style={{
                     borderColor:
                       statusCategory === 'completed' ? 'transparent' : issue.status.color,
@@ -243,6 +251,19 @@ function MyIssuesPage() {
           );
         })}
       </div>
+
+      {/* Side panel with blurred backdrop */}
+      {selected && (
+        <IssueDetailPanel
+          issueId={selected.issueId}
+          projectId={selected.projectId}
+          projectPrefix={selected.projectPrefix}
+          orgSlug={orgSlug}
+          wsSlug={wsSlug}
+          mode="panel"
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }

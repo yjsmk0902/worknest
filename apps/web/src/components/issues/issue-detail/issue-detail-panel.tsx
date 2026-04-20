@@ -125,9 +125,17 @@ export function IssueDetailPanel({
 
   if (mode === 'panel') {
     return (
-      <div className="fixed inset-y-0 right-0 z-40 flex w-[640px] flex-col border-l border-border bg-background shadow-lg">
+      <>
+        {/* Blurred backdrop — click to close */}
+        <button
+          type="button"
+          aria-label="닫기"
+          onClick={onClose}
+          className="fixed inset-0 z-30 cursor-default bg-[color:var(--bg-overlay)] backdrop-blur-md"
+        />
+        <div className="fixed inset-y-0 right-0 z-40 flex w-[640px] flex-col border-l border-[color:var(--border)] bg-[color:var(--bg-1)] shadow-[var(--shadow-lg)]">
         {/* Panel Header */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[color:var(--border-subtle)] px-4">
           <Link
             to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
             params={{ orgSlug, wsSlug, projectId, issueId }}
@@ -191,7 +199,8 @@ export function IssueDetailPanel({
           {/* Comments & Activity */}
           <CommentList issueId={issue.id} projectId={projectId} mentionQueryFn={mentionQueryFn} />
         </ScrollArea>
-      </div>
+        </div>
+      </>
     );
   }
 
