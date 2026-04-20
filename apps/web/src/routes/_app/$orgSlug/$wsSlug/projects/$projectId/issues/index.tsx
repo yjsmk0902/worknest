@@ -2,6 +2,7 @@ import { BulkActionBar } from '@/components/issues/bulk-action-bar';
 import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
 import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
+import { GroupedIssuesList } from '@/components/issues/list-view/grouped-issues-list';
 import { IssueListTable } from '@/components/issues/list-view/issue-list-table';
 import { QuickAdd } from '@/components/issues/quick-add';
 import { ViewToolbar } from '@/components/issues/view-toolbar';
@@ -234,27 +235,40 @@ function IssueListPage() {
             </div>
           )}
 
-          <IssueListTable
-            issues={issues}
-            projectPrefix={projectPrefix}
-            projectId={projectId}
-            isLoading={issuesQuery.isLoading}
-            isFetchingNextPage={issuesQuery.isFetchingNextPage}
-            hasNextPage={issuesQuery.hasNextPage}
-            fetchNextPage={issuesQuery.fetchNextPage}
-            focusedIndex={focusedIndex}
-            activeIssueId={selectedIssueId}
-            rowSelection={rowSelection}
-            onRowSelectionChange={setRowSelection}
-            onRowClick={(issueId) =>
-              setSelectedIssueId((prev) => (prev === issueId ? null : issueId))
-            }
-            onRowDoubleClick={handleOpenFullPage}
-            onShowQuickAdd={() => setShowQuickAdd(true)}
-            hasFilters={hasFilters}
-            onClearFilters={clearAllFilters}
-            isManualSort={isManualSort}
-          />
+          {isManualSort ? (
+            <IssueListTable
+              issues={issues}
+              projectPrefix={projectPrefix}
+              projectId={projectId}
+              isLoading={issuesQuery.isLoading}
+              isFetchingNextPage={issuesQuery.isFetchingNextPage}
+              hasNextPage={issuesQuery.hasNextPage}
+              fetchNextPage={issuesQuery.fetchNextPage}
+              focusedIndex={focusedIndex}
+              activeIssueId={selectedIssueId}
+              rowSelection={rowSelection}
+              onRowSelectionChange={setRowSelection}
+              onRowClick={(issueId) =>
+                setSelectedIssueId((prev) => (prev === issueId ? null : issueId))
+              }
+              onRowDoubleClick={handleOpenFullPage}
+              onShowQuickAdd={() => setShowQuickAdd(true)}
+              hasFilters={hasFilters}
+              onClearFilters={clearAllFilters}
+              isManualSort={isManualSort}
+            />
+          ) : (
+            <GroupedIssuesList
+              issues={issues}
+              projectId={projectId}
+              projectPrefix={projectPrefix}
+              activeIssueId={selectedIssueId}
+              onRowClick={(issueId) =>
+                setSelectedIssueId((prev) => (prev === issueId ? null : issueId))
+              }
+              onAddIssue={() => setShowQuickAdd(true)}
+            />
+          )}
         </div>
       </div>
 
