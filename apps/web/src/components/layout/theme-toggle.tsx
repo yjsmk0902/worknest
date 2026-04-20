@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@worknest/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
 import { Moon, Sun } from 'lucide-react';
 import { useThemeStore } from '../../stores/theme-store';
 
@@ -17,22 +17,24 @@ export function ThemeToggle() {
   const label = resolved === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={() => setTheme(next)}
-          aria-label={label}
-          className="grid h-7 w-7 place-items-center rounded-md text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
-        >
-          {resolved === 'dark' ? (
-            <Sun className="h-[15px] w-[15px]" />
-          ) : (
-            <Moon className="h-[15px] w-[15px]" />
-          )}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{label}</TooltipContent>
-    </Tooltip>
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => setTheme(next)}
+            aria-label={label}
+            className="grid h-7 w-7 place-items-center rounded-md text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
+          >
+            {resolved === 'dark' ? (
+              <Sun className="h-[15px] w-[15px]" />
+            ) : (
+              <Moon className="h-[15px] w-[15px]" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{label}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
