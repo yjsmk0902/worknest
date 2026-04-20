@@ -63,9 +63,7 @@ export function KanbanColumn({
           style={{ backgroundColor: status.color }}
         />
         <span className="truncate">{status.name}</span>
-        <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">
-          {count}
-        </span>
+        <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">{count}</span>
       </div>
 
       {/* Card area */}

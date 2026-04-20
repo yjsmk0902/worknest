@@ -73,9 +73,7 @@ function RegisterPage() {
       >
         워크스페이스 만들기
       </h2>
-      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">
-        5분 뒤 팀을 초대할 수 있어요.
-      </p>
+      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">5분 뒤 팀을 초대할 수 있어요.</p>
 
       {isDuplicateEmail && (
         <div

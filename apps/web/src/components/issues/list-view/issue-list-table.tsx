@@ -309,8 +309,7 @@ export function IssueListTable({
                   'absolute left-0 top-0 flex w-full cursor-pointer items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4 text-[13px] text-foreground transition-colors duration-150',
                   'hover:bg-[color:var(--bg-hover)]',
                   isSelected && 'bg-[color:var(--bg-sel)]',
-                  isActive &&
-                    'bg-[color:var(--bg-sel)] shadow-[inset_2px_0_0_0_var(--accent)]',
+                  isActive && 'bg-[color:var(--bg-sel)] shadow-[inset_2px_0_0_0_var(--accent)]',
                   isFocused && 'z-10 ring-1 ring-[color:var(--accent-soft)]',
                   isTemp && 'pointer-events-none opacity-70',
                   isDragging && 'opacity-30',

@@ -277,9 +277,7 @@ function InboxPage() {
                   aria-label={n.message}
                   onClick={() => handleSelect(n)}
                   className={`relative flex w-full flex-col gap-[6px] border-b border-[color:var(--border-subtle)] px-[14px] py-3 text-left transition-colors ${
-                    isActive
-                      ? 'bg-[color:var(--bg-sel)]'
-                      : 'hover:bg-[color:var(--bg-hover)]'
+                    isActive ? 'bg-[color:var(--bg-sel)]' : 'hover:bg-[color:var(--bg-hover)]'
                   }`}
                 >
                   {isUnread && (

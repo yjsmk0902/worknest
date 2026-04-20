@@ -28,9 +28,7 @@ export function AppHeader({ title, breadcrumbs, actions, className }: AppHeaderP
             )}
           </span>
         ))}
-        {breadcrumbs?.length ? (
-          <span className="text-[color:var(--fg-faint)]">/</span>
-        ) : null}
+        {breadcrumbs?.length ? <span className="text-[color:var(--fg-faint)]">/</span> : null}
         <span className="text-[13px] font-medium text-foreground">{title}</span>
       </div>
 

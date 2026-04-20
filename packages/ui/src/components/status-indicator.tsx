@@ -37,9 +37,7 @@ const StatusIndicator = React.forwardRef<HTMLSpanElement, StatusIndicatorProps>(
         {kind === 'done' && (
           <span className="w-[5px] h-[3px] border-l-[1.4px] border-b-[1.4px] border-[color:var(--bg)] rotate-[-45deg] translate-x-[0.4px] -translate-y-[0.5px]" />
         )}
-        {kind === 'cancel' && (
-          <span className="w-[6px] h-[1.4px] bg-[color:var(--bg)]" />
-        )}
+        {kind === 'cancel' && <span className="w-[6px] h-[1.4px] bg-[color:var(--bg)]" />}
       </span>
       {label != null && <span>{label}</span>}
     </span>

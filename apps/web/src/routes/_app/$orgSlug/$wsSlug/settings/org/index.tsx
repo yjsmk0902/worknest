@@ -173,7 +173,13 @@ function OrgSettingsForm({
           <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-sm font-mono">
             {org.tag}
           </code>
-          <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={copyTag}>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            onClick={copyTag}
+          >
             {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>
@@ -213,9 +219,7 @@ function OrgSettingsForm({
             placeholder="조직 검색 결과에 표시될 간단한 설명"
             className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
           />
-          <p className="text-xs text-muted-foreground">
-            {formData.description.length} / 500
-          </p>
+          <p className="text-xs text-muted-foreground">{formData.description.length} / 500</p>
         </div>
 
         <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-4">

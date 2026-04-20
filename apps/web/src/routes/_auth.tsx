@@ -18,8 +18,7 @@ function AuthLayout() {
             backgroundImage:
               'linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)',
             backgroundSize: '40px 40px',
-            WebkitMaskImage:
-              'radial-gradient(ellipse at 30% 30%, #000 10%, transparent 75%)',
+            WebkitMaskImage: 'radial-gradient(ellipse at 30% 30%, #000 10%, transparent 75%)',
             maskImage: 'radial-gradient(ellipse at 30% 30%, #000 10%, transparent 75%)',
           }}
         />
@@ -44,14 +43,17 @@ function AuthLayout() {
             집중은
             <br />
             키보드에서{' '}
-            <em className="italic text-[color:var(--accent)] not-italic" style={{ fontStyle: 'italic' }}>
+            <em
+              className="italic text-[color:var(--accent)] not-italic"
+              style={{ fontStyle: 'italic' }}
+            >
               시작
             </em>
             된다.
           </h1>
           <p className="mb-7 max-w-[480px] text-[14px] leading-[1.55] text-[color:var(--fg-mid)]">
-            이슈, 보드, 문서가 한 곳에서 흘러가는 작업 공간. 마우스를 떼지 않아도 되는 속도,
-            깜빡임 없는 화면 전환, 팀이 지금 무엇을 만들고 있는지 한 눈에.
+            이슈, 보드, 문서가 한 곳에서 흘러가는 작업 공간. 마우스를 떼지 않아도 되는 속도, 깜빡임
+            없는 화면 전환, 팀이 지금 무엇을 만들고 있는지 한 눈에.
           </p>
           <div className="flex flex-wrap gap-4 font-mono text-[11.5px] text-[color:var(--fg-dim)]">
             <span className="inline-flex items-center gap-[6px]">

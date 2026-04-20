@@ -47,9 +47,7 @@ export function NavItem({ icon, label, href, badge, expandable }: NavItemProps) 
       {badge != null && badge > 0 && (
         <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">{badge}</span>
       )}
-      {expandable && (
-        <ChevronRight className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />
-      )}
+      {expandable && <ChevronRight className="h-[14px] w-[14px] text-[color:var(--fg-faint)]" />}
     </Link>
   );
 }

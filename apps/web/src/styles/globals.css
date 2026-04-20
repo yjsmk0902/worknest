@@ -64,11 +64,9 @@
    ========================================================================= */
 
 :root {
-  --font-sans: "Inter Tight Variable", "Pretendard Variable", "Pretendard",
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic",
-    system-ui, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo,
-    Consolas, monospace;
+  --font-sans: "Inter Tight Variable", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-serif: "Instrument Serif", Georgia, serif;
 
   --r-xs: 3px;
@@ -122,10 +120,8 @@
   --p-low: oklch(55% 0.04 230);
 
   --shadow-sm: 0 1px 2px oklch(20% 0.02 80 / 0.06);
-  --shadow-md: 0 1px 0 0 oklch(100% 0 0) inset,
-    0 4px 16px oklch(20% 0.02 80 / 0.08);
-  --shadow-lg: 0 2px 0 0 oklch(100% 0 0) inset,
-    0 24px 60px oklch(20% 0.02 80 / 0.14);
+  --shadow-md: 0 1px 0 0 oklch(100% 0 0) inset, 0 4px 16px oklch(20% 0.02 80 / 0.08);
+  --shadow-lg: 0 2px 0 0 oklch(100% 0 0) inset, 0 24px 60px oklch(20% 0.02 80 / 0.14);
 
   color-scheme: light;
 }
@@ -158,15 +154,12 @@
 
   --p-urgent: oklch(65% 0.18 20);
   --p-high: oklch(72% 0.14 40);
-  --p-med: oklch(72% 0.10 90);
+  --p-med: oklch(72% 0.1 90);
   --p-low: oklch(70% 0.05 230);
 
-  --shadow-sm: 0 1px 0 0 oklch(100% 0 0 / 0.04) inset,
-    0 1px 2px oklch(0% 0 0 / 0.3);
-  --shadow-md: 0 0 0 1px oklch(100% 0 0 / 0.04) inset,
-    0 8px 24px oklch(0% 0 0 / 0.4);
-  --shadow-lg: 0 0 0 1px oklch(100% 0 0 / 0.05) inset,
-    0 24px 60px oklch(0% 0 0 / 0.55);
+  --shadow-sm: 0 1px 0 0 oklch(100% 0 0 / 0.04) inset, 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 0 0 1px oklch(100% 0 0 / 0.04) inset, 0 8px 24px oklch(0% 0 0 / 0.4);
+  --shadow-lg: 0 0 0 1px oklch(100% 0 0 / 0.05) inset, 0 24px 60px oklch(0% 0 0 / 0.55);
 
   color-scheme: dark;
 }

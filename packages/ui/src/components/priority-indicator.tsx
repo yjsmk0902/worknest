@@ -12,13 +12,25 @@ const BAR_BASE = 'w-[2.5px] rounded-[1px]';
 function bars(kind: PriorityKind) {
   switch (kind) {
     case 'low':
-      return ['bg-[color:var(--p-low)]', 'bg-[color:var(--border-strong)]', 'bg-[color:var(--border-strong)]'];
+      return [
+        'bg-[color:var(--p-low)]',
+        'bg-[color:var(--border-strong)]',
+        'bg-[color:var(--border-strong)]',
+      ];
     case 'med':
-      return ['bg-[color:var(--p-med)]', 'bg-[color:var(--p-med)]', 'bg-[color:var(--border-strong)]'];
+      return [
+        'bg-[color:var(--p-med)]',
+        'bg-[color:var(--p-med)]',
+        'bg-[color:var(--border-strong)]',
+      ];
     case 'high':
       return ['bg-[color:var(--p-high)]', 'bg-[color:var(--p-high)]', 'bg-[color:var(--p-high)]'];
     default:
-      return ['bg-[color:var(--border-strong)]', 'bg-[color:var(--border-strong)]', 'bg-[color:var(--border-strong)]'];
+      return [
+        'bg-[color:var(--border-strong)]',
+        'bg-[color:var(--border-strong)]',
+        'bg-[color:var(--border-strong)]',
+      ];
   }
 }
 
