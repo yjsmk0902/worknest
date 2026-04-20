@@ -23,6 +23,7 @@ import { useState } from 'react';
 import { apiClient } from '../../lib/api-client';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
+// (imported for the ⌘K sidebar trigger)
 import { NotificationBell } from '../notification-bell';
 import { CollapsedNavItem, NavItem } from './sidebar-nav';
 import { CollapsedSidebarProjects, SidebarProjects } from './sidebar-projects';
@@ -48,15 +49,42 @@ export function Sidebar() {
     <TooltipProvider delayDuration={200}>
       <nav
         aria-label="Main navigation"
-        className="fixed left-0 top-0 z-30 flex h-screen w-[248px] flex-col border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)] text-foreground"
+        className="fixed left-0 top-0 z-30 flex h-screen w-[248px] flex-col border-r border-[color:var(--border-subtle)] bg-[color:var(--bg-0)] text-foreground"
       >
         {/* Header: Org/WS + bell */}
-        <div className="flex items-center gap-2 px-[10px] pt-[10px] pb-[6px]">
+        <div className="flex items-center gap-1 px-[10px] pt-[10px] pb-2">
           <div className="min-w-0 flex-1">
             <OrgWorkspaceSelector collapsed={false} />
           </div>
           <NotificationBell />
         </div>
+
+        {/* ⌘K search trigger */}
+        <button
+          type="button"
+          onClick={() => useUIStore.getState().setCommandPaletteOpen(true)}
+          className="mx-[10px] mb-[10px] flex h-[30px] items-center gap-2 rounded-md border border-[color:var(--border-subtle)] bg-[color:var(--bg-2)] px-[10px] text-[12px] text-[color:var(--fg-3)] transition-colors hover:border-[color:var(--border)] hover:bg-[color:var(--bg-3)]"
+        >
+          <svg
+            className="h-[14px] w-[14px]"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span className="flex-1 text-left">검색 혹은 실행...</span>
+          <span className="flex gap-[3px]">
+            <kbd className="grid h-5 min-w-[20px] place-items-center rounded-[4px] border border-[color:var(--border)] bg-[color:var(--bg-3)] px-[5px] font-mono text-[11px] font-medium text-[color:var(--fg-2)]">
+              ⌘
+            </kbd>
+            <kbd className="grid h-5 min-w-[20px] place-items-center rounded-[4px] border border-[color:var(--border)] bg-[color:var(--bg-3)] px-[5px] font-mono text-[11px] font-medium text-[color:var(--fg-2)]">
+              K
+            </kbd>
+          </span>
+        </button>
 
         {/* Navigation */}
         <div className="min-h-0 flex-1 overflow-y-auto px-[6px] pb-2 pt-1">

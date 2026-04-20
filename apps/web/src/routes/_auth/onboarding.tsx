@@ -183,33 +183,55 @@ function OnboardingPage() {
     }
   }
 
+  const steps = ['조직', '워크스페이스', '시작하기'];
+
   return (
-    <div className="w-full max-w-[560px]">
-      {/* Progress bar */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {step} / {TOTAL_STEPS} 단계
-          </span>
-          {step > 1 && (
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              건너뛰기
-            </button>
-          )}
+    <div className="w-full max-w-[420px]">
+      {/* v2 — circled step numbers with connectors */}
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-0">
+          {steps.map((label, i) => {
+            const stepIndex = i + 1;
+            const isDone = stepIndex < step;
+            const isCurr = stepIndex === step;
+            return (
+              <div
+                key={label}
+                className={`flex items-center gap-2 text-[12px] ${
+                  isCurr ? 'text-[color:var(--fg-1)] font-medium' : 'text-[color:var(--fg-4)]'
+                } ${i > 0 ? 'ml-3 pl-3 relative' : ''}`}
+              >
+                {i > 0 && (
+                  <span className="absolute left-0 top-1/2 -ml-2 h-px w-2 -translate-y-1/2 bg-[color:var(--border-strong)]" />
+                )}
+                <span
+                  className={`grid h-[22px] w-[22px] place-items-center rounded-full border text-[11px] font-medium transition-all ${
+                    isDone
+                      ? 'border-[color:var(--accent-bg)] bg-[color:var(--accent-bg)] text-[color:var(--accent-fg)]'
+                      : isCurr
+                        ? 'border-[color:var(--accent-bg)] bg-[color:var(--accent-soft)] text-[color:var(--accent-line)]'
+                        : 'border-[color:var(--border-strong)] bg-[color:var(--bg-0)] text-[color:var(--fg-4)]'
+                  }`}
+                >
+                  {isDone ? <Check className="h-3 w-3" /> : stepIndex}
+                </span>
+                <span>{label}</span>
+              </div>
+            );
+          })}
         </div>
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-300 ease-out"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-          />
-        </div>
+        {step > 1 && (
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="text-[12px] text-[color:var(--fg-3)] transition-colors hover:text-[color:var(--fg-1)]"
+          >
+            건너뛰기
+          </button>
+        )}
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+      <div className="rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)] p-6 shadow-[var(--shadow-sm)]">
         {/* Step 1: Org Creation or Join */}
         {step === 1 && (
           <>
