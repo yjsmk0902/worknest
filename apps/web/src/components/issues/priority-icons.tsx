@@ -98,6 +98,8 @@ export function PrioritySignalNone({ className }: PriProps) {
 }
 
 export function PriorityUrgent({ className }: PriProps) {
+  // Plain red exclamation mark, no background fill.
+  // Two rects compose the "!" — vertical bar + dot underneath.
   return (
     <svg
       viewBox="0 0 12 12"
@@ -106,24 +108,21 @@ export function PriorityUrgent({ className }: PriProps) {
       aria-hidden="true"
     >
       <rect
-        x={0}
-        y={0}
-        width={12}
-        height={12}
-        rx={3}
+        x={5}
+        y={1.5}
+        width={2}
+        height={6}
+        rx={1}
         fill="var(--priority-urgent, #e86e5c)"
       />
-      <text
-        x={6}
+      <rect
+        x={5}
         y={9}
-        textAnchor="middle"
-        fontFamily="'JetBrains Mono Variable','JetBrains Mono',monospace"
-        fontSize={9}
-        fontWeight={700}
-        fill="#ffffff"
-      >
-        !
-      </text>
+        width={2}
+        height={2}
+        rx={1}
+        fill="var(--priority-urgent, #e86e5c)"
+      />
     </svg>
   );
 }
