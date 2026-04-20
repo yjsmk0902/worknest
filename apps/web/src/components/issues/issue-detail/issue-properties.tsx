@@ -580,7 +580,12 @@ function TypeSelect({
           type="button"
           className="flex h-8 items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
-          <CurrentIcon className="h-4 w-4 text-muted-foreground" />
+          {current && (
+            <CurrentIcon
+              className="h-4 w-4"
+              style={{ color: current.color || 'var(--fg-3)' }}
+            />
+          )}
           <span>{current?.name ?? '타입 없음'}</span>
         </button>
       </PopoverTrigger>
@@ -942,89 +947,95 @@ function CyclePicker({
   const allCycles = (allCyclesQuery.data?.data ?? []).filter((c) => c.status !== 'completed');
   const issueCycleIds = new Set(issueCycles.map((c) => c.id));
 
+  // UX enforces 1:1 (one cycle per issue). Backend supports many but we
+  // never add a second one from this picker — switching auto-removes the
+  // previous assignment.
+  const currentCycle = issueCycles[0];
+
+  async function switchTo(cycleId: string) {
+    if (currentCycle && currentCycle.id === cycleId) {
+      setOpen(false);
+      return;
+    }
+    if (currentCycle) {
+      await removeFromCycle.mutateAsync(currentCycle.id);
+    }
+    await addToCycle.mutateAsync(cycleId);
+    setOpen(false);
+  }
+
   return (
-    <div>
-      {/* Current cycles */}
-      {issueCycles.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1 mb-1">
-          {issueCycles.map((cycle) => {
-            const href =
-              orgSlug && wsSlug
-                ? `/${orgSlug}/${wsSlug}/projects/${projectId}/cycles/${cycle.id}`
-                : undefined;
-
-            return (
-              <span
-                key={cycle.id}
-                className="inline-flex items-center gap-1 rounded-lg bg-muted px-2 py-0.5 text-sm"
-              >
-                <RefreshCw className="h-3 w-3 text-muted-foreground" />
-                {href ? (
-                  <Link to={href} className="hover:underline">
-                    {cycle.name}
-                  </Link>
-                ) : (
-                  cycle.name
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeFromCycle.mutate(cycle.id)}
-                  className="ml-0.5 rounded p-0.5 hover:bg-accent"
-                  aria-label={`${cycle.name} 사이클에서 제거`}
-                >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </button>
-              </span>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Add to cycle */}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+    <div className="flex flex-wrap items-center gap-[6px]">
+      {currentCycle ? (
+        <span className="inline-flex h-[26px] items-center gap-[6px] rounded-md bg-[color:var(--bg-3)] px-[10px] text-[12px] text-[color:var(--fg-1)]">
+          <RefreshCw className="h-3 w-3 text-[color:var(--fg-3)]" />
+          {orgSlug && wsSlug ? (
+            <Link
+              to={`/${orgSlug}/${wsSlug}/projects/${projectId}/cycles/${currentCycle.id}`}
+              className="hover:underline"
+            >
+              {currentCycle.name}
+            </Link>
+          ) : (
+            currentCycle.name
+          )}
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeFromCycle.mutate(currentCycle.id);
+            }}
+            className="-mr-1 grid h-[14px] w-[14px] shrink-0 place-items-center rounded text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-4)] hover:text-[color:var(--fg-1)]"
+            aria-label={`${currentCycle.name} 사이클에서 제거`}
           >
-            <RefreshCw className="h-3.5 w-3.5" />
-            {issueCycles.length === 0 ? '사이클 선택' : '추가'}
+            <X className="h-[10px] w-[10px]" />
           </button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-[240px] p-2">
-          <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">사이클</p>
-          {allCycles.length === 0 && (
-            <p className="px-2 py-3 text-sm text-muted-foreground text-center">사이클이 없습니다</p>
-          )}
-          <div className="max-h-[240px] overflow-y-auto">
-            {allCycles.map((cycle) => {
-              const isInCycle = issueCycleIds.has(cycle.id);
-              return (
-                <button
-                  key={cycle.id}
-                  type="button"
-                  onClick={() => {
-                    if (isInCycle) {
-                      removeFromCycle.mutate(cycle.id);
-                    } else {
-                      addToCycle.mutate(cycle.id);
-                    }
-                  }}
-                  disabled={addToCycle.isPending || removeFromCycle.isPending}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent transition-colors"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="flex-1 text-left truncate">{cycle.name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">
-                    {cycle.status}
-                  </span>
-                  {isInCycle && <Check className="h-4 w-4 text-primary" />}
-                </button>
-              );
-            })}
-          </div>
-        </PopoverContent>
-      </Popover>
+        </span>
+      ) : null}
+
+      {/* + 추가 — only when no current cycle (one-per-issue enforcement) */}
+      {!currentCycle && (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="inline-flex h-[26px] items-center gap-[6px] rounded-md border border-dashed border-[color:var(--border-strong)] px-[10px] text-[12px] text-[color:var(--fg-3)] transition-colors hover:border-[color:var(--border)] hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
+            >
+              <Plus className="h-3 w-3" />
+              추가
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[240px] p-2">
+            <p className="px-2 pb-1 text-xs font-medium text-muted-foreground">사이클 선택</p>
+            {allCycles.length === 0 && (
+              <p className="px-2 py-3 text-center text-sm text-muted-foreground">
+                사이클이 없습니다
+              </p>
+            )}
+            <div className="max-h-[240px] overflow-y-auto">
+              {allCycles.map((cycle) => {
+                const isInCycle = issueCycleIds.has(cycle.id);
+                return (
+                  <button
+                    key={cycle.id}
+                    type="button"
+                    onClick={() => switchTo(cycle.id)}
+                    disabled={addToCycle.isPending || removeFromCycle.isPending}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="flex-1 truncate text-left">{cycle.name}</span>
+                    <span className="text-[10px] capitalize text-muted-foreground">
+                      {cycle.status}
+                    </span>
+                    {isInCycle && <Check className="h-4 w-4 text-primary" />}
+                  </button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }

@@ -57,10 +57,10 @@ const DEFAULT_STATUSES = [
 ];
 
 const DEFAULT_TYPES = [
-  { name: 'Task', icon: 'check-circle', color: '#3b82f6', sortOrder: 0, isDefault: true },
-  { name: 'Bug', icon: 'bug', color: '#ef4444', sortOrder: 1, isDefault: false },
-  { name: 'Story', icon: 'book-open', color: '#8b5cf6', sortOrder: 2, isDefault: false },
-  { name: 'Epic', icon: 'rocket', color: '#f59e0b', sortOrder: 3, isDefault: false },
+  { name: '작업', icon: 'check-circle', color: '#3b82f6', sortOrder: 0, isDefault: true },
+  { name: '버그', icon: 'bug', color: '#ef4444', sortOrder: 1, isDefault: false },
+  { name: '스토리', icon: 'book-open', color: '#8b5cf6', sortOrder: 2, isDefault: false },
+  { name: '에픽', icon: 'rocket', color: '#f59e0b', sortOrder: 3, isDefault: false },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────
