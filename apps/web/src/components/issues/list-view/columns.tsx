@@ -142,9 +142,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'issueKey',
       size: 80,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Key
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">키</span>
       ),
       cell: ({ row }) => {
         const isTemp = row.original.id.startsWith('temp-');
@@ -158,9 +156,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'title',
       size: undefined, // flex-1
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Title
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">제목</span>
       ),
       cell: ({ row }) => {
         const labels = row.original.labels ?? [];
@@ -200,9 +196,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'status',
       size: 120,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Status
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">상태</span>
       ),
       cell: ({ row }) => <StatusCell issue={row.original} projectId={projectId} />,
     }),
@@ -212,9 +206,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'type',
       size: 100,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Type
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">타입</span>
       ),
       cell: ({ row }) => <TypeCell issue={row.original} projectId={projectId} />,
     }),
@@ -224,9 +216,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'assignee',
       size: 140,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Assignee
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">담당자</span>
       ),
       cell: ({ row }) => <AssigneeCell issue={row.original} projectId={projectId} showName />,
     }),
@@ -236,9 +226,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'cycle',
       size: 120,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Cycle
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">사이클</span>
       ),
       cell: ({ row }) => {
         const cycle = row.original.cycle;
@@ -277,9 +265,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'startDate',
       size: 120,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Start
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">시작일</span>
       ),
       cell: ({ row }) => {
         const text = formatDateTime(row.original.startDate);
@@ -301,9 +287,7 @@ export function createIssueColumns(projectPrefix: string, projectId: string) {
       id: 'dueDate',
       size: 120,
       header: () => (
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Due
-        </span>
+        <span className="text-xs font-medium tracking-wider text-muted-foreground">마감일</span>
       ),
       cell: ({ row }) => {
         const { text, className } = formatDueDate(row.original.dueDate);

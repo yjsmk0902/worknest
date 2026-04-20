@@ -3,6 +3,7 @@ import type { IssueOutput, IssueStatusOutput } from '@worknest/shared';
 import { cn } from '@worknest/ui';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { CategoryGlyph, type GroupCategory } from '../../../lib/status-category-config';
 import { QuickAdd } from '../quick-add';
 import { KanbanCard } from './kanban-card';
 
@@ -16,6 +17,7 @@ interface KanbanColumnProps {
   isOver?: boolean;
   activeId?: string | null;
   overCardId?: string | null;
+  dropAbove?: boolean;
 }
 
 export function KanbanColumn({
@@ -28,6 +30,7 @@ export function KanbanColumn({
   isOver,
   activeId,
   overCardId,
+  dropAbove = true,
 }: KanbanColumnProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
@@ -52,18 +55,21 @@ export function KanbanColumn({
   return (
     <div
       className={cn(
-        'flex h-full w-[280px] shrink-0 flex-col overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--panel)]',
+        'flex h-full w-[340px] shrink-0 flex-col overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--panel)]',
         isOver && 'ring-2 ring-[color:var(--accent-soft)]',
       )}
     >
       {/* Column header */}
-      <div className="flex h-10 items-center gap-2 border-b border-[color:var(--border-subtle)] px-3 text-[12px] font-medium text-foreground">
-        <span
-          className="h-[10px] w-[10px] shrink-0 rounded-full"
-          style={{ backgroundColor: status.color }}
+      <div className="flex h-11 items-center gap-2 border-b border-[color:var(--border-subtle)] px-4 text-[13px] font-medium text-[color:var(--fg-1)]">
+        <CategoryGlyph
+          category={status.category as GroupCategory | undefined}
+          color={status.color}
+          size={13}
         />
         <span className="truncate">{status.name}</span>
-        <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">{count}</span>
+        <span className="ml-auto inline-flex h-[18px] min-w-[20px] items-center justify-center rounded-md bg-[color:var(--bg-3)] px-[6px] font-mono text-[11px] text-[color:var(--fg-2)]">
+          {count}
+        </span>
       </div>
 
       {/* Card area */}
@@ -79,24 +85,26 @@ export function KanbanColumn({
           </div>
         )}
 
-        {issues.map((issue) => {
-          const isBeingDragged = issue.id === activeId;
-          const isDropTarget = issue.id === overCardId;
+        {issues
+          .filter((issue) => issue.id !== activeId)
+          .map((issue) => {
+            const isDropTarget = issue.id === overCardId;
 
-          return (
-            <div key={issue.id}>
-              {isDropTarget && !isBeingDragged && (
-                <div className="mb-[6px] h-[120px] rounded-md border-2 border-dashed border-[color:var(--accent-soft)] bg-[color:var(--accent-soft)]/40" />
-              )}
-              <div className={cn(isBeingDragged && 'pointer-events-none opacity-0')}>
+            return (
+              <div key={issue.id} className="relative">
+                {isDropTarget && dropAbove && (
+                  <div className="pointer-events-none absolute -top-[4px] left-0 right-0 h-[3px] rounded-full bg-[color:var(--accent-bg)]" />
+                )}
                 <KanbanCard issue={issue} projectPrefix={projectPrefix} onClick={onCardClick} />
+                {isDropTarget && !dropAbove && (
+                  <div className="pointer-events-none absolute -bottom-[4px] left-0 right-0 h-[3px] rounded-full bg-[color:var(--accent-bg)]" />
+                )}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
         {showEndPlaceholder && (
-          <div className="h-[120px] rounded-md border-2 border-dashed border-[color:var(--accent-soft)] bg-[color:var(--accent-soft)]/40" />
+          <div className="pointer-events-none h-[3px] rounded-full bg-[color:var(--accent-bg)]" />
         )}
       </div>
 

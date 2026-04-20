@@ -70,9 +70,17 @@ function IssueListPage() {
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [selectionMode, setSelectionMode] = useState(false);
+
+  const handleToggleSelectionMode = useCallback(() => {
+    setSelectionMode((prev) => {
+      if (prev) setRowSelection({});
+      return !prev;
+    });
+  }, []);
 
   const { hasFilters, clearAllFilters, apiParams } = useIssueFilters();
-  const isManualSort = !apiParams.sort || apiParams.sort === 'manual';
+  const isManualSort = apiParams.sort === 'manual';
 
   // Fetch project info
   const projectQuery = useQuery<ProjectOutput>({
@@ -220,7 +228,11 @@ function IssueListPage() {
       />
 
       {/* View toolbar */}
-      <ViewToolbar totalCount={issues.length} />
+      <ViewToolbar
+        totalCount={issues.length}
+        selectionMode={selectionMode}
+        onToggleSelectionMode={handleToggleSelectionMode}
+      />
 
       {/* Filter bar */}
       <FilterBar />
@@ -256,6 +268,7 @@ function IssueListPage() {
               hasFilters={hasFilters}
               onClearFilters={clearAllFilters}
               isManualSort={isManualSort}
+              selectionMode={selectionMode}
             />
           ) : (
             <GroupedIssuesList
@@ -267,6 +280,9 @@ function IssueListPage() {
                 setSelectedIssueId((prev) => (prev === issueId ? null : issueId))
               }
               onAddIssue={() => setShowQuickAdd(true)}
+              selectionMode={selectionMode}
+              rowSelection={rowSelection}
+              onRowSelectionChange={setRowSelection}
             />
           )}
         </div>

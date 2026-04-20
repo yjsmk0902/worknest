@@ -1,12 +1,19 @@
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
+import { AppHeader } from '@/components/layout/app-header';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { apiClient } from '@/lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '@/lib/issue-constants';
+import {
+  CATEGORY_CONFIG,
+  CATEGORY_ORDER,
+  CategoryGlyph,
+  type GroupCategory,
+} from '@/lib/status-category-config';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { StatusCategory } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
-import { AlertTriangle, CircleUser } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, CircleUser } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
@@ -42,16 +49,7 @@ interface MyIssue {
   project: MyIssueProject;
 }
 
-type GroupedIssues = Record<StatusCategory, MyIssue[]>;
-
-// Status category display order when flattening grouped response
-const CATEGORY_ORDER: StatusCategory[] = [
-  'started',
-  'unstarted',
-  'backlog',
-  'completed',
-  'cancelled',
-];
+type GroupedIssues = Partial<Record<StatusCategory, MyIssue[]>>;
 
 // ── Main Component ─────────────────────────────────────────────────────
 
@@ -90,29 +88,77 @@ function MyIssuesPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [selected]);
 
-  // Flatten grouped issues in a sensible order
-  const issues = useMemo(() => {
-    if (!myIssuesQuery.data) return [];
-    return CATEGORY_ORDER.flatMap((cat) => myIssuesQuery.data[cat] ?? []);
+  const [groupBy, setGroupBy] = useState<'status' | 'project'>('status');
+
+  // Flat list of all issues in category order
+  const allIssues = useMemo(() => {
+    const data = myIssuesQuery.data;
+    if (!data) return [] as MyIssue[];
+    return CATEGORY_ORDER.flatMap((cat) => (data[cat as StatusCategory] ?? []) as MyIssue[]);
   }, [myIssuesQuery.data]);
 
-  const totalIssues = issues.length;
+  // Group by status category
+  const statusGroups = useMemo(() => {
+    const data = myIssuesQuery.data;
+    if (!data) return [] as Array<{ key: string; label: string; category: GroupCategory; rows: MyIssue[] }>;
+    return CATEGORY_ORDER.map((category) => ({
+      key: category,
+      label: CATEGORY_CONFIG[category].label,
+      category,
+      rows: (data[category as StatusCategory] ?? []) as MyIssue[],
+    }));
+  }, [myIssuesQuery.data]);
+
+  // Group by project (sorted by project name, issues within use original category order)
+  const projectGroups = useMemo(() => {
+    const byProject = new Map<string, { project: MyIssueProject; rows: MyIssue[] }>();
+    for (const issue of allIssues) {
+      const entry = byProject.get(issue.projectId);
+      if (entry) entry.rows.push(issue);
+      else byProject.set(issue.projectId, { project: issue.project, rows: [issue] });
+    }
+    return Array.from(byProject.values()).sort((a, b) =>
+      a.project.name.localeCompare(b.project.name, 'ko'),
+    );
+  }, [allIssues]);
+
+  const totalIssues = allIssues.length;
+
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    const init = new Set<string>();
+    for (const cat of CATEGORY_ORDER) {
+      if (!CATEGORY_CONFIG[cat].defaultOpen) init.add(cat);
+    }
+    return init;
+  });
+
+  const toggle = (key: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   // Loading state
   if (myIssuesQuery.isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-10 pt-10 pb-6">
-          <Skeleton className="h-9 w-40" />
-          <Skeleton className="mt-2 h-4 w-48" />
-        </div>
-        <div className="flex-1" aria-busy="true" aria-label="이슈 로딩 중">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton
-              key={`row-${i}`}
-              className="mx-0 h-[52px] rounded-none border-b border-[color:var(--border-subtle)]"
-            />
-          ))}
+        <AppHeader title="내 이슈" />
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-[1040px] px-6 py-10">
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="mt-3 h-4 w-48" />
+            <div className="mt-8 space-y-2" aria-busy="true" aria-label="이슈 로딩 중">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton
+                  key={`row-${i}`}
+                  className="h-[44px] rounded border border-[color:var(--border-subtle)]"
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -122,11 +168,7 @@ function MyIssuesPage() {
   if (myIssuesQuery.isError) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-10 pt-10 pb-6">
-          <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
-            내 이슈
-          </h1>
-        </div>
+        <AppHeader title="내 이슈" />
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <AlertTriangle className="mx-auto h-8 w-8 text-[color:var(--priority-urgent)]" />
@@ -149,12 +191,7 @@ function MyIssuesPage() {
   if (totalIssues === 0) {
     return (
       <div className="flex h-full flex-col">
-        <div className="px-10 pt-10 pb-6">
-          <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
-            내 이슈
-          </h1>
-          <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">나에게 할당된 이슈 0개</p>
-        </div>
+        <AppHeader title="내 이슈" />
         <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16">
           <CircleUser className="h-12 w-12 text-[color:var(--fg-4)]" />
           <p className="text-lg font-medium text-[color:var(--fg-1)]">할당된 이슈가 없습니다</p>
@@ -178,81 +215,141 @@ function MyIssuesPage() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="px-10 pt-10 pb-8">
-        <h1 className="text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
-          내 이슈
-        </h1>
-        <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">
-          나에게 할당된 이슈 {totalIssues}개
-        </p>
-      </div>
+      <AppHeader title="내 이슈" />
 
-      {/* Flat list */}
       <div className="flex-1 overflow-y-auto">
-        {issues.map((issue) => {
-          const priorityKey = (issue.priority || 'none') as Priority;
-          const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
-          const PriorityIcon = priorityConfig.icon;
-          const issueKey = `${issue.project.prefix}-${issue.sequenceId}`;
-          const statusCategory = issue.status?.category as StatusCategory | undefined;
-
-          return (
-            <button
-              key={issue.id}
-              type="button"
-              onClick={() => handleIssueClick(issue)}
-              className="group flex h-[52px] w-full cursor-pointer items-center gap-4 border-b border-[color:var(--border-subtle)] px-6 text-left transition-colors hover:bg-[color:var(--bg-2)]"
-            >
-              {/* Priority indicator */}
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-                <PriorityIcon className={`h-[14px] w-[14px] ${priorityConfig.color}`} />
+        <div className="mx-auto max-w-[1040px] px-6 py-10">
+          {/* Page intro */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <h1 className="text-[28px] font-semibold text-[color:var(--fg-1)]">내 이슈</h1>
+              <span className="inline-flex h-[22px] items-center rounded-md bg-[color:var(--bg-3)] px-[8px] font-mono text-[11.5px] font-medium text-[color:var(--fg-2)]">
+                {totalIssues}
               </span>
+            </div>
+            <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">
+              나에게 할당된 이슈를 {groupBy === 'status' ? '상태별' : '프로젝트별'}로
+              확인합니다.
+            </p>
+          </div>
 
-              {/* Issue key (monospace) */}
-              <span className="w-[72px] shrink-0 font-mono text-[11.5px] text-[color:var(--fg-4)]">
-                {issueKey}
-              </span>
+          {/* Group-by toggle */}
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-[12px] text-[color:var(--fg-3)]">그룹 기준</span>
+            <div className="inline-flex h-7 items-center rounded-md border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)] p-[2px]">
+              <button
+                type="button"
+                onClick={() => setGroupBy('status')}
+                className={`h-full rounded px-[10px] text-[12px] font-medium transition-colors ${
+                  groupBy === 'status'
+                    ? 'bg-[color:var(--bg-3)] text-[color:var(--fg-1)]'
+                    : 'text-[color:var(--fg-3)] hover:text-[color:var(--fg-1)]'
+                }`}
+              >
+                상태
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupBy('project')}
+                className={`h-full rounded px-[10px] text-[12px] font-medium transition-colors ${
+                  groupBy === 'project'
+                    ? 'bg-[color:var(--bg-3)] text-[color:var(--fg-1)]'
+                    : 'text-[color:var(--fg-3)] hover:text-[color:var(--fg-1)]'
+                }`}
+              >
+                프로젝트
+              </button>
+            </div>
+          </div>
 
-              {/* Status dot */}
-              {issue.status ? (
-                <span
-                  className="relative h-3 w-3 shrink-0 rounded-full border-[1.5px]"
-                  style={{
-                    borderColor:
-                      statusCategory === 'completed' ? 'transparent' : issue.status.color,
-                    background:
-                      statusCategory === 'completed' || statusCategory === 'cancelled'
-                        ? issue.status.color
-                        : statusCategory === 'started'
-                          ? `conic-gradient(${issue.status.color} 60%, transparent 60%)`
-                          : 'transparent',
-                  }}
-                  aria-label={issue.status.name}
-                  title={issue.status.name}
-                />
-              ) : (
-                <span
-                  className="h-3 w-3 shrink-0 rounded-full border-[1.5px] border-[color:var(--fg-4)]"
-                  aria-hidden="true"
-                />
-              )}
-
-              {/* Title */}
-              <span className="min-w-0 flex-1 truncate text-[13px] text-[color:var(--fg-1)]">
-                {issue.title}
-              </span>
-
-              {/* Assignee avatar — placeholder (backend doesn't return assignees on this endpoint yet) */}
-              <span className="ml-auto grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[color:var(--amber-500)] text-[10px] font-semibold text-[color:var(--accent-fg)]">
-                양
-              </span>
-            </button>
-          );
-        })}
+          {/* Grouped list */}
+          <div className="overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)]">
+            {groupBy === 'status'
+              ? statusGroups.map(({ key, label, category, rows }) => {
+                  if (rows.length === 0) return null;
+                  const isCollapsed = collapsed.has(key);
+                  return (
+                    <section key={key} aria-label={label}>
+                      <div className="flex h-10 items-center gap-2 border-b border-[color:var(--border-subtle)] bg-[color:var(--bg-0)] px-4 text-[13px]">
+                        <button
+                          type="button"
+                          onClick={() => toggle(key)}
+                          className="grid h-5 w-5 shrink-0 place-items-center text-[color:var(--fg-3)] transition-colors hover:text-[color:var(--fg-1)]"
+                          aria-label={`${label} ${isCollapsed ? '펼치기' : '접기'}`}
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </button>
+                        <CategoryGlyph category={category} size={14} />
+                        <span className="font-medium text-[color:var(--fg-1)]">{label}</span>
+                        <span className="inline-flex h-[18px] min-w-[20px] items-center justify-center rounded-md bg-[color:var(--bg-3)] px-[6px] font-mono text-[11px] text-[color:var(--fg-2)]">
+                          {rows.length}
+                        </span>
+                      </div>
+                      {!isCollapsed && (
+                        <div>
+                          {rows.map((issue) => (
+                            <MyIssueRow
+                              key={issue.id}
+                              issue={issue}
+                              showProject
+                              onClick={() => handleIssueClick(issue)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })
+              : projectGroups.map(({ project, rows }) => {
+                  const key = `proj:${project.id}`;
+                  const isCollapsed = collapsed.has(key);
+                  return (
+                    <section key={project.id} aria-label={project.name}>
+                      <div className="flex h-10 items-center gap-2 border-b border-[color:var(--border-subtle)] bg-[color:var(--bg-0)] px-4 text-[13px]">
+                        <button
+                          type="button"
+                          onClick={() => toggle(key)}
+                          className="grid h-5 w-5 shrink-0 place-items-center text-[color:var(--fg-3)] transition-colors hover:text-[color:var(--fg-1)]"
+                          aria-label={`${project.name} ${isCollapsed ? '펼치기' : '접기'}`}
+                        >
+                          {isCollapsed ? (
+                            <ChevronRight className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </button>
+                        <span className="font-mono text-[11.5px] text-[color:var(--fg-4)]">
+                          {project.prefix}
+                        </span>
+                        <span className="truncate font-medium text-[color:var(--fg-1)]">
+                          {project.name}
+                        </span>
+                        <span className="inline-flex h-[18px] min-w-[20px] items-center justify-center rounded-md bg-[color:var(--bg-3)] px-[6px] font-mono text-[11px] text-[color:var(--fg-2)]">
+                          {rows.length}
+                        </span>
+                      </div>
+                      {!isCollapsed && (
+                        <div>
+                          {rows.map((issue) => (
+                            <MyIssueRow
+                              key={issue.id}
+                              issue={issue}
+                              onClick={() => handleIssueClick(issue)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  );
+                })}
+          </div>
+        </div>
       </div>
 
-      {/* Side panel with blurred backdrop */}
       {selected && (
         <IssueDetailPanel
           issueId={selected.issueId}
@@ -263,6 +360,64 @@ function MyIssuesPage() {
           mode="panel"
           onClose={() => setSelected(null)}
         />
+      )}
+    </div>
+  );
+}
+
+// ── Row ────────────────────────────────────────────────────────────────
+
+function MyIssueRow({
+  issue,
+  onClick,
+  showProject = false,
+}: {
+  issue: MyIssue;
+  onClick: () => void;
+  showProject?: boolean;
+}) {
+  const priorityKey = (issue.priority || 'none') as Priority;
+  const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
+  const PriorityIcon = priorityConfig.icon;
+  const issueKey = `${issue.project.prefix}-${issue.sequenceId}`;
+  const category = issue.status?.category as StatusCategory | undefined;
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group flex h-[44px] w-full cursor-pointer select-none items-center gap-3 border-b border-[color:var(--border-subtle)] px-4 text-left text-[13px] text-[color:var(--fg-1)] transition-colors last:border-b-0 hover:bg-[color:var(--bg-2)]"
+    >
+      {/* Priority */}
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+        <PriorityIcon className="h-[14px] w-[14px]" />
+      </span>
+
+      {/* Issue key */}
+      <span className="w-[72px] shrink-0 font-mono text-[11.5px] text-[color:var(--fg-4)]">
+        {issueKey}
+      </span>
+
+      {/* Status */}
+      <span className="flex shrink-0 items-center">
+        <CategoryGlyph category={category} color={issue.status?.color} size={13} />
+      </span>
+
+      {/* Title */}
+      <span className="min-w-0 flex-1 truncate">{issue.title}</span>
+
+      {/* Project badge (hidden when already grouped by project) */}
+      {showProject && (
+        <span className="shrink-0 truncate font-mono text-[11px] text-[color:var(--fg-4)]">
+          {issue.project.name}
+        </span>
       )}
     </div>
   );

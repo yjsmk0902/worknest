@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
   Separator,
 } from '@worknest/ui';
-import { ArrowUpDown, Columns3, GanttChart, List } from 'lucide-react';
+import { ArrowUpDown, CheckSquare, Columns3, GanttChart, List } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { SavedViewsDropdown } from '../views/saved-views-dropdown';
 import { FilterPopover } from './filter-builder/filter-popover';
@@ -61,11 +61,13 @@ const VIEW_TABS: ViewTab[] = [
 
 interface ViewToolbarProps {
   totalCount?: number;
+  selectionMode?: boolean;
+  onToggleSelectionMode?: () => void;
 }
 
 // ── Component ──────────────────────────────────────────────────────────
 
-export function ViewToolbar({ totalCount }: ViewToolbarProps) {
+export function ViewToolbar({ totalCount, selectionMode, onToggleSelectionMode }: ViewToolbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const search = useSearch({ strict: false }) as Record<string, unknown>;
@@ -242,6 +244,21 @@ export function ViewToolbar({ totalCount }: ViewToolbarProps) {
 
       {/* Saved Views */}
       <SavedViewsDropdown currentViewType={activeView} />
+
+      {/* Bulk selection toggle */}
+      {onToggleSelectionMode && (
+        <Button
+          variant={selectionMode ? 'secondary' : 'outline'}
+          size="sm"
+          className="gap-1.5"
+          onClick={onToggleSelectionMode}
+          aria-pressed={selectionMode}
+          aria-label="일괄 선택 모드"
+        >
+          <CheckSquare className="h-3.5 w-3.5" />
+          <span className="hidden xl:inline">{selectionMode ? '선택 취소' : '일괄 선택'}</span>
+        </Button>
+      )}
 
       {/* Issue Count */}
       {totalCount !== undefined && (

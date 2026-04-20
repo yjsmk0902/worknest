@@ -2,6 +2,7 @@ import {
   type CollisionDetection,
   DndContext,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragOverEvent,
   DragOverlay,
   type DragStartEvent,
@@ -68,6 +69,14 @@ function sortIssues(
   let cmp: number;
   if (typeof va === 'number' && typeof vb === 'number') {
     cmp = va - vb;
+  } else if (!field || field === 'manual') {
+    // fractional-indexing keys compare byte-wise, not via locale. Mixing
+    // them means visual order can diverge from the key order, which makes
+    // `generateKeyBetween(above, below)` produce keys that collide with
+    // existing ones.
+    const sa = String(va);
+    const sb = String(vb);
+    cmp = sa < sb ? -1 : sa > sb ? 1 : 0;
   } else {
     cmp = String(va).localeCompare(String(vb));
   }
@@ -140,8 +149,16 @@ export function KanbanBoard({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const [overCardId, setOverCardId] = useState<string | null>(null);
+  const [dropAbove, setDropAbove] = useState<boolean>(true);
   const isManualSort = !sortField || sortField === 'manual';
   const dragOriginalStatusRef = useRef<string | null>(null);
+  const dragStartPointerYRef = useRef<number>(0);
+  const pointerYRef = useRef<number>(0);
+  // Center Y of the dragged card at drag-start (used to derive the overlay's
+  // current center via `initialCenter + delta.y`, which matches what the user
+  // visually sees as "where the card is" better than the raw pointer Y).
+  const dragCardInitialCenterYRef = useRef<number>(0);
+  const cardCenterYRef = useRef<number>(0);
 
   // Local copy of issues for optimistic DnD reordering
   const [localIssues, setLocalIssues] = useState<IssueOutput[]>(issues);
@@ -253,29 +270,68 @@ export function KanbanBoard({
       // Remember the original statusId before handleDragOver mutates localIssues
       const issue = localIssues.find((i) => i.id === id);
       dragOriginalStatusRef.current = issue?.statusId ?? null;
+      // Capture initial pointer Y so onDragMove can derive live pointer.
+      const e = event.activatorEvent as PointerEvent | MouseEvent;
+      dragStartPointerYRef.current = e.clientY;
+      pointerYRef.current = e.clientY;
+      // Capture the dragged card's initial center Y. We use this + delta.y
+      // to get the overlay's current center, which we compare against other
+      // cards' midpoints for insertion — matches user's visual perception.
+      const el = document.querySelector<HTMLElement>(`[data-issue-id="${id}"]`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        dragCardInitialCenterYRef.current = rect.top + rect.height / 2;
+        cardCenterYRef.current = rect.top + rect.height / 2;
+      }
     },
     [localIssues],
   );
 
+  const handleDragMove = useCallback(
+    (event: DragMoveEvent) => {
+      pointerYRef.current = dragStartPointerYRef.current + event.delta.y;
+      cardCenterYRef.current = dragCardInitialCenterYRef.current + event.delta.y;
+      const colId = overColumnId;
+      if (!colId) return;
+      const colIssues = (issuesByStatus[colId] ?? []).filter(
+        (i) => i.id !== activeId,
+      );
+      const effectiveY = cardCenterYRef.current;
+      let insertIndex = colIssues.length;
+      for (let i = 0; i < colIssues.length; i++) {
+        const issue = colIssues[i];
+        if (!issue) continue;
+        const el = document.querySelector<HTMLElement>(
+          `[data-issue-id="${issue.id}"]`,
+        );
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (effectiveY < mid) {
+          insertIndex = i;
+          break;
+        }
+      }
+      const target = colIssues[insertIndex];
+      if (target) {
+        setOverCardId(target.id);
+        setDropAbove(true);
+      } else {
+        setOverCardId(null);
+      }
+    },
+    [overColumnId, issuesByStatus, activeId],
+  );
+
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
-      const { active, over } = event;
+      const { over } = event;
       if (!over) {
         setOverColumnId(null);
         setOverCardId(null);
         return;
       }
-
-      const overId = over.id as string;
-      const overCol = findColumnId(overId);
-      setOverColumnId(overCol);
-
-      // Track which card is being hovered (for placeholder)
-      if (!overId.startsWith('column-') && overId !== active.id) {
-        setOverCardId(overId);
-      } else {
-        setOverCardId(null);
-      }
+      setOverColumnId(findColumnId(over.id as string));
     },
     [findColumnId],
   );
@@ -295,37 +351,44 @@ export function KanbanBoard({
       const activeIssue = localIssues.find((i) => i.id === activeId);
       if (!activeIssue) return;
 
-      // Use overCardId (tracked during drag) if available, fall back to over.id
-      const effectiveOverId = overCardId ?? overId;
-      const targetColumnId = findColumnId(effectiveOverId);
+      const targetColumnId = findColumnId(overId);
       if (!targetColumnId) return;
 
       const columnIssues = issuesByStatus[targetColumnId] ?? [];
       const otherIssues = columnIssues.filter((i) => i.id !== activeId);
 
       let newSortOrder: string;
-      const droppedOnCard = overCardId && overCardId !== activeId;
 
       if (isManualSort) {
-        if (droppedOnCard) {
-          // Dropped on a specific card — insert before it
-          const overIndex = otherIssues.findIndex((i) => i.id === overCardId);
-          if (overIndex >= 0) {
-            const above = overIndex > 0 ? otherIssues[overIndex - 1] : null;
-            const below = otherIssues[overIndex];
-            newSortOrder = safeGenerateKeyBetween(
-              above?.sortOrder ?? null,
-              below?.sortOrder ?? null,
-            );
-          } else {
-            const lastIssue = otherIssues[otherIssues.length - 1];
-            newSortOrder = safeGenerateKeyBetween(lastIssue?.sortOrder ?? null, null);
+        // Pointer-based insert position. For each remaining card in the
+        // target column, read its live DOM rect and find the first one whose
+        // vertical midpoint is below the pointer — that's where we insert.
+        // If pointer is below every card, insert at the end. This keeps the
+        // drop in lockstep with the orange indicator regardless of whether
+        // @dnd-kit reported `over` as a card or the column.
+        const effectiveY = cardCenterYRef.current;
+        let insertIndex = otherIssues.length;
+        for (let i = 0; i < otherIssues.length; i++) {
+          const issue = otherIssues[i];
+          if (!issue) continue;
+          const el = document.querySelector<HTMLElement>(
+            `[data-issue-id="${issue.id}"]`,
+          );
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+          const mid = rect.top + rect.height / 2;
+          if (effectiveY < mid) {
+            insertIndex = i;
+            break;
           }
-        } else {
-          // Dropped on column empty area — place at end
-          const lastIssue = otherIssues[otherIssues.length - 1];
-          newSortOrder = safeGenerateKeyBetween(lastIssue?.sortOrder ?? null, null);
         }
+        const above = insertIndex > 0 ? otherIssues[insertIndex - 1] : null;
+        const below =
+          insertIndex < otherIssues.length ? otherIssues[insertIndex] : null;
+        newSortOrder = safeGenerateKeyBetween(
+          above?.sortOrder ?? null,
+          below?.sortOrder ?? null,
+        );
       } else {
         // Auto sort: find the correct position based on sort criteria
         const insertIndex = findSortedInsertIndex(activeIssue, otherIssues, sortField, sortOrder);
@@ -356,7 +419,7 @@ export function KanbanBoard({
 
       updateMutation.mutate(payload);
     },
-    [localIssues, issuesByStatus, findColumnId, updateMutation, sortField, sortOrder],
+    [localIssues, issuesByStatus, findColumnId, updateMutation, sortField, sortOrder, isManualSort],
   );
 
   const handleDragCancel = useCallback(() => {
@@ -390,12 +453,13 @@ export function KanbanBoard({
       sensors={sensors}
       collisionDetection={kanbanCollisionDetection}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
       <ScrollArea orientation="horizontal" className="h-full" role="region" aria-label="칸반 보드">
-        <div className="flex gap-3 px-4 pb-4 h-full">
+        <div className="flex gap-4 px-4 pb-4 h-full">
           {statuses.map((status) => (
             <KanbanColumn
               key={status.id}
@@ -408,6 +472,7 @@ export function KanbanBoard({
               isOver={overColumnId === status.id}
               activeId={activeId}
               overCardId={isManualSort ? overCardId : null}
+              dropAbove={dropAbove}
             />
           ))}
         </div>

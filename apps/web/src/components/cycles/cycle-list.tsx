@@ -1,142 +1,115 @@
 import { Link } from '@tanstack/react-router';
 import type { CycleOutput, CycleProgressOutput } from '@worknest/shared';
-import { Badge } from '@worknest/ui';
 import { cn } from '@worknest/ui';
 import { RefreshCw } from 'lucide-react';
 import { EmptyState } from '../empty-state';
 
-// ── Status Badge Config ────────────────────────────────────────────────
+// ── Status Badge ───────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   draft: {
-    label: 'Draft',
-    className:
-      'bg-[hsl(var(--status-backlog-bg))] text-[hsl(var(--status-backlog-text))] border-transparent',
+    label: '예정',
+    className: 'bg-[color:var(--bg-3)] text-[color:var(--fg-2)]',
   },
   active: {
-    label: 'Active',
+    label: '진행 중',
     className:
-      'bg-[hsl(var(--status-unstarted-bg))] text-[hsl(var(--status-unstarted-text))] border-transparent',
+      'bg-[color:var(--accent-soft)] text-[color:var(--accent-bg)] border border-[color:var(--accent-soft-border)]',
   },
   completed: {
-    label: 'Completed',
-    className:
-      'bg-[hsl(var(--status-completed-bg))] text-[hsl(var(--status-completed-text))] border-transparent',
+    label: '완료',
+    className: 'bg-[color:var(--bg-3)] text-[color:var(--fg-2)]',
   },
 };
 
 export function CycleStatusBadge({ status }: { status: string }) {
-  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.draft;
+  const config = STATUS_CONFIG[status] ?? STATUS_CONFIG.draft ?? { label: '', className: '' };
   return (
-    <Badge className={cn('text-xs font-medium px-2 py-0.5 rounded-full', config.className)}>
+    <span
+      className={cn(
+        'inline-flex h-[22px] items-center rounded-md px-[8px] text-[11.5px] font-medium',
+        config.className,
+      )}
+    >
       {config.label}
-    </Badge>
+    </span>
   );
 }
 
 // ── Progress Bar ───────────────────────────────────────────────────────
+// Single-color fill keyed to cycle status: draft=empty, active=amber,
+// completed=green. Matches the design reference where the bar represents
+// "percent done" rather than a stacked status breakdown.
 
 interface CycleProgressBarProps {
   progress: CycleProgressOutput | undefined;
+  status: string;
   height?: string;
 }
 
-export function CycleProgressBar({ progress, height = 'h-2' }: CycleProgressBarProps) {
-  if (!progress || progress.total === 0) {
-    return <div className={cn('w-full rounded-full bg-muted', height)} />;
-  }
+export function CycleProgressBar({
+  progress,
+  status,
+  height = 'h-[6px]',
+}: CycleProgressBarProps) {
+  const total = progress?.total ?? 0;
+  const completed = progress?.completed ?? progress?.byCategory?.completed ?? 0;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const { total, byCategory } = progress;
-  const completed = byCategory.completed ?? 0;
-  const started = byCategory.started ?? 0;
-  const unstarted = byCategory.unstarted ?? 0;
-  const backlog = byCategory.backlog ?? 0;
-  const cancelled = byCategory.cancelled ?? 0;
+  const fillColor =
+    status === 'completed'
+      ? 'bg-[color:var(--status-done)]'
+      : status === 'active'
+        ? 'bg-[color:var(--status-progress)]'
+        : 'bg-[color:var(--bg-4)]';
 
-  const segments = [
-    {
-      count: completed,
-      color: 'bg-[hsl(var(--status-completed-text))]',
-    },
-    {
-      count: started,
-      color: 'bg-[hsl(var(--status-started-text))]',
-    },
-    {
-      count: unstarted,
-      color: 'bg-[hsl(var(--status-unstarted-text))]',
-    },
-    {
-      count: backlog,
-      color: 'bg-[hsl(var(--status-backlog-text))]',
-    },
-    {
-      count: cancelled,
-      color: 'bg-[hsl(var(--status-cancelled-text))]',
-    },
-  ].filter((s) => s.count > 0);
+  // Draft cycles show the track only
+  const width = status === 'completed' ? 100 : percent;
 
   return (
-    <div className={cn('flex w-full overflow-hidden rounded-full bg-muted', height)}>
-      {segments.map((seg) => (
-        <div
-          key={seg.color}
-          className={cn(seg.color, 'transition-all duration-300')}
-          style={{
-            width: `${(seg.count / total) * 100}%`,
-            minWidth: seg.count > 0 ? '2px' : '0',
-          }}
-        />
-      ))}
+    <div className={cn('relative w-full overflow-hidden rounded-full bg-[color:var(--bg-3)]', height)}>
+      <div
+        className={cn('h-full transition-all duration-300', fillColor)}
+        style={{ width: `${width}%` }}
+      />
     </div>
   );
 }
 
-// ── Progress Text ──────────────────────────────────────────────────────
-
-export function CycleProgressText({
-  progress,
-}: {
-  progress: CycleProgressOutput | undefined;
-}) {
-  if (!progress) return null;
-
-  const { total, byCategory } = progress;
-  const completed = byCategory.completed ?? 0;
-  const started = byCategory.started ?? 0;
-  const unstarted = byCategory.unstarted ?? 0;
-
-  return (
-    <div className="flex items-center justify-between mt-2">
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-        {completed > 0 && <span>완료 {completed}</span>}
-        {completed > 0 && (started > 0 || unstarted > 0) && <span>&middot;</span>}
-        {started > 0 && <span>진행 중 {started}</span>}
-        {started > 0 && unstarted > 0 && <span>&middot;</span>}
-        {unstarted > 0 && <span>미시작 {unstarted}</span>}
-      </div>
-      <span className="text-xs text-muted-foreground">총 {total}개</span>
-    </div>
-  );
+export function getCyclePercent(
+  progress: CycleProgressOutput | undefined,
+  status: string,
+): number {
+  if (status === 'completed') return 100;
+  if (!progress || progress.total === 0) return 0;
+  const completed = progress.completed ?? progress.byCategory?.completed ?? 0;
+  return Math.round((completed / progress.total) * 100);
 }
 
 // ── Date Formatting ────────────────────────────────────────────────────
 
+function formatDot(dateStr: string) {
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}.${m}.${day}`;
+}
+
 export function formatCycleDateRange(startDate: string | null, endDate: string | null): string {
   if (!startDate && !endDate) return '';
+  if (startDate && endDate) return `${formatDot(startDate)} — ${formatDot(endDate)}`;
+  if (startDate) return `${formatDot(startDate)} —`;
+  return `— ${formatDot(endDate!)}`;
+}
 
-  const format = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const sameYear = d.getFullYear() === now.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return sameYear ? `${month}/${day}` : `${d.getFullYear()}/${month}/${day}`;
-  };
-
-  if (startDate && endDate) return `${format(startDate)} - ${format(endDate)}`;
-  if (startDate) return `${format(startDate)} -`;
-  return `- ${format(endDate!)}`;
+function daysRemaining(endDate: string | null): number | null {
+  if (!endDate) return null;
+  const end = new Date(endDate);
+  const now = new Date();
+  const diffMs = end.setHours(23, 59, 59, 999) - now.getTime();
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, days);
 }
 
 // ── Cycle Card ─────────────────────────────────────────────────────────
@@ -150,32 +123,68 @@ interface CycleCardProps {
 }
 
 export function CycleCard({ cycle, progress, orgSlug, wsSlug, projectId }: CycleCardProps) {
+  const percent = getCyclePercent(progress, cycle.status);
+  const total = progress?.total ?? 0;
+  const completed = progress?.completed ?? progress?.byCategory?.completed ?? 0;
+  const started = progress?.byCategory?.started ?? 0;
+  const remaining = daysRemaining(cycle.endDate);
+  const isActive = cycle.status === 'active';
+
   return (
     <Link
       to="/$orgSlug/$wsSlug/projects/$projectId/cycles/$cycleId"
       params={{ orgSlug, wsSlug, projectId, cycleId: cycle.id }}
-      className="block rounded-lg border border-border bg-card p-4 mb-3 hover:border-border/80 hover:shadow-sm transition-all duration-150 cursor-pointer"
+      className="mb-3 block rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)] p-5 transition-colors duration-150 hover:border-[color:var(--border)]"
     >
-      {/* Top row: name, status, date */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium flex-1 truncate">{cycle.name}</span>
-        <CycleStatusBadge status={cycle.status} />
-        <span className="text-xs text-muted-foreground ml-auto shrink-0">
-          {formatCycleDateRange(cycle.startDate, cycle.endDate)}
-        </span>
+      {/* Top row */}
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-[15px] font-semibold text-[color:var(--fg-1)]">
+              {cycle.name}
+            </h3>
+            {cycle.status !== 'draft' && <CycleStatusBadge status={cycle.status} />}
+          </div>
+          <p className="mt-1 text-[12px] text-[color:var(--fg-3)]">
+            {formatCycleDateRange(cycle.startDate, cycle.endDate)}
+          </p>
+        </div>
+        <span className="shrink-0 font-mono text-[13px] text-[color:var(--fg-2)]">{percent}%</span>
       </div>
 
       {/* Description */}
       {cycle.description && (
-        <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{cycle.description}</p>
+        <p className="mt-2 text-[12.5px] text-[color:var(--fg-3)] line-clamp-1">
+          {cycle.description}
+        </p>
       )}
 
       {/* Progress bar */}
       <div className="mt-3">
-        <CycleProgressBar progress={progress} />
-        <CycleProgressText progress={progress} />
+        <CycleProgressBar progress={progress} status={cycle.status} />
       </div>
+
+      {/* Stats (only for active cycles, when progress is loaded) */}
+      {isActive && progress && (
+        <div className="mt-4 grid grid-cols-4 gap-4 text-[color:var(--fg-1)]">
+          <Stat label="범위" value={total} />
+          <Stat label="완료" value={completed} />
+          <Stat label="진행 중" value={started} />
+          <Stat label="남은 일수" value={remaining ?? '—'} />
+        </div>
+      )}
     </Link>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[11px] text-[color:var(--fg-4)]">{label}</span>
+      <span className="mt-0.5 font-mono text-[18px] font-semibold text-[color:var(--fg-1)]">
+        {value}
+      </span>
+    </div>
   );
 }
 

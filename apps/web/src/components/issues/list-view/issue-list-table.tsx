@@ -1,20 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  type RowSelectionState,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import type { RowSelectionState } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { generateKeyBetween } from '@worknest/shared';
 import type { IssueOutput } from '@worknest/shared';
 import { Skeleton, toast } from '@worknest/ui';
-import { cn } from '@worknest/ui';
-import { CirclePlus, GripVertical, Loader2, SearchX } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CirclePlus, Loader2, SearchX } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { EmptyState } from '../../empty-state';
-import { createIssueColumns } from './columns';
+import { IssueRow } from './grouped-issues-list';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -36,6 +30,7 @@ interface IssueListTableProps {
   hasFilters: boolean;
   onClearFilters?: () => void;
   isManualSort?: boolean;
+  selectionMode?: boolean;
 }
 
 function safeGenerateKey(a: string | null, b: string | null): string {
@@ -45,26 +40,6 @@ function safeGenerateKey(a: string | null, b: string | null): string {
   } catch {
     return generateKeyBetween(a, null);
   }
-}
-
-// ── Column width mapping ────────────────────────────────────────────────
-
-const COL_WIDTH: Record<string, string> = {
-  select: 'w-[40px] justify-center',
-  priority: 'w-[40px]',
-  drag: 'w-[28px]',
-  issueKey: 'w-[80px]',
-  title: 'flex-1 min-w-0 overflow-hidden',
-  status: 'w-[120px]',
-  type: 'w-[100px]',
-  assignee: 'w-[140px]',
-  cycle: 'w-[120px]',
-  startDate: 'w-[120px]',
-  dueDate: 'w-[120px]',
-};
-
-function colClass(id: string) {
-  return COL_WIDTH[id] ?? '';
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -81,76 +56,47 @@ export function IssueListTable({
   rowSelection,
   onRowSelectionChange,
   onRowClick,
-  onRowDoubleClick,
   activeIssueId,
   onShowQuickAdd,
   hasFilters,
   onClearFilters,
   isManualSort = false,
+  selectionMode = false,
 }: IssueListTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
-  // Drag state
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
-  const columns = useMemo(
-    () => createIssueColumns(projectPrefix, projectId),
-    [projectPrefix, projectId],
-  );
-
-  const table = useReactTable({
-    data: issues,
-    columns,
-    state: { rowSelection },
-    onRowSelectionChange: (updater) => {
-      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
-      onRowSelectionChange(next);
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.id,
-    enableRowSelection: (row) => !row.original.id.startsWith('temp-'),
-  });
-
-  const { rows } = table.getRowModel();
-
-  // Virtual scrolling
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: issues.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 40,
-    overscan: 5,
+    estimateSize: () => 44,
+    overscan: 8,
   });
 
   const virtualRows = virtualizer.getVirtualItems();
 
-  // Scroll sentinel for infinite loading
   useEffect(() => {
     if (!sentinelRef.current || !hasNextPage || isFetchingNextPage) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
-          fetchNextPage();
-        }
+        if (entries[0]?.isIntersecting) fetchNextPage();
       },
       { threshold: 0.1 },
     );
-
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Scroll focused row into view
   useEffect(() => {
-    if (focusedIndex >= 0 && focusedIndex < rows.length) {
+    if (focusedIndex >= 0 && focusedIndex < issues.length) {
       virtualizer.scrollToIndex(focusedIndex, { align: 'auto' });
     }
-  }, [focusedIndex, rows.length, virtualizer]);
+  }, [focusedIndex, issues.length, virtualizer]);
 
-  // Reorder mutation
   const reorderMutation = useMutation({
     mutationFn: (data: { issueId: string; sortOrder: string }) =>
       apiClient.patch(`/projects/${projectId}/issues/${data.issueId}`, {
@@ -163,11 +109,9 @@ export function IssueListTable({
     onError: () => toast('이동에 실패했습니다.'),
   });
 
-  // Drag handlers
   const handleDragStart = useCallback((e: React.DragEvent, issueId: string) => {
     setDragId(issueId);
     e.dataTransfer.effectAllowed = 'move';
-    // Use a tiny transparent image so default ghost doesn't show
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     e.dataTransfer.setDragImage(img, 0, 0);
@@ -213,13 +157,19 @@ export function IssueListTable({
     setDropTargetId(null);
   }, []);
 
-  // ── Loading state ───────────────────────────────────────────────────
+  const toggleRow = useCallback(
+    (issueId: string) => {
+      const next = { ...rowSelection };
+      if (next[issueId]) delete next[issueId];
+      else next[issueId] = true;
+      onRowSelectionChange(next);
+    },
+    [rowSelection, onRowSelectionChange],
+  );
 
   if (isLoading) {
     return <IssueListSkeleton />;
   }
-
-  // ── Empty states ────────────────────────────────────────────────────
 
   if (issues.length === 0) {
     if (hasFilters) {
@@ -238,45 +188,13 @@ export function IssueListTable({
         icon={CirclePlus}
         title="C 를 눌러 첫 이슈를 만들어보세요"
         description="이슈를 만들어 프로젝트의 작업을 추적하세요"
-        action={{
-          label: '이슈 만들기',
-          onClick: onShowQuickAdd,
-        }}
+        action={{ label: '이슈 만들기', onClick: onShowQuickAdd }}
       />
     );
   }
 
-  // ── Table render ────────────────────────────────────────────────────
-
   return (
-    <div
-      className="flex h-full min-h-0 flex-col bg-[color:var(--bg)]"
-      role="grid"
-      aria-label="이슈 목록"
-    >
-      {/* Header */}
-      <div
-        className="sticky top-0 z-[2] flex h-[30px] shrink-0 items-center gap-[10px] border-b border-[color:var(--border-subtle)] bg-[color:var(--bg)] px-4 text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]"
-        role="row"
-        aria-rowindex={1}
-      >
-        {isManualSort && <div className="w-[28px]" />}
-        {table.getHeaderGroups().map((headerGroup) =>
-          headerGroup.headers.map((header) => (
-            <div
-              key={header.id}
-              role="columnheader"
-              className={cn('flex items-center', colClass(header.id))}
-            >
-              {header.isPlaceholder
-                ? null
-                : flexRender(header.column.columnDef.header, header.getContext())}
-            </div>
-          )),
-        )}
-      </div>
-
-      {/* Virtual scrolling body */}
+    <div className="flex h-full min-h-0 flex-col" aria-label="이슈 목록">
       <div ref={parentRef} className="min-h-0 flex-1 overflow-y-auto">
         <div
           style={{
@@ -286,78 +204,45 @@ export function IssueListTable({
           }}
         >
           {virtualRows.map((virtualRow) => {
-            const row = rows[virtualRow.index];
-            if (!row) return null;
-
-            const isTemp = row.original.id.startsWith('temp-');
-            const isFocused = virtualRow.index === focusedIndex;
-            const isSelected = row.getIsSelected();
-            const isActive = row.original.id === activeIssueId;
-            const isDragging = row.original.id === dragId;
-            const isDropTarget = row.original.id === dropTargetId && dropTargetId !== dragId;
+            const issue = issues[virtualRow.index];
+            if (!issue) return null;
+            const isTemp = issue.id.startsWith('temp-');
+            const isDragging = issue.id === dragId;
+            const isDropTarget = issue.id === dropTargetId && dropTargetId !== dragId;
 
             return (
               <div
-                key={row.id}
-                data-index={virtualRow.index}
+                key={issue.id}
                 ref={virtualizer.measureElement}
-                role="row"
-                aria-rowindex={virtualRow.index + 2}
-                aria-selected={isSelected}
-                aria-busy={isTemp}
-                className={cn(
-                  'absolute left-0 top-0 flex w-full cursor-pointer items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4 text-[13px] text-foreground transition-colors duration-150',
-                  'hover:bg-[color:var(--bg-hover)]',
-                  isSelected && 'bg-[color:var(--bg-sel)]',
-                  isActive && 'bg-[color:var(--bg-sel)] shadow-[inset_2px_0_0_0_var(--accent)]',
-                  isFocused && 'z-10 ring-1 ring-[color:var(--accent-soft)]',
-                  isTemp && 'pointer-events-none opacity-70',
-                  isDragging && 'opacity-30',
-                  isDropTarget && 'border-t-2 border-t-[color:var(--accent)]',
-                )}
-                draggable={isManualSort && !isTemp}
-                style={{
-                  height: 'var(--row-h)',
-                  transform: `translateY(${virtualRow.start}px)`,
-                }}
-                onClick={() => {
-                  if (!isTemp) onRowClick(row.original.id);
-                }}
-                onDoubleClick={() => {
-                  if (!isTemp) onRowDoubleClick(row.original.id);
-                }}
-                onDragStart={isManualSort ? (e) => handleDragStart(e, row.original.id) : undefined}
-                onDragEnd={isManualSort ? handleDragEnd : undefined}
-                onDragOver={isManualSort ? (e) => handleDragOver(e, row.original.id) : undefined}
-                onDrop={isManualSort ? (e) => handleDrop(e, row.original.id) : undefined}
+                data-index={virtualRow.index}
+                className="absolute left-0 top-0 w-full"
+                style={{ transform: `translateY(${virtualRow.start}px)` }}
               >
-                {/* Drag handle */}
-                {isManualSort && (
-                  <div
-                    className="flex w-[28px] cursor-grab items-center justify-center text-[color:var(--fg-faint)] hover:text-[color:var(--fg-dim)] active:cursor-grabbing"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <GripVertical className="h-4 w-4" />
-                  </div>
-                )}
-                {row.getVisibleCells().map((cell) => (
-                  <div
-                    key={cell.id}
-                    role="gridcell"
-                    className={cn('flex items-center', colClass(cell.column.id))}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </div>
-                ))}
+                <IssueRow
+                  issue={issue}
+                  projectPrefix={projectPrefix}
+                  active={activeIssueId === issue.id}
+                  onClick={() =>
+                    selectionMode ? toggleRow(issue.id) : !isTemp && onRowClick(issue.id)
+                  }
+                  selectionMode={selectionMode}
+                  selected={!!rowSelection[issue.id]}
+                  onToggleSelect={() => toggleRow(issue.id)}
+                  draggable={isManualSort && !isTemp}
+                  onDragStart={(e) => handleDragStart(e, issue.id)}
+                  onDragOver={(e) => handleDragOver(e, issue.id)}
+                  onDrop={(e) => handleDrop(e, issue.id)}
+                  onDragEnd={handleDragEnd}
+                  isDragging={isDragging}
+                  isDropTarget={isDropTarget}
+                />
               </div>
             );
           })}
         </div>
 
-        {/* Scroll sentinel */}
         {hasNextPage && <div ref={sentinelRef} className="h-10" />}
 
-        {/* Loading more indicator */}
         {isFetchingNextPage && (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -372,34 +257,20 @@ export function IssueListTable({
 
 function IssueListSkeleton() {
   return (
-    <div
-      className="flex flex-col bg-[color:var(--bg)]"
-      aria-busy="true"
-      aria-label="이슈 목록 로딩 중"
-    >
-      <div className="flex h-[30px] items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4">
-        <Skeleton className="h-3 w-3" />
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-3 w-20" />
-        <div className="flex-1" />
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-3 w-12" />
-        <Skeleton className="h-3 w-12" />
-      </div>
+    <div className="flex flex-col" aria-busy="true" aria-label="이슈 목록 로딩 중">
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="flex h-9 items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4"
+          className="flex h-[44px] items-center gap-3 border-b border-[color:var(--border-subtle)] px-4"
         >
           <Skeleton className="h-3 w-3" />
-          <Skeleton className="h-3 w-3" />
-          <Skeleton className="h-3 w-[70px]" />
+          <Skeleton className="h-3 w-[60px]" />
+          <Skeleton className="h-3 w-3 rounded-full" />
           <div className="flex flex-1 items-center">
             <Skeleton className="h-3" style={{ width: `${40 + Math.random() * 40}%` }} />
           </div>
-          <Skeleton className="h-4 w-20 rounded-full" />
-          <Skeleton className="h-4 w-4 rounded-full" />
-          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-6 w-6 rounded-full" />
         </div>
       ))}
     </div>

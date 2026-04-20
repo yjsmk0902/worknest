@@ -54,6 +54,13 @@ const DEFAULT_STATUSES = [
     category: 'completed' as const,
     isDefault: false,
   },
+  {
+    name: '취소',
+    color: '#6b7280',
+    sortOrder: 5,
+    category: 'cancelled' as const,
+    isDefault: false,
+  },
 ];
 
 const DEFAULT_TYPES = [

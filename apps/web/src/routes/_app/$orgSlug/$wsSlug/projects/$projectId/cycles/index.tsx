@@ -142,18 +142,35 @@ function CycleListPage() {
       />
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {sortedCycles.length === 0 ? (
-          <CycleEmptyState onCreateClick={() => setCreateModalOpen(true)} />
-        ) : (
-          <CycleList
-            cycles={sortedCycles}
-            progressMap={progressMap}
-            orgSlug={orgSlug}
-            wsSlug={wsSlug}
-            projectId={projectId}
-          />
-        )}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-[880px] px-6 py-10">
+          {/* Page intro */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3">
+              <h1 className="text-[28px] font-semibold text-[color:var(--fg-1)]">사이클</h1>
+              {sortedCycles.some((c) => c.status === 'active') && (
+                <span className="inline-flex h-[22px] items-center rounded-md border border-[color:var(--accent-soft-border)] bg-[color:var(--accent-soft)] px-[8px] text-[11.5px] font-medium text-[color:var(--accent-bg)]">
+                  활성 {sortedCycles.filter((c) => c.status === 'active').length}
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-[13px] text-[color:var(--fg-3)]">
+              반복 주기로 팀의 리듬을 관리합니다.
+            </p>
+          </div>
+
+          {sortedCycles.length === 0 ? (
+            <CycleEmptyState onCreateClick={() => setCreateModalOpen(true)} />
+          ) : (
+            <CycleList
+              cycles={sortedCycles}
+              progressMap={progressMap}
+              orgSlug={orgSlug}
+              wsSlug={wsSlug}
+              projectId={projectId}
+            />
+          )}
+        </div>
       </div>
 
       {/* Create modal */}

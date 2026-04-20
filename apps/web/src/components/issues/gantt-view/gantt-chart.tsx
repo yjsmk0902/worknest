@@ -1,5 +1,5 @@
-import type { IssueOutput } from '@worknest/shared';
-import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
+import type { IssueOutput, StatusCategory } from '@worknest/shared';
+import { Avatar, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
 import { cn } from '@worknest/ui';
 import {
   addDays,
@@ -18,6 +18,8 @@ import {
 import { ko } from 'date-fns/locale';
 import { Calendar, CalendarRange } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
+import { CategoryGlyph, type GroupCategory } from '../../../lib/status-category-config';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -51,14 +53,6 @@ const RANGE_YEARS: Record<ZoomLevel, number> = {
   day: 1,
   week: 3,
   month: 5,
-};
-
-const PRIORITY_COLORS: Record<string, string> = {
-  urgent: '#ef4444',
-  high: '#f97316',
-  medium: '#eab308',
-  low: '#3b82f6',
-  none: '#94a3b8',
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -260,69 +254,70 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
             className="sticky top-0 z-10 flex items-end border-b border-[color:var(--border)] bg-[color:var(--bg)] px-[14px]"
             style={{ height: HEADER_HEIGHT }}
           >
-            <span className="pb-2 text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]">
+            <span className="pb-2 text-[11.5px] font-medium tracking-wider text-[color:var(--fg-3)]">
               이슈
             </span>
           </div>
 
           {/* Issue rows */}
-          {ganttIssues.map((issue) => (
-            <button
-              key={issue.id}
-              type="button"
-              onClick={() => onIssueClick?.(issue.id)}
-              className="flex w-full items-center gap-2 border-b border-[color:var(--border-subtle)] px-[14px] text-left transition-colors hover:bg-[color:var(--bg-hover)]"
-              style={{ height: ROW_HEIGHT }}
-            >
-              {/* Priority dot */}
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{
-                  backgroundColor: PRIORITY_COLORS[issue.priority] ?? '#94a3b8',
-                }}
-              />
+          {ganttIssues.map((issue) => {
+            const priorityKey = (issue.priority || 'none') as Priority;
+            const priorityConfig = PRIORITY_CONFIG[priorityKey] ?? PRIORITY_CONFIG.none;
+            const PriorityIcon = priorityConfig.icon;
+            const category = issue.status?.category as StatusCategory | undefined;
+            const primaryAssignee = issue.assignees?.[0];
+            const extraAssignees = (issue.assignees?.length ?? 0) - 1;
 
-              {/* Status dot */}
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
-                style={{
-                  backgroundColor: getStatusColor(issue.status),
-                }}
-              />
+            return (
+              <button
+                key={issue.id}
+                type="button"
+                onClick={() => onIssueClick?.(issue.id)}
+                className="flex w-full items-center gap-2 border-b border-[color:var(--border-subtle)] px-[14px] text-left transition-colors hover:bg-[color:var(--bg-2)]"
+                style={{ height: ROW_HEIGHT }}
+              >
+                {/* Priority */}
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+                  <PriorityIcon className="h-[14px] w-[14px]" />
+                </span>
 
-              {/* Issue key */}
-              <span className="shrink-0 font-mono text-[10.5px] text-[color:var(--fg-faint)]">
-                {projectPrefix}-{issue.sequenceId}
-              </span>
+                {/* Status */}
+                <CategoryGlyph
+                  category={category as GroupCategory | undefined}
+                  color={issue.status?.color}
+                  size={13}
+                />
 
-              {/* Title */}
-              <span className="truncate text-[12.5px] text-foreground">{issue.title}</span>
+                {/* Issue key */}
+                <span className="shrink-0 font-mono text-[11.5px] text-[color:var(--fg-4)]">
+                  {projectPrefix}-{issue.sequenceId}
+                </span>
 
-              {/* Assignee avatar */}
-              {issue.assignees && issue.assignees.length > 0 && (
-                <div className="ml-auto flex shrink-0 -space-x-1">
-                  {issue.assignees.slice(0, 2).map((a) => (
-                    <div
-                      key={a.userId}
-                      className="relative flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground ring-1 ring-background"
-                    >
-                      {a.user.name.charAt(0).toUpperCase()}
-                      {a.user.avatarUrl && (
-                        <img
-                          src={a.user.avatarUrl}
-                          alt=""
-                          className="absolute inset-0 h-5 w-5 rounded-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </button>
-          ))}
+                {/* Title */}
+                <span className="truncate text-[13px] text-[color:var(--fg-1)]">
+                  {issue.title}
+                </span>
+
+                {/* Assignee avatar */}
+                {primaryAssignee ? (
+                  <span className="relative ml-auto shrink-0">
+                    <Avatar
+                      src={primaryAssignee.user.avatarUrl}
+                      fallback={primaryAssignee.user.name}
+                      size="sm"
+                    />
+                    {extraAssignees > 0 && (
+                      <span className="absolute -right-1 -top-1 grid h-[14px] min-w-[14px] place-items-center rounded-full bg-[color:var(--bg-4)] px-1 font-mono text-[9px] text-[color:var(--fg-2)]">
+                        +{extraAssignees}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="ml-auto h-6 w-6 shrink-0 rounded-full border border-dashed border-[color:var(--border)]" />
+                )}
+              </button>
+            );
+          })}
 
           {ganttIssues.length === 0 && (
             <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
@@ -464,11 +459,12 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                               </div>
                               {issue.status && (
                                 <div className="flex items-center gap-1.5 text-xs">
-                                  <span
-                                    className="h-2 w-2 rounded-full"
-                                    style={{
-                                      backgroundColor: issue.status.color,
-                                    }}
+                                  <CategoryGlyph
+                                    category={
+                                      issue.status.category as GroupCategory | undefined
+                                    }
+                                    color={issue.status.color}
+                                    size={11}
                                   />
                                   <span>{issue.status.name}</span>
                                 </div>

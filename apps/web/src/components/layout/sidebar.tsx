@@ -157,17 +157,17 @@ function CollapsedSidebar({ onToggle }: { onToggle: () => void }) {
 
         <CollapsedNavItem
           icon={<Bell className="h-[18px] w-[18px]" />}
-          label="Inbox"
+          label="받은 알림"
           href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : undefined}
         />
         <CollapsedNavItem
           icon={<CircleUser className="h-[18px] w-[18px]" />}
-          label="My Issues"
+          label="내 이슈"
           href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/issues` : undefined}
         />
         <CollapsedNavItem
           icon={<Star className="h-[18px] w-[18px]" />}
-          label="Favorites"
+          label="즐겨찾기"
           href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/favorites` : undefined}
         />
 
@@ -214,7 +214,7 @@ function InboxNavItem({ orgSlug, wsSlug }: { orgSlug: string; wsSlug: string }) 
   return (
     <NavItem
       icon={<Bell className="h-4 w-4" />}
-      label="Inbox"
+      label="받은 알림"
       href={orgSlug && wsSlug ? `/${orgSlug}/${wsSlug}/my/inbox` : '#'}
       badge={unreadQuery.data?.count}
     />

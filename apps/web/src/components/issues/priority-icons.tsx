@@ -58,7 +58,7 @@ export function PrioritySignalLow({ className }: PriProps) {
     <PriBars
       className={className}
       lit={1}
-      color="var(--priority-low, #93c5fd)"
+      color="var(--priority-low, #60a5fa)"
       muted="var(--fg-muted, #52525b)"
     />
   );
@@ -69,7 +69,7 @@ export function PrioritySignalMed({ className }: PriProps) {
     <PriBars
       className={className}
       lit={2}
-      color="var(--priority-med, #d4d4d8)"
+      color="var(--priority-med, #eab308)"
       muted="var(--fg-muted, #52525b)"
     />
   );
@@ -80,7 +80,7 @@ export function PrioritySignalHigh({ className }: PriProps) {
     <PriBars
       className={className}
       lit={3}
-      color="var(--priority-high, #e8a838)"
+      color="var(--priority-high, #f97316)"
       muted="var(--fg-muted, #52525b)"
     />
   );

@@ -18,8 +18,6 @@ export interface CategoryConfig {
 
 /**
  * Display order for status categories in grouped list / board views.
- * Cancelled is kept but dropped from the default visible set per product
- * direction; it can be re-added later if needed.
  */
 export const CATEGORY_ORDER: GroupCategory[] = [
   'backlog',
@@ -27,6 +25,7 @@ export const CATEGORY_ORDER: GroupCategory[] = [
   'started',
   'review',
   'completed',
+  'cancelled',
 ];
 
 export const CATEGORY_CONFIG: Record<GroupCategory, CategoryConfig> = {
@@ -41,7 +40,7 @@ export const CATEGORY_CONFIG: Record<GroupCategory, CategoryConfig> = {
 /** Category color for group header icons (fallback when no status color available) */
 export const CATEGORY_COLOR: Record<GroupCategory, string> = {
   started: 'var(--status-progress, #e8a838)',
-  unstarted: 'var(--status-todo, #8b8f99)',
+  unstarted: 'var(--status-todo, #3b82f6)',
   review: 'var(--status-review, #a88be3)',
   backlog: 'var(--status-backlog, #6b7280)',
   completed: 'var(--status-done, #4caf7b)',
@@ -102,9 +101,11 @@ export function CategoryGlyph({
     );
   }
   if (category === 'started') {
-    // SVG ring + 60% pie wedge starting from 12 o'clock clockwise.
-    // Endpoint: start angle -90°, sweep +216°, end angle 126°.
-    // (x,y) = 8 + 4.8*cos(126°), 8 + 4.8*sin(126°) ≈ (5.18, 11.88)
+    // Ring + 1/3 pie wedge (120°) from 12 o'clock clockwise.
+    // Wedge radius 6.75 matches the ring's outer edge (r=6, stroke=1.5) so
+    // the filled slice merges with the ring — no donut boundary between
+    // the two. End at 4 o'clock: (8 + 6.75*cos30°, 8 + 6.75*sin30°)
+    // ≈ (13.846, 11.375).
     return (
       <svg
         viewBox="0 0 16 16"
@@ -112,8 +113,8 @@ export function CategoryGlyph({
         style={style}
         aria-hidden="true"
       >
-        <circle cx="8" cy="8" r="6" fill="none" stroke={c} strokeWidth="1.6" />
-        <path d="M 8 3.2 A 4.8 4.8 0 1 1 5.18 11.88 L 8 8 Z" fill={c} />
+        <circle cx="8" cy="8" r="6" fill="none" stroke={c} strokeWidth="1.5" />
+        <path d="M 8 8 L 8 1.25 A 6.75 6.75 0 0 1 13.846 11.375 Z" fill={c} />
       </svg>
     );
   }

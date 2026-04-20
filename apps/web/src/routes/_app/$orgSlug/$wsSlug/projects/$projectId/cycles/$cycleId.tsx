@@ -3,7 +3,6 @@ import { CarryOverModal } from '@/components/cycles/carry-over-modal';
 import { CycleFormModal } from '@/components/cycles/cycle-form-modal';
 import {
   CycleProgressBar,
-  CycleProgressText,
   CycleStatusBadge,
   formatCycleDateRange,
 } from '@/components/cycles/cycle-list';
@@ -306,8 +305,7 @@ function CycleDetailPage() {
         {cycle.description && <p className="text-sm text-muted-foreground">{cycle.description}</p>}
 
         {/* Progress bar */}
-        <CycleProgressBar progress={progress} height="h-2.5" />
-        <CycleProgressText progress={progress} />
+        <CycleProgressBar progress={progress} status={cycle.status} height="h-2.5" />
       </div>
 
       {/* Issue list */}

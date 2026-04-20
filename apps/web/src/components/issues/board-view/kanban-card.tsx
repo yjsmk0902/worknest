@@ -77,6 +77,7 @@ export function KanbanCard({
       {...attributes}
       {...listeners}
       role="listitem"
+      data-issue-id={issue.id}
       aria-grabbed={isDragging}
       aria-label={`${issueKey} ${issue.title}`}
       aria-roledescription="드래그 가능한 이슈 카드"
@@ -127,8 +128,10 @@ export function KanbanCard({
         )}
       </div>
 
-      {/* Title */}
-      <p className="line-clamp-2 text-[12.5px] leading-[1.38] text-foreground">{issue.title}</p>
+      {/* Title — locked to two lines so every card has the same height */}
+      <p className="line-clamp-2 min-h-[35px] text-[12.5px] leading-[1.38] text-foreground">
+        {issue.title}
+      </p>
 
       {/* Bottom row: dates + cycle + assignees */}
       <div className="mt-auto flex items-center gap-2 text-[11px] text-[color:var(--fg-dim)]">
@@ -176,23 +179,20 @@ export function KanbanCard({
           )}
 
           {assignees.length > 0 ? (
-            <>
+            <span className="relative shrink-0">
               <Avatar
                 src={assignees[0].user.avatarUrl}
                 fallback={assignees[0].user.name}
-                className="w-5 h-5 text-[10px] shrink-0"
+                className="h-5 w-5 text-[10px]"
               />
-              <span className="text-xs text-muted-foreground truncate">
-                {assignees[0].user.name}
-              </span>
               {extraAssignees > 0 && (
-                <span className="text-[10px] text-muted-foreground shrink-0">
+                <span className="absolute -right-1 -top-1 grid h-[14px] min-w-[14px] place-items-center rounded-full bg-[color:var(--bg-4)] px-1 font-mono text-[9px] text-[color:var(--fg-2)]">
                   +{extraAssignees}
                 </span>
               )}
-            </>
+            </span>
           ) : (
-            <span className="text-xs text-muted-foreground/50">담당자 없음</span>
+            <span className="h-5 w-5 shrink-0 rounded-full border border-dashed border-[color:var(--border)]" />
           )}
         </div>
       </div>
