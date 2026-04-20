@@ -1,13 +1,11 @@
+import { BookOpen, Bug, CircleCheck, Rocket } from 'lucide-react';
 import {
-  AlertTriangle,
-  ArrowDown,
-  BookOpen,
-  Bug,
-  CircleCheck,
-  Minus,
-  Rocket,
-  Zap,
-} from 'lucide-react';
+  PrioritySignalHigh,
+  PrioritySignalLow,
+  PrioritySignalMed,
+  PrioritySignalNone,
+  PriorityUrgent,
+} from '../components/issues/priority-icons';
 
 // ── Type icon mapping ───────────────────────────────────────────────────
 // Keys match the string identifiers seeded by the backend.
@@ -38,9 +36,9 @@ export const PRIORITY_CONFIG: Record<
     color: string;
   }
 > = {
-  urgent: { label: 'Urgent', icon: AlertTriangle, color: 'text-red-500' },
-  high: { label: 'High', icon: Zap, color: 'text-orange-500' },
-  medium: { label: 'Medium', icon: Minus, color: 'text-yellow-500' },
-  low: { label: 'Low', icon: ArrowDown, color: 'text-blue-500' },
-  none: { label: 'None', icon: Minus, color: 'text-muted-foreground' },
+  urgent: { label: '긴급', icon: PriorityUrgent, color: '' },
+  high: { label: '높음', icon: PrioritySignalHigh, color: '' },
+  medium: { label: '보통', icon: PrioritySignalMed, color: '' },
+  low: { label: '낮음', icon: PrioritySignalLow, color: '' },
+  none: { label: '없음', icon: PrioritySignalNone, color: '' },
 };
