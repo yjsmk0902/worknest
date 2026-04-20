@@ -250,13 +250,13 @@ export function IssueListTable({
 
   return (
     <div
-      className="rounded-xl bg-card shadow-sm ring-1 ring-border/50"
+      className="flex h-full min-h-0 flex-col bg-[color:var(--bg)]"
       role="grid"
       aria-label="이슈 목록"
     >
       {/* Header */}
       <div
-        className="flex h-9 items-center border-b border-border/40 px-3"
+        className="sticky top-0 z-[2] flex h-[30px] shrink-0 items-center gap-[10px] border-b border-[color:var(--border-subtle)] bg-[color:var(--bg)] px-4 text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]"
         role="row"
         aria-rowindex={1}
       >
@@ -277,7 +277,7 @@ export function IssueListTable({
       </div>
 
       {/* Virtual scrolling body */}
-      <div ref={parentRef} className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+      <div ref={parentRef} className="min-h-0 flex-1 overflow-y-auto">
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
@@ -293,7 +293,6 @@ export function IssueListTable({
             const isFocused = virtualRow.index === focusedIndex;
             const isSelected = row.getIsSelected();
             const isActive = row.original.id === activeIssueId;
-            const priority = row.original.priority;
             const isDragging = row.original.id === dragId;
             const isDropTarget = row.original.id === dropTargetId && dropTargetId !== dragId;
 
@@ -307,22 +306,19 @@ export function IssueListTable({
                 aria-selected={isSelected}
                 aria-busy={isTemp}
                 className={cn(
-                  'absolute left-0 top-0 flex w-full items-center border-b border-border/30 px-3 transition-all duration-150 cursor-pointer',
-                  priority === 'urgent' && 'bg-red-50/50 dark:bg-red-950/15',
-                  priority === 'high' && 'bg-orange-50/50 dark:bg-orange-950/15',
-                  priority === 'medium' && 'bg-amber-50/40 dark:bg-yellow-950/15',
-                  priority === 'low' && 'bg-blue-50/40 dark:bg-blue-950/15',
-                  'hover:bg-accent/60',
-                  isSelected && 'bg-primary/5',
-                  isActive && 'bg-primary/8 border-l-[3px] border-l-primary',
-                  isFocused && 'ring-1 ring-primary/20 rounded-md z-10',
+                  'absolute left-0 top-0 flex w-full cursor-pointer items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4 text-[13px] text-foreground transition-colors duration-150',
+                  'hover:bg-[color:var(--bg-hover)]',
+                  isSelected && 'bg-[color:var(--bg-sel)]',
+                  isActive &&
+                    'bg-[color:var(--bg-sel)] shadow-[inset_2px_0_0_0_var(--accent)]',
+                  isFocused && 'z-10 ring-1 ring-[color:var(--accent-soft)]',
                   isTemp && 'pointer-events-none opacity-70',
                   isDragging && 'opacity-30',
-                  isDropTarget && 'border-t-2 border-t-primary',
+                  isDropTarget && 'border-t-2 border-t-[color:var(--accent)]',
                 )}
                 draggable={isManualSort && !isTemp}
                 style={{
-                  height: '40px',
+                  height: 'var(--row-h)',
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
                 onClick={() => {
@@ -339,7 +335,7 @@ export function IssueListTable({
                 {/* Drag handle */}
                 {isManualSort && (
                   <div
-                    className="w-[28px] flex items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground/60"
+                    className="flex w-[28px] cursor-grab items-center justify-center text-[color:var(--fg-faint)] hover:text-[color:var(--fg-dim)] active:cursor-grabbing"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <GripVertical className="h-4 w-4" />
@@ -378,12 +374,12 @@ export function IssueListTable({
 function IssueListSkeleton() {
   return (
     <div
-      className="rounded-xl bg-card shadow-sm ring-1 ring-border/50"
+      className="flex flex-col bg-[color:var(--bg)]"
       aria-busy="true"
       aria-label="이슈 목록 로딩 중"
     >
-      <div className="flex h-9 items-center gap-2 border-b border-border/40 px-3">
-        <Skeleton className="h-4 w-4" />
+      <div className="flex h-[30px] items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4">
+        <Skeleton className="h-3 w-3" />
         <Skeleton className="h-3 w-12" />
         <Skeleton className="h-3 w-20" />
         <div className="flex-1" />
@@ -394,16 +390,16 @@ function IssueListSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="flex h-10 items-center gap-2 border-b border-border/30 px-3 last:border-b-0"
+          className="flex h-9 items-center gap-[10px] border-b border-[color:var(--border-subtle)] px-4"
         >
-          <Skeleton className="h-4 w-4" />
-          <Skeleton className="h-4 w-4" />
-          <Skeleton className="h-4 w-[70px]" />
+          <Skeleton className="h-3 w-3" />
+          <Skeleton className="h-3 w-3" />
+          <Skeleton className="h-3 w-[70px]" />
           <div className="flex flex-1 items-center">
-            <Skeleton className="h-4" style={{ width: `${40 + Math.random() * 40}%` }} />
+            <Skeleton className="h-3" style={{ width: `${40 + Math.random() * 40}%` }} />
           </div>
-          <Skeleton className="h-5 w-20 rounded-full" />
-          <Skeleton className="h-5 w-5 rounded-full" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+          <Skeleton className="h-4 w-4 rounded-full" />
           <Skeleton className="h-3 w-16" />
         </div>
       ))}
