@@ -188,7 +188,14 @@ export type BulkUpdateInput = z.infer<typeof bulkUpdateInput>;
 
 // ── Issue Status / Type ──────────────────────────────────────────────────
 
-export const statusCategory = z.enum(['backlog', 'unstarted', 'started', 'completed', 'cancelled']);
+export const statusCategory = z.enum([
+  'backlog',
+  'unstarted',
+  'started',
+  'review',
+  'completed',
+  'cancelled',
+]);
 
 export type StatusCategory = z.infer<typeof statusCategory>;
 

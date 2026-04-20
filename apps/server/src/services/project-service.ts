@@ -20,38 +20,38 @@ import { AppError, ErrorCode } from '../lib/errors';
 
 const DEFAULT_STATUSES = [
   {
-    name: 'Backlog',
+    name: '백로그',
     color: '#6b7280',
     sortOrder: 0,
     category: 'backlog' as const,
     isDefault: true,
   },
   {
-    name: 'Todo',
+    name: '할 일',
     color: '#3b82f6',
     sortOrder: 1,
     category: 'unstarted' as const,
     isDefault: false,
   },
   {
-    name: 'In Progress',
+    name: '진행 중',
     color: '#f59e0b',
     sortOrder: 2,
     category: 'started' as const,
     isDefault: false,
   },
   {
-    name: 'Done',
-    color: '#22c55e',
+    name: '리뷰',
+    color: '#a88be3',
     sortOrder: 3,
-    category: 'completed' as const,
+    category: 'review' as const,
     isDefault: false,
   },
   {
-    name: 'Cancelled',
-    color: '#ef4444',
+    name: '완료',
+    color: '#22c55e',
     sortOrder: 4,
-    category: 'cancelled' as const,
+    category: 'completed' as const,
     isDefault: false,
   },
 ];

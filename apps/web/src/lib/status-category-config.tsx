@@ -16,21 +16,25 @@ export interface CategoryConfig {
   defaultOpen: boolean;
 }
 
+/**
+ * Display order for status categories in grouped list / board views.
+ * Cancelled is kept but dropped from the default visible set per product
+ * direction; it can be re-added later if needed.
+ */
 export const CATEGORY_ORDER: GroupCategory[] = [
-  'started',
-  'unstarted',
-  'review',
   'backlog',
+  'unstarted',
+  'started',
+  'review',
   'completed',
-  'cancelled',
 ];
 
 export const CATEGORY_CONFIG: Record<GroupCategory, CategoryConfig> = {
-  started: { key: 'started', label: '진행 중', defaultOpen: true },
+  backlog: { key: 'backlog', label: '백로그', defaultOpen: true },
   unstarted: { key: 'unstarted', label: '할 일', defaultOpen: true },
+  started: { key: 'started', label: '진행 중', defaultOpen: true },
   review: { key: 'review', label: '리뷰', defaultOpen: true },
-  backlog: { key: 'backlog', label: '백로그', defaultOpen: false },
-  completed: { key: 'completed', label: '완료', defaultOpen: false },
+  completed: { key: 'completed', label: '완료', defaultOpen: true },
   cancelled: { key: 'cancelled', label: '취소', defaultOpen: false },
 };
 
