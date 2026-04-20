@@ -188,7 +188,7 @@ function OnboardingPage() {
   const steps = ['조직', '워크스페이스', '시작하기'];
 
   return (
-    <div className="w-full max-w-[420px]">
+    <div className="w-full max-w-[560px]">
       {/* v2 — circled step numbers with connectors */}
       <div className="mb-8 flex items-center justify-between gap-3">
         <div className="flex items-center gap-0">
