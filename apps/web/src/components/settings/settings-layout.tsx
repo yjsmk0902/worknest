@@ -61,7 +61,7 @@ export function SettingsLayout({
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left nav */}
-        <nav className="w-[200px] shrink-0 space-y-5 overflow-y-auto border-r border-border/40 p-4">
+        <nav className="w-[220px] shrink-0 overflow-y-auto border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)] px-3 py-5">
           <Section
             label="조직"
             tabs={ORG_TABS}
@@ -106,19 +106,19 @@ function Section({
   wsSlug: string;
 }) {
   return (
-    <div className="space-y-1">
-      <p className="px-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="mb-3 space-y-[2px]">
+      <h3 className="mx-2 mb-[6px] mt-3 text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]">
         {label}
-      </p>
+      </h3>
       {tabs.map((tab) => (
         <Link
           key={tab.key}
           to={`/${orgSlug}/${wsSlug}/${tab.path}`}
           className={cn(
-            'flex h-9 items-center rounded-lg px-3 text-sm transition-all duration-150',
+            'flex items-center rounded-md px-[10px] py-[6px] text-[13px] transition-colors duration-150',
             activeTab === tab.key
-              ? 'bg-primary/10 font-medium text-primary'
-              : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+              ? 'bg-[color:var(--bg-sel)] font-medium text-foreground'
+              : 'text-[color:var(--fg-mid)] hover:bg-[color:var(--bg-hover)] hover:text-foreground',
           )}
         >
           {tab.label}

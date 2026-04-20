@@ -63,11 +63,19 @@ function RegisterPage() {
   const isLoading = registerMutation.isPending;
 
   return (
-    <div className="mx-auto max-w-[400px] rounded-lg border border-border bg-card p-6 shadow-sm">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">회원가입</h2>
-        <p className="mt-1 text-sm text-muted-foreground">새 계정을 만들어 시작하세요</p>
+    <div className="flex w-full max-w-[360px] flex-col gap-2">
+      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--fg-faint)]">
+        create account
       </div>
+      <h2
+        className="mb-2 text-[36px] font-normal leading-tight tracking-[-0.02em] text-foreground"
+        style={{ fontFamily: 'var(--font-serif)' }}
+      >
+        워크스페이스 만들기
+      </h2>
+      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">
+        5분 뒤 팀을 초대할 수 있어요.
+      </p>
 
       {isDuplicateEmail && (
         <div
@@ -186,9 +194,12 @@ function RegisterPage() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-[12px] text-[color:var(--fg-dim)]">
         이미 계정이 있으신가요?{' '}
-        <Link to="/login" className="font-medium text-primary hover:underline">
+        <Link
+          to="/login"
+          className="border-b border-[color:var(--border-strong)] pb-[1px] font-medium text-foreground hover:border-[color:var(--accent)]"
+        >
           로그인
         </Link>
       </p>

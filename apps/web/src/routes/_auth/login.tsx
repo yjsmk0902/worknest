@@ -98,11 +98,19 @@ function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[400px] rounded-2xl bg-card p-8 shadow-lg shadow-black/5 ring-1 ring-border/50">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold text-foreground">로그인</h2>
-        <p className="mt-1 text-sm text-muted-foreground">워크스페이스에 로그인하세요</p>
+    <div className="flex w-full max-w-[360px] flex-col gap-2">
+      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--fg-faint)]">
+        sign in
       </div>
+      <h2
+        className="mb-2 text-[36px] font-normal leading-tight tracking-[-0.02em] text-foreground"
+        style={{ fontFamily: 'var(--font-serif)' }}
+      >
+        다시 만나 반가워요
+      </h2>
+      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">
+        이메일로 워크스페이스에 들어갑니다.
+      </p>
 
       {isRateLimited && (
         <div
@@ -207,9 +215,12 @@ function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-[12px] text-[color:var(--fg-dim)]">
         계정이 없으신가요?{' '}
-        <Link to="/register" className="font-medium text-primary hover:underline">
+        <Link
+          to="/register"
+          className="border-b border-[color:var(--border-strong)] pb-[1px] font-medium text-foreground hover:border-[color:var(--accent)]"
+        >
           회원가입
         </Link>
       </p>

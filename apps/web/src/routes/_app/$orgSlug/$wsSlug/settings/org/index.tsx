@@ -133,10 +133,15 @@ function OrgSettingsForm({
   }
 
   return (
-    <div className="max-w-[720px] space-y-8 p-6">
+    <div className="max-w-[720px] space-y-8 px-[48px] py-[40px]">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">조직 설정</h2>
-        <p className="text-sm text-muted-foreground">조직의 기본 정보를 관리합니다.</p>
+        <h1
+          className="mb-[6px] text-[34px] font-normal leading-tight tracking-[-0.02em] text-foreground"
+          style={{ fontFamily: 'var(--font-serif)' }}
+        >
+          조직 설정
+        </h1>
+        <p className="text-[14px] text-[color:var(--fg-dim)]">조직의 기본 정보를 관리합니다.</p>
       </div>
 
       <Separator />
