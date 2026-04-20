@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_auth')({
 function AuthLayout() {
   return (
     <div className="flex min-h-screen bg-[color:var(--bg-0)]">
-      {/* Left poster — interactive motion background + editorial quote */}
+      {/* Left poster — brand lockup top, MotionBG behind, quote at bottom */}
       <div
         className="sticky top-0 hidden h-screen flex-1 flex-col overflow-hidden border-r border-[color:var(--border-subtle)] p-10 md:flex"
         style={{
@@ -17,7 +17,21 @@ function AuthLayout() {
       >
         <MotionBG />
 
-        {/* Editorial quote block — bottom aligned */}
+        {/* Brand lockup — logo left, wordmark right, pinned to top-left */}
+        <div className="relative z-[2] flex items-center gap-3 pointer-events-none">
+          <img
+            src="/worknest-logo-crop.png"
+            alt=""
+            aria-hidden="true"
+            className="h-[56px] w-auto object-contain"
+            draggable={false}
+          />
+          <span className="text-[28px] font-semibold tracking-[-0.02em] text-[color:var(--fg-1)]">
+            WorkNest
+          </span>
+        </div>
+
+        {/* Editorial quote block */}
         <div className="relative z-[2] mt-auto max-w-[480px] pointer-events-none">
           <div className="mb-[18px] text-[11px] font-medium tracking-[0.14em] text-[color:var(--fg-3)]">
             PRIVATE WORKSPACE
@@ -33,24 +47,9 @@ function AuthLayout() {
         </div>
       </div>
 
-      {/* Right form pane — brand lockup above the form */}
+      {/* Right form pane */}
       <div className="flex flex-1 items-center justify-center overflow-auto px-14 py-16">
-        <div className="flex w-full max-w-[560px] flex-col items-center">
-          {/* Brand lockup — WorkNest wordmark + logo, inline (text left, logo right) */}
-          <div className="mb-10 flex items-center gap-3">
-            <span className="text-[28px] font-semibold tracking-[-0.02em] text-[color:var(--fg-1)]">
-              WorkNest
-            </span>
-            <img
-              src="/worknest-logo-crop.png"
-              alt=""
-              aria-hidden="true"
-              className="h-[48px] w-auto object-contain"
-              draggable={false}
-            />
-          </div>
-          <Outlet />
-        </div>
+        <Outlet />
       </div>
     </div>
   );
