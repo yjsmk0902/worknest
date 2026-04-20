@@ -5,6 +5,7 @@ import type {
   IssueOutput,
   IssueStatusOutput,
   IssueTypeOutput,
+  StatusCategory,
 } from '@worknest/shared';
 import { Avatar, Popover, PopoverContent, PopoverTrigger, Separator, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
@@ -404,12 +405,11 @@ function StatusSelect({
           type="button"
           className="flex h-8 items-center gap-2 rounded-md bg-[color:var(--bg-3)] px-[10px] text-[13px] text-[color:var(--fg-1)] transition-colors hover:bg-[color:var(--bg-4)]"
         >
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: current?.color ?? '#94a3b8' }}
+          <StatusCategoryIcon
+            category={current?.category as StatusCategory | undefined}
+            color={current?.color}
           />
           <span>{current?.name ?? '상태 없음'}</span>
-          <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[200px] p-1">
@@ -423,9 +423,9 @@ function StatusSelect({
             }}
             className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
           >
-            <span
-              className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: status.color }}
+            <StatusCategoryIcon
+              category={status.category as StatusCategory | undefined}
+              color={status.color}
             />
             <span className="flex-1 text-left">{status.name}</span>
             {status.id === currentStatusId && <Check className="h-4 w-4 text-primary" />}
@@ -433,6 +433,79 @@ function StatusSelect({
         ))}
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * Status indicator matching the design reference.
+ * Shape changes per category:
+ *  - backlog: dashed outline ring
+ *  - unstarted (todo): solid outline ring
+ *  - started (in progress): ring + conic 60% fill
+ *  - completed: filled disc with ✓
+ *  - cancelled: filled disc with –
+ */
+function StatusCategoryIcon({
+  category,
+  color,
+}: {
+  category: StatusCategory | undefined;
+  color?: string;
+}) {
+  const c = color || '#94a3b8';
+  if (category === 'completed') {
+    return (
+      <span
+        className="relative grid h-3 w-3 shrink-0 place-items-center rounded-full"
+        style={{ backgroundColor: c }}
+        aria-hidden="true"
+      >
+        <Check className="h-[8px] w-[8px]" strokeWidth={3} style={{ color: 'var(--bg-0)' }} />
+      </span>
+    );
+  }
+  if (category === 'cancelled') {
+    return (
+      <span
+        className="relative grid h-3 w-3 shrink-0 place-items-center rounded-full"
+        style={{ backgroundColor: c }}
+        aria-hidden="true"
+      >
+        <span className="h-[1.5px] w-[6px]" style={{ backgroundColor: 'var(--bg-0)' }} />
+      </span>
+    );
+  }
+  if (category === 'started') {
+    return (
+      <span
+        className="relative h-3 w-3 shrink-0 rounded-full"
+        aria-hidden="true"
+        style={{
+          border: `1.5px solid ${c}`,
+          background: `conic-gradient(${c} 60%, transparent 0)`,
+          // Mask out the center so it reads as a ring + pie slice
+          WebkitMask: 'radial-gradient(circle, transparent 3px, #000 3.4px)',
+          mask: 'radial-gradient(circle, transparent 3px, #000 3.4px)',
+        }}
+      />
+    );
+  }
+  if (category === 'backlog') {
+    return (
+      <span
+        className="h-3 w-3 shrink-0 rounded-full"
+        style={{ border: `1.5px dashed ${c}` }}
+        aria-hidden="true"
+      />
+    );
+  }
+  // default: unstarted / todo
+  return (
+    <span
+      className="h-3 w-3 shrink-0 rounded-full"
+      style={{ border: `1.5px solid ${c}` }}
+      aria-hidden="true"
+    />
   );
 }
 
