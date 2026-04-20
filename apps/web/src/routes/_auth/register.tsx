@@ -63,17 +63,10 @@ function RegisterPage() {
   const isLoading = registerMutation.isPending;
 
   return (
-    <div className="flex w-full max-w-[360px] flex-col gap-2">
-      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--fg-faint)]">
-        create account
-      </div>
-      <h2
-        className="mb-2 text-[36px] font-normal leading-tight tracking-[-0.02em] text-foreground"
-        style={{ fontFamily: 'var(--font-serif)' }}
-      >
-        워크스페이스 만들기
-      </h2>
-      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">5분 뒤 팀을 초대할 수 있어요.</p>
+    <div className="flex w-full max-w-[420px] flex-col">
+      <h1 className="mb-8 text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
+        계정 만들기
+      </h1>
 
       {isDuplicateEmail && (
         <div
@@ -192,15 +185,12 @@ function RegisterPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-[12px] text-[color:var(--fg-dim)]">
-        이미 계정이 있으신가요?{' '}
-        <Link
-          to="/login"
-          className="border-b border-[color:var(--border-strong)] pb-[1px] font-medium text-foreground hover:border-[color:var(--accent)]"
-        >
+      <div className="mt-5 flex items-center justify-center gap-2 text-[13px] text-[color:var(--fg-3)]">
+        <span>이미 계정이 있으신가요?</span>
+        <Link to="/login" className="font-medium text-[color:var(--fg-1)] hover:underline">
           로그인
         </Link>
-      </p>
+      </div>
     </div>
   );
 }

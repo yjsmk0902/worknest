@@ -98,19 +98,10 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex w-full max-w-[360px] flex-col gap-2">
-      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[color:var(--fg-faint)]">
-        sign in
-      </div>
-      <h2
-        className="mb-2 text-[36px] font-normal leading-tight tracking-[-0.02em] text-foreground"
-        style={{ fontFamily: 'var(--font-serif)' }}
-      >
-        다시 만나 반가워요
-      </h2>
-      <p className="mb-5 text-[13px] text-[color:var(--fg-dim)]">
-        이메일로 워크스페이스에 들어갑니다.
-      </p>
+    <div className="flex w-full max-w-[420px] flex-col">
+      <h1 className="mb-8 text-[30px] font-semibold tracking-[-0.025em] text-[color:var(--fg-1)]">
+        로그인
+      </h1>
 
       {isRateLimited && (
         <div
@@ -171,9 +162,17 @@ function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" error={!!fieldErrors.password}>
-            비밀번호
-          </Label>
+          <div className="flex items-center">
+            <Label htmlFor="password" error={!!fieldErrors.password}>
+              비밀번호
+            </Label>
+            <a
+              href="#"
+              className="ml-auto text-[12px] text-[color:var(--fg-3)] transition-colors hover:text-[color:var(--fg-1)]"
+            >
+              잊으셨나요?
+            </a>
+          </div>
           <div className="relative">
             <Input
               id="password"
@@ -189,7 +188,7 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--fg-3)] hover:text-[color:var(--fg-1)]"
               aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
               tabIndex={-1}
             >
@@ -215,15 +214,22 @@ function LoginPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-[12px] text-[color:var(--fg-dim)]">
-        계정이 없으신가요?{' '}
-        <Link
-          to="/register"
-          className="border-b border-[color:var(--border-strong)] pb-[1px] font-medium text-foreground hover:border-[color:var(--accent)]"
-        >
+      <div className="mt-5 flex items-center justify-center gap-2 text-[13px] text-[color:var(--fg-3)]">
+        <span>계정이 없으신가요?</span>
+        <Link to="/register" className="font-medium text-[color:var(--fg-1)] hover:underline">
           회원가입
         </Link>
-      </p>
+      </div>
+
+      <div className="my-8 flex items-center gap-3 text-[11px] text-[color:var(--fg-4)]">
+        <div className="h-px flex-1 bg-[color:var(--border-subtle)]" />
+        <span>또는</span>
+        <div className="h-px flex-1 bg-[color:var(--border-subtle)]" />
+      </div>
+
+      <Button variant="outline" size="lg" className="w-full" disabled>
+        SSO로 계속하기
+      </Button>
     </div>
   );
 }
