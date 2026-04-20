@@ -9,7 +9,7 @@ import type {
 } from '@worknest/shared';
 import { Avatar, Popover, PopoverContent, PopoverTrigger, Separator, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { Calendar, Check, ChevronDown, RefreshCw, Search, X } from 'lucide-react';
+import { Calendar, Check, Plus, RefreshCw, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority, getTypeIcon } from '../../../lib/issue-constants';
@@ -531,7 +531,6 @@ function PrioritySelect({
         >
           <PriorityIcon className={cn('h-4 w-4', config.color)} />
           <span>{config.label}</span>
-          <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[200px] p-1">
@@ -583,7 +582,6 @@ function TypeSelect({
         >
           <CurrentIcon className="h-4 w-4 text-muted-foreground" />
           <span>{current?.name ?? '타입 없음'}</span>
-          <ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[200px] p-1">
@@ -656,7 +654,6 @@ function AssigneePicker({
               )}
             </div>
           )}
-          <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[280px] p-2">
@@ -735,36 +732,44 @@ function LabelPicker({
   const filtered = allLabels.filter((l) => l.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex min-h-[32px] flex-wrap items-center gap-1 rounded-md border border-border px-2 py-1 text-sm hover:bg-accent"
+    <div className="flex flex-wrap items-center gap-[6px]">
+      {/* Each label as its own pill with inline remove */}
+      {issueLabels.map((il) => (
+        <span
+          key={il.id}
+          className="inline-flex h-[26px] items-center gap-[6px] rounded-md bg-[color:var(--bg-3)] px-[10px] text-[12px] text-[color:var(--fg-1)]"
         >
-          {issueLabels.length === 0 ? (
-            <span className="text-muted-foreground">라벨 없음</span>
-          ) : (
-            issueLabels.map((il) => (
-              <span
-                key={il.id}
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                style={{
-                  backgroundColor: `${il.label.color}1a`,
-                  color: il.label.color,
-                }}
-              >
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: il.label.color }}
-                />
-                {il.label.name}
-              </span>
-            ))
-          )}
-          <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[240px] p-2">
+          <span
+            className="h-[6px] w-[6px] rounded-full"
+            style={{ backgroundColor: il.label.color }}
+          />
+          {il.label.name}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(il.label.id);
+            }}
+            className="-mr-1 grid h-[14px] w-[14px] shrink-0 place-items-center rounded text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-4)] hover:text-[color:var(--fg-1)]"
+            aria-label={`${il.label.name} 라벨 제거`}
+          >
+            <X className="h-[10px] w-[10px]" />
+          </button>
+        </span>
+      ))}
+
+      {/* Separate "+ 추가" dashed pill */}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex h-[26px] items-center gap-[6px] rounded-md border border-dashed border-[color:var(--border-strong)] px-[10px] text-[12px] text-[color:var(--fg-3)] transition-colors hover:border-[color:var(--border)] hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
+          >
+            <Plus className="h-3 w-3" />
+            추가
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-[240px] p-2">
         <div className="mb-2 flex items-center gap-2 rounded-md border border-border px-2">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -801,8 +806,9 @@ function LabelPicker({
             );
           })}
         </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
