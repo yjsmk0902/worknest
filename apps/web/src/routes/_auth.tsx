@@ -10,7 +10,7 @@ function AuthLayout() {
     <div className="flex min-h-screen bg-[color:var(--bg-0)]">
       {/* Left poster — brand lockup top, MotionBG behind, quote at bottom */}
       <div
-        className="sticky top-0 hidden h-screen flex-1 flex-col overflow-hidden border-r border-[color:var(--border-subtle)] p-10 md:flex"
+        className="sticky top-0 hidden h-screen flex-[1] flex-col overflow-hidden border-r border-[color:var(--border-subtle)] p-10 md:flex"
         style={{
           background: 'linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%)',
         }}
@@ -48,7 +48,7 @@ function AuthLayout() {
       </div>
 
       {/* Right form pane */}
-      <div className="flex flex-1 items-center justify-center overflow-auto px-14 py-16">
+      <div className="flex flex-[2] items-center justify-center overflow-auto px-14 py-16">
         <Outlet />
       </div>
     </div>
