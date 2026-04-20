@@ -35,3 +35,4 @@ pnpm-debug.log*
 minio_data/
 apps/server/uploads/
 apps/web/.tanstack/tmp/
+.claude/scheduled_tasks.lock

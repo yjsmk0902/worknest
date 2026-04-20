@@ -1,5 +1,5 @@
 import { Outlet, createFileRoute } from '@tanstack/react-router';
-import { Kbd } from '@worknest/ui';
+import { MotionBG } from '../components/auth/motion-bg';
 
 export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
@@ -7,71 +7,44 @@ export const Route = createFileRoute('/_auth')({
 
 function AuthLayout() {
   return (
-    <div className="relative grid h-screen w-screen grid-cols-1 overflow-hidden bg-[color:var(--bg)] md:grid-cols-[1.2fr_1fr]">
-      {/* Left poster — hidden on small screens */}
-      <div className="relative hidden flex-col overflow-hidden border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)] p-10 md:flex">
-        {/* Grid ornament */}
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              'linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)',
-            backgroundSize: '40px 40px',
-            WebkitMaskImage: 'radial-gradient(ellipse at 30% 30%, #000 10%, transparent 75%)',
-            maskImage: 'radial-gradient(ellipse at 30% 30%, #000 10%, transparent 75%)',
-          }}
-        />
+    <div className="flex min-h-screen bg-[color:var(--bg-0)]">
+      {/* Left poster — interactive motion background */}
+      <div
+        className="sticky top-0 hidden h-screen flex-1 flex-col overflow-hidden border-r border-[color:var(--border-subtle)] p-10 md:flex"
+        style={{
+          background: 'linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%)',
+        }}
+      >
+        <MotionBG />
 
         {/* Brand */}
-        <div className="relative z-10 flex items-center gap-[10px] text-[14px] font-semibold text-foreground">
-          <div
-            className="grid h-6 w-6 place-items-center rounded-[7px] bg-[color:var(--fg)] font-mono text-[color:var(--bg)]"
-            style={{ fontWeight: 700 }}
-          >
-            W
-          </div>
-          <span>Worknest</span>
+        <div className="relative z-[2] pointer-events-none">
+          <img
+            src="/worknest-logo.png"
+            alt="WorkNest"
+            className="h-[88px] w-auto object-contain"
+            draggable={false}
+          />
         </div>
 
-        {/* Pitch */}
-        <div className="relative z-10 mt-auto">
-          <h1
-            className="mb-[18px] max-w-[520px] text-[52px] font-normal leading-[1.03] tracking-[-0.02em] text-foreground"
-            style={{ fontFamily: 'var(--font-serif)' }}
-          >
+        {/* Editorial quote block */}
+        <div className="relative z-[2] mt-auto max-w-[480px] pointer-events-none">
+          <div className="mb-[18px] text-[11px] font-medium tracking-[0.14em] text-[color:var(--fg-3)]">
+            PRIVATE WORKSPACE
+          </div>
+          <h2 className="mb-4 text-[38px] font-semibold leading-[1.2] tracking-[-0.025em] text-[color:var(--fg-1)] [text-wrap:balance]">
             집중은
             <br />
-            키보드에서{' '}
-            <em
-              className="italic text-[color:var(--accent)] not-italic"
-              style={{ fontStyle: 'italic' }}
-            >
-              시작
-            </em>
-            된다.
-          </h1>
-          <p className="mb-7 max-w-[480px] text-[14px] leading-[1.55] text-[color:var(--fg-mid)]">
-            이슈, 보드, 문서가 한 곳에서 흘러가는 작업 공간. 마우스를 떼지 않아도 되는 속도, 깜빡임
-            없는 화면 전환, 팀이 지금 무엇을 만들고 있는지 한 눈에.
+            흩어진 것들을 <span className="text-[color:var(--accent-line)]">모으는 일</span>입니다.
+          </h2>
+          <p className="text-[15px] leading-[1.6] text-[color:var(--fg-3)] [text-wrap:pretty]">
+            WorkNest는 이슈, 사이클, 위키를 하나의 조용한 작업 공간으로 묶어줍니다.
           </p>
-          <div className="flex flex-wrap gap-4 font-mono text-[11.5px] text-[color:var(--fg-dim)]">
-            <span className="inline-flex items-center gap-[6px]">
-              <Kbd>⌘K</Kbd> 명령 팔레트
-            </span>
-            <span className="inline-flex items-center gap-[6px]">
-              <Kbd>C</Kbd> 이슈 생성
-            </span>
-            <span className="inline-flex items-center gap-[6px]">
-              <Kbd>G</Kbd>
-              <Kbd>I</Kbd> 이동
-            </span>
-          </div>
         </div>
       </div>
 
       {/* Right form pane */}
-      <div className="flex items-center justify-center overflow-auto p-10">
+      <div className="flex flex-1 items-center justify-center overflow-auto px-14 py-16">
         <Outlet />
       </div>
     </div>
