@@ -5,9 +5,18 @@ import { formatRelativeTime } from '@/lib/format-time';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import type { NotificationOutput, NotificationType } from '@worknest/shared';
-import { Button, Skeleton, toast } from '@worknest/ui';
-import { AtSign, Bell, CheckCheck, Mail, MessageSquare, RefreshCw, UserPlus } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Button, Chip, Kbd, Skeleton, toast } from '@worknest/ui';
+import {
+  AtSign,
+  Bell,
+  CheckCheck,
+  Filter,
+  Mail,
+  MessageSquare,
+  RefreshCw,
+  UserPlus,
+} from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
 // ── Route ──────────────────────────────────────────────────────────────
 
@@ -19,16 +28,17 @@ export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/my/inbox')({
 
 const NOTIFICATION_ICON_MAP: Record<
   NotificationType,
-  { icon: React.ComponentType<{ className?: string }>; color: string }
+  { icon: React.ComponentType<{ className?: string }>; label: string }
 > = {
-  assigned: { icon: UserPlus, color: 'text-blue-500' },
-  mentioned: { icon: AtSign, color: 'text-purple-500' },
-  commented: { icon: MessageSquare, color: 'text-green-500' },
-  status_changed: { icon: RefreshCw, color: 'text-orange-500' },
-  invited: { icon: Mail, color: 'text-primary' },
+  assigned: { icon: UserPlus, label: '배정' },
+  mentioned: { icon: AtSign, label: '멘션' },
+  commented: { icon: MessageSquare, label: '댓글' },
+  status_changed: { icon: RefreshCw, label: '상태 변경' },
+  invited: { icon: Mail, label: '초대' },
+  join_request_received: { icon: UserPlus, label: '가입 요청' },
+  join_request_approved: { icon: CheckCheck, label: '가입 승인' },
+  join_request_rejected: { icon: Bell, label: '가입 거절' },
 };
-
-// ── Filter type ────────────────────────────────────────────────────────
 
 type FilterMode = 'all' | 'unread';
 
@@ -36,19 +46,17 @@ type FilterMode = 'all' | 'unread';
 
 function InboxPage() {
   Route.useParams();
-  useWorkspaceContext(); // Ensure workspace context is available
+  useWorkspaceContext();
   const queryClient = useQueryClient();
 
   const [filter, setFilter] = useState<FilterMode>('all');
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Fetch notifications
   const notificationsQuery = useInfiniteQuery<ListResponse<NotificationOutput>>({
     queryKey: ['my', 'notifications'],
     queryFn: ({ pageParam }) => {
       const params: Record<string, string> = { limit: '30' };
-      if (pageParam) {
-        params.cursor = pageParam as string;
-      }
+      if (pageParam) params.cursor = pageParam as string;
       return apiClient.getList<NotificationOutput>('/my/notifications', params);
     },
     initialPageParam: undefined as string | undefined,
@@ -56,16 +64,12 @@ function InboxPage() {
       lastPage.pagination.has_more ? (lastPage.pagination.next_cursor ?? undefined) : undefined,
   });
 
-  // Mark single notification as read
   const markReadMutation = useMutation({
     mutationFn: (notificationId: string) =>
       apiClient.patch(`/notifications/${notificationId}`, { read: true }),
     onMutate: async (notificationId) => {
       await queryClient.cancelQueries({ queryKey: ['my', 'notifications'] });
-
       const previousData = queryClient.getQueryData(['my', 'notifications']);
-
-      // Optimistic update
       queryClient.setQueryData(
         ['my', 'notifications'],
         (old: ReturnType<typeof notificationsQuery.data> | undefined) => {
@@ -81,13 +85,10 @@ function InboxPage() {
           };
         },
       );
-
-      // Also update unread count
       queryClient.setQueryData(
         ['my', 'notifications', 'unread-count'],
         (old: { count: number } | undefined) => (old ? { count: Math.max(0, old.count - 1) } : old),
       );
-
       return { previousData };
     },
     onError: (_err, _id, context) => {
@@ -97,20 +98,15 @@ function InboxPage() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'notifications'] });
-      queryClient.invalidateQueries({
-        queryKey: ['my', 'notifications', 'unread-count'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['my', 'notifications', 'unread-count'] });
     },
   });
 
-  // Mark all as read
   const markAllReadMutation = useMutation({
     mutationFn: () => apiClient.patch('/my/notifications/read-all'),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['my', 'notifications'] });
-
       const previousData = queryClient.getQueryData(['my', 'notifications']);
-
       queryClient.setQueryData(
         ['my', 'notifications'],
         (old: ReturnType<typeof notificationsQuery.data> | undefined) => {
@@ -128,9 +124,7 @@ function InboxPage() {
           };
         },
       );
-
       queryClient.setQueryData(['my', 'notifications', 'unread-count'], { count: 0 });
-
       return { previousData };
     },
     onError: (_err, _vars, context) => {
@@ -144,58 +138,42 @@ function InboxPage() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['my', 'notifications'] });
-      queryClient.invalidateQueries({
-        queryKey: ['my', 'notifications', 'unread-count'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['my', 'notifications', 'unread-count'] });
     },
   });
 
-  // Handle notification click: mark as read.
-  // TODO (v1.0): Add navigation to the related entity once the notification
-  // payload includes entity_url or project routing info (e.g. project prefix).
-  const handleNotificationClick = useCallback(
+  const handleSelect = useCallback(
     (notification: NotificationOutput) => {
-      if (!notification.readAt) {
-        markReadMutation.mutate(notification.id);
-      }
+      setActiveId(notification.id);
+      if (!notification.readAt) markReadMutation.mutate(notification.id);
     },
     [markReadMutation],
   );
 
-  // Flatten pages
   const allNotifications = notificationsQuery.data?.pages.flatMap((page) => page.data) ?? [];
-
-  // Apply filter
-  const filteredNotifications =
+  const filtered =
     filter === 'unread' ? allNotifications.filter((n) => !n.readAt) : allNotifications;
+  const unreadCount = allNotifications.filter((n) => !n.readAt).length;
+
+  const active = useMemo(
+    () => filtered.find((n) => n.id === activeId) ?? filtered[0] ?? null,
+    [filtered, activeId],
+  );
 
   // Loading state
   if (notificationsQuery.isLoading) {
     return (
       <div className="flex h-full flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4">
-          <h1 className="text-2xl font-semibold">알림</h1>
-          <Skeleton className="h-8 w-28" />
+        <div className="flex h-[48px] shrink-0 items-center gap-3 border-b border-[color:var(--border-subtle)] px-[14px]">
+          <h1 className="text-[13px] font-medium text-foreground">받은 알림</h1>
         </div>
-        {/* Filter toggle skeleton */}
-        <div className="flex items-center gap-1 px-6 pb-2">
-          <Skeleton className="h-8 w-14 rounded-md" />
-          <Skeleton className="h-8 w-20 rounded-md" />
-        </div>
-        {/* Notification skeletons */}
-        <div className="px-6" aria-busy="true" aria-label="알림 로딩 중">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={`skeleton-${i}`}
-              className="flex h-14 items-center gap-3 border-b border-border/50 px-4"
-            >
-              <Skeleton className="h-[18px] w-[18px] rounded" />
-              <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-3 w-14" />
-              <Skeleton className="h-2 w-2 rounded-full" />
-            </div>
-          ))}
+        <div className="grid h-full grid-cols-[380px_1fr]">
+          <div className="border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)] p-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={`skeleton-${i}`} className="mb-2 h-16 w-full rounded-md" />
+            ))}
+          </div>
+          <div />
         </div>
       </div>
     );
@@ -205,13 +183,13 @@ function InboxPage() {
   if (notificationsQuery.isError) {
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between px-6 py-4">
-          <h1 className="text-2xl font-semibold">알림</h1>
+        <div className="flex h-[48px] shrink-0 items-center justify-between border-b border-[color:var(--border-subtle)] px-[14px]">
+          <h1 className="text-[13px] font-medium text-foreground">받은 알림</h1>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
-            <Bell className="mx-auto h-12 w-12 text-muted-foreground/50" />
-            <p className="mt-2 text-sm text-muted-foreground">알림을 불러올 수 없습니다.</p>
+            <Bell className="mx-auto h-12 w-12 text-[color:var(--fg-faint)]" />
+            <p className="mt-2 text-sm text-[color:var(--fg-dim)]">알림을 불러올 수 없습니다.</p>
             <Button
               variant="outline"
               size="sm"
@@ -227,110 +205,152 @@ function InboxPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4">
-        <h1 className="text-2xl font-semibold">알림</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => markAllReadMutation.mutate()}
-          disabled={markAllReadMutation.isPending}
-          aria-label="모든 알림 읽음 처리"
-        >
-          <CheckCheck className="h-4 w-4" />
-          모두 읽음 처리
-        </Button>
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Topbar */}
+      <div className="flex h-[48px] shrink-0 items-center gap-3 border-b border-[color:var(--border-subtle)] bg-[color:var(--bg)] px-[14px]">
+        <h1 className="text-[13px] font-medium text-foreground">받은 알림</h1>
+        <div className="ml-auto flex items-center gap-1">
+          <Chip
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={markAllReadMutation.isPending}
+          >
+            <CheckCheck className="h-3 w-3" />
+            모두 읽음
+          </Chip>
+          <Chip>
+            <Filter className="h-3 w-3" />
+            필터
+          </Chip>
+        </div>
       </div>
 
-      {/* Filter toggle */}
-      <div className="flex items-center gap-1 px-6 pb-2">
+      {/* Tab bar */}
+      <div className="flex h-10 shrink-0 items-center gap-0 border-b border-[color:var(--border-subtle)] bg-[color:var(--bg)] px-[14px]">
         <button
           type="button"
           onClick={() => setFilter('all')}
-          className={`rounded-md px-3 py-1.5 text-sm ${
+          className={`inline-flex items-center gap-[6px] rounded-sm px-[9px] py-[3px] text-[12px] transition-colors ${
             filter === 'all'
-              ? 'bg-secondary font-medium text-secondary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[color:var(--panel)] text-foreground shadow-[var(--shadow-sm)]'
+              : 'text-[color:var(--fg-dim)] hover:text-foreground'
           }`}
         >
-          전체
+          전체 <Kbd className="ml-1">{allNotifications.length}</Kbd>
         </button>
         <button
           type="button"
           onClick={() => setFilter('unread')}
-          className={`rounded-md px-3 py-1.5 text-sm ${
+          className={`ml-[2px] inline-flex items-center gap-[6px] rounded-sm px-[9px] py-[3px] text-[12px] transition-colors ${
             filter === 'unread'
-              ? 'bg-secondary font-medium text-secondary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[color:var(--panel)] text-foreground shadow-[var(--shadow-sm)]'
+              : 'text-[color:var(--fg-dim)] hover:text-foreground'
           }`}
         >
-          읽지 않음
+          읽지 않음 <Kbd className="ml-1">{unreadCount}</Kbd>
         </button>
       </div>
 
-      {/* Notification list */}
-      {filteredNotifications.length === 0 ? (
+      {/* Content */}
+      {filtered.length === 0 ? (
         <EmptyState
           icon={Bell}
           title="새로운 알림이 없습니다"
           description="알림이 도착하면 여기에 표시됩니다"
         />
       ) : (
-        <div className="flex-1 overflow-y-auto px-6" role="list" aria-label="알림 목록">
-          {filteredNotifications.map((notification) => {
-            const iconConfig = NOTIFICATION_ICON_MAP[notification.type];
-            const IconComponent = iconConfig.icon;
-            const isUnread = !notification.readAt;
+        <div className="grid min-h-0 flex-1 grid-cols-[380px_1fr]">
+          {/* List pane */}
+          <div
+            className="min-h-0 overflow-auto border-r border-[color:var(--border-subtle)] bg-[color:var(--panel)]"
+            role="list"
+            aria-label="알림 목록"
+          >
+            {filtered.map((n) => {
+              const cfg = NOTIFICATION_ICON_MAP[n.type];
+              const Icon = cfg.icon;
+              const isUnread = !n.readAt;
+              const isActive = active?.id === n.id;
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  aria-label={n.message}
+                  onClick={() => handleSelect(n)}
+                  className={`relative flex w-full flex-col gap-[6px] border-b border-[color:var(--border-subtle)] px-[14px] py-3 text-left transition-colors ${
+                    isActive
+                      ? 'bg-[color:var(--bg-sel)]'
+                      : 'hover:bg-[color:var(--bg-hover)]'
+                  }`}
+                >
+                  {isUnread && (
+                    <span className="absolute left-[6px] top-[17px] h-[6px] w-[6px] rounded-full bg-[color:var(--accent)]" />
+                  )}
+                  <div className="flex items-center gap-2 text-[12px] text-[color:var(--fg-mid)]">
+                    <Icon className="h-[14px] w-[14px] shrink-0 text-[color:var(--fg-dim)]" />
+                    <span className="font-medium text-foreground">{cfg.label}</span>
+                    <span className="ml-auto font-mono text-[11px] text-[color:var(--fg-faint)]">
+                      {formatRelativeTime(n.createdAt)}
+                    </span>
+                  </div>
+                  <div className="truncate pl-[22px] text-[12.5px] leading-[1.45] text-[color:var(--fg-mid)]">
+                    {n.message}
+                  </div>
+                </button>
+              );
+            })}
 
-            return (
-              <button
-                key={notification.id}
-                type="button"
-                aria-label={notification.message}
-                className="flex h-14 w-full cursor-pointer items-center gap-3 border-b border-border/50 px-4 transition-colors duration-150 hover:bg-accent/50"
-                onClick={() => handleNotificationClick(notification)}
-              >
-                {/* Type icon */}
-                <IconComponent className={`h-[18px] w-[18px] shrink-0 ${iconConfig.color}`} />
+            {notificationsQuery.hasNextPage && (
+              <div className="flex justify-center py-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => notificationsQuery.fetchNextPage()}
+                  disabled={notificationsQuery.isFetchingNextPage}
+                >
+                  {notificationsQuery.isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+                </Button>
+              </div>
+            )}
+          </div>
 
-                {/* Message */}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-left text-sm text-foreground">
-                    {notification.message}
-                  </p>
+          {/* Detail pane */}
+          <div className="min-h-0 overflow-auto px-[40px] py-[30px]">
+            {active ? (
+              <div className="mx-auto max-w-[680px]">
+                <div className="mb-[6px] font-mono text-[11px] text-[color:var(--fg-faint)]">
+                  {NOTIFICATION_ICON_MAP[active.type].label}
+                </div>
+                <h2
+                  className="mb-5 text-[30px] font-normal leading-tight tracking-[-0.02em] text-foreground"
+                  style={{ fontFamily: 'var(--font-serif)' }}
+                >
+                  {active.message}
+                </h2>
+                <div className="mb-6 flex items-center gap-[10px]">
+                  <div className="font-mono text-[11.5px] text-[color:var(--fg-faint)]">
+                    {formatRelativeTime(active.createdAt)}
+                  </div>
+                  {active.readAt && (
+                    <div className="font-mono text-[11.5px] text-[color:var(--fg-faint)]">
+                      · 읽음
+                    </div>
+                  )}
                 </div>
 
-                {/* Timestamp */}
-                <span className="ml-2 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                  {formatRelativeTime(notification.createdAt)}
-                </span>
+                <div className="my-7 h-px bg-[color:var(--border-subtle)]" />
 
-                {/* Unread dot */}
-                {isUnread && (
-                  <span
-                    className="ml-2 h-2 w-2 shrink-0 rounded-full bg-primary"
-                    aria-label="읽지 않음"
-                  />
-                )}
-              </button>
-            );
-          })}
-
-          {/* Load more */}
-          {notificationsQuery.hasNextPage && (
-            <div className="flex justify-center py-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => notificationsQuery.fetchNextPage()}
-                disabled={notificationsQuery.isFetchingNextPage}
-              >
-                {notificationsQuery.isFetchingNextPage ? '불러오는 중...' : '더 보기'}
-              </Button>
-            </div>
-          )}
+                <div className="flex items-center gap-[10px] text-[12px] text-[color:var(--fg-dim)]">
+                  <Kbd>E</Kbd> 읽음 처리
+                  <span className="px-1">·</span>
+                  <Kbd>J</Kbd> 다음 <Kbd>K</Kbd> 이전
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center text-[color:var(--fg-dim)]">
+                알림을 선택하세요
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
