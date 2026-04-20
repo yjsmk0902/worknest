@@ -16,7 +16,8 @@ function readStoredTheme(): Theme {
   } catch {
     // ignore
   }
-  return 'system';
+  // Default to dark — matches v2 "Quiet workspace" design
+  return 'dark';
 }
 
 function resolveTheme(theme: Theme): 'light' | 'dark' {
@@ -28,8 +29,7 @@ function resolveTheme(theme: Theme): 'light' | 'dark' {
 
 export function applyTheme(theme: Theme) {
   const resolved = resolveTheme(theme);
-  const root = document.documentElement;
-  root.classList.toggle('dark', resolved === 'dark');
+  document.documentElement.setAttribute('data-theme', resolved);
 }
 
 export const useThemeStore = create<ThemeState>((set) => ({
@@ -45,10 +45,8 @@ export const useThemeStore = create<ThemeState>((set) => ({
   },
 }));
 
-// Initialize on module load
 if (typeof window !== 'undefined') {
   applyTheme(readStoredTheme());
-  // React to system changes when in system mode
   const mql = window.matchMedia('(prefers-color-scheme: dark)');
   mql.addEventListener('change', () => {
     const current = useThemeStore.getState().theme;

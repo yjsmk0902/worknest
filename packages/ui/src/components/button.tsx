@@ -4,25 +4,26 @@ import * as React from 'react';
 import { cn } from '../lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[14px] [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-[6px] whitespace-nowrap rounded-md font-medium tracking-[-0.005em] transition-[background-color,color,border-color,transform] duration-150 ease-[cubic-bezier(0.2,0.8,0.2,1)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-[14px] [&_svg]:shrink-0 border border-transparent',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-[0_1px_0_0_oklch(100%_0_0_/_0.15)_inset,0_1px_2px_oklch(0%_0_0_/_0.2)] hover:brightness-[1.08] active:translate-y-[0.5px]',
+          'bg-[color:var(--accent-bg)] text-[color:var(--accent-fg)] hover:bg-[color:var(--accent-bg-hv)] active:translate-y-[0.5px]',
         destructive:
-          'bg-destructive text-[oklch(98%_0_0)] shadow-[0_1px_0_0_oklch(100%_0_0_/_0.15)_inset,0_1px_2px_oklch(0%_0_0_/_0.2)] hover:brightness-[1.08] active:translate-y-[0.5px]',
+          'bg-transparent text-[color:var(--priority-urgent)] border-[color:var(--priority-urgent)]/40 hover:bg-[color:var(--priority-urgent)]/10',
         outline:
-          'border border-border bg-secondary text-foreground hover:border-[color:var(--border-strong)]',
+          'bg-[color:var(--bg-2)] text-[color:var(--fg-1)] border-[color:var(--border)] hover:bg-[color:var(--bg-3)] hover:border-[color:var(--border-strong)]',
         secondary:
-          'bg-[color:var(--bg-elev)] text-foreground border border-[color:var(--border-subtle)] hover:bg-[color:var(--bg-hover)]',
-        ghost: 'text-[color:var(--fg-mid)] hover:bg-[color:var(--bg-hover)] hover:text-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'bg-[color:var(--bg-2)] text-[color:var(--fg-1)] border-[color:var(--border)] hover:bg-[color:var(--bg-3)] hover:border-[color:var(--border-strong)]',
+        ghost:
+          'bg-transparent text-[color:var(--fg-2)] hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]',
+        link: 'text-[color:var(--accent-line)] underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-8 px-3 text-[12.5px]',
-        sm: 'h-[22px] px-2 text-[11.5px]',
-        lg: 'h-10 px-6 text-sm',
+        default: 'h-8 px-3 text-[13px]',
+        sm: 'h-7 px-[10px] text-[12px]',
+        lg: 'h-10 px-4 text-[14px]',
         icon: 'h-8 w-8',
       },
     },
