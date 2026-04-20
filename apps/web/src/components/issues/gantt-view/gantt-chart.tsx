@@ -206,18 +206,18 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Toolbar */}
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-border px-4">
-        <div className="flex items-center gap-1 rounded-md bg-muted p-0.5">
+      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-[color:var(--border-subtle)] px-4">
+        <div className="flex items-center gap-[2px] rounded-md border border-[color:var(--border-subtle)] bg-[color:var(--bg-elev)] p-[3px]">
           {(['day', 'week', 'month'] as ZoomLevel[]).map((level) => (
             <button
               key={level}
               type="button"
               onClick={() => setZoom(level)}
               className={cn(
-                'h-7 rounded-sm px-3 text-xs font-medium transition-all',
+                'h-6 rounded-sm px-[9px] text-[12px] transition-all',
                 zoom === level
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
+                  ? 'bg-[color:var(--panel)] text-foreground shadow-[var(--shadow-sm)]'
+                  : 'text-[color:var(--fg-dim)] hover:text-foreground',
               )}
             >
               {ZOOM_CONFIG[level].label}
@@ -251,16 +251,18 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
         {/* Left panel: issue list */}
         <div
           ref={leftPanelRef}
-          className="shrink-0 border-r border-border overflow-y-auto overflow-x-hidden"
+          className="shrink-0 overflow-y-auto overflow-x-hidden border-r border-[color:var(--border)]"
           style={{ width: LEFT_PANEL_WIDTH }}
           onScroll={handleLeftPanelScroll}
         >
           {/* Left header */}
           <div
-            className="sticky top-0 z-10 flex items-end border-b border-border bg-muted/50 px-3"
+            className="sticky top-0 z-10 flex items-end border-b border-[color:var(--border)] bg-[color:var(--bg)] px-[14px]"
             style={{ height: HEADER_HEIGHT }}
           >
-            <span className="pb-2 text-xs font-medium text-muted-foreground">이슈</span>
+            <span className="pb-2 text-[10.5px] font-medium uppercase tracking-[0.06em] text-[color:var(--fg-faint)]">
+              이슈
+            </span>
           </div>
 
           {/* Issue rows */}
@@ -269,7 +271,7 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
               key={issue.id}
               type="button"
               onClick={() => onIssueClick?.(issue.id)}
-              className="flex w-full items-center gap-2 border-b border-border/50 px-3 text-left transition-colors hover:bg-muted/30"
+              className="flex w-full items-center gap-2 border-b border-[color:var(--border-subtle)] px-[14px] text-left transition-colors hover:bg-[color:var(--bg-hover)]"
               style={{ height: ROW_HEIGHT }}
             >
               {/* Priority dot */}
@@ -289,12 +291,12 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
               />
 
               {/* Issue key */}
-              <span className="shrink-0 text-[11px] font-mono text-muted-foreground">
+              <span className="shrink-0 font-mono text-[10.5px] text-[color:var(--fg-faint)]">
                 {projectPrefix}-{issue.sequenceId}
               </span>
 
               {/* Title */}
-              <span className="truncate text-sm text-foreground">{issue.title}</span>
+              <span className="truncate text-[12.5px] text-foreground">{issue.title}</span>
 
               {/* Assignee avatar */}
               {issue.assignees && issue.assignees.length > 0 && (
@@ -357,10 +359,10 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
 
               {/* Today marker */}
               <div
-                className="absolute top-0 bottom-0 z-20 w-px bg-primary"
+                className="absolute top-0 bottom-0 z-20 w-px bg-[color:var(--accent)] opacity-50"
                 style={{ left: todayOffset + dayWidth / 2 }}
               >
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-b-sm bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                <div className="absolute -top-0 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-b-sm bg-[color:var(--accent)] px-[6px] py-[2px] font-mono text-[10px] font-medium text-[color:var(--accent-fg)] opacity-100">
                   오늘
                 </div>
               </div>
@@ -373,7 +375,7 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                 return (
                   <div
                     key={issue.id}
-                    className="relative border-b border-border/30"
+                    className="relative border-b border-[color:var(--border-subtle)] hover:bg-[color:var(--bg-hover)]"
                     style={{ height: ROW_HEIGHT }}
                   >
                     {barStyle?.milestone ? (
@@ -424,13 +426,13 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                             <button
                               type="button"
                               onClick={() => onIssueClick?.(issue.id)}
-                              className="group absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer rounded-md transition-all hover:brightness-110 hover:shadow-md"
+                              className="group absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer overflow-hidden rounded-sm shadow-[var(--shadow-sm)] transition-[filter,transform] duration-150 hover:brightness-[1.08]"
                               style={{
                                 left: barStyle.left,
                                 width: barStyle.width,
-                                height: ROW_HEIGHT - 12,
+                                height: 20,
                                 backgroundColor: getStatusColor(issue.status),
-                                opacity: 0.85,
+                                opacity: 0.88,
                               }}
                             >
                               {barStyle.width > 60 && (
@@ -528,11 +530,16 @@ function TimelineHeader({
 
   return (
     <div
-      className="sticky top-0 z-30 border-b border-border bg-muted/50 backdrop-blur-sm"
+      className="sticky top-0 z-30 border-b border-[color:var(--border)] bg-[color:var(--bg)]"
       style={{ height: HEADER_HEIGHT }}
     >
       {/* Top row: months */}
-      <div className={cn('flex border-b border-border', zoom === 'month' ? 'h-full' : 'h-7')}>
+      <div
+        className={cn(
+          'flex border-b border-[color:var(--border-subtle)]',
+          zoom === 'month' ? 'h-full' : 'h-7',
+        )}
+      >
         {months.map((month) => {
           const monthStart = month < timelineStart ? timelineStart : month;
           const monthEnd = endOfMonth(month) > timelineEnd ? timelineEnd : endOfMonth(month);
@@ -543,7 +550,7 @@ function TimelineHeader({
           return (
             <div
               key={month.toISOString()}
-              className="absolute flex items-center border-r border-border px-2 text-xs font-medium text-muted-foreground"
+              className="absolute flex items-center border-r border-[color:var(--border-subtle)] px-[10px] text-[11px] font-medium text-[color:var(--fg-mid)]"
               style={{ left, width, height: zoom === 'month' ? HEADER_HEIGHT : 28 }}
             >
               {format(month, 'yyyy년 M월', { locale: ko })}
@@ -565,12 +572,12 @@ function TimelineHeader({
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    'absolute flex items-center justify-center border-r border-border/40 text-[10px]',
+                    'absolute flex items-center justify-center border-r border-[color:var(--border-subtle)] font-mono text-[10px]',
                     today
-                      ? 'font-bold text-primary'
+                      ? 'font-semibold text-[color:var(--accent)]'
                       : weekend
-                        ? 'text-muted-foreground/50'
-                        : 'text-muted-foreground',
+                        ? 'bg-[color:var(--bg-elev)] text-[color:var(--fg-faint)]'
+                        : 'text-[color:var(--fg-dim)]',
                   )}
                   style={{ left, width: dayWidth, height: HEADER_HEIGHT - 28 }}
                 >
@@ -589,7 +596,7 @@ function TimelineHeader({
               return (
                 <div
                   key={week.toISOString()}
-                  className="absolute flex items-center justify-center border-r border-border/60 text-[10px] text-muted-foreground"
+                  className="absolute flex items-center justify-center border-r border-[color:var(--border-subtle)] font-mono text-[10px] text-[color:var(--fg-dim)]"
                   style={{ left, width, height: HEADER_HEIGHT - 28 }}
                 >
                   {format(week, 'M/d')} ({weekNum}주)
@@ -649,28 +656,28 @@ function TimelineGrid({
           {/* Weekend background (day zoom only) */}
           {zoom === 'day' && weekend && (
             <div
-              className="absolute top-0 bg-muted/30"
+              className="absolute top-0 bg-[color:var(--bg-elev)]/40"
               style={{ left, width: dayWidth, height: totalHeight }}
             />
           )}
           {/* Day zoom: week borders */}
           {zoom === 'day' && isWeekBorder && (
             <div
-              className="absolute top-0 w-px bg-border/40"
+              className="absolute top-0 w-px bg-[color:var(--border-subtle)]"
               style={{ left, height: totalHeight }}
             />
           )}
           {/* Week zoom: week borders */}
           {zoom === 'week' && isWeekBorder && (
             <div
-              className="absolute top-0 w-px bg-border/30"
+              className="absolute top-0 w-px bg-[color:var(--border-subtle)]"
               style={{ left, height: totalHeight }}
             />
           )}
           {/* Month zoom: month borders only */}
           {zoom === 'month' && isMonthBorder && (
             <div
-              className="absolute top-0 w-px bg-border/40"
+              className="absolute top-0 w-px bg-[color:var(--border-subtle)]"
               style={{ left, height: totalHeight }}
             />
           )}
