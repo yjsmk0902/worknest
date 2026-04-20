@@ -195,7 +195,7 @@ export function IssueProperties({ issue, projectId, mode, orgSlug, wsSlug }: Iss
 
   const containerClass =
     mode === 'panel'
-      ? 'grid grid-cols-[100px_1fr] gap-y-2 border-b border-border px-4 py-3'
+      ? 'grid grid-cols-[72px_1fr] items-center justify-items-start gap-x-4 gap-y-2 px-6 pb-6'
       : 'space-y-4 border-l border-border p-4';
 
   if (mode === 'sidebar') {

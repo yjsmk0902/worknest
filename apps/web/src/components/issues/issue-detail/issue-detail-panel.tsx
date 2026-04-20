@@ -134,71 +134,88 @@ export function IssueDetailPanel({
           className="fixed inset-0 z-30 cursor-default bg-[rgba(0,0,0,0.25)] backdrop-blur-[2px]"
         />
         <div className="fixed inset-y-0 right-0 z-40 flex w-[640px] flex-col border-l border-[color:var(--border)] bg-[color:var(--bg-1)] shadow-[var(--shadow-lg)]">
-        {/* Panel Header */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[color:var(--border-subtle)] px-4">
-          <Link
-            to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
-            params={{ orgSlug, wsSlug, projectId, issueId }}
-            className="text-sm font-mono text-muted-foreground hover:text-foreground"
-          >
-            {issueKey}
-          </Link>
-          <div className="flex items-center gap-1">
-            <Link
-              to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
-              params={{ orgSlug, wsSlug, projectId, issueId }}
-            >
-              <Button variant="ghost" size="sm" aria-label="전체 화면으로 열기">
-                <Maximize2 className="h-4 w-4" />
+          {/* Panel Header — breadcrumb + actions */}
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-[color:var(--border-subtle)] px-4">
+            <div className="flex items-center gap-2 text-[13px] text-[color:var(--fg-3)]">
+              <Link
+                to="/$orgSlug/$wsSlug/projects/$projectId/issues"
+                params={{ orgSlug, wsSlug, projectId }}
+                className="transition-colors hover:text-[color:var(--fg-1)]"
+              >
+                {projectPrefix}
+              </Link>
+              <span className="text-[color:var(--fg-4)]">/</span>
+              <Link
+                to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
+                params={{ orgSlug, wsSlug, projectId, issueId }}
+                className="font-mono text-[12px] text-[color:var(--fg-2)] transition-colors hover:text-[color:var(--fg-1)]"
+              >
+                {issueKey}
+              </Link>
+            </div>
+            <div className="flex items-center gap-1">
+              <Link
+                to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
+                params={{ orgSlug, wsSlug, projectId, issueId }}
+              >
+                <Button variant="ghost" size="sm" aria-label="전체 화면으로 열기">
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" onClick={onClose} aria-label="닫기 (Esc)">
+                <X className="h-4 w-4" />
               </Button>
-            </Link>
-            <Button variant="ghost" size="sm" onClick={onClose} aria-label="닫기 (Esc)">
-              <X className="h-4 w-4" />
-            </Button>
+            </div>
           </div>
-        </div>
 
-        {/* Properties (compact) */}
-        <IssueProperties
-          issue={issue}
-          projectId={projectId}
-          mode="panel"
-          orgSlug={orgSlug}
-          wsSlug={wsSlug}
-        />
+          {/* Body (scrollable): title → properties → description → sub-issues → activity */}
+          <ScrollArea className="flex-1">
+            <div className="px-6 pt-6">
+              <InlineEditableTitle
+                issueId={issue.id}
+                projectId={projectId}
+                title={issue.title}
+              />
+            </div>
 
-        {/* Body (scrollable) */}
-        <ScrollArea className="flex-1 px-4 py-4">
-          {/* Title (inline editable) */}
-          <InlineEditableTitle issueId={issue.id} projectId={projectId} title={issue.title} />
+            <div className="pt-4">
+              <IssueProperties
+                issue={issue}
+                projectId={projectId}
+                mode="panel"
+                orgSlug={orgSlug}
+                wsSlug={wsSlug}
+              />
+            </div>
 
-          <Separator className="my-4" />
+            <div className="px-6 pb-6 pt-2">
+              <EditorWithAutosave
+                content={issue.description as JSONContent | null}
+                onSave={saveDescription}
+                placeholder="설명을 추가하세요..."
+                className="min-h-[100px]"
+                statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
+              />
+            </div>
 
-          {/* Description */}
-          <EditorWithAutosave
-            content={issue.description as JSONContent | null}
-            onSave={saveDescription}
-            placeholder="설명을 추가하세요..."
-            className="min-h-[100px]"
-            statusLabels={{ saved: '저장됨', saving: '저장 중...', unsaved: '변경사항 있음' }}
-          />
+            <div className="px-6 pb-6">
+              <SubIssues
+                projectId={projectId}
+                issueId={issue.id}
+                projectPrefix={projectPrefix}
+                orgSlug={orgSlug}
+                wsSlug={wsSlug}
+              />
+            </div>
 
-          <Separator className="my-4" />
-
-          {/* Sub-issues */}
-          <SubIssues
-            projectId={projectId}
-            issueId={issue.id}
-            projectPrefix={projectPrefix}
-            orgSlug={orgSlug}
-            wsSlug={wsSlug}
-          />
-
-          <Separator className="my-4" />
-
-          {/* Comments & Activity */}
-          <CommentList issueId={issue.id} projectId={projectId} mentionQueryFn={mentionQueryFn} />
-        </ScrollArea>
+            <div className="px-6 pb-6">
+              <CommentList
+                issueId={issue.id}
+                projectId={projectId}
+                mentionQueryFn={mentionQueryFn}
+              />
+            </div>
+          </ScrollArea>
         </div>
       </>
     );
@@ -336,7 +353,7 @@ function InlineEditableTitle({
         onChange={(e) => setEditValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className="w-full text-lg font-semibold outline-none ring-2 ring-ring rounded-md px-2 py-1 bg-transparent"
+        className="w-full rounded-md bg-transparent px-2 py-1 text-[22px] font-semibold tracking-[-0.02em] outline-none ring-2 ring-[color:var(--accent-line)]"
       />
     );
   }
@@ -347,7 +364,7 @@ function InlineEditableTitle({
       onKeyDown={(e) => {
         if (e.key === 'Enter') startEditing();
       }}
-      className="cursor-pointer rounded-md px-2 py-1 text-lg font-semibold hover:bg-accent"
+      className="-ml-2 cursor-text rounded-md px-2 py-1 text-[22px] font-semibold leading-[1.3] tracking-[-0.02em] text-[color:var(--fg-1)] hover:bg-[color:var(--bg-2)]"
     >
       {title}
     </h2>
