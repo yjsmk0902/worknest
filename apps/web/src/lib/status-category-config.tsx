@@ -102,33 +102,33 @@ export function CategoryGlyph({
     );
   }
   if (category === 'started') {
+    // SVG ring + 60% pie wedge starting from 12 o'clock clockwise.
+    // Endpoint: start angle -90°, sweep +216°, end angle 126°.
+    // (x,y) = 8 + 4.8*cos(126°), 8 + 4.8*sin(126°) ≈ (5.18, 11.88)
     return (
-      <span
-        className="relative shrink-0 rounded-full"
+      <svg
+        viewBox="0 0 16 16"
+        className="shrink-0"
+        style={style}
         aria-hidden="true"
-        style={{
-          ...style,
-          border: `1.5px solid ${c}`,
-          background: `conic-gradient(${c} 60%, transparent 0)`,
-          WebkitMask: 'radial-gradient(circle, transparent 25%, #000 28%)',
-          mask: 'radial-gradient(circle, transparent 25%, #000 28%)',
-        }}
-      />
+      >
+        <circle cx="8" cy="8" r="6" fill="none" stroke={c} strokeWidth="1.6" />
+        <path d="M 8 3.2 A 4.8 4.8 0 1 1 5.18 11.88 L 8 8 Z" fill={c} />
+      </svg>
     );
   }
   if (category === 'review') {
-    // Purple-ish filled ring with center dot
+    // Outer ring + solid center dot.
     return (
-      <span
-        className="relative grid shrink-0 place-items-center rounded-full"
-        style={{ ...style, border: `1.5px solid ${c}` }}
+      <svg
+        viewBox="0 0 16 16"
+        className="shrink-0"
+        style={style}
         aria-hidden="true"
       >
-        <span
-          className="h-[40%] w-[40%] rounded-full"
-          style={{ backgroundColor: c }}
-        />
-      </span>
+        <circle cx="8" cy="8" r="6" fill="none" stroke={c} strokeWidth="1.6" />
+        <circle cx="8" cy="8" r="2.4" fill={c} />
+      </svg>
     );
   }
   if (category === 'backlog') {

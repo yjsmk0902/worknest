@@ -13,6 +13,7 @@ import { Calendar, Check, Plus, RefreshCw, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority, getTypeIcon } from '../../../lib/issue-constants';
+import { CategoryGlyph, type GroupCategory } from '../../../lib/status-category-config';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -437,13 +438,8 @@ function StatusSelect({
 }
 
 /**
- * Status indicator matching the design reference.
- * Shape changes per category:
- *  - backlog: dashed outline ring
- *  - unstarted (todo): solid outline ring
- *  - started (in progress): ring + conic 60% fill
- *  - completed: filled disc with ✓
- *  - cancelled: filled disc with –
+ * Status icon — delegates to the shared CategoryGlyph so the list, board,
+ * and panel all stay in sync (including the 'review' category).
  */
 function StatusCategoryIcon({
   category,
@@ -452,61 +448,7 @@ function StatusCategoryIcon({
   category: StatusCategory | undefined;
   color?: string;
 }) {
-  const c = color || '#94a3b8';
-  if (category === 'completed') {
-    return (
-      <span
-        className="relative grid h-3 w-3 shrink-0 place-items-center rounded-full"
-        style={{ backgroundColor: c }}
-        aria-hidden="true"
-      >
-        <Check className="h-[8px] w-[8px]" strokeWidth={3} style={{ color: 'var(--bg-0)' }} />
-      </span>
-    );
-  }
-  if (category === 'cancelled') {
-    return (
-      <span
-        className="relative grid h-3 w-3 shrink-0 place-items-center rounded-full"
-        style={{ backgroundColor: c }}
-        aria-hidden="true"
-      >
-        <span className="h-[1.5px] w-[6px]" style={{ backgroundColor: 'var(--bg-0)' }} />
-      </span>
-    );
-  }
-  if (category === 'started') {
-    return (
-      <span
-        className="relative h-3 w-3 shrink-0 rounded-full"
-        aria-hidden="true"
-        style={{
-          border: `1.5px solid ${c}`,
-          background: `conic-gradient(${c} 60%, transparent 0)`,
-          // Mask out the center so it reads as a ring + pie slice
-          WebkitMask: 'radial-gradient(circle, transparent 3px, #000 3.4px)',
-          mask: 'radial-gradient(circle, transparent 3px, #000 3.4px)',
-        }}
-      />
-    );
-  }
-  if (category === 'backlog') {
-    return (
-      <span
-        className="h-3 w-3 shrink-0 rounded-full"
-        style={{ border: `1.5px dashed ${c}` }}
-        aria-hidden="true"
-      />
-    );
-  }
-  // default: unstarted / todo
-  return (
-    <span
-      className="h-3 w-3 shrink-0 rounded-full"
-      style={{ border: `1.5px solid ${c}` }}
-      aria-hidden="true"
-    />
-  );
+  return <CategoryGlyph category={category as GroupCategory | undefined} color={color} size={12} />;
 }
 
 // ── Priority Select ─────────────────────────────────────────────────────
