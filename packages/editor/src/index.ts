@@ -46,6 +46,15 @@ export { Bookmark } from './extensions/bookmark';
 // Notion-style block drag handle
 export { DragHandle } from './extensions/drag-handle';
 
+// Universal @-mention (users / wiki pages / issues in one suggester)
+export { createUniversalMentionExtension } from './extensions/universal-mention';
+export type {
+  UniversalMentionItem,
+  UniversalMentionKind,
+  UniversalMentionQueryFn,
+  UniversalMentionOptions,
+} from './extensions/universal-mention';
+
 // Page mention extension (trigger: `[[`)
 export { createPageMentionExtension } from './extensions/page-mention';
 export type { PageMentionItem, PageMentionQueryFn } from './extensions/page-mention';

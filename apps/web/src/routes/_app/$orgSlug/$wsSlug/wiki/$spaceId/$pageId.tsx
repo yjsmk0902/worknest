@@ -22,6 +22,8 @@ import {
   ToggleBlock,
   ToggleContent,
   ToggleSummary,
+  type UniversalMentionItem,
+  createUniversalMentionExtension,
 } from '@worknest/editor';
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
@@ -255,6 +257,96 @@ function WikiPageEditor() {
   // intercepting `/` keystrokes. Will re-enable with a single-char trigger
   // (e.g. unified `@` multi-type suggester) in a follow-up.
 
+  const universalMention = useMemo(
+    () =>
+      createUniversalMentionExtension({
+        queryFn: async (q: string): Promise<UniversalMentionItem[]> => {
+          if (!wsId) return [];
+          const trimmed = q.trim();
+          // Fetch all three sources in parallel; members client-filtered.
+          const [membersRes, searchRes] = await Promise.all([
+            apiClient
+              .get<{
+                data: Array<{
+                  id: string;
+                  user: { id: string; name: string; email: string; avatarUrl: string | null };
+                }>;
+              }>(`/workspaces/${wsId}/members`)
+              .catch(() => null),
+            trimmed
+              ? apiClient
+                  .get<{
+                    categories: {
+                      pages: Array<{
+                        id: string;
+                        title: string;
+                        subtitle?: string;
+                        icon?: string | null;
+                        spaceId?: string;
+                      }>;
+                      issues: Array<{
+                        id: string;
+                        title: string;
+                        subtitle?: string;
+                        projectId?: string;
+                      }>;
+                    };
+                  }>(`/workspaces/${wsId}/search`, { q: trimmed, limit: '6' })
+                  .catch(() => null)
+              : Promise.resolve(null),
+          ]);
+
+          const users = (membersRes?.data ?? [])
+            .filter((m) =>
+              trimmed.length === 0
+                ? true
+                : m.user.name.toLowerCase().includes(trimmed.toLowerCase()) ||
+                  m.user.email.toLowerCase().includes(trimmed.toLowerCase()),
+            )
+            .slice(0, 6)
+            .map<UniversalMentionItem>((m) => ({
+              kind: 'user',
+              id: m.user.id,
+              label: m.user.name,
+              subtitle: m.user.email,
+              avatarUrl: m.user.avatarUrl,
+            }));
+
+          const pages = (searchRes?.categories.pages ?? [])
+            .filter((p) => !!p.spaceId)
+            .slice(0, 6)
+            .map<UniversalMentionItem>((p) => ({
+              kind: 'page',
+              id: p.id,
+              label: p.title || '제목 없음',
+              subtitle: p.subtitle,
+              icon: p.icon ?? null,
+              spaceId: p.spaceId,
+            }));
+
+          const issues = (searchRes?.categories.issues ?? [])
+            .slice(0, 6)
+            .map<UniversalMentionItem>((it) => ({
+              kind: 'issue',
+              id: it.id,
+              label: it.subtitle ? `${it.subtitle} · ${it.title}` : it.title,
+              subtitle: it.title,
+            }));
+
+          return [...users, ...pages, ...issues];
+        },
+        resolveHref: (item) => {
+          if (item.kind === 'user') return `#user-${item.id}`;
+          if (item.kind === 'page' && item.spaceId) {
+            return `/${orgSlug}/${wsSlug}/wiki/${item.spaceId}/${item.id}`;
+          }
+          if (item.kind === 'issue') return `#issue-${item.id}`;
+          return '#';
+        },
+      }),
+    [orgSlug, wsSlug, wsId],
+  );
+
   const editorExtensions = useMemo(
     () => [
       SlashCommand,
@@ -266,11 +358,12 @@ function WikiPageEditor() {
       MarkdownShortcuts,
       Bookmark,
       DragHandle,
+      universalMention,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
       }),
     ],
-    [imageUploadHandler],
+    [imageUploadHandler, universalMention],
   );
 
   // ── Render ────────────────────────────────────────────────────────
