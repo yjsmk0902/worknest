@@ -125,16 +125,17 @@ export function SpaceFormModal({ workspaceId, open, onOpenChange, space }: Space
     e.preventDefault();
     if (!name.trim() || !slug.trim()) return;
 
-    const data = {
-      name: name.trim(),
-      slug: slug.trim(),
-      description: description.trim() || undefined,
-    };
-
     if (isEditing) {
-      updateMutation.mutate(data);
+      updateMutation.mutate({
+        name: name.trim(),
+        description: description.trim() || null,
+      });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate({
+        name: name.trim(),
+        slug: slug.trim(),
+        description: description.trim() || undefined,
+      });
     }
   }
 
@@ -170,12 +171,15 @@ export function SpaceFormModal({ workspaceId, open, onOpenChange, space }: Space
               placeholder="space-slug"
               value={slug}
               onChange={(e) => handleSlugChange(e.target.value)}
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || isEditing}
+              readOnly={isEditing}
               maxLength={50}
               className="font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              URL에 사용됩니다. 영문 소문자, 숫자, 하이픈만 허용됩니다.
+              {isEditing
+                ? 'URL에 사용되며 생성 후에는 변경할 수 없습니다.'
+                : 'URL에 사용됩니다. 영문 소문자, 숫자, 하이픈만 허용됩니다.'}
             </p>
           </div>
 

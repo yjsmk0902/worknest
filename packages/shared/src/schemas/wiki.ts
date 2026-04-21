@@ -82,6 +82,8 @@ export const createWikiPageInput = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase alphanumeric with hyphens'),
   content: z.unknown().optional(),
   parentId: z.string().uuid().optional(),
+  icon: z.string().max(32).optional(),
+  coverUrl: z.string().max(1000).optional(),
 });
 
 export type CreateWikiPageInput = z.infer<typeof createWikiPageInput>;
@@ -91,6 +93,8 @@ export const updateWikiPageInput = z.object({
   content: z.unknown().optional(),
   parentId: z.string().uuid().nullable().optional(),
   sortOrder: z.string().optional(),
+  icon: z.string().max(32).nullable().optional(),
+  coverUrl: z.string().max(1000).nullable().optional(),
 });
 
 export type UpdateWikiPageInput = z.infer<typeof updateWikiPageInput>;
@@ -102,6 +106,8 @@ export const wikiPageOutput = z.object({
   slug: z.string(),
   content: z.unknown().nullable(),
   contentFormat: z.string(),
+  icon: z.string().nullable(),
+  coverUrl: z.string().nullable(),
   parentId: z.string().uuid().nullable(),
   sortOrder: z.string(),
   createdBy: z.string().uuid().nullable(),

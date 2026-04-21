@@ -17,6 +17,8 @@ import {
 
 const spaceIdParam = z.object({ spaceId: z.string().uuid() });
 const pageIdParam = z.object({ pageId: z.string().uuid() });
+const workspaceIdParam = z.object({ workspaceId: z.string().uuid() });
+const recentQuery = z.object({ limit: z.coerce.number().int().min(1).max(50).optional() });
 
 const movePageBody = z.object({
   parentId: z.string().uuid().nullable(),
@@ -50,6 +52,25 @@ export async function wikiPageRoutes(
   const requireAuth = createRequireAuth(auth);
   const pageService = new WikiPageService(db);
   const mentionService = new MentionService(db);
+
+  // ── GET /api/v1/workspaces/:workspaceId/wiki-pages/recent ──────
+
+  app.get(
+    '/api/v1/workspaces/:workspaceId/wiki-pages/recent',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Wiki Pages'],
+        summary: 'List recently edited wiki pages in the workspace',
+      },
+    },
+    async (request, reply) => {
+      const { workspaceId } = workspaceIdParam.parse(request.params);
+      const { limit } = recentQuery.parse(request.query);
+      const result = await pageService.listRecent(workspaceId, request.user?.id, limit);
+      return reply.status(200).send(result);
+    },
+  );
 
   // ── GET /api/v1/wiki-spaces/:spaceId/pages/tree ─────────────────
 

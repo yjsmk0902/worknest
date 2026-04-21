@@ -18,6 +18,12 @@ export const searchResultItem = z.object({
   title: z.string(),
   subtitle: z.string().optional(), // project prefix, space name, etc.
   url: z.string(), // client-side route path
+  /** Parent wiki space ID (set for page results, used to build full URL). */
+  spaceId: z.string().uuid().optional(),
+  /** Parent project ID (set for issue results). */
+  projectId: z.string().uuid().optional(),
+  /** Emoji/icon for wiki pages. */
+  icon: z.string().nullable().optional(),
 });
 
 export type SearchResultItem = z.infer<typeof searchResultItem>;

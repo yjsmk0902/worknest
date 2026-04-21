@@ -109,6 +109,165 @@
 
 ---
 
+## 7. 위키 기능 확장 (노션 수준)
+
+### 현황
+- 스페이스/페이지 계층, TipTap 에디터, 슬래시 커맨드, 이슈 링크, 이미지 업로드, 파일 첨부, 자동 저장, 페이지 트리 DnD 구현 완료
+- Hocuspocus + Yjs 인프라는 이미 프로젝트에 포함 (v1.0 실시간 편집용)
+- 페이지 `content_format` 컬럼으로 TipTap JSON ↔ Yjs binary lazy migration 경로 설계됨
+
+### 목표
+노션 수준의 "페이지 메타 + 블록 에디터 + 협업 + 고급 기능"을 4단계로 점진 구현.
+Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
+
+---
+
+### Phase 1 — 페이지 메타 & 탐색 ✅
+
+#### 1-1. 페이지 아이콘(이모지) + 커버 이미지 ✅
+- [x] `wiki_pages.icon` (text, emoji/shortcode), `wiki_pages.cover_url` (text nullable) 컬럼 추가
+- [x] 페이지 상단에 이모지 피커 + 커버 업로드/교체 UI
+- [x] 페이지 트리에 아이콘 표시 (브레드크럼은 후속)
+- [ ] 수정 파일
+  - `packages/db/src/schema/wiki.ts` — 컬럼 추가 + 마이그레이션
+  - `packages/shared/src/schemas/wiki.ts` — 스키마 갱신
+  - `apps/web/src/routes/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId.tsx` — 아이콘/커버 헤더
+  - `apps/web/src/components/wiki/page-tree/page-tree-item.tsx` — 아이콘 표시
+  - `apps/web/src/components/wiki/emoji-picker.tsx` — 새로 생성
+  - `apps/web/src/components/wiki/cover-image.tsx` — 새로 생성
+
+#### 1-2. 페이지 즐겨찾기 ✅
+- [x] 기존 favorites 시스템에 `wiki_page` entity_type 활용 (이미 pageId/spaceId 스키마 존재)
+- [x] 페이지 상단 헤더에 별 아이콘 토글
+- [x] 스페이스 패널에도 스페이스 즐겨찾기 토글 추가
+- [ ] 수정 파일
+  - `packages/db/src/schema/favorites.ts` — entity_type 확장 확인
+  - `apps/server/src/services/favorite-service.ts` — wiki page 지원
+  - `apps/web/src/components/favorite-button.tsx` — 위키 페이지 타입 추가
+  - `apps/web/src/components/layout/sidebar-favorites.tsx` — 렌더링
+
+#### 1-3. 최근 편집 페이지 ✅
+- [x] 워크스페이스 접근 가능 스페이스의 최근 편집 페이지 N개 쿼리
+- [x] 위키 인덱스 페이지 상단에 "최근 편집" 섹션 (4열 카드)
+- [ ] 수정 파일
+  - `apps/server/src/routes/wiki.ts` — GET `/workspaces/:wsId/wiki-pages/recent`
+  - `apps/web/src/routes/_app/$orgSlug/$wsSlug/wiki/index.tsx` — 섹션 추가
+
+#### 1-4. 인라인 서브페이지 생성 (부분 완료)
+- [ ] 에디터 슬래시 커맨드 `/page` → `page-link` 에디터 노드가 필요하므로 Phase 2로 이관
+- [x] 페이지 트리의 `+` hover 버튼으로 서브페이지 생성 (생성 시 부모 expand + 새 페이지 선택)
+- [ ] 수정 파일
+  - `packages/editor/src/extensions/slash-command.ts` — 명령 추가
+  - `packages/editor/src/extensions/page-link.ts` — 새로 생성 (page mention node)
+  - `apps/web/src/components/wiki/page-tree/page-tree-item.tsx` — hover `+` 버튼
+
+#### 1-5. 전역 검색 (페이지 제목 + 본문) ✅
+- [x] 기존 `wiki_pages.search_vector` FTS 인덱스 활용 (제목 A, 본문 B weight)
+- [x] `searchPages`를 ILIKE → FTS + ILIKE fallback으로 업그레이드
+- [x] 검색 결과에 `spaceId`/`icon` 포함 → command palette가 실제 위키 라우트로 이동 가능
+- [ ] 수정 파일
+  - `packages/db/migrations/` — 마이그레이션: GIN 인덱스
+  - `apps/server/src/services/search-service.ts` — 새로 생성 (또는 확장)
+  - `apps/server/src/routes/search.ts` — 엔드포인트
+  - `apps/web/src/components/command-palette/` — 결과 섹션
+
+---
+
+### Phase 2 — 에디터 블록 확장
+
+#### 2-1. 노션 필수 블록
+- [ ] Callout (아이콘 + 배경 컬러)
+- [ ] Toggle (접히는 블록)
+- [ ] Divider
+- [ ] Code block (언어 선택 + syntax highlight)
+- [ ] To-do 체크박스 (없다면 추가)
+- [ ] 수정 파일
+  - `packages/editor/src/extensions/callout.ts` — 새로 생성
+  - `packages/editor/src/extensions/toggle-block.ts` — 새로 생성
+  - `packages/editor/src/extensions/code-block.ts` — lowlight 연동
+  - `packages/editor/src/index.ts` — export
+  - `packages/editor/src/extensions/slash-command.ts` — 명령 등록
+
+#### 2-2. @멘션 시스템
+- [ ] `@user` (사용자), `@page` (위키 페이지), `#ISSUE-123` (이슈) mention node
+- [ ] 서제스천 드롭다운: 타이핑 시 workspace 내 항목 필터링
+- [ ] 수정 파일
+  - `packages/editor/src/extensions/mention.ts` — 새로 생성 (@tiptap/extension-mention 기반)
+  - `packages/editor/src/extensions/page-link.ts` — Phase 1-4와 공유
+  - `packages/editor/src/mention-suggestion.tsx` — 서제스천 렌더러
+
+#### 2-3. Table 블록
+- [ ] @tiptap/extension-table 기반 기본 표
+- [ ] 행/열 추가/삭제, 정렬, 병합 UI
+
+#### 2-4. Embed (링크 auto-unfurl)
+- [ ] 유튜브, vimeo, 이미지, 피그마 링크 자동 임베드
+- [ ] 서버 사이드 OG 메타 조회 (opengraph-scraper)
+- [ ] 수정 파일
+  - `packages/editor/src/extensions/embed.ts` — 새로 생성
+  - `apps/server/src/routes/metadata.ts` — `/url-preview` 엔드포인트
+
+---
+
+### Phase 3 — 협업/공유
+
+#### 3-1. 실시간 공동 편집 (Yjs + Hocuspocus)
+- [ ] `content_format = 'yjs'` lazy migration (첫 편집 시 TipTap JSON → Yjs binary 변환)
+- [ ] EditorWithAutosave → EditorWithCollab 모드 분기
+- [ ] 현재 편집자 커서/아바타 표시 (awareness)
+- [ ] 수정 파일
+  - `apps/hocuspocus/src/` — 기존 서버 설정 연결 확인
+  - `packages/editor/src/collab-editor.tsx` — 새로 생성
+  - `packages/db/src/schema/wiki.ts` — content_format 활용 점검
+
+#### 3-2. 블록 단위 코멘트
+- [ ] 블록 ID (ProseMirror `data-block-id`) 기반 코멘트 앵커
+- [ ] 우측 사이드바에 코멘트 스레드 / 인라인 인디케이터
+- [ ] 수정 파일
+  - `packages/db/src/schema/comments.ts` — wiki_page + block_id 지원
+  - `apps/server/src/services/comment-service.ts` — 위키 코멘트 API
+  - `apps/web/src/components/wiki/page-comments.tsx` — 새로 생성
+
+#### 3-3. 페이지 공유 링크 / 퍼블리시
+- [ ] 스페이스 멤버 외 공개 읽기 전용 링크 (토큰 기반)
+- [ ] `wiki_page_shares` 테이블 (id, page_id, token, expires_at, created_by)
+- [ ] `/wiki-share/:token` 공개 라우트 (auth bypass)
+
+#### 3-4. 페이지 히스토리/버전
+- [ ] 자동 저장마다 snapshot 저장 (혹은 diff)
+- [ ] "히스토리 보기" 패널에서 버전 비교/복원
+- [ ] 수정 파일
+  - `packages/db/src/schema/wiki.ts` — `wiki_page_revisions` 테이블
+  - `apps/server/src/services/wiki-service.ts` — snapshot 기록
+
+---
+
+### Phase 4 — 고급
+
+#### 4-1. 페이지 템플릿
+- [ ] 워크스페이스/스페이스별 템플릿 CRUD
+- [ ] 새 페이지 생성 시 템플릿 선택 모달
+- [ ] 기본 제공: 회의록, 주간 리포트, 프로젝트 킥오프, 1-on-1
+- [ ] 수정 파일
+  - `packages/db/src/schema/wiki.ts` — `wiki_page_templates` 테이블
+  - `apps/server/src/routes/wiki.ts` — 템플릿 API
+  - `apps/web/src/components/wiki/template-picker.tsx` — 새로 생성
+
+#### 4-2. 인라인 이슈 DB (이슈 뷰 임베드)
+- [ ] 페이지 안에 저장된 이슈 뷰를 블록으로 임베드 (list/board 미니 뷰)
+- [ ] 수정 파일
+  - `packages/editor/src/extensions/issue-view-embed.ts` — 새로 생성
+  - `apps/web/src/components/issues/embedded-view.tsx` — 재사용 가능한 뷰
+
+#### 4-3. AI 보조 (요약/작성/번역)
+- [ ] 블록 선택 → "요약/이어쓰기/번역/맞춤법" 커맨드
+- [ ] OpenAI/Anthropic API 연동 (기존 AI 설정 활용)
+- [ ] 수정 파일
+  - `packages/editor/src/ai/` — 새로 생성
+  - `apps/server/src/routes/ai.ts` — 프록시 엔드포인트 (기존 있다면 활용)
+
+---
+
 ## 기술 부채 (별도 정리 필요)
 
 ### 테스트 스위트 정비 (우선순위: 중)
@@ -129,11 +288,23 @@
 
 ## 구현 순서
 
+### 이슈 트랙
 ```
-Phase 1: 알림 시스템 연동 (기존 인프라 활용, 빠른 완성)
+Phase 1: 알림 시스템 연동 (기존 인프라 활용, 빠른 완성) — 진행 중
 Phase 2: UX 개선 (6-1 ~ 6-4, 기존 코드 보강)
 Phase 3: CSV 가져오기/내보내기
 Phase 4: 이슈 템플릿
 Phase 5: 워크플로우 자동화
 Phase 6: 시간 추정/추적
 ```
+
+### 위키 트랙 (섹션 7)
+```
+Wiki Phase 1: 페이지 메타 & 탐색 (아이콘/커버/즐겨찾기/최근/서브페이지/검색)
+Wiki Phase 2: 에디터 블록 확장 (callout, toggle, code, @mention, table, embed)
+Wiki Phase 3: 협업/공유 (Yjs 실시간, 블록 코멘트, 공유 링크, 히스토리)
+Wiki Phase 4: 고급 (템플릿, 이슈 DB 임베드, AI)
+```
+
+두 트랙은 DB/에디터 공유 지점(페이지 메타 ↔ 에디터 확장 ↔ 멘션 ↔ 이슈 임베드)이 있어
+이슈 트랙 진행과 병행 가능. 각 Wiki Phase 내 세부 항목은 독립적으로 배치해도 무방.

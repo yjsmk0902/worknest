@@ -1,6 +1,6 @@
-import { type Database, wikiPages, wikiSpaceMembers } from '@worknest/db';
+import { type Database, wikiPages, wikiSpaceMembers, wikiSpaces } from '@worknest/db';
 import type { CreateWikiPageInput, UpdateWikiPageInput } from '@worknest/shared';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { AppError, ErrorCode } from '../lib/errors';
 import { extractPlainText } from '../lib/extract-text';
 import { sanitizeContent } from '../lib/sanitize';
@@ -95,6 +95,8 @@ function toPageOutput(row: typeof wikiPages.$inferSelect) {
     slug: row.slug,
     content: row.content ?? null,
     contentFormat: row.contentFormat,
+    icon: row.icon ?? null,
+    coverUrl: row.coverUrl ?? null,
     parentId: row.parentId ?? null,
     sortOrder: row.sortOrder,
     createdBy: row.createdBy ?? null,
@@ -167,6 +169,8 @@ export class WikiPageService {
         content: sanitized,
         contentText,
         parentId: input.parentId ?? null,
+        icon: input.icon ?? null,
+        coverUrl: input.coverUrl ?? null,
       })
       .returning();
 
@@ -231,6 +235,8 @@ export class WikiPageService {
     if (input.title !== undefined) updates.title = input.title;
     if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
     if (input.parentId !== undefined) updates.parentId = input.parentId;
+    if (input.icon !== undefined) updates.icon = input.icon;
+    if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
 
     if (input.content !== undefined) {
       const sanitized = sanitizeContent(input.content);
@@ -360,6 +366,53 @@ export class WikiPageService {
         next_cursor: null,
         has_more: false,
       },
+    };
+  }
+
+  // ── Recently Edited Pages (workspace-scoped) ────────────────────
+
+  async listRecent(workspaceId: string, callerUserId: string, limit = 8) {
+    // Find spaces in the workspace that the user is a member of
+    const memberSpaces = await this.db
+      .select({ id: wikiSpaces.id, name: wikiSpaces.name })
+      .from(wikiSpaces)
+      .innerJoin(wikiSpaceMembers, eq(wikiSpaceMembers.wikiSpaceId, wikiSpaces.id))
+      .where(
+        and(
+          eq(wikiSpaces.workspaceId, workspaceId),
+          eq(wikiSpaceMembers.userId, callerUserId),
+        ),
+      );
+
+    if (memberSpaces.length === 0) return { data: [] };
+
+    const spaceIds = memberSpaces.map((s) => s.id);
+    const spaceNameById = new Map(memberSpaces.map((s) => [s.id, s.name]));
+
+    const rows = await this.db
+      .select({
+        id: wikiPages.id,
+        wikiSpaceId: wikiPages.wikiSpaceId,
+        title: wikiPages.title,
+        slug: wikiPages.slug,
+        icon: wikiPages.icon,
+        updatedAt: wikiPages.updatedAt,
+      })
+      .from(wikiPages)
+      .where(and(inArray(wikiPages.wikiSpaceId, spaceIds), isNull(wikiPages.deletedAt)))
+      .orderBy(desc(wikiPages.updatedAt))
+      .limit(limit);
+
+    return {
+      data: rows.map((r) => ({
+        id: r.id,
+        wikiSpaceId: r.wikiSpaceId,
+        spaceName: spaceNameById.get(r.wikiSpaceId) ?? '',
+        title: r.title,
+        slug: r.slug,
+        icon: r.icon ?? null,
+        updatedAt: r.updatedAt.toISOString(),
+      })),
     };
   }
 }

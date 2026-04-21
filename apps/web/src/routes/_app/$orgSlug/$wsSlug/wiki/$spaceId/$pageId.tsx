@@ -1,4 +1,7 @@
+import { FavoriteButton } from '@/components/favorite-button';
 import { FileAttachment } from '@/components/file-upload/file-attachment';
+import { AddCoverButton, CoverImage } from '@/components/wiki/cover-image';
+import { EmojiPicker } from '@/components/wiki/emoji-picker';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { apiClient } from '@/lib/api-client';
@@ -7,16 +10,8 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import type { JSONContent } from '@tiptap/core';
 import { EditorWithAutosave, ImageUpload, IssueLink, SlashCommand } from '@worknest/editor';
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@worknest/ui';
 import { toast } from '@worknest/ui';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Loader2, Smile } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
@@ -119,6 +114,61 @@ function WikiPageEditor() {
     [pageId, queryClient],
   );
 
+  // ── Icon + cover ────────────────────────────────────────────────────
+
+  const updateMetaMutation = useMutation({
+    mutationFn: (payload: { icon?: string | null; coverUrl?: string | null }) =>
+      apiClient.patch(`/wiki-pages/${pageId}`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wiki-pages', pageId] });
+      queryClient.invalidateQueries({
+        queryKey: ['wiki-spaces', spaceId, 'pages'],
+      });
+    },
+    onError: () => {
+      toast('저장에 실패했습니다.');
+    },
+  });
+
+  const handleIconChange = useCallback(
+    (icon: string | null) => {
+      updateMetaMutation.mutate({ icon });
+    },
+    [updateMetaMutation],
+  );
+
+  const handleCoverChange = useCallback(
+    (coverUrl: string | null) => {
+      updateMetaMutation.mutate({ coverUrl });
+    },
+    [updateMetaMutation],
+  );
+
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const { upload: uploadCover, uploading: uploadingCover } = useFileUpload({
+    onError: (msg) => toast(msg),
+  });
+
+  const handleAddCover = useCallback(() => {
+    coverInputRef.current?.click();
+  }, []);
+
+  const handleCoverFile = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        toast('이미지 파일만 업로드할 수 있습니다.');
+        return;
+      }
+      const result = await uploadCover(file);
+      if (result) handleCoverChange(result.path);
+    },
+    [uploadCover, handleCoverChange],
+  );
+
   // ── File upload for editor images ─────────────────────────────────
 
   const { upload: uploadImage } = useFileUpload({
@@ -178,7 +228,7 @@ function WikiPageEditor() {
   if (pageQuery.isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-[color:var(--fg-3)]" />
       </div>
     );
   }
@@ -187,8 +237,8 @@ function WikiPageEditor() {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
-          <p className="mt-2 text-sm text-muted-foreground">페이지를 불러올 수 없습니다.</p>
+          <AlertTriangle className="mx-auto h-8 w-8 text-[color:var(--priority-urgent)]" />
+          <p className="mt-2 text-sm text-[color:var(--fg-3)]">페이지를 불러올 수 없습니다.</p>
         </div>
       </div>
     );
@@ -206,68 +256,114 @@ function WikiPageEditor() {
     }),
   ];
 
+  const currentTitle = breadcrumbPages[breadcrumbPages.length - 1]?.title;
+
   return (
-    <div className="flex flex-col items-center px-6 py-4 overflow-y-auto bg-background">
-      {/* Breadcrumb */}
-      <div className="w-full max-w-[720px] mb-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            {/* Space */}
-            {space && (
-              <>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link
-                      to="/$orgSlug/$wsSlug/wiki/$spaceId"
-                      params={{ orgSlug, wsSlug, spaceId }}
-                    >
-                      {space.name}
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                {breadcrumbPages.length > 0 && <BreadcrumbSeparator />}
-              </>
-            )}
+    <div className="flex flex-col items-center overflow-y-auto bg-[color:var(--bg-0)]">
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleCoverFile}
+      />
 
-            {/* Parent pages */}
-            {breadcrumbPages.slice(0, -1).map((p, _i) => (
-              <span key={p.id} className="flex items-center">
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link
-                      to="/$orgSlug/$wsSlug/wiki/$spaceId/$pageId"
-                      params={{
-                        orgSlug,
-                        wsSlug,
-                        spaceId,
-                        pageId: p.id,
-                      }}
-                    >
-                      {p.title}
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-              </span>
-            ))}
+      {/* Cover image */}
+      {page.coverUrl && (
+        <div className="w-full">
+          <CoverImage url={page.coverUrl} onChange={handleCoverChange} />
+        </div>
+      )}
 
-            {/* Current page */}
-            {breadcrumbPages.length > 0 && (
-              <BreadcrumbItem>
-                <BreadcrumbPage>{breadcrumbPages[breadcrumbPages.length - 1].title}</BreadcrumbPage>
-              </BreadcrumbItem>
-            )}
-          </BreadcrumbList>
-        </Breadcrumb>
+      {/* Content wrapper */}
+      <div className="flex w-full flex-col items-center px-6 pt-8 pb-8">
+      {/* Icon (offset into cover when cover exists) */}
+      {page.icon && (
+        <div
+          className={`w-full max-w-[760px] ${
+            page.coverUrl ? '-mt-[68px] mb-2' : 'mb-2'
+          }`}
+        >
+          <EmojiPicker value={page.icon} onChange={handleIconChange}>
+            <button
+              type="button"
+              className="grid h-[68px] w-[68px] place-items-center rounded-lg bg-[color:var(--bg-1)] text-[56px] leading-none shadow-sm transition-colors hover:bg-[color:var(--bg-2)]"
+              aria-label="아이콘 변경"
+            >
+              <span>{page.icon}</span>
+            </button>
+          </EmojiPicker>
+        </div>
+      )}
+
+      {/* Meta actions (add icon / cover when not set) */}
+      {(!page.icon || !page.coverUrl) && (
+        <div className="mb-2 flex w-full max-w-[760px] items-center gap-1">
+          {!page.icon && (
+            <EmojiPicker value={null} onChange={handleIconChange}>
+              <button
+                type="button"
+                className="flex items-center gap-1.5 rounded px-2 py-1 text-[12.5px] text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-2)] hover:text-[color:var(--fg-1)]"
+              >
+                <Smile className="h-3.5 w-3.5" />
+                <span>아이콘 추가</span>
+              </button>
+            </EmojiPicker>
+          )}
+          {!page.coverUrl && (
+            <AddCoverButton onAdd={handleAddCover} disabled={uploadingCover} />
+          )}
+        </div>
+      )}
+
+      {/* Breadcrumb + actions */}
+      <div className="mb-3 flex w-full max-w-[760px] items-center gap-2">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1 text-[12.5px] text-[color:var(--fg-3)]"
+        >
+          {space && (
+            <>
+              <Link
+                to="/$orgSlug/$wsSlug/wiki/$spaceId"
+                params={{ orgSlug, wsSlug, spaceId }}
+                className="transition-colors hover:text-[color:var(--fg-1)]"
+              >
+                {space.name}
+              </Link>
+              {breadcrumbPages.length > 0 && (
+                <ChevronRight className="h-3 w-3 text-[color:var(--fg-4)]" />
+              )}
+            </>
+          )}
+          {breadcrumbPages.slice(0, -1).map((p) => (
+            <span key={p.id} className="flex items-center gap-1.5">
+              <Link
+                to="/$orgSlug/$wsSlug/wiki/$spaceId/$pageId"
+                params={{ orgSlug, wsSlug, spaceId, pageId: p.id }}
+                className="truncate transition-colors hover:text-[color:var(--fg-1)]"
+              >
+                {p.title || '제목 없음'}
+              </Link>
+              <ChevronRight className="h-3 w-3 text-[color:var(--fg-4)]" />
+            </span>
+          ))}
+          {currentTitle !== undefined && (
+            <span className="truncate font-medium text-[color:var(--fg-1)]">
+              {currentTitle || '제목 없음'}
+            </span>
+          )}
+        </nav>
+        <FavoriteButton entityType="page" entityId={pageId} />
       </div>
 
       {/* Title */}
-      <div className="w-full max-w-[720px]">
+      <div className="w-full max-w-[760px]">
         <h1
           ref={titleRef}
           contentEditable
           suppressContentEditableWarning
-          className="text-3xl font-bold text-foreground outline-none border-none py-4 empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:pointer-events-none"
+          className="border-none py-3 text-[32px] font-semibold leading-tight text-[color:var(--fg-1)] outline-none empty:before:pointer-events-none empty:before:text-[color:var(--fg-4)] empty:before:content-[attr(data-placeholder)]"
           data-placeholder="제목 없음"
           onInput={handleTitleChange}
           onKeyDown={handleTitleKeyDown}
@@ -277,7 +373,7 @@ function WikiPageEditor() {
       </div>
 
       {/* Editor */}
-      <div className="w-full max-w-[720px] min-h-[calc(100vh-200px)]">
+      <div className="min-h-[calc(100vh-240px)] w-full max-w-[760px]">
         <EditorWithAutosave
           content={page.content as JSONContent | null}
           onSave={handleSave}
@@ -294,12 +390,13 @@ function WikiPageEditor() {
       </div>
 
       {/* File attachments */}
-      <div className="w-full max-w-[720px]">
+      <div className="w-full max-w-[760px]">
         <FileAttachment
           files={files}
           onFileUploaded={handleFileUploaded}
           onFileDelete={(fileId) => deleteFileMutation.mutate(fileId)}
         />
+      </div>
       </div>
     </div>
   );

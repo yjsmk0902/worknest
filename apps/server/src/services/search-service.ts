@@ -255,7 +255,8 @@ export class SearchService {
   }
 
   /**
-   * Search wiki pages by ILIKE on title.
+   * Search wiki pages using full-text search on title + content_text,
+   * falling back to ILIKE on title when FTS yields no results.
    */
   private async searchPages(
     q: string,
@@ -266,10 +267,46 @@ export class SearchService {
     const spaceIds = await this.getAccessibleSpaceIds(workspaceId, callerUserId);
     if (spaceIds.length === 0) return [];
 
+    // Try full-text search first
+    const ftsRows = await this.db
+      .select({
+        id: wikiPages.id,
+        title: wikiPages.title,
+        icon: wikiPages.icon,
+        wikiSpaceId: wikiPages.wikiSpaceId,
+        spaceName: wikiSpaces.name,
+      })
+      .from(wikiPages)
+      .innerJoin(wikiSpaces, eq(wikiPages.wikiSpaceId, wikiSpaces.id))
+      .where(
+        and(
+          sql`${wikiPages}.search_vector @@ plainto_tsquery('english', ${q})`,
+          inArray(wikiPages.wikiSpaceId, spaceIds),
+          isNull(wikiPages.deletedAt),
+        ),
+      )
+      .orderBy(sql`ts_rank(${wikiPages}.search_vector, plainto_tsquery('english', ${q})) DESC`)
+      .limit(limit);
+
+    if (ftsRows.length > 0) {
+      return ftsRows.map((row) => ({
+        id: row.id,
+        type: 'page' as const,
+        title: row.title,
+        subtitle: row.spaceName,
+        spaceId: row.wikiSpaceId,
+        icon: row.icon ?? null,
+        url: `/pages/${row.id}`,
+      }));
+    }
+
+    // Fallback: ILIKE on title (helps with partial/substring matches)
     const rows = await this.db
       .select({
         id: wikiPages.id,
         title: wikiPages.title,
+        icon: wikiPages.icon,
+        wikiSpaceId: wikiPages.wikiSpaceId,
         spaceName: wikiSpaces.name,
       })
       .from(wikiPages)
@@ -288,6 +325,8 @@ export class SearchService {
       type: 'page' as const,
       title: row.title,
       subtitle: row.spaceName,
+      spaceId: row.wikiSpaceId,
+      icon: row.icon ?? null,
       url: `/pages/${row.id}`,
     }));
   }

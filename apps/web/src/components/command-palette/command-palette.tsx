@@ -406,31 +406,40 @@ export function CommandPalette() {
                           </span>
                         }
                       >
-                        {categories.pages.map((page) => (
-                          <CommandPrimitive.Item
-                            key={page.id}
-                            value={`page-${page.id}`}
-                            onSelect={() =>
-                              navigateTo(page.url, {
-                                type: 'page',
-                                id: page.id,
-                                title: page.title,
-                                url: page.url,
-                              })
-                            }
-                            className="mx-2 flex h-10 cursor-pointer items-center gap-2 rounded-md px-4 transition-colors duration-150 aria-selected:bg-accent"
-                          >
-                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <span className="ml-2 flex-1 truncate text-sm text-foreground">
-                              {page.title}
-                            </span>
-                            {page.subtitle && (
-                              <span className="ml-auto text-xs text-muted-foreground">
-                                {page.subtitle}
+                        {categories.pages.map((page) => {
+                          const pageUrl = page.spaceId
+                            ? `/${orgSlug}/${wsSlug}/wiki/${page.spaceId}/${page.id}`
+                            : page.url;
+                          return (
+                            <CommandPrimitive.Item
+                              key={page.id}
+                              value={`page-${page.id}`}
+                              onSelect={() =>
+                                navigateTo(pageUrl, {
+                                  type: 'page',
+                                  id: page.id,
+                                  title: page.title,
+                                  url: pageUrl,
+                                })
+                              }
+                              className="mx-2 flex h-10 cursor-pointer items-center gap-2 rounded-md px-4 transition-colors duration-150 aria-selected:bg-accent"
+                            >
+                              {page.icon ? (
+                                <span className="text-[14px] leading-none">{page.icon}</span>
+                              ) : (
+                                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              )}
+                              <span className="ml-2 flex-1 truncate text-sm text-foreground">
+                                {page.title}
                               </span>
-                            )}
-                          </CommandPrimitive.Item>
-                        ))}
+                              {page.subtitle && (
+                                <span className="ml-auto text-xs text-muted-foreground">
+                                  {page.subtitle}
+                                </span>
+                              )}
+                            </CommandPrimitive.Item>
+                          );
+                        })}
                       </CommandPrimitive.Group>
                     )}
 

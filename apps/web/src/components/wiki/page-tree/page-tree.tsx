@@ -77,6 +77,7 @@ function SortablePageItem({
   pages,
   onToggle,
   onClick,
+  onAddChild,
 }: {
   node: TreeNode;
   isSelected: boolean;
@@ -84,6 +85,7 @@ function SortablePageItem({
   pages: WikiPageOutput[];
   onToggle: () => void;
   onClick: () => void;
+  onAddChild: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.page.id,
@@ -104,6 +106,7 @@ function SortablePageItem({
         isExpanded={isExpanded}
         onToggle={onToggle}
         onClick={onClick}
+        onAddChild={onAddChild}
         dragHandleProps={listeners}
         isDragging={isDragging}
       />
@@ -180,17 +183,26 @@ export function PageTree({
     },
   });
 
-  // Create page mutation
+  // Create page mutation (root or child of given parent)
   const createMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: (parentId?: string) =>
       apiClient.post<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`, {
         title: '새 페이지',
         slug: `page-${Date.now()}`,
+        ...(parentId ? { parentId } : {}),
       }),
-    onSuccess: (newPage) => {
+    onSuccess: (newPage, parentId) => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'pages'],
       });
+      if (parentId) {
+        setExpanded((prev) => {
+          if (prev.has(parentId)) return prev;
+          const next = new Set(prev);
+          next.add(parentId);
+          return next;
+        });
+      }
       onPageSelect(newPage.id);
     },
     onError: () => {
@@ -226,20 +238,25 @@ export function PageTree({
 
   if (isLoading) {
     return (
-      <div className="p-3 space-y-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-8 animate-pulse rounded bg-muted" />
+      <div className="flex flex-1 flex-col gap-1 p-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-8 animate-pulse rounded-md bg-[color:var(--bg-2)]"
+          />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full" role="tree">
+    <div className="flex min-h-0 flex-1 flex-col" role="tree">
       {/* Tree items */}
-      <div className="flex-1 overflow-y-auto py-1 px-1">
+      <div className="flex-1 overflow-y-auto px-2 py-2">
         {flatNodes.length === 0 ? (
-          <p className="px-3 py-4 text-sm text-muted-foreground text-center">페이지가 없습니다</p>
+          <p className="px-2 py-6 text-center text-[12.5px] text-[color:var(--fg-4)]">
+            페이지가 없습니다
+          </p>
         ) : (
           <DndContext
             sensors={sensors}
@@ -259,6 +276,7 @@ export function PageTree({
                   pages={pages}
                   onToggle={() => toggleExpand(node.page.id)}
                   onClick={() => onPageSelect(node.page.id)}
+                  onAddChild={() => createMutation.mutate(node.page.id)}
                 />
               ))}
             </SortableContext>
@@ -267,11 +285,11 @@ export function PageTree({
       </div>
 
       {/* New page button */}
-      <div className="mt-auto border-t border-border p-2">
+      <div className="mt-auto border-t border-[color:var(--border-subtle)] p-2">
         <button
           type="button"
-          className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          onClick={() => createMutation.mutate()}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-2)] hover:text-[color:var(--fg-1)] disabled:opacity-60"
+          onClick={() => createMutation.mutate(undefined)}
           disabled={createMutation.isPending}
         >
           {createMutation.isPending ? (
@@ -279,7 +297,7 @@ export function PageTree({
           ) : (
             <Plus className="h-4 w-4" />
           )}
-          새 페이지
+          <span>새 페이지</span>
         </button>
       </div>
     </div>
