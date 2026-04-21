@@ -114,20 +114,26 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
   };
   const hit = scan(view.dom);
   if (!hit) return null;
-  // Callouts (and their direct children) don't show a drag handle — the
-  // callout title/icon is meant to be a static decoration and having the
-  // handle blink in there was confusing.
-  if (isCalloutRelated(hit)) return null;
-  return hit;
+  // The callout is treated as a single draggable unit — hovering any of
+  // its inner paragraphs should still produce one handle targeting the
+  // whole callout, not the inner child.
+  return promoteToCallout(view, hit);
 }
 
-function isCalloutRelated(hit: BlockHit): boolean {
-  // The hit DOM itself is a callout
-  if (hit.dom.matches('[data-type="callout"]')) return true;
-  // The hit is a direct child of a callout (first-line paragraph, etc.)
-  const parent = hit.dom.parentElement;
-  if (parent && parent.getAttribute('data-type') === 'callout') return true;
-  return false;
+function promoteToCallout(view: EditorView, hit: BlockHit): BlockHit {
+  let el: HTMLElement | null = hit.dom;
+  while (el && el !== view.dom) {
+    if (el.getAttribute?.('data-type') === 'callout') {
+      try {
+        const pos = view.posAtDOM(el, 0);
+        return { pos: Math.max(0, pos - 1), dom: el };
+      } catch {
+        return hit;
+      }
+    }
+    el = el.parentElement;
+  }
+  return hit;
 }
 
 function dragHandlePlugin() {
