@@ -341,52 +341,84 @@
 }
 
 /* =========================================================================
-   Toggle (details/summary) block — custom chevron, no default list marker
+   Toggle (details) block — TipTap uses a NodeView so the outer element is
+   a <div data-type="details"> with a <button> toggle and children
+   <summary data-type="detailsSummary"> + <div data-type="detailsContent">.
    ========================================================================= */
-.ProseMirror details {
+.ProseMirror [data-type="details"] {
   margin: 12px 0;
   border: 1px solid var(--border-subtle);
   background: var(--bg-1);
   border-radius: 6px;
-  padding: 8px 12px 8px 28px;
-  position: relative;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  column-gap: 6px;
+  align-items: start;
 }
-.ProseMirror details > summary {
-  list-style: none;
-  display: block;
+.ProseMirror [data-type="details"] > button {
+  appearance: none;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  user-select: none;
-  font-weight: 500;
-  color: var(--fg-1);
-  outline: none;
+  padding: 0;
+  width: 18px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-3);
+  margin-top: 2px;
 }
-.ProseMirror details > summary::-webkit-details-marker {
-  display: none;
-}
-.ProseMirror details::before {
+.ProseMirror [data-type="details"] > button::before {
   content: '';
-  position: absolute;
-  top: 14px;
-  left: 10px;
   width: 0;
   height: 0;
-  border-left: 5px solid var(--fg-3);
+  border-left: 5px solid currentColor;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   transition: transform 150ms ease;
   transform-origin: 2px 4px;
 }
-.ProseMirror details[open]::before {
+.ProseMirror [data-type="details"].is-open > button::before {
   transform: rotate(90deg);
 }
-.ProseMirror details > summary > p {
+.ProseMirror [data-type="details"] > button:hover {
+  color: var(--fg-1);
+}
+.ProseMirror [data-type="details"] > div {
+  min-width: 0;
+}
+.ProseMirror summary[data-type="detailsSummary"],
+.ProseMirror summary {
+  list-style: none;
+  display: block;
+  cursor: text;
+  user-select: text;
+  font-weight: 500;
+  color: var(--fg-1);
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+.ProseMirror summary::-webkit-details-marker,
+.ProseMirror summary::marker {
+  display: none;
+  content: '';
+}
+.ProseMirror summary > p {
   display: inline;
   margin: 0;
 }
-.ProseMirror details > [data-type="detailsContent"],
-.ProseMirror details > div {
-  margin-top: 6px;
-  padding-left: 0;
+.ProseMirror [data-type="detailsContent"] {
+  margin-top: 4px;
+}
+.ProseMirror [data-type="detailsContent"] > * {
+  margin: 4px 0;
+}
+/* Hide content when collapsed (is-open class is absent) */
+.ProseMirror [data-type="details"]:not(.is-open) > div > [data-type="detailsContent"] {
+  display: none;
 }
 
 /* =========================================================================
