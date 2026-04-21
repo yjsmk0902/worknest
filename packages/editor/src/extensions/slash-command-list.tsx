@@ -272,10 +272,21 @@ export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandList
   ({ items, command }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
 
-    // Reset selection when items change
+    // Reset selection only when the filtered item set actually changes
+    // (not on every render — Suggestion passes a fresh array identity each
+    // update, and resetting to 0 on every render swallowed ArrowDown presses).
+    const itemsSignature = items.map((i) => i.title).join('|');
+    // biome-ignore lint/correctness/useExhaustiveDependencies: items identity
     useEffect(() => {
       setSelectedIndex(0);
-    }, [items]);
+    }, [itemsSignature]);
+
+    // Clamp selection when items shrink
+    useEffect(() => {
+      if (selectedIndex >= items.length && items.length > 0) {
+        setSelectedIndex(items.length - 1);
+      }
+    }, [items.length, selectedIndex]);
 
     const selectItem = useCallback(
       (index: number) => {
@@ -344,23 +355,33 @@ export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandList
             {/* Items */}
             {categoryItems.map((item) => {
               const currentIndex = flatIndex++;
+              const isSelected = currentIndex === selectedIndex;
               return (
                 <button
                   type="button"
                   key={item.title}
+                  ref={(el) => {
+                    if (isSelected && el) {
+                      el.scrollIntoView({ block: 'nearest' });
+                    }
+                  }}
                   className={[
                     'flex items-center gap-3 w-full h-10 px-3 text-left',
-                    'hover:bg-accent transition-colors',
-                    currentIndex === selectedIndex ? 'bg-accent' : '',
+                    'transition-colors',
+                    isSelected
+                      ? 'bg-[color:var(--bg-3)] text-[color:var(--fg-1)]'
+                      : 'hover:bg-[color:var(--bg-2)] text-[color:var(--fg-2)]',
                   ].join(' ')}
                   onClick={() => selectItem(currentIndex)}
                   onMouseEnter={() => setSelectedIndex(currentIndex)}
                 >
-                  <div className="w-6 h-6 flex items-center justify-center rounded-md bg-muted text-muted-foreground shrink-0">
+                  <div className="w-6 h-6 flex items-center justify-center rounded-md bg-[color:var(--bg-3)] text-[color:var(--fg-2)] shrink-0">
                     {item.icon}
                   </div>
                   <span className="text-sm font-medium">{item.title}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">{item.description}</span>
+                  <span className="text-xs text-[color:var(--fg-4)] ml-auto">
+                    {item.description}
+                  </span>
                 </button>
               );
             })}
