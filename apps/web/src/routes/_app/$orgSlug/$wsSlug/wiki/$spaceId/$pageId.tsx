@@ -234,30 +234,7 @@ function WikiPageEditor() {
     return crumbs;
   }, [allPages, pageId]);
 
-  // ── Render ────────────────────────────────────────────────────────
-
-  if (pageQuery.isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-[color:var(--fg-3)]" />
-      </div>
-    );
-  }
-
-  if (pageQuery.isError) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <AlertTriangle className="mx-auto h-8 w-8 text-[color:var(--priority-urgent)]" />
-          <p className="mt-2 text-sm text-[color:var(--fg-3)]">페이지를 불러올 수 없습니다.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const page = pageQuery.data!;
-  const space = spaceQuery.data;
-  const breadcrumbPages = buildBreadcrumb();
+  // ── Editor extensions ───────────────────────────────────────────
 
   const pageMentionExtension = useMemo(
     () =>
@@ -306,6 +283,30 @@ function WikiPageEditor() {
     [pageMentionExtension, imageUploadHandler],
   );
 
+  // ── Render ────────────────────────────────────────────────────────
+
+  if (pageQuery.isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-[color:var(--fg-3)]" />
+      </div>
+    );
+  }
+
+  if (pageQuery.isError) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="mx-auto h-8 w-8 text-[color:var(--priority-urgent)]" />
+          <p className="mt-2 text-sm text-[color:var(--fg-3)]">페이지를 불러올 수 없습니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const page = pageQuery.data!;
+  const space = spaceQuery.data;
+  const breadcrumbPages = buildBreadcrumb();
   const currentTitle = breadcrumbPages[breadcrumbPages.length - 1]?.title;
 
   return (
