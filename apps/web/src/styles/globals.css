@@ -297,14 +297,13 @@
     border-radius: var(--r-sm);
   }
 
-  /* Suppress focus-visible glow inside the TipTap editor (ProseMirror
-     sets contenteditable on the root and on node views; browsers treat
-     caret-focused blocks as focus-visible which looks noisy in long docs). */
-  .ProseMirror,
-  .ProseMirror:focus,
-  .ProseMirror:focus-visible,
-  .ProseMirror *:focus,
-  .ProseMirror *:focus-visible {
+  /* Suppress focus-visible glow on editable text surfaces — contenteditable
+     elements (TipTap editor root and the wiki page title h1) show the browser
+     caret already, so an extra glow looks noisy. */
+  [contenteditable]:focus,
+  [contenteditable]:focus-visible,
+  [contenteditable] *:focus,
+  [contenteditable] *:focus-visible {
     outline: none;
     box-shadow: none;
   }
