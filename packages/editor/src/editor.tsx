@@ -1,6 +1,7 @@
 import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Highlight from '@tiptap/extension-highlight';
+import Typography from '@tiptap/extension-typography';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -69,6 +70,7 @@ export function Editor({
           return [];
         },
       }),
+      Typography,
       Placeholder.configure({
         // Placeholder only on the currently-focused empty node so the editor
         // doesn't get cluttered. Heading/quote show a short type-specific
