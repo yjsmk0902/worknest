@@ -60,9 +60,30 @@ export function Editor({
         codeBlock: false,
       }),
       Placeholder.configure({
-        placeholder,
+        // Show the user-provided placeholder only for the first empty
+        // paragraph; heading/list/quote blocks get short type-specific
+        // hints so users can see when their slash/markdown transform worked.
+        placeholder: ({ node, pos }) => {
+          const name = node.type.name;
+          if (name === 'heading') {
+            const level = (node.attrs as { level?: number })?.level ?? 1;
+            return `제목 ${level}`;
+          }
+          if (name === 'bulletList' || name === 'orderedList') return '';
+          if (name === 'taskItem') return '할 일';
+          if (name === 'blockquote') return '인용';
+          if (name === 'codeBlock') return '';
+          if (name === 'paragraph') {
+            return pos === 0 ? placeholder : "'/'로 블록 추가";
+          }
+          return '';
+        },
+        showOnlyCurrent: false,
+        includeChildren: true,
         emptyEditorClass:
           'before:content-[attr(data-placeholder)] before:text-muted-foreground before:float-left before:h-0 before:pointer-events-none',
+        emptyNodeClass:
+          'is-empty before:content-[attr(data-placeholder)] before:text-muted-foreground before:float-left before:h-0 before:pointer-events-none',
       }),
       Link.configure({
         autolink: true,
