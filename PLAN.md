@@ -188,10 +188,12 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
   - `packages/editor/src/index.ts` — export
   - `packages/editor/src/extensions/slash-command.ts` — 명령 등록
 
-#### 2-2. @멘션 시스템 ✅
+#### 2-2. @멘션 시스템 (부분 완료)
 - [x] `@user` (사용자) — 기존 `createMentionExtension`
-- [x] `[[page]]` (위키 페이지) — 새 `createPageMentionExtension` (트리거 `[[`)
 - [x] `#ISSUE-123` (이슈) — 기존 `IssueLink` 익스텐션
+- [ ] 페이지 멘션 — `createPageMentionExtension` 구현됐으나 `[[` multi-char
+      트리거가 `@tiptap/suggestion@v2`에서 미지원, `/` 입력까지 가로챔 →
+      일시 비활성화. 단일 문자 트리거(`@` 통합 / `+`) 재작업 필요
 - [ ] 수정 파일
   - `packages/editor/src/extensions/mention.ts` — 새로 생성 (@tiptap/extension-mention 기반)
   - `packages/editor/src/extensions/page-link.ts` — Phase 1-4와 공유

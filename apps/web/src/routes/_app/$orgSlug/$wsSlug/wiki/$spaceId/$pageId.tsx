@@ -13,12 +13,10 @@ import {
   EditorWithAutosave,
   ImageUpload,
   IssueLink,
-  type PageMentionItem,
   SlashCommand,
   ToggleBlock,
   ToggleContent,
   ToggleSummary,
-  createPageMentionExtension,
 } from '@worknest/editor';
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
@@ -238,37 +236,10 @@ function WikiPageEditor() {
   }, [allPages, pageId]);
 
   // ── Editor extensions ───────────────────────────────────────────
-
-  const pageMentionExtension = useMemo(
-    () =>
-      createPageMentionExtension({
-        queryFn: async (q: string): Promise<PageMentionItem[]> => {
-          if (!q.trim() || !wsId) return [];
-          const res = await apiClient.get<{
-            categories: {
-              pages: Array<{
-                id: string;
-                title: string;
-                subtitle?: string;
-                icon?: string | null;
-                spaceId?: string;
-              }>;
-            };
-          }>(`/workspaces/${wsId}/search`, { q, type: 'page', limit: '10' });
-          return res.categories.pages
-            .filter((p) => !!p.spaceId)
-            .map((p) => ({
-              id: p.id,
-              title: p.title,
-              icon: p.icon ?? null,
-              spaceName: p.subtitle ?? '',
-              spaceId: p.spaceId!,
-            }));
-        },
-        resolveHref: (sId, pId) => `/${orgSlug}/${wsSlug}/wiki/${sId}/${pId}`,
-      }),
-    [orgSlug, wsSlug, wsId],
-  );
+  // Note: page-mention ([[...]]) is temporarily disabled because multi-char
+  // Suggestion triggers aren't supported by @tiptap/suggestion v2 and were
+  // intercepting `/` keystrokes. Will re-enable with a single-char trigger
+  // (e.g. unified `@` multi-type suggester) in a follow-up.
 
   const editorExtensions = useMemo(
     () => [
@@ -278,12 +249,11 @@ function WikiPageEditor() {
       ToggleBlock,
       ToggleSummary,
       ToggleContent,
-      pageMentionExtension,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
       }),
     ],
-    [pageMentionExtension, imageUploadHandler],
+    [imageUploadHandler],
   );
 
   // ── Render ────────────────────────────────────────────────────────
