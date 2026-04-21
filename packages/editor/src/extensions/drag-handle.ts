@@ -5,16 +5,23 @@ import type { EditorView } from '@tiptap/pm/view';
 /**
  * Notion-style block drag handle.
  *
- * Renders a single floating handle element next to the block currently under
- * the mouse. Dragging the handle creates a node-selection drag, and
- * ProseMirror's built-in drop handling takes care of reordering.
+ * A single floating handle follows the block under the cursor. Clicking it
+ * selects the block; dragging it initiates a native drag+drop that PM
+ * turns into a block move.
  *
- * The handle also acts as a selection affordance: clicking selects the
- * whole block (NodeSelection), so Backspace / arrow keys operate on the
- * block level.
+ * The handle lives in the editor wrapper (the ProseMirror contenteditable's
+ * parent) so we can detect hover over both the content AND the gutter where
+ * the handle sits. Mouse listeners target that wrapper, not the content
+ * element — otherwise moving the pointer toward the handle triggers
+ * mouseleave on the content and hides the handle before the user can grab.
  */
 
 const PLUGIN_KEY = new PluginKey('dragHandle');
+const HANDLE_WIDTH = 20;
+const HANDLE_GAP = 6;
+// Extend the hit region to the left of the content so the handle stays
+// visible while the pointer travels over to it.
+const LEFT_HIT_TOLERANCE = HANDLE_WIDTH + HANDLE_GAP + 6;
 
 function createHandle() {
   const el = document.createElement('button');
@@ -41,57 +48,80 @@ function createHandle() {
   return el;
 }
 
-function findTopLevelBlockPos(view: EditorView, clientX: number, clientY: number) {
-  const posInfo = view.posAtCoords({ left: clientX, top: clientY });
-  if (!posInfo) return null;
+/**
+ * Find the top-level block whose DOM occupies the given clientY. We do not
+ * rely on `posAtCoords` because empty paragraphs and some atom nodes
+ * (bookmark, horizontalRule) don't resolve there.
+ */
+function findBlockAtY(
+  view: EditorView,
+  clientY: number,
+): { pos: number; dom: HTMLElement } | null {
+  const contentRoot = view.dom;
+  let best: { pos: number; dom: HTMLElement; dist: number } | null = null;
 
-  // Walk up from the resolved position to the direct child of the document
-  const $pos = view.state.doc.resolve(posInfo.inside >= 0 ? posInfo.inside : posInfo.pos);
-  if ($pos.depth < 1) return null;
-  return $pos.before(1);
+  // Iterate direct children of the contenteditable root (top-level blocks).
+  for (let child = contentRoot.firstElementChild; child; child = child.nextElementSibling) {
+    if (!(child instanceof HTMLElement)) continue;
+    const rect = child.getBoundingClientRect();
+    if (rect.height === 0) continue;
+    if (clientY >= rect.top && clientY <= rect.bottom) {
+      try {
+        const pos = view.posAtDOM(child, 0);
+        return { pos: Math.max(0, pos - 1), dom: child };
+      } catch {
+        // fall through
+      }
+    }
+    // Track nearest block for small tolerance when cursor sits between
+    // blocks (very small gaps)
+    const center = (rect.top + rect.bottom) / 2;
+    const dist = Math.abs(clientY - center);
+    if (!best || dist < best.dist) {
+      try {
+        const pos = view.posAtDOM(child, 0);
+        best = { pos: Math.max(0, pos - 1), dom: child, dist };
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  if (best && best.dist < 12) return { pos: best.pos, dom: best.dom };
+  return null;
 }
 
 function dragHandlePlugin() {
-  let handle: HTMLButtonElement | null = null;
-  let hoveredPos: number | null = null;
-  let currentBlockDom: HTMLElement | null = null;
-
   return new Plugin({
     key: PLUGIN_KEY,
     view(view) {
-      handle = createHandle();
+      const wrapper = view.dom.parentElement;
+      if (!wrapper) return { destroy() {} };
 
-      // Keep position:relative on the editor wrapper so the handle can be
-      // absolutely positioned within it.
-      const parent = view.dom.parentElement;
-      if (parent) {
-        const currentPosition = getComputedStyle(parent).position;
-        if (currentPosition === 'static') {
-          parent.style.position = 'relative';
-        }
-        parent.appendChild(handle);
+      if (getComputedStyle(wrapper).position === 'static') {
+        wrapper.style.position = 'relative';
       }
 
-      const showAtBlock = (blockStartPos: number) => {
-        if (!handle || !view.dom.parentElement) return;
-        const dom = view.nodeDOM(blockStartPos) as HTMLElement | null;
-        if (!dom || !(dom instanceof HTMLElement)) return;
-        currentBlockDom = dom;
-        const parentRect = view.dom.parentElement.getBoundingClientRect();
+      const handle = createHandle();
+      wrapper.appendChild(handle);
+
+      let hoveredPos: number | null = null;
+      let currentBlockDom: HTMLElement | null = null;
+
+      const showAtBlock = (pos: number, dom: HTMLElement) => {
+        const wrapperRect = wrapper.getBoundingClientRect();
         const rect = dom.getBoundingClientRect();
-        // Place the handle to the left of the block, vertically centred on
-        // the first line (approx 10px from top of block).
-        const top = rect.top - parentRect.top + 6;
-        const left = rect.left - parentRect.left - 24;
+        const top = rect.top - wrapperRect.top + 4;
+        const left = rect.left - wrapperRect.left - (HANDLE_WIDTH + HANDLE_GAP);
         handle.style.top = `${top}px`;
         handle.style.left = `${left}px`;
         handle.style.opacity = '1';
         handle.style.pointerEvents = 'auto';
-        hoveredPos = blockStartPos;
+        hoveredPos = pos;
+        currentBlockDom = dom;
       };
 
       const hide = () => {
-        if (!handle) return;
         handle.style.opacity = '0';
         handle.style.pointerEvents = 'none';
         hoveredPos = null;
@@ -100,19 +130,35 @@ function dragHandlePlugin() {
 
       const onMouseMove = (e: MouseEvent) => {
         if (!view.editable) return;
-        // When the cursor moves inside the handle itself, keep it visible.
-        if (handle && handle.contains(e.target as Node)) return;
-        const pos = findTopLevelBlockPos(view, e.clientX, e.clientY);
-        if (pos === null) {
+
+        // Keep showing while hovering the handle itself.
+        if (handle.contains(e.target as Node)) return;
+
+        const contentRect = view.dom.getBoundingClientRect();
+        // Broaden the hit zone to the LEFT so we cover the handle gutter.
+        const insideHorizontally =
+          e.clientX >= contentRect.left - LEFT_HIT_TOLERANCE &&
+          e.clientX <= contentRect.right;
+        if (!insideHorizontally) {
           hide();
           return;
         }
-        if (pos !== hoveredPos) showAtBlock(pos);
+
+        const block = findBlockAtY(view, e.clientY);
+        if (!block) {
+          hide();
+          return;
+        }
+        if (block.pos !== hoveredPos) {
+          showAtBlock(block.pos, block.dom);
+        }
       };
 
       const onMouseLeave = (e: MouseEvent) => {
-        // Don't hide while pointer is on the handle.
-        if (handle && e.relatedTarget instanceof Node && handle.contains(e.relatedTarget)) return;
+        // Only hide when the pointer actually leaves the wrapper — moving
+        // from content to handle (both children of wrapper) must not hide.
+        const related = e.relatedTarget as Node | null;
+        if (related && wrapper.contains(related)) return;
         hide();
       };
 
@@ -132,8 +178,6 @@ function dragHandlePlugin() {
           NodeSelection.create(view.state.doc, hoveredPos),
         );
         view.dispatch(tr);
-        // Let PM's serializer populate the drag data from the selection.
-        // We just need to set some data to trigger the drag.
         if (e.dataTransfer) {
           e.dataTransfer.effectAllowed = 'move';
           const slice = view.state.selection.content();
@@ -146,7 +190,6 @@ function dragHandlePlugin() {
             e.dataTransfer.setData('text/html', div.innerHTML);
             e.dataTransfer.setData('text/plain', div.innerText);
           }
-          // Visual feedback: drag the block's DOM as the image
           if (currentBlockDom) {
             e.dataTransfer.setDragImage(currentBlockDom, 0, 0);
           }
@@ -155,17 +198,16 @@ function dragHandlePlugin() {
 
       handle.addEventListener('click', onHandleClick);
       handle.addEventListener('dragstart', onHandleDragStart);
-      view.dom.addEventListener('mousemove', onMouseMove);
-      view.dom.addEventListener('mouseleave', onMouseLeave);
+      wrapper.addEventListener('mousemove', onMouseMove);
+      wrapper.addEventListener('mouseleave', onMouseLeave);
 
       return {
         destroy() {
-          handle?.removeEventListener('click', onHandleClick);
-          handle?.removeEventListener('dragstart', onHandleDragStart);
-          view.dom.removeEventListener('mousemove', onMouseMove);
-          view.dom.removeEventListener('mouseleave', onMouseLeave);
-          handle?.remove();
-          handle = null;
+          handle.removeEventListener('click', onHandleClick);
+          handle.removeEventListener('dragstart', onHandleDragStart);
+          wrapper.removeEventListener('mousemove', onMouseMove);
+          wrapper.removeEventListener('mouseleave', onMouseLeave);
+          handle.remove();
         },
       };
     },

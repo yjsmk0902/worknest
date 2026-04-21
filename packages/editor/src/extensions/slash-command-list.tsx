@@ -287,11 +287,14 @@ export function getSlashCommandItems(): SlashCommandItem[] {
         // extension decoupled from the consumer's UI).
         editor.chain().focus().deleteRange(range).run();
 
-        const insertBookmark = (url: string) => {
+        const insertBookmark = (url: string, customTitle: string | null) => {
           editor
             .chain()
             .focus()
-            .insertContent({ type: 'bookmark', attrs: { url } })
+            .insertContent({
+              type: 'bookmark',
+              attrs: { url, title: customTitle },
+            })
             .run();
 
           fetch(`/api/v1/url-preview?url=${encodeURIComponent(url)}`, {
@@ -306,7 +309,6 @@ export function getSlashCommandItems(): SlashCommandItem[] {
                 if (
                   node.type.name === 'bookmark' &&
                   node.attrs.url === url &&
-                  !node.attrs.title &&
                   !node.attrs.description
                 ) {
                   bookmarkPos = pos;
@@ -319,7 +321,8 @@ export function getSlashCommandItems(): SlashCommandItem[] {
                 .command(({ tr }) => {
                   tr.setNodeMarkup(bookmarkPos, undefined, {
                     url,
-                    title: preview.title ?? null,
+                    // Custom title wins over OG title
+                    title: customTitle ?? preview.title ?? null,
                     description: preview.description ?? null,
                     image: preview.image ?? null,
                     favicon: preview.favicon ?? null,

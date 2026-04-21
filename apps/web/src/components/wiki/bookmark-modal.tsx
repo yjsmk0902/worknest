@@ -11,7 +11,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 export interface BookmarkModalEventDetail {
-  onSubmit: (url: string) => void;
+  onSubmit: (url: string, customTitle: string | null) => void;
 }
 
 declare global {
@@ -28,13 +28,17 @@ declare global {
 export function BookmarkModal() {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState('');
+  const [customTitle, setCustomTitle] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const pendingOnSubmit = useRef<((url: string) => void) | null>(null);
+  const pendingOnSubmit = useRef<
+    ((url: string, customTitle: string | null) => void) | null
+  >(null);
 
   useEffect(() => {
     const handler = (e: CustomEvent<BookmarkModalEventDetail>) => {
       pendingOnSubmit.current = e.detail.onSubmit;
       setUrl('');
+      setCustomTitle('');
       setError(null);
       setOpen(true);
     };
@@ -55,7 +59,8 @@ export function BookmarkModal() {
         setError('http 또는 https URL만 지원됩니다');
         return;
       }
-      pendingOnSubmit.current?.(parsed.toString());
+      const title = customTitle.trim() || null;
+      pendingOnSubmit.current?.(parsed.toString(), title);
       pendingOnSubmit.current = null;
       setOpen(false);
     } catch {
@@ -77,7 +82,7 @@ export function BookmarkModal() {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="bookmark-url">URL</Label>
+            <Label htmlFor="bookmark-url">URL *</Label>
             <Input
               id="bookmark-url"
               type="url"
@@ -90,8 +95,19 @@ export function BookmarkModal() {
               autoFocus
             />
             {error && <p className="text-xs text-[color:var(--priority-urgent)]">{error}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="bookmark-title">제목 (선택)</Label>
+            <Input
+              id="bookmark-title"
+              type="text"
+              placeholder="비워두면 사이트 제목이 자동 사용됩니다"
+              value={customTitle}
+              onChange={(e) => setCustomTitle(e.target.value)}
+              maxLength={200}
+            />
             <p className="text-xs text-[color:var(--fg-3)]">
-              카드 형태로 제목, 설명, 썸네일이 함께 표시됩니다.
+              입력한 제목이 사이트 메타 정보보다 우선 표시됩니다.
             </p>
           </div>
           <DialogFooter>
