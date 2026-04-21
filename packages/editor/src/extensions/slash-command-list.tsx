@@ -1,5 +1,4 @@
-import type { Editor } from '@tiptap/core';
-import type { Range } from '@tiptap/suggestion';
+import type { Editor, Range } from '@tiptap/core';
 import {
   ChevronRight,
   Code2,

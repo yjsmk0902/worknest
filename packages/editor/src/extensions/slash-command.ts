@@ -1,6 +1,6 @@
-import { type Editor, Extension } from '@tiptap/core';
+import { type Editor, Extension, type Range } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
-import Suggestion, { type SuggestionOptions, type Range } from '@tiptap/suggestion';
+import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import {
   type SlashCommandItem,
   SlashCommandList,
