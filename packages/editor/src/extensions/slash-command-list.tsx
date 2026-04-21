@@ -61,7 +61,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       keywords: ['heading1', 'h1', 'title'],
       category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode('heading', { level: 1 }).run();
+        editor.chain().focus().deleteRange(range).toggleHeading({ level: 1 }).run();
       },
     },
     {
@@ -71,7 +71,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       keywords: ['heading2', 'h2'],
       category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode('heading', { level: 2 }).run();
+        editor.chain().focus().deleteRange(range).toggleHeading({ level: 2 }).run();
       },
     },
     {
@@ -81,7 +81,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       keywords: ['heading3', 'h3'],
       category: '텍스트',
       command: ({ editor, range }: SlashCommandProps) => {
-        editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run();
+        editor.chain().focus().deleteRange(range).toggleHeading({ level: 3 }).run();
       },
     },
     {

@@ -296,6 +296,22 @@
     box-shadow: var(--shadow-focus);
     border-radius: var(--r-sm);
   }
+
+  /* Suppress focus-visible glow inside the TipTap editor (ProseMirror
+     sets contenteditable on the root and on node views; browsers treat
+     caret-focused blocks as focus-visible which looks noisy in long docs). */
+  .ProseMirror,
+  .ProseMirror:focus,
+  .ProseMirror:focus-visible,
+  .ProseMirror *:focus,
+  .ProseMirror *:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+  .ProseMirror .ProseMirror-selectednode {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-soft-border);
+  }
 }
 
 /* =========================================================================
