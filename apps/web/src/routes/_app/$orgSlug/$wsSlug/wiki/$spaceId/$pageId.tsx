@@ -86,15 +86,13 @@ function WikiPageEditor() {
 
   const handleTitleChange = useCallback(
     (e: React.FormEvent<HTMLHeadingElement>) => {
-      const newTitle = e.currentTarget.textContent ?? '';
+      const newTitle = (e.currentTarget.textContent ?? '').trim();
 
       if (titleTimerRef.current) {
         clearTimeout(titleTimerRef.current);
       }
       titleTimerRef.current = setTimeout(() => {
-        if (newTitle.trim()) {
-          updateTitleMutation.mutate(newTitle.trim());
-        }
+        updateTitleMutation.mutate(newTitle);
       }, 1000);
     },
     [updateTitleMutation],

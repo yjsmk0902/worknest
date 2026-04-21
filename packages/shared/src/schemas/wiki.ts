@@ -89,7 +89,7 @@ export const createWikiPageInput = z.object({
 export type CreateWikiPageInput = z.infer<typeof createWikiPageInput>;
 
 export const updateWikiPageInput = z.object({
-  title: z.string().min(1).max(500).optional(),
+  title: z.string().max(500).optional(),
   content: z.unknown().optional(),
   parentId: z.string().uuid().nullable().optional(),
   sortOrder: z.string().optional(),
