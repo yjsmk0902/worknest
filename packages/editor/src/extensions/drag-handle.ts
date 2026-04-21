@@ -150,26 +150,44 @@ function dragHandlePlugin() {
 
       const onHandleDragStart = (e: DragEvent) => {
         if (hoveredPos === null) return;
+
+        // Select the whole block so the slice we hand to PM's drop handler
+        // covers the entire node.
         const tr = view.state.tr.setSelection(
           NodeSelection.create(view.state.doc, hoveredPos),
         );
         view.dispatch(tr);
+
+        const slice = view.state.selection.content();
+        // Priming view.dragging is what PM checks inside its drop handler
+        // to decide whether to move content. Without this, a drag that
+        // originated outside view.dom produces no drop.
+        (view as unknown as {
+          dragging: { slice: typeof slice; move: boolean } | null;
+        }).dragging = { slice, move: true };
+
         if (e.dataTransfer) {
           e.dataTransfer.effectAllowed = 'move';
-          const slice = view.state.selection.content();
-          const serialized =
-            view.someProp('clipboardSerializer')?.serializeFragment(slice.content) ??
-            null;
-          if (serialized) {
-            const div = document.createElement('div');
-            div.appendChild(serialized as Node);
-            e.dataTransfer.setData('text/html', div.innerHTML);
-            e.dataTransfer.setData('text/plain', div.innerText);
+          const serializer = view.someProp('clipboardSerializer');
+          if (serializer) {
+            const dom = serializer.serializeFragment(slice.content);
+            const wrap = document.createElement('div');
+            wrap.appendChild(dom as Node);
+            e.dataTransfer.setData('text/html', wrap.innerHTML);
+            e.dataTransfer.setData('text/plain', wrap.innerText);
           }
           if (currentBlockDom) {
             e.dataTransfer.setDragImage(currentBlockDom, 0, 0);
           }
         }
+
+        hide();
+      };
+
+      const onHandleDragEnd = () => {
+        (view as unknown as {
+          dragging: unknown;
+        }).dragging = null;
       };
 
       const onScroll = () => {
@@ -180,6 +198,7 @@ function dragHandlePlugin() {
 
       handle.addEventListener('click', onHandleClick);
       handle.addEventListener('dragstart', onHandleDragStart);
+      handle.addEventListener('dragend', onHandleDragEnd);
       document.addEventListener('mousemove', onMouseMove);
       window.addEventListener('scroll', onScroll, true);
 
@@ -188,6 +207,7 @@ function dragHandlePlugin() {
           if (hideTimeout) clearTimeout(hideTimeout);
           handle.removeEventListener('click', onHandleClick);
           handle.removeEventListener('dragstart', onHandleDragStart);
+          handle.removeEventListener('dragend', onHandleDragEnd);
           document.removeEventListener('mousemove', onMouseMove);
           window.removeEventListener('scroll', onScroll, true);
           handle.remove();
