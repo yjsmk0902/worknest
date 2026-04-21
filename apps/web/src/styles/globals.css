@@ -312,25 +312,28 @@
     box-shadow: 0 0 0 2px var(--accent-soft-border);
   }
 
-  /* Callout node: render the icon (from data-icon attr) to the left of the
-     content via a pseudo-element so the node's single content hole keeps
-     its natural DOM order. */
-  [data-type="callout"] {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 12px;
-    align-items: start;
-  }
-  [data-type="callout"]::before {
-    content: attr(data-icon);
-    font-size: 18px;
-    line-height: 1.4;
-    padding-top: 2px;
-    user-select: none;
-  }
-  [data-type="callout"] > * {
-    margin: 0;
-  }
+}
+
+/* =========================================================================
+   Callout node: render the icon (data-icon attr) to the left of the content
+   via ::before so the node's single content hole keeps its DOM order. Lives
+   outside @layer base so utility class overrides don't defeat grid/display.
+   ========================================================================= */
+[data-type="callout"] {
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  align-items: start;
+}
+[data-type="callout"]::before {
+  content: attr(data-icon);
+  font-size: 18px;
+  line-height: 1.4;
+  padding-top: 2px;
+  user-select: none;
+}
+[data-type="callout"] > * {
+  margin: 0 !important;
 }
 
 /* =========================================================================
