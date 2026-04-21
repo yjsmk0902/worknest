@@ -1,7 +1,6 @@
 import { FavoriteButton } from '@/components/favorite-button';
 import { FileAttachment } from '@/components/file-upload/file-attachment';
 import { BookmarkModal } from '@/components/wiki/bookmark-modal';
-import { AddCoverButton, CoverImage } from '@/components/wiki/cover-image';
 import { EmojiPicker } from '@/components/wiki/emoji-picker';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useFileUpload } from '@/hooks/use-file-upload';
@@ -144,7 +143,6 @@ function WikiPageEditor() {
   const updateMetaMutation = useMutation({
     mutationFn: (payload: {
       icon?: string | null;
-      coverUrl?: string | null;
       status?: 'draft' | 'published';
     }) => apiClient.patch(`/wiki-pages/${pageId}`, payload),
     onSuccess: () => {
@@ -163,38 +161,6 @@ function WikiPageEditor() {
       updateMetaMutation.mutate({ icon });
     },
     [updateMetaMutation],
-  );
-
-  const handleCoverChange = useCallback(
-    (coverUrl: string | null) => {
-      updateMetaMutation.mutate({ coverUrl });
-    },
-    [updateMetaMutation],
-  );
-
-  const coverInputRef = useRef<HTMLInputElement>(null);
-
-  const { upload: uploadCover, uploading: uploadingCover } = useFileUpload({
-    onError: (msg) => toast(msg),
-  });
-
-  const handleAddCover = useCallback(() => {
-    coverInputRef.current?.click();
-  }, []);
-
-  const handleCoverFile = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      e.target.value = '';
-      if (!file) return;
-      if (!file.type.startsWith('image/')) {
-        toast('이미지 파일만 업로드할 수 있습니다.');
-        return;
-      }
-      const result = await uploadCover(file);
-      if (result) handleCoverChange(result.path);
-    },
-    [uploadCover, handleCoverChange],
   );
 
   // ── File upload for editor images ─────────────────────────────────
@@ -394,30 +360,11 @@ function WikiPageEditor() {
 
   return (
     <div className="flex flex-col items-center overflow-y-auto bg-[color:var(--bg-0)]">
-      <input
-        ref={coverInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleCoverFile}
-      />
-
-      {/* Cover image */}
-      {page.coverUrl && (
-        <div className="w-full">
-          <CoverImage url={page.coverUrl} onChange={handleCoverChange} />
-        </div>
-      )}
-
       {/* Content wrapper */}
       <div className="flex w-full flex-col items-center px-6 pt-8 pb-8">
-      {/* Icon (offset into cover when cover exists) */}
+      {/* Icon */}
       {page.icon && (
-        <div
-          className={`w-full max-w-[760px] ${
-            page.coverUrl ? '-mt-[68px] mb-2' : 'mb-2'
-          }`}
-        >
+        <div className="mb-2 w-full max-w-[760px]">
           <EmojiPicker value={page.icon} onChange={handleIconChange}>
             <button
               type="button"
@@ -430,23 +377,18 @@ function WikiPageEditor() {
         </div>
       )}
 
-      {/* Meta actions (add icon / cover when not set) */}
-      {(!page.icon || !page.coverUrl) && (
+      {/* Meta actions (add icon when not set) */}
+      {!page.icon && (
         <div className="mb-2 flex w-full max-w-[760px] items-center gap-1">
-          {!page.icon && (
-            <EmojiPicker value={null} onChange={handleIconChange}>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded px-2 py-1 text-[12.5px] text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-2)] hover:text-[color:var(--fg-1)]"
-              >
-                <Smile className="h-3.5 w-3.5" />
-                <span>아이콘 추가</span>
-              </button>
-            </EmojiPicker>
-          )}
-          {!page.coverUrl && (
-            <AddCoverButton onAdd={handleAddCover} disabled={uploadingCover} />
-          )}
+          <EmojiPicker value={null} onChange={handleIconChange}>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 rounded px-2 py-1 text-[12.5px] text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-2)] hover:text-[color:var(--fg-1)]"
+            >
+              <Smile className="h-3.5 w-3.5" />
+              <span>아이콘 추가</span>
+            </button>
+          </EmojiPicker>
         </div>
       )}
 
