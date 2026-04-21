@@ -23,7 +23,7 @@ import {
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
 import { AlertTriangle, ChevronRight, Loader2, Smile } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
   component: WikiPageEditor,
@@ -57,22 +57,23 @@ function WikiPageEditor() {
     queryFn: () => apiClient.getList<FileOutput>(`/wiki-pages/${pageId}/files`),
   });
 
-  // ── Title editing ───────────────────────────────────────────────────
+  // ── Title editing (uncontrolled — avoid cursor jump) ─────────────────
+  // Write the server title into the DOM imperatively only when pageId or
+  // the initial load resolves. React never re-renders `{title}` children,
+  // so typing preserves caret position.
 
-  const [title, setTitle] = useState('');
-  const titleInitialized = useRef(false);
+  const titleInitializedForPageRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (pageQuery.data && !titleInitialized.current) {
-      setTitle(pageQuery.data.title);
-      titleInitialized.current = true;
+    if (
+      pageQuery.data &&
+      titleRef.current &&
+      titleInitializedForPageRef.current !== pageId
+    ) {
+      titleRef.current.textContent = pageQuery.data.title;
+      titleInitializedForPageRef.current = pageId;
     }
-  }, [pageQuery.data]);
-
-  // Reset when pageId changes
-  useEffect(() => {
-    titleInitialized.current = false;
-  }, [pageId]);
+  }, [pageQuery.data, pageId]);
 
   const updateTitleMutation = useMutation({
     mutationFn: (newTitle: string) => apiClient.patch(`/wiki-pages/${pageId}`, { title: newTitle }),
@@ -88,7 +89,6 @@ function WikiPageEditor() {
   const handleTitleChange = useCallback(
     (e: React.FormEvent<HTMLHeadingElement>) => {
       const newTitle = e.currentTarget.textContent ?? '';
-      setTitle(newTitle);
 
       if (titleTimerRef.current) {
         clearTimeout(titleTimerRef.current);
@@ -418,9 +418,7 @@ function WikiPageEditor() {
           data-placeholder="제목 없음"
           onInput={handleTitleChange}
           onKeyDown={handleTitleKeyDown}
-        >
-          {title}
-        </h1>
+        />
       </div>
 
       {/* Editor */}
