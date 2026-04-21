@@ -48,6 +48,7 @@ function toSpaceOutput(row: typeof wikiSpaces.$inferSelect) {
   return {
     id: row.id,
     workspaceId: row.workspaceId,
+    projectId: row.projectId ?? null,
     name: row.name,
     description: row.description ?? null,
     slug: row.slug,
@@ -157,6 +158,24 @@ export class WikiSpaceService {
 
     await requireSpaceMembership(this.db, spaceId, callerUserId);
 
+    return toSpaceOutput(space);
+  }
+
+  // ── Get Space by Project ─────────────────────────────────────────
+
+  async getByProjectId(projectId: string, callerUserId: string) {
+    const space = await this.db
+      .select()
+      .from(wikiSpaces)
+      .where(eq(wikiSpaces.projectId, projectId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!space) {
+      throw AppError.notFound('wiki_space');
+    }
+
+    await requireSpaceMembership(this.db, space.id, callerUserId);
     return toSpaceOutput(space);
   }
 

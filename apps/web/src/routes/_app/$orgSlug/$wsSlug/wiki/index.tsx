@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import type { WikiSpaceOutput } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
-import { AlertTriangle, BookOpen, Clock, FileText, LibraryBig, Plus } from 'lucide-react';
+import { AlertTriangle, BookOpen, Clock, FileText, Folder, LibraryBig, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 interface RecentWikiPage {
@@ -180,34 +180,48 @@ function WikiIndexPage() {
               className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               role="list"
             >
-              {spaces.map((space) => (
-                <Link
-                  key={space.id}
-                  to="/$orgSlug/$wsSlug/wiki/$spaceId"
-                  params={{ orgSlug, wsSlug, spaceId: space.id }}
-                  className="group flex flex-col rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)] p-5 transition-colors duration-150 hover:border-[color:var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-bg)]"
-                  role="listitem"
-                  aria-label={`스페이스: ${space.name}`}
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--bg-3)]">
-                    <LibraryBig className="h-5 w-5 text-[color:var(--fg-2)]" />
-                  </div>
+              {spaces.map((space) => {
+                const isProjectWiki = !!space.projectId;
+                return (
+                  <Link
+                    key={space.id}
+                    to="/$orgSlug/$wsSlug/wiki/$spaceId"
+                    params={{ orgSlug, wsSlug, spaceId: space.id }}
+                    className="group flex flex-col rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--bg-1)] p-5 transition-colors duration-150 hover:border-[color:var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-bg)]"
+                    role="listitem"
+                    aria-label={`스페이스: ${space.name}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--bg-3)]">
+                        {isProjectWiki ? (
+                          <Folder className="h-5 w-5 text-[color:var(--fg-2)]" />
+                        ) : (
+                          <LibraryBig className="h-5 w-5 text-[color:var(--fg-2)]" />
+                        )}
+                      </div>
+                      {isProjectWiki && (
+                        <span className="inline-flex h-[18px] shrink-0 items-center rounded-md bg-blue-500/12 px-[6px] text-[10.5px] font-medium text-blue-300">
+                          프로젝트
+                        </span>
+                      )}
+                    </div>
 
-                  <span className="mt-1 font-mono text-[11.5px] text-[color:var(--fg-4)]">
-                    {space.slug}
-                  </span>
+                    <span className="mt-1 font-mono text-[11.5px] text-[color:var(--fg-4)]">
+                      {space.slug}
+                    </span>
 
-                  <h3 className="mt-0.5 truncate text-[15px] font-semibold text-[color:var(--fg-1)]">
-                    {space.name}
-                  </h3>
+                    <h3 className="mt-0.5 truncate text-[15px] font-semibold text-[color:var(--fg-1)]">
+                      {space.name}
+                    </h3>
 
-                  {space.description && (
-                    <p className="mt-1 line-clamp-2 text-[12.5px] text-[color:var(--fg-3)]">
-                      {space.description}
-                    </p>
-                  )}
-                </Link>
-              ))}
+                    {space.description && (
+                      <p className="mt-1 line-clamp-2 text-[12.5px] text-[color:var(--fg-3)]">
+                        {space.description}
+                      </p>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

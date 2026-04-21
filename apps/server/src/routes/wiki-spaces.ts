@@ -88,6 +88,26 @@ export async function wikiSpaceRoutes(
     },
   );
 
+  // ── GET /api/v1/projects/:projectId/wiki-space ─────────────────
+
+  app.get(
+    '/api/v1/projects/:projectId/wiki-space',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Wiki Spaces'],
+        summary: 'Get the default wiki space for a project',
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = z
+        .object({ projectId: z.string().uuid() })
+        .parse(request.params);
+      const space = await service.getByProjectId(projectId, request.user?.id);
+      return reply.status(200).send({ data: space });
+    },
+  );
+
   // ── PATCH /api/v1/wiki-spaces/:spaceId ──────────────────────────
 
   app.patch(

@@ -12,6 +12,7 @@ import {
   Kanban,
   List,
   Plus,
+  BookOpen,
   RefreshCw,
   Settings,
 } from 'lucide-react';
@@ -47,6 +48,7 @@ function ProjectSubNav({
 
   const otherItems = [
     { icon: <RefreshCw className="h-3.5 w-3.5" />, label: '사이클', href: `${base}/cycles` },
+    { icon: <BookOpen className="h-3.5 w-3.5" />, label: '위키', href: `${base}/wiki` },
     { icon: <Settings className="h-3.5 w-3.5" />, label: '설정', href: `${base}/settings` },
   ];
 

@@ -5,6 +5,8 @@ import {
   projectMembers,
   projects,
   users,
+  wikiSpaceMembers,
+  wikiSpaces,
 } from '@worknest/db';
 import type {
   AddProjectMemberInput,
@@ -214,6 +216,29 @@ export class ProjectService {
           isDefault: t.isDefault,
         })),
       );
+
+      // Auto-create a default wiki space linked to the project. Slug uses
+      // the project prefix (unique within a workspace). Caller becomes
+      // editor. Accessible both from /wiki and /projects/:id/wiki.
+      const projectSlug = `proj-${input.prefix.toLowerCase()}`;
+      const [space] = await tx
+        .insert(wikiSpaces)
+        .values({
+          workspaceId: wsId,
+          projectId: created?.id,
+          createdBy: callerUserId,
+          name: `${input.name} 위키`,
+          description: null,
+          slug: projectSlug,
+        })
+        .returning();
+      if (space?.id) {
+        await tx.insert(wikiSpaceMembers).values({
+          wikiSpaceId: space.id,
+          userId: callerUserId,
+          role: 'editor',
+        });
+      }
 
       return created!;
     });

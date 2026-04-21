@@ -1,6 +1,7 @@
 import { relations, sql } from 'drizzle-orm';
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { comments } from './comments';
+import { projects } from './projects';
 import { users } from './users';
 import { workspaces } from './workspaces';
 
@@ -17,6 +18,11 @@ export const wikiSpaces = pgTable(
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
+    // Optional project link: when set, this wiki space is the default wiki
+    // for that project and is auto-created on project creation.
+    projectId: uuid('project_id').references(() => projects.id, {
+      onDelete: 'set null',
+    }),
     name: text('name').notNull(),
     description: text('description'),
     slug: text('slug').notNull(),
@@ -29,6 +35,7 @@ export const wikiSpaces = pgTable(
   (table) => [
     uniqueIndex('wiki_spaces_workspace_slug_unique').on(table.workspaceId, table.slug),
     index('wiki_spaces_workspace_id_idx').on(table.workspaceId),
+    index('wiki_spaces_project_id_idx').on(table.projectId),
   ],
 );
 

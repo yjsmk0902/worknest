@@ -36,6 +36,7 @@ export type UpdateWikiSpaceInput = z.infer<typeof updateWikiSpaceInput>;
 export const wikiSpaceOutput = z.object({
   id: z.string().uuid(),
   workspaceId: z.string().uuid(),
+  projectId: z.string().uuid().nullable(),
   name: z.string(),
   description: z.string().nullable(),
   slug: z.string(),
