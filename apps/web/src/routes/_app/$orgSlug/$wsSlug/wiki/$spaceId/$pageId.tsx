@@ -86,7 +86,14 @@ function WikiPageEditor() {
 
   const handleTitleChange = useCallback(
     (e: React.FormEvent<HTMLHeadingElement>) => {
-      const newTitle = (e.currentTarget.textContent ?? '').trim();
+      const el = e.currentTarget;
+      const newTitle = (el.textContent ?? '').trim();
+
+      // When the user deletes everything, browsers leave a <br> that keeps
+      // `:empty` from matching — strip it so the "제목 없음" placeholder shows.
+      if (newTitle === '' && el.innerHTML !== '') {
+        el.innerHTML = '';
+      }
 
       if (titleTimerRef.current) {
         clearTimeout(titleTimerRef.current);
@@ -385,7 +392,7 @@ function WikiPageEditor() {
           ref={titleRef}
           contentEditable
           suppressContentEditableWarning
-          className="border-none py-3 text-[32px] font-semibold leading-tight text-[color:var(--fg-1)] outline-none empty:before:pointer-events-none empty:before:text-[color:var(--fg-4)] empty:before:content-[attr(data-placeholder)]"
+          className="border-none py-3 text-[32px] font-semibold leading-tight text-[color:var(--fg-1)] outline-none empty:before:pointer-events-none empty:before:text-[color:var(--fg-3)] empty:before:content-[attr(data-placeholder)]"
           data-placeholder="제목 없음"
           onInput={handleTitleChange}
           onKeyDown={handleTitleKeyDown}
