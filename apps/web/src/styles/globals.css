@@ -341,6 +341,55 @@
 }
 
 /* =========================================================================
+   Toggle (details/summary) block — custom chevron, no default list marker
+   ========================================================================= */
+.ProseMirror details {
+  margin: 12px 0;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-1);
+  border-radius: 6px;
+  padding: 8px 12px 8px 28px;
+  position: relative;
+}
+.ProseMirror details > summary {
+  list-style: none;
+  display: block;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: var(--fg-1);
+  outline: none;
+}
+.ProseMirror details > summary::-webkit-details-marker {
+  display: none;
+}
+.ProseMirror details::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--fg-3);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 150ms ease;
+  transform-origin: 2px 4px;
+}
+.ProseMirror details[open]::before {
+  transform: rotate(90deg);
+}
+.ProseMirror details > summary > p {
+  display: inline;
+  margin: 0;
+}
+.ProseMirror details > [data-type="detailsContent"],
+.ProseMirror details > div {
+  margin-top: 6px;
+  padding-left: 0;
+}
+
+/* =========================================================================
    TipTap / ProseMirror content styles
    @tailwindcss/typography 미설치 상태라 `prose` 클래스가 빈 껍데기 — 위키
    에디터 본문 블록 스타일을 명시적으로 정의한다.
