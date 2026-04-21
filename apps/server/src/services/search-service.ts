@@ -283,6 +283,7 @@ export class SearchService {
           sql`${wikiPages}.search_vector @@ plainto_tsquery('english', ${q})`,
           inArray(wikiPages.wikiSpaceId, spaceIds),
           isNull(wikiPages.deletedAt),
+          sql`(${wikiPages.status} <> 'draft' OR ${wikiPages.createdBy} = ${callerUserId})`,
         ),
       )
       .orderBy(sql`ts_rank(${wikiPages}.search_vector, plainto_tsquery('english', ${q})) DESC`)
@@ -316,6 +317,7 @@ export class SearchService {
           ilike(wikiPages.title, `%${escapeLikePattern(q)}%`),
           inArray(wikiPages.wikiSpaceId, spaceIds),
           isNull(wikiPages.deletedAt),
+          sql`(${wikiPages.status} <> 'draft' OR ${wikiPages.createdBy} = ${callerUserId})`,
         ),
       )
       .limit(limit);

@@ -108,6 +108,7 @@ export const wikiPages = pgTable(
     contentText: text('content_text'),
     icon: text('icon'), // Emoji (e.g. "📄") or shortcode
     coverUrl: text('cover_url'), // Uploaded image path or external URL
+    status: text('status').notNull().default('published'), // 'draft' | 'published'
     parentId: uuid('parent_id'),
     sortOrder: text('sort_order').notNull().default('a0'),
     createdBy: text('created_by').references(() => users.id, {

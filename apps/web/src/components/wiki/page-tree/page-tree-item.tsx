@@ -91,9 +91,21 @@ export function PageTreeItem({
       )}
 
       {/* Title */}
-      <span className={cn('min-w-0 flex-1 truncate', isSelected && 'font-medium')}>
+      <span
+        className={cn(
+          'min-w-0 flex-1 truncate',
+          isSelected && 'font-medium',
+          page.status === 'draft' && 'italic text-[color:var(--fg-3)]',
+        )}
+      >
         {page.title || '제목 없음'}
       </span>
+
+      {page.status === 'draft' && (
+        <span className="inline-flex h-[16px] shrink-0 items-center rounded bg-amber-500/15 px-[5px] font-mono text-[9.5px] font-medium text-amber-400">
+          초안
+        </span>
+      )}
 
       {/* Hover: add subpage */}
       {onAddChild && (

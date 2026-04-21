@@ -73,6 +73,9 @@ export type WikiSpaceMemberOutput = z.infer<typeof wikiSpaceMemberOutput>;
 
 // ── Wiki Page CRUD Schemas ────────────────────────────────────────────
 
+export const wikiPageStatus = z.enum(['draft', 'published']);
+export type WikiPageStatus = z.infer<typeof wikiPageStatus>;
+
 export const createWikiPageInput = z.object({
   title: z.string().min(1).max(500),
   slug: z
@@ -84,6 +87,7 @@ export const createWikiPageInput = z.object({
   parentId: z.string().uuid().optional(),
   icon: z.string().max(32).optional(),
   coverUrl: z.string().max(1000).optional(),
+  status: wikiPageStatus.optional(),
 });
 
 export type CreateWikiPageInput = z.infer<typeof createWikiPageInput>;
@@ -95,6 +99,7 @@ export const updateWikiPageInput = z.object({
   sortOrder: z.string().optional(),
   icon: z.string().max(32).nullable().optional(),
   coverUrl: z.string().max(1000).nullable().optional(),
+  status: wikiPageStatus.optional(),
 });
 
 export type UpdateWikiPageInput = z.infer<typeof updateWikiPageInput>;
@@ -108,6 +113,7 @@ export const wikiPageOutput = z.object({
   contentFormat: z.string(),
   icon: z.string().nullable(),
   coverUrl: z.string().nullable(),
+  status: wikiPageStatus,
   parentId: z.string().uuid().nullable(),
   sortOrder: z.string(),
   createdBy: z.string().uuid().nullable(),

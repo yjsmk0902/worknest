@@ -97,6 +97,7 @@ function toPageOutput(row: typeof wikiPages.$inferSelect) {
     contentFormat: row.contentFormat,
     icon: row.icon ?? null,
     coverUrl: row.coverUrl ?? null,
+    status: (row.status === 'draft' ? 'draft' : 'published') as 'draft' | 'published',
     parentId: row.parentId ?? null,
     sortOrder: row.sortOrder,
     createdBy: row.createdBy ?? null,
@@ -121,8 +122,13 @@ export class WikiPageService {
       .where(and(eq(wikiPages.wikiSpaceId, spaceId), isNull(wikiPages.deletedAt)))
       .orderBy(asc(wikiPages.sortOrder));
 
+    // Drafts are visible only to their author.
+    const visible = rows.filter(
+      (r) => r.status !== 'draft' || r.createdBy === callerUserId,
+    );
+
     return {
-      data: rows.map(toPageOutput),
+      data: visible.map(toPageOutput),
       pagination: {
         next_cursor: null,
         has_more: false,
@@ -171,6 +177,7 @@ export class WikiPageService {
         parentId: input.parentId ?? null,
         icon: input.icon ?? null,
         coverUrl: input.coverUrl ?? null,
+        status: input.status ?? 'published',
       })
       .returning();
 
@@ -182,6 +189,11 @@ export class WikiPageService {
   async getById(pageId: string, callerUserId: string) {
     const page = await getPageWithSpaceId(this.db, pageId);
     await requireSpaceMembership(this.db, page.wikiSpaceId, callerUserId);
+
+    // Drafts are only visible to their author.
+    if (page.status === 'draft' && page.createdBy !== callerUserId) {
+      throw AppError.notFound('wiki_page');
+    }
 
     return toPageOutput(page);
   }
@@ -237,6 +249,7 @@ export class WikiPageService {
     if (input.parentId !== undefined) updates.parentId = input.parentId;
     if (input.icon !== undefined) updates.icon = input.icon;
     if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
+    if (input.status !== undefined) updates.status = input.status;
 
     if (input.content !== undefined) {
       const sanitized = sanitizeContent(input.content);
@@ -396,15 +409,21 @@ export class WikiPageService {
         title: wikiPages.title,
         slug: wikiPages.slug,
         icon: wikiPages.icon,
+        status: wikiPages.status,
+        createdBy: wikiPages.createdBy,
         updatedAt: wikiPages.updatedAt,
       })
       .from(wikiPages)
       .where(and(inArray(wikiPages.wikiSpaceId, spaceIds), isNull(wikiPages.deletedAt)))
       .orderBy(desc(wikiPages.updatedAt))
-      .limit(limit);
+      .limit(limit * 2);
+
+    const visible = rows
+      .filter((r) => r.status !== 'draft' || r.createdBy === callerUserId)
+      .slice(0, limit);
 
     return {
-      data: rows.map((r) => ({
+      data: visible.map((r) => ({
         id: r.id,
         wikiSpaceId: r.wikiSpaceId,
         spaceName: spaceNameById.get(r.wikiSpaceId) ?? '',

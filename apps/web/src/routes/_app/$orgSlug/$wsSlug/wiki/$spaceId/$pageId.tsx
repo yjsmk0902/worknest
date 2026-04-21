@@ -140,8 +140,11 @@ function WikiPageEditor() {
   // ── Icon + cover ────────────────────────────────────────────────────
 
   const updateMetaMutation = useMutation({
-    mutationFn: (payload: { icon?: string | null; coverUrl?: string | null }) =>
-      apiClient.patch(`/wiki-pages/${pageId}`, payload),
+    mutationFn: (payload: {
+      icon?: string | null;
+      coverUrl?: string | null;
+      status?: 'draft' | 'published';
+    }) => apiClient.patch(`/wiki-pages/${pageId}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wiki-pages', pageId] });
       queryClient.invalidateQueries({
@@ -393,6 +396,10 @@ function WikiPageEditor() {
           )}
         </nav>
         <SaveStatusBadge status={saveStatus} />
+        <DraftToggle
+          status={page.status}
+          onToggle={(next) => updateMetaMutation.mutate({ status: next })}
+        />
         <FavoriteButton entityType="page" entityId={pageId} />
       </div>
 
@@ -435,6 +442,30 @@ function WikiPageEditor() {
 
       <BookmarkModal />
     </div>
+  );
+}
+
+function DraftToggle({
+  status,
+  onToggle,
+}: {
+  status: 'draft' | 'published';
+  onToggle: (next: 'draft' | 'published') => void;
+}) {
+  const isDraft = status === 'draft';
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(isDraft ? 'published' : 'draft')}
+      className={`inline-flex h-[22px] shrink-0 items-center rounded-md px-2 text-[11.5px] font-medium transition-colors ${
+        isDraft
+          ? 'bg-amber-500/15 text-amber-400 hover:bg-amber-500/25'
+          : 'bg-[color:var(--bg-3)] text-[color:var(--fg-3)] hover:bg-[color:var(--bg-4)] hover:text-[color:var(--fg-2)]'
+      }`}
+      title={isDraft ? '초안 상태 — 나만 볼 수 있음' : '게시됨'}
+    >
+      {isDraft ? '초안' : '게시'}
+    </button>
   );
 }
 
