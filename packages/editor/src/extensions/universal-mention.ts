@@ -1,6 +1,9 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
 import { ReactRenderer } from '@tiptap/react';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
+
+const UNIVERSAL_MENTION_PLUGIN_KEY = new PluginKey('universalMention');
 import {
   UniversalMentionList,
   type UniversalMentionItem,
@@ -110,6 +113,7 @@ export function createUniversalMentionExtension(opts: UniversalMentionOptions) {
       return [
         Suggestion({
           editor: this.editor,
+          pluginKey: UNIVERSAL_MENTION_PLUGIN_KEY,
           char: '@',
           allowSpaces: false,
           startOfLine: false,
