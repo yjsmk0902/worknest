@@ -321,18 +321,22 @@
    ========================================================================= */
 [data-type="callout"] {
   display: grid !important;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 28px 1fr;
   column-gap: 12px;
   align-items: start;
 }
 [data-type="callout"]::before {
   content: attr(data-icon);
-  font-size: 18px;
+  grid-row: 1 / -1;
+  grid-column: 1;
+  font-size: 20px;
   line-height: 1.4;
   padding-top: 2px;
   user-select: none;
+  text-align: center;
 }
 [data-type="callout"] > * {
+  grid-column: 2;
   margin: 0 !important;
 }
 
