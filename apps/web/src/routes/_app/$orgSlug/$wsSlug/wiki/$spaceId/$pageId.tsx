@@ -13,6 +13,7 @@ import {
   EditorWithAutosave,
   ImageUpload,
   IssueLink,
+  MarkdownShortcuts,
   SlashCommand,
   ToggleBlock,
   ToggleContent,
@@ -254,6 +255,7 @@ function WikiPageEditor() {
       ToggleBlock,
       ToggleSummary,
       ToggleContent,
+      MarkdownShortcuts,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
       }),

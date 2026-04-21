@@ -1,3 +1,4 @@
+import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
@@ -58,6 +59,15 @@ export function Editor({
       StarterKit.configure({
         // Disable the default codeBlock in favor of CodeBlockLowlight
         codeBlock: false,
+        // Disable built-in blockquote so we can re-add it without the
+        // `> ` input rule (we want `> ` to create a toggle instead, and
+        // `| ` to become blockquote — see MarkdownShortcuts extension).
+        blockquote: false,
+      }),
+      Blockquote.extend({
+        addInputRules() {
+          return [];
+        },
       }),
       Placeholder.configure({
         // Placeholder only on the currently-focused empty node so the editor
