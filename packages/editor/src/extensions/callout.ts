@@ -60,17 +60,28 @@ export const Callout = Node.create({
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-type': 'callout',
-        class: `my-3 flex gap-3 rounded-md border px-3 py-2 ${COLOR_CLASS[color]}`,
+        class: `my-3 rounded-md border px-3 py-2 ${COLOR_CLASS[color]}`,
+        style:
+          'display:flex;align-items:flex-start;gap:12px;',
       }),
       [
         'div',
         {
           contenteditable: 'false',
-          class: 'select-none pt-0.5 text-[18px] leading-none',
+          class: 'select-none',
+          style:
+            'flex:0 0 auto;font-size:18px;line-height:1.4;padding-top:2px;',
         },
         icon,
       ],
-      ['div', { class: 'flex-1 min-w-0 [&>*]:my-0' }, 0],
+      [
+        'div',
+        {
+          class: '[&>*]:my-0',
+          style: 'flex:1 1 auto;min-width:0;',
+        },
+        0,
+      ],
     ];
   },
 
