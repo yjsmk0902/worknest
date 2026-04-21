@@ -9,18 +9,13 @@ import type { EditorView } from '@tiptap/pm/view';
  * selects the block; dragging it initiates a native drag+drop that PM
  * turns into a block move.
  *
- * The handle lives in the editor wrapper (the ProseMirror contenteditable's
- * parent) so we can detect hover over both the content AND the gutter where
- * the handle sits. Mouse listeners target that wrapper, not the content
- * element — otherwise moving the pointer toward the handle triggers
- * mouseleave on the content and hides the handle before the user can grab.
+ * The handle is mounted on `document.body` with fixed positioning so it
+ * doesn't get affected by React re-renders to the editor wrapper.
  */
 
 const PLUGIN_KEY = new PluginKey('dragHandle');
 const HANDLE_WIDTH = 20;
 const HANDLE_GAP = 6;
-// Extend the hit region to the left of the content so the handle stays
-// visible while the pointer travels over to it.
 const LEFT_HIT_TOLERANCE = HANDLE_WIDTH + HANDLE_GAP + 6;
 
 function createHandle() {
@@ -40,32 +35,25 @@ function createHandle() {
       <circle cx="9" cy="13" r="1.4" />
     </svg>
   `;
-  el.style.position = 'absolute';
+  el.style.position = 'fixed';
   el.style.opacity = '0';
   el.style.pointerEvents = 'none';
-  el.style.zIndex = '30';
+  el.style.zIndex = '9999';
   el.style.transition = 'opacity 120ms ease';
   return el;
 }
 
-/**
- * Find the top-level block whose DOM occupies the given clientY. We do not
- * rely on `posAtCoords` because empty paragraphs and some atom nodes
- * (bookmark, horizontalRule) don't resolve there.
- */
 function findBlockAtY(
   view: EditorView,
   clientY: number,
 ): { pos: number; dom: HTMLElement } | null {
   const contentRoot = view.dom;
-  let best: { pos: number; dom: HTMLElement; dist: number } | null = null;
 
-  // Iterate direct children of the contenteditable root (top-level blocks).
   for (let child = contentRoot.firstElementChild; child; child = child.nextElementSibling) {
     if (!(child instanceof HTMLElement)) continue;
     const rect = child.getBoundingClientRect();
     if (rect.height === 0) continue;
-    if (clientY >= rect.top && clientY <= rect.bottom) {
+    if (clientY >= rect.top - 2 && clientY <= rect.bottom + 2) {
       try {
         const pos = view.posAtDOM(child, 0);
         return { pos: Math.max(0, pos - 1), dom: child };
@@ -73,21 +61,7 @@ function findBlockAtY(
         // fall through
       }
     }
-    // Track nearest block for small tolerance when cursor sits between
-    // blocks (very small gaps)
-    const center = (rect.top + rect.bottom) / 2;
-    const dist = Math.abs(clientY - center);
-    if (!best || dist < best.dist) {
-      try {
-        const pos = view.posAtDOM(child, 0);
-        best = { pos: Math.max(0, pos - 1), dom: child, dist };
-      } catch {
-        // ignore
-      }
-    }
   }
-
-  if (best && best.dist < 12) return { pos: best.pos, dom: best.dom };
   return null;
 }
 
@@ -95,26 +69,18 @@ function dragHandlePlugin() {
   return new Plugin({
     key: PLUGIN_KEY,
     view(view) {
-      const wrapper = view.dom.parentElement;
-      if (!wrapper) return { destroy() {} };
-
-      if (getComputedStyle(wrapper).position === 'static') {
-        wrapper.style.position = 'relative';
-      }
-
       const handle = createHandle();
-      wrapper.appendChild(handle);
+      document.body.appendChild(handle);
 
       let hoveredPos: number | null = null;
       let currentBlockDom: HTMLElement | null = null;
+      let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
       const showAtBlock = (pos: number, dom: HTMLElement) => {
-        const wrapperRect = wrapper.getBoundingClientRect();
         const rect = dom.getBoundingClientRect();
-        const top = rect.top - wrapperRect.top + 4;
-        const left = rect.left - wrapperRect.left - (HANDLE_WIDTH + HANDLE_GAP);
-        handle.style.top = `${top}px`;
-        handle.style.left = `${left}px`;
+        // Fixed positioning — use clientX/Y coordinates directly.
+        handle.style.top = `${rect.top + 4}px`;
+        handle.style.left = `${rect.left - (HANDLE_WIDTH + HANDLE_GAP)}px`;
         handle.style.opacity = '1';
         handle.style.pointerEvents = 'auto';
         hoveredPos = pos;
@@ -128,38 +94,48 @@ function dragHandlePlugin() {
         currentBlockDom = null;
       };
 
+      const scheduleHide = () => {
+        if (hideTimeout) clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(hide, 120);
+      };
+
+      const cancelHide = () => {
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+      };
+
       const onMouseMove = (e: MouseEvent) => {
         if (!view.editable) return;
 
-        // Keep showing while hovering the handle itself.
-        if (handle.contains(e.target as Node)) return;
+        // Pointer over the handle → keep visible.
+        if (handle.contains(e.target as Node)) {
+          cancelHide();
+          return;
+        }
 
         const contentRect = view.dom.getBoundingClientRect();
-        // Broaden the hit zone to the LEFT so we cover the handle gutter.
         const insideHorizontally =
           e.clientX >= contentRect.left - LEFT_HIT_TOLERANCE &&
           e.clientX <= contentRect.right;
-        if (!insideHorizontally) {
-          hide();
+        const insideVertically =
+          e.clientY >= contentRect.top - 4 && e.clientY <= contentRect.bottom + 4;
+
+        if (!insideHorizontally || !insideVertically) {
+          scheduleHide();
           return;
         }
 
         const block = findBlockAtY(view, e.clientY);
         if (!block) {
-          hide();
+          scheduleHide();
           return;
         }
+        cancelHide();
         if (block.pos !== hoveredPos) {
           showAtBlock(block.pos, block.dom);
         }
-      };
-
-      const onMouseLeave = (e: MouseEvent) => {
-        // Only hide when the pointer actually leaves the wrapper — moving
-        // from content to handle (both children of wrapper) must not hide.
-        const related = e.relatedTarget as Node | null;
-        if (related && wrapper.contains(related)) return;
-        hide();
       };
 
       const onHandleClick = (e: MouseEvent) => {
@@ -196,17 +172,24 @@ function dragHandlePlugin() {
         }
       };
 
+      const onScroll = () => {
+        if (currentBlockDom) {
+          showAtBlock(hoveredPos!, currentBlockDom);
+        }
+      };
+
       handle.addEventListener('click', onHandleClick);
       handle.addEventListener('dragstart', onHandleDragStart);
-      wrapper.addEventListener('mousemove', onMouseMove);
-      wrapper.addEventListener('mouseleave', onMouseLeave);
+      document.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('scroll', onScroll, true);
 
       return {
         destroy() {
+          if (hideTimeout) clearTimeout(hideTimeout);
           handle.removeEventListener('click', onHandleClick);
           handle.removeEventListener('dragstart', onHandleDragStart);
-          wrapper.removeEventListener('mousemove', onMouseMove);
-          wrapper.removeEventListener('mouseleave', onMouseLeave);
+          document.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('scroll', onScroll, true);
           handle.remove();
         },
       };
