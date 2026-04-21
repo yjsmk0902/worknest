@@ -59,17 +59,28 @@ function createDropLine() {
 }
 
 function createGhost(source: HTMLElement) {
-  const ghost = source.cloneNode(true) as HTMLElement;
-  ghost.style.position = 'fixed';
-  ghost.style.pointerEvents = 'none';
-  ghost.style.opacity = '0.7';
-  ghost.style.zIndex = '9997';
-  ghost.style.width = `${source.getBoundingClientRect().width}px`;
-  ghost.style.background = 'var(--bg-2)';
-  ghost.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
-  ghost.style.borderRadius = '6px';
-  ghost.style.padding = '4px 8px';
-  return ghost;
+  // Wrap the clone so our layout tweaks (shadow, opacity, max-width) don't
+  // override the cloned block's own padding/background/grid layout — fixes
+  // multi-row callouts looking "broken" while dragging.
+  const wrap = document.createElement('div');
+  wrap.style.position = 'fixed';
+  wrap.style.pointerEvents = 'none';
+  wrap.style.opacity = '0.85';
+  wrap.style.zIndex = '9997';
+  wrap.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+  wrap.style.borderRadius = '6px';
+  wrap.style.overflow = 'hidden';
+  wrap.style.width = `${source.getBoundingClientRect().width}px`;
+  wrap.style.background = 'var(--bg-1)';
+
+  const clone = source.cloneNode(true) as HTMLElement;
+  // Make sure inline styles don't pin the clone to off-screen coords.
+  clone.style.top = '';
+  clone.style.left = '';
+  clone.style.position = '';
+  clone.style.margin = '0';
+  wrap.appendChild(clone);
+  return wrap;
 }
 
 interface BlockHit {
