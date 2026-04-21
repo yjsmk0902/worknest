@@ -114,26 +114,22 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
   };
   const hit = scan(view.dom);
   if (!hit) return null;
-  // The callout is treated as a single draggable unit — hovering any of
-  // its inner paragraphs should still produce one handle targeting the
-  // whole callout, not the inner child.
-  return promoteToCallout(view, hit);
+  // Only the callout's FIRST child (title row) promotes to the whole
+  // callout so hovering that row drags the callout as a unit. Later rows
+  // inside the callout stay individually draggable.
+  return promoteCalloutFirstChild(view, hit);
 }
 
-function promoteToCallout(view: EditorView, hit: BlockHit): BlockHit {
-  let el: HTMLElement | null = hit.dom;
-  while (el && el !== view.dom) {
-    if (el.getAttribute?.('data-type') === 'callout') {
-      try {
-        const pos = view.posAtDOM(el, 0);
-        return { pos: Math.max(0, pos - 1), dom: el };
-      } catch {
-        return hit;
-      }
-    }
-    el = el.parentElement;
+function promoteCalloutFirstChild(view: EditorView, hit: BlockHit): BlockHit {
+  const parent = hit.dom.parentElement;
+  if (!parent || parent.getAttribute('data-type') !== 'callout') return hit;
+  if (parent.firstElementChild !== hit.dom) return hit;
+  try {
+    const pos = view.posAtDOM(parent, 0);
+    return { pos: Math.max(0, pos - 1), dom: parent };
+  } catch {
+    return hit;
   }
-  return hit;
 }
 
 function dragHandlePlugin() {
