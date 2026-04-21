@@ -145,8 +145,12 @@ function dragHandlePlugin() {
 
       const showAtBlock = (pos: number, dom: HTMLElement) => {
         const rect = dom.getBoundingClientRect();
+        // Always align to the editor's left gutter so nested blocks
+        // (paragraphs inside callouts/toggles) don't pull the handle
+        // inward into the container's padding.
+        const editorLeft = view.dom.getBoundingClientRect().left;
         handle.style.top = `${rect.top + 4}px`;
-        handle.style.left = `${rect.left - (HANDLE_WIDTH + HANDLE_GAP)}px`;
+        handle.style.left = `${editorLeft - (HANDLE_WIDTH + HANDLE_GAP)}px`;
         handle.style.opacity = '1';
         handle.style.pointerEvents = 'auto';
         hoveredPos = pos;
