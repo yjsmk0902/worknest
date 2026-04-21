@@ -11,10 +11,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   toast,
 } from '@worknest/ui';
-import { AlertTriangle, FileText, Loader2, MoreHorizontal, Pencil, Plus } from 'lucide-react';
+import {
+  AlertTriangle,
+  FileText,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId')({
@@ -60,6 +69,31 @@ function WikiSpaceLayout() {
       toast('페이지 생성에 실패했습니다.');
     },
   });
+
+  const deleteSpaceMutation = useMutation({
+    mutationFn: () => apiClient.delete(`/wiki-spaces/${spaceId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['workspaces', wsId, 'wiki-spaces'],
+      });
+      navigate({ to: '/$orgSlug/$wsSlug/wiki', params: { orgSlug, wsSlug } });
+    },
+    onError: () => {
+      toast('스페이스 삭제에 실패했습니다.');
+    },
+  });
+
+  const handleDeleteSpace = () => {
+    const name = spaceQuery.data?.name ?? '스페이스';
+    if (
+      !window.confirm(
+        `"${name}"을(를) 삭제할까요?\n스페이스 안의 모든 페이지가 함께 삭제됩니다.`,
+      )
+    ) {
+      return;
+    }
+    deleteSpaceMutation.mutate();
+  };
 
   if (spaceQuery.isLoading) {
     return (
@@ -117,6 +151,14 @@ function WikiSpaceLayout() {
               <DropdownMenuItem onSelect={() => setEditOpen(true)}>
                 <Pencil className="h-3.5 w-3.5" />
                 스페이스 수정
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={handleDeleteSpace}
+                className="text-[color:var(--priority-urgent)] focus:text-[color:var(--priority-urgent)]"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                스페이스 삭제
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,6 +1,12 @@
 import type { WikiPageOutput } from '@worknest/shared';
-import { cn } from '@worknest/ui';
-import { ChevronRight, FileText, GripVertical, Plus } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  cn,
+} from '@worknest/ui';
+import { ChevronRight, FileText, GripVertical, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
 
 interface PageTreeItemProps {
   page: WikiPageOutput;
@@ -11,6 +17,7 @@ interface PageTreeItemProps {
   onToggle: () => void;
   onClick: () => void;
   onAddChild?: () => void;
+  onDelete?: () => void;
   /** Props from dnd-kit for drag handle */
   dragHandleProps?: Record<string, unknown>;
   isDragging?: boolean;
@@ -25,6 +32,7 @@ export function PageTreeItem({
   onToggle,
   onClick,
   onAddChild,
+  onDelete,
   dragHandleProps,
   isDragging,
 }: PageTreeItemProps) {
@@ -105,6 +113,35 @@ export function PageTreeItem({
         <span className="inline-flex h-[16px] shrink-0 items-center rounded bg-amber-500/15 px-[5px] font-mono text-[9.5px] font-medium text-amber-400">
           초안
         </span>
+      )}
+
+      {/* Hover: more menu (delete) */}
+      {onDelete && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="grid h-5 w-5 shrink-0 place-items-center rounded text-[color:var(--fg-3)] opacity-0 transition-opacity hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)] group-hover:opacity-100 data-[state=open]:opacity-100"
+              aria-label="페이지 메뉴"
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-36"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DropdownMenuItem
+              onSelect={() => onDelete()}
+              className="text-[color:var(--priority-urgent)] focus:text-[color:var(--priority-urgent)]"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              삭제
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
 
       {/* Hover: add subpage */}

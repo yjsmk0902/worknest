@@ -10,7 +10,7 @@ import {
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import type { WikiPageOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
 import { Loader2, Plus } from 'lucide-react';
@@ -78,6 +78,7 @@ function SortablePageItem({
   onToggle,
   onClick,
   onAddChild,
+  onDelete,
 }: {
   node: TreeNode;
   isSelected: boolean;
@@ -86,6 +87,7 @@ function SortablePageItem({
   onToggle: () => void;
   onClick: () => void;
   onAddChild: () => void;
+  onDelete: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: node.page.id,
@@ -107,6 +109,7 @@ function SortablePageItem({
         onToggle={onToggle}
         onClick={onClick}
         onAddChild={onAddChild}
+        onDelete={onDelete}
         dragHandleProps={listeners}
         isDragging={isDragging}
       />
@@ -131,6 +134,7 @@ export function PageTree({
   wsSlug,
 }: PageTreeProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const params = useParams({ strict: false }) as { pageId?: string };
   const currentPageId = params.pageId;
 
@@ -182,6 +186,37 @@ export function PageTree({
       });
     },
   });
+
+  // Delete page (soft) mutation
+  const deleteMutation = useMutation({
+    mutationFn: (pageId: string) => apiClient.delete(`/wiki-pages/${pageId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['wiki-spaces', spaceId, 'pages'],
+      });
+    },
+    onError: () => {
+      toast('페이지 삭제에 실패했습니다.');
+    },
+  });
+
+  const handleDelete = useCallback(
+    (pageId: string, title: string) => {
+      const name = title || '제목 없음';
+      if (!window.confirm(`"${name}" 페이지를 삭제할까요? 하위 페이지는 한 단계 위로 이동합니다.`)) {
+        return;
+      }
+      deleteMutation.mutate(pageId);
+      // If the current route pointed at this page, fall back to the space home
+      if (currentPageId === pageId) {
+        navigate({
+          to: '/$orgSlug/$wsSlug/wiki/$spaceId',
+          params: { orgSlug, wsSlug, spaceId },
+        });
+      }
+    },
+    [deleteMutation, currentPageId, navigate, orgSlug, wsSlug, spaceId],
+  );
 
   // Create page mutation (root or child of given parent)
   const createMutation = useMutation({
@@ -277,6 +312,7 @@ export function PageTree({
                   onToggle={() => toggleExpand(node.page.id)}
                   onClick={() => onPageSelect(node.page.id)}
                   onAddChild={() => createMutation.mutate(node.page.id)}
+                  onDelete={() => handleDelete(node.page.id, node.page.title)}
                 />
               ))}
             </SortableContext>
