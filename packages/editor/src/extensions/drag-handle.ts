@@ -220,7 +220,9 @@ function dragHandlePlugin() {
 
       const onEditorDragOver = (e: DragEvent) => {
         if (dragSourcePos === null) return;
+        // Stop PM's built-in dragover from running — we handle placement.
         e.preventDefault();
+        e.stopPropagation();
         if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 
         const hit = findBlockAtY(view, e.clientY);
@@ -229,14 +231,13 @@ function dragHandlePlugin() {
           dragTargetPos = null;
           return;
         }
-        // Don't show indicator on top of the source itself
         const { insertBefore, rect } = computeInsertInfo(hit, e.clientY);
         const node = view.state.doc.nodeAt(hit.pos);
         const nodeSize = node?.nodeSize ?? 0;
         const insertPos = insertBefore ? hit.pos : hit.pos + nodeSize;
 
-        // Skip if target equals source (no-op)
-        if (insertPos === dragSourcePos || insertPos === dragSourcePos + (view.state.doc.nodeAt(dragSourcePos)?.nodeSize ?? 0)) {
+        const sourceSize = view.state.doc.nodeAt(dragSourcePos)?.nodeSize ?? 0;
+        if (insertPos === dragSourcePos || insertPos === dragSourcePos + sourceSize) {
           hideDropLine();
           dragTargetPos = null;
           return;
@@ -249,6 +250,7 @@ function dragHandlePlugin() {
       const onEditorDrop = (e: DragEvent) => {
         if (dragSourcePos === null) return;
         e.preventDefault();
+        e.stopPropagation();
 
         const sourcePos = dragSourcePos;
         const targetPos = dragTargetPos;
@@ -263,11 +265,9 @@ function dragHandlePlugin() {
         if (!sourceNode) return;
 
         const sourceSize = sourceNode.nodeSize;
-        // If target is inside the source range, bail
         if (targetPos > sourcePos && targetPos < sourcePos + sourceSize) return;
 
         const tr = state.tr;
-        // Remove the source node first, then insert at the adjusted target
         tr.delete(sourcePos, sourcePos + sourceSize);
         const adjustedTarget =
           targetPos > sourcePos ? targetPos - sourceSize : targetPos;
@@ -279,8 +279,10 @@ function dragHandlePlugin() {
       handle.addEventListener('dragstart', onHandleDragStart);
       handle.addEventListener('dragend', onHandleDragEnd);
       document.addEventListener('mousemove', onMouseMove);
-      view.dom.addEventListener('dragover', onEditorDragOver);
-      view.dom.addEventListener('drop', onEditorDrop);
+      // capture = true so we fire BEFORE PM's built-in dragover/drop and
+      // can call stopPropagation to block PM's handler entirely.
+      view.dom.addEventListener('dragover', onEditorDragOver, true);
+      view.dom.addEventListener('drop', onEditorDrop, true);
 
       return {
         destroy() {
@@ -289,8 +291,8 @@ function dragHandlePlugin() {
           handle.removeEventListener('dragstart', onHandleDragStart);
           handle.removeEventListener('dragend', onHandleDragEnd);
           document.removeEventListener('mousemove', onMouseMove);
-          view.dom.removeEventListener('dragover', onEditorDragOver);
-          view.dom.removeEventListener('drop', onEditorDrop);
+          view.dom.removeEventListener('dragover', onEditorDragOver, true);
+          view.dom.removeEventListener('drop', onEditorDrop, true);
           handle.remove();
           dropLine.remove();
         },
