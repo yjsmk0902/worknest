@@ -347,11 +347,10 @@
    ========================================================================= */
 .ProseMirror [data-type="details"] {
   margin: 8px 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  column-gap: 4px;
-  align-items: start;
+  padding: 0 0 0 22px;
+  position: relative;
+  background: transparent;
+  border: none;
 }
 .ProseMirror [data-type="details"] > button {
   appearance: none;
@@ -361,11 +360,13 @@
   padding: 0;
   width: 18px;
   height: 22px;
+  position: absolute;
+  left: 0;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--fg-3);
-  margin-top: 2px;
 }
 .ProseMirror [data-type="details"] > button::before {
   content: '';
