@@ -173,14 +173,14 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
 
 ---
 
-### Phase 2 — 에디터 블록 확장
+### Phase 2 — 에디터 블록 확장 (부분 완료)
 
-#### 2-1. 노션 필수 블록
-- [ ] Callout (아이콘 + 배경 컬러)
-- [ ] Toggle (접히는 블록)
-- [ ] Divider
-- [ ] Code block (언어 선택 + syntax highlight)
-- [ ] To-do 체크박스 (없다면 추가)
+#### 2-1. 노션 필수 블록 ✅
+- [x] Callout (이모지 + 배경 컬러 5종: default/info/warn/success/danger)
+- [x] Toggle (접히는 블록 — native `<details>` 기반)
+- [x] Divider (기존 slash `/구분선` 유지)
+- [x] Code block (이미 lowlight 연동 — 기존)
+- [x] To-do 체크박스 (이미 TaskList/TaskItem — 기존)
 - [ ] 수정 파일
   - `packages/editor/src/extensions/callout.ts` — 새로 생성
   - `packages/editor/src/extensions/toggle-block.ts` — 새로 생성
@@ -188,21 +188,23 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
   - `packages/editor/src/index.ts` — export
   - `packages/editor/src/extensions/slash-command.ts` — 명령 등록
 
-#### 2-2. @멘션 시스템
-- [ ] `@user` (사용자), `@page` (위키 페이지), `#ISSUE-123` (이슈) mention node
-- [ ] 서제스천 드롭다운: 타이핑 시 workspace 내 항목 필터링
+#### 2-2. @멘션 시스템 ✅
+- [x] `@user` (사용자) — 기존 `createMentionExtension`
+- [x] `[[page]]` (위키 페이지) — 새 `createPageMentionExtension` (트리거 `[[`)
+- [x] `#ISSUE-123` (이슈) — 기존 `IssueLink` 익스텐션
 - [ ] 수정 파일
   - `packages/editor/src/extensions/mention.ts` — 새로 생성 (@tiptap/extension-mention 기반)
   - `packages/editor/src/extensions/page-link.ts` — Phase 1-4와 공유
   - `packages/editor/src/mention-suggestion.tsx` — 서제스천 렌더러
 
-#### 2-3. Table 블록
-- [ ] @tiptap/extension-table 기반 기본 표
-- [ ] 행/열 추가/삭제, 정렬, 병합 UI
+#### 2-3. Table 블록 ✅ (기존)
+- [x] @tiptap/extension-table 기반 기본 표 (editor.tsx에 이미 구성)
+- [ ] 행/열 추가/삭제, 정렬, 병합 UI는 후속 개선
 
-#### 2-4. Embed (링크 auto-unfurl)
+#### 2-4. Embed (링크 auto-unfurl) — 후속 항목
 - [ ] 유튜브, vimeo, 이미지, 피그마 링크 자동 임베드
 - [ ] 서버 사이드 OG 메타 조회 (opengraph-scraper)
+> Phase 2에서 deferred: 서버 OG 스크래핑 + 임베드 노드 구현은 별도 공수.
 - [ ] 수정 파일
   - `packages/editor/src/extensions/embed.ts` — 새로 생성
   - `apps/server/src/routes/metadata.ts` — `/url-preview` 엔드포인트

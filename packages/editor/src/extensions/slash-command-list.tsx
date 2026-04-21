@@ -1,11 +1,13 @@
 import type { Editor } from '@tiptap/core';
 import type { Range } from '@tiptap/suggestion';
 import {
+  ChevronRight,
   Code2,
   Heading1,
   Heading2,
   Heading3,
   Image,
+  Info,
   List,
   ListOrdered,
   ListTodo,
@@ -205,6 +207,47 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+      },
+    },
+    {
+      title: '콜아웃',
+      description: '강조 박스 (이모지 + 배경)',
+      icon: <Info size={18} />,
+      keywords: ['callout', 'note', 'highlight', 'info'],
+      category: '고급',
+      command: ({ editor, range }: SlashCommandProps) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .insertContent({
+            type: 'callout',
+            attrs: { icon: '💡', color: 'info' },
+            content: [{ type: 'paragraph' }],
+          })
+          .run();
+      },
+    },
+    {
+      title: '토글',
+      description: '접히는 블록',
+      icon: <ChevronRight size={18} />,
+      keywords: ['toggle', 'details', 'collapse', 'expand'],
+      category: '고급',
+      command: ({ editor, range }: SlashCommandProps) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .insertContent({
+            type: 'details',
+            attrs: { open: true },
+            content: [
+              { type: 'detailsSummary', content: [{ type: 'text', text: '토글' }] },
+              { type: 'detailsContent', content: [{ type: 'paragraph' }] },
+            ],
+          })
+          .run();
       },
     },
     {

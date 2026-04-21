@@ -8,11 +8,22 @@ import { apiClient } from '@/lib/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import type { JSONContent } from '@tiptap/core';
-import { EditorWithAutosave, ImageUpload, IssueLink, SlashCommand } from '@worknest/editor';
+import {
+  Callout,
+  EditorWithAutosave,
+  ImageUpload,
+  IssueLink,
+  type PageMentionItem,
+  SlashCommand,
+  ToggleBlock,
+  ToggleContent,
+  ToggleSummary,
+  createPageMentionExtension,
+} from '@worknest/editor';
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
 import { AlertTriangle, ChevronRight, Loader2, Smile } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
   component: WikiPageEditor,
@@ -248,13 +259,52 @@ function WikiPageEditor() {
   const space = spaceQuery.data;
   const breadcrumbPages = buildBreadcrumb();
 
-  const editorExtensions = [
-    SlashCommand,
-    IssueLink,
-    ImageUpload.configure({
-      uploadHandler: imageUploadHandler,
-    }),
-  ];
+  const pageMentionExtension = useMemo(
+    () =>
+      createPageMentionExtension({
+        queryFn: async (q: string): Promise<PageMentionItem[]> => {
+          if (!q.trim() || !wsId) return [];
+          const res = await apiClient.get<{
+            categories: {
+              pages: Array<{
+                id: string;
+                title: string;
+                subtitle?: string;
+                icon?: string | null;
+                spaceId?: string;
+              }>;
+            };
+          }>(`/workspaces/${wsId}/search`, { q, type: 'page', limit: '10' });
+          return res.categories.pages
+            .filter((p) => !!p.spaceId)
+            .map((p) => ({
+              id: p.id,
+              title: p.title,
+              icon: p.icon ?? null,
+              spaceName: p.subtitle ?? '',
+              spaceId: p.spaceId!,
+            }));
+        },
+        resolveHref: (sId, pId) => `/${orgSlug}/${wsSlug}/wiki/${sId}/${pId}`,
+      }),
+    [orgSlug, wsSlug, wsId],
+  );
+
+  const editorExtensions = useMemo(
+    () => [
+      SlashCommand,
+      IssueLink,
+      Callout,
+      ToggleBlock,
+      ToggleSummary,
+      ToggleContent,
+      pageMentionExtension,
+      ImageUpload.configure({
+        uploadHandler: imageUploadHandler,
+      }),
+    ],
+    [pageMentionExtension, imageUploadHandler],
+  );
 
   const currentTitle = breadcrumbPages[breadcrumbPages.length - 1]?.title;
 

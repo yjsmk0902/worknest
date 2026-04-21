@@ -30,6 +30,18 @@ export { IssueLink } from './extensions/issue-link';
 // Image upload extension
 export { ImageUpload } from './extensions/image-upload';
 
+// Callout block extension
+export { Callout } from './extensions/callout';
+export type { CalloutColor } from './extensions/callout';
+
+// Toggle (details) block extension
+export { ToggleBlock, ToggleContent, ToggleSummary } from './extensions/toggle-block';
+
+// Page mention extension (trigger: `[[`)
+export { createPageMentionExtension } from './extensions/page-mention';
+export type { PageMentionItem, PageMentionQueryFn } from './extensions/page-mention';
+export { PageMentionList } from './extensions/page-mention-list';
+
 // Re-export useful TipTap types for consumers
 export type { JSONContent } from '@tiptap/core';
 export type { Editor as TipTapEditor } from '@tiptap/react';
