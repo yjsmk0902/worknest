@@ -85,27 +85,46 @@ export function createUniversalMentionExtension(opts: UniversalMentionOptions) {
     },
 
     renderHTML({ node, HTMLAttributes }) {
-      const prefix =
-        node.attrs.kind === 'user' ? '@' : node.attrs.kind === 'issue' ? '' : '';
-      const label = node.attrs.label || node.attrs.id;
-      const display = prefix + label;
-      const icon = node.attrs.icon;
       const kind = node.attrs.kind as UniversalMentionKind;
-      const colorClass =
-        kind === 'user'
-          ? 'bg-[color:var(--accent-soft)] text-[color:var(--accent-bg)]'
-          : kind === 'page'
-            ? 'bg-[color:var(--bg-2)] text-[color:var(--fg-1)] hover:bg-[color:var(--bg-3)]'
-            : 'bg-[color:var(--bg-2)] text-[color:var(--fg-1)] hover:bg-[color:var(--bg-3)]';
+      const label = node.attrs.label || node.attrs.id;
+      const icon = node.attrs.icon as string | null;
+
+      // Distinct visual treatment per kind
+      const config = {
+        user: {
+          marker: '@',
+          colorClass:
+            'bg-[color:var(--accent-soft)] text-[color:var(--accent-bg)] hover:bg-[color:var(--accent-soft-border)]',
+        },
+        page: {
+          marker: '',
+          colorClass:
+            'bg-blue-500/12 text-blue-300 hover:bg-blue-500/20',
+        },
+        issue: {
+          marker: '#',
+          colorClass:
+            'bg-emerald-500/12 text-emerald-300 hover:bg-emerald-500/20',
+        },
+      } as const;
+      const { marker, colorClass } = config[kind];
+
+      const children: (string | [string, Record<string, unknown>, ...unknown[]])[] = [];
+      if (icon && kind === 'page') {
+        children.push(['span', { class: 'text-[0.9em]' }, icon]);
+      } else if (marker) {
+        children.push(['span', { class: 'opacity-70' }, marker]);
+      }
+      children.push(['span', {}, label]);
 
       return [
         'a',
         mergeAttributes(HTMLAttributes, {
           'data-type': 'universal-mention',
-          class: `inline-flex items-center gap-1 rounded px-1 py-0.5 font-medium no-underline ${colorClass}`,
+          'data-kind': kind,
+          class: `inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 font-medium no-underline transition-colors ${colorClass}`,
         }),
-        ...(icon ? [['span', { class: 'text-[0.9em]' }, icon] as const] : []),
-        ['span', {}, display],
+        ...children,
       ];
     },
 

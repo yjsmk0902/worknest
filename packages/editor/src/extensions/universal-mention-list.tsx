@@ -50,7 +50,8 @@ export const UniversalMentionList = forwardRef<
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
       const ne = event as unknown as globalThis.KeyboardEvent;
-      if (ne.isComposing || ne.keyCode === 229) return false;
+      const isComposing = ne.isComposing || ne.keyCode === 229;
+
       if (event.key === 'ArrowUp') {
         setSelectedIndex((p) => (p <= 0 ? items.length - 1 : p - 1));
         return true;
@@ -59,7 +60,14 @@ export const UniversalMentionList = forwardRef<
         setSelectedIndex((p) => (p >= items.length - 1 ? 0 : p + 1));
         return true;
       }
-      if (event.key === 'Enter') {
+      // Tab always selects — gives users an IME-safe alternative to Enter
+      // when Korean name composition swallows the first Enter.
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        selectItem(selectedIndex);
+        return true;
+      }
+      if (event.key === 'Enter' && !isComposing) {
         selectItem(selectedIndex);
         return true;
       }
@@ -86,7 +94,8 @@ export const UniversalMentionList = forwardRef<
   const KIND_ORDER: UniversalMentionKind[] = ['user', 'page', 'issue'];
 
   return (
-    <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md overflow-hidden max-h-[320px] w-[320px] overflow-y-auto">
+    <div className="bg-popover text-popover-foreground border border-border rounded-lg shadow-md overflow-hidden max-h-[360px] w-[320px] flex flex-col">
+      <div className="overflow-y-auto">
       {KIND_ORDER.filter((k) => sections.has(k)).map((kind) => (
         <div key={kind}>
           <div className="px-3 py-1.5 text-[10.5px] font-medium uppercase tracking-wider text-[color:var(--fg-4)] bg-[color:var(--bg-3)]/40">
@@ -142,6 +151,12 @@ export const UniversalMentionList = forwardRef<
           ))}
         </div>
       ))}
+      </div>
+      <div className="flex items-center gap-2 border-t border-[color:var(--border-subtle)] px-3 py-1.5 text-[10.5px] text-[color:var(--fg-4)]">
+        <span><kbd className="font-mono">↑↓</kbd> 이동</span>
+        <span><kbd className="font-mono">Enter/Tab</kbd> 선택</span>
+        <span className="ml-auto"><kbd className="font-mono">Esc</kbd> 닫기</span>
+      </div>
     </div>
   );
 });
