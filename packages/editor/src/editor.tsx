@@ -69,6 +69,7 @@ export function Editor({
             const level = (node.attrs as { level?: number })?.level ?? 1;
             return `제목 ${level}`;
           }
+          if (name === 'detailsSummary') return '토글';
           if (name === 'paragraph') {
             return pos === 0 ? placeholder : "'/'로 블록 추가";
           }

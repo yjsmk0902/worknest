@@ -242,7 +242,7 @@ export function getSlashCommandItems(): SlashCommandItem[] {
             type: 'details',
             attrs: { open: true },
             content: [
-              { type: 'detailsSummary', content: [{ type: 'text', text: '토글' }] },
+              { type: 'detailsSummary' },
               { type: 'detailsContent', content: [{ type: 'paragraph' }] },
             ],
           })

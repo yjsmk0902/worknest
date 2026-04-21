@@ -346,14 +346,11 @@
    <summary data-type="detailsSummary"> + <div data-type="detailsContent">.
    ========================================================================= */
 .ProseMirror [data-type="details"] {
-  margin: 12px 0;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-1);
-  border-radius: 6px;
-  padding: 8px 12px;
+  margin: 8px 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 18px 1fr;
-  column-gap: 6px;
+  grid-template-columns: 20px 1fr;
+  column-gap: 4px;
   align-items: start;
 }
 .ProseMirror [data-type="details"] > button {
