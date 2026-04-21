@@ -77,22 +77,46 @@ interface BlockHit {
   dom: HTMLElement;
 }
 
+// Selectors for container blocks whose interior should accept drops.
+// We descend into them so a drop over a toggle/callout/blockquote can
+// land on an inner child block (and nest properly).
+const CONTAINER_SELECTOR = [
+  '[data-type="details"]',
+  '[data-type="detailsContent"]',
+  '[data-type="callout"]',
+  'blockquote',
+].join(',');
+
 function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
-  const contentRoot = view.dom;
-  for (let child = contentRoot.firstElementChild; child; child = child.nextElementSibling) {
-    if (!(child instanceof HTMLElement)) continue;
-    const rect = child.getBoundingClientRect();
-    if (rect.height === 0) continue;
-    if (clientY >= rect.top - 2 && clientY <= rect.bottom + 2) {
+  const scan = (parent: Element): BlockHit | null => {
+    for (let child = parent.firstElementChild; child; child = child.nextElementSibling) {
+      if (!(child instanceof HTMLElement)) continue;
+      const rect = child.getBoundingClientRect();
+      if (rect.height === 0) continue;
+      if (clientY < rect.top - 2 || clientY > rect.bottom + 2) continue;
+
+      // Descend into container blocks first (wrapping divs from NodeViews
+      // or content wrappers) so inner children get priority as drop
+      // targets over the container boundary.
+      if (child.matches(CONTAINER_SELECTOR) || !child.hasAttribute('data-type')) {
+        const inner = scan(child);
+        if (inner) return inner;
+      }
+
       try {
         const pos = view.posAtDOM(child, 0);
-        return { pos: Math.max(0, pos - 1), dom: child };
+        const node = view.state.doc.nodeAt(Math.max(0, pos - 1));
+        // Only accept block-level nodes as drop targets.
+        if (node && node.isBlock) {
+          return { pos: Math.max(0, pos - 1), dom: child };
+        }
       } catch {
         // skip
       }
     }
-  }
-  return null;
+    return null;
+  };
+  return scan(view.dom);
 }
 
 function dragHandlePlugin() {
