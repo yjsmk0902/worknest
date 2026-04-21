@@ -32,6 +32,7 @@ import { Route as AppOrgSlugWsSlugMyFavoritesRouteImport } from './routes/_app/$
 import { Route as AppOrgSlugWsSlugSettingsOrgIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/settings/org/index'
 import { Route as AppOrgSlugWsSlugWikiSpaceIdPageIdRouteImport } from './routes/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId'
 import { Route as AppOrgSlugWsSlugSettingsOrgMembersRouteImport } from './routes/_app/$orgSlug/$wsSlug/settings/org/members'
+import { Route as AppOrgSlugWsSlugProjectsProjectIdWikiIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/wiki/index'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/index'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/index'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdGanttIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/gantt/index'
@@ -168,6 +169,12 @@ const AppOrgSlugWsSlugSettingsOrgMembersRoute =
     path: '/settings/org/members',
     getParentRoute: () => AppOrgSlugWsSlugRoute,
   } as any)
+const AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute =
+  AppOrgSlugWsSlugProjectsProjectIdWikiIndexRouteImport.update({
+    id: '/wiki/',
+    path: '/wiki/',
+    getParentRoute: () => AppOrgSlugWsSlugProjectsProjectIdRoute,
+  } as any)
 const AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute =
   AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -261,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/$orgSlug/$wsSlug/projects/$projectId/gantt/': typeof AppOrgSlugWsSlugProjectsProjectIdGanttIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/issues/': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings/': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute
+  '/$orgSlug/$wsSlug/projects/$projectId/wiki/': typeof AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -293,6 +301,7 @@ export interface FileRoutesByTo {
   '/$orgSlug/$wsSlug/projects/$projectId/gantt': typeof AppOrgSlugWsSlugProjectsProjectIdGanttIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/issues': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute
+  '/$orgSlug/$wsSlug/projects/$projectId/wiki': typeof AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -329,6 +338,7 @@ export interface FileRoutesById {
   '/_app/$orgSlug/$wsSlug/projects/$projectId/gantt/': typeof AppOrgSlugWsSlugProjectsProjectIdGanttIndexRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute
+  '/_app/$orgSlug/$wsSlug/projects/$projectId/wiki/': typeof AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/$wsSlug/projects/$projectId/gantt/'
     | '/$orgSlug/$wsSlug/projects/$projectId/issues/'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings/'
+    | '/$orgSlug/$wsSlug/projects/$projectId/wiki/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/$wsSlug/projects/$projectId/gantt'
     | '/$orgSlug/$wsSlug/projects/$projectId/issues'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings'
+    | '/$orgSlug/$wsSlug/projects/$projectId/wiki'
   id:
     | '__root__'
     | '/'
@@ -431,6 +443,7 @@ export interface FileRouteTypes {
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/gantt/'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/'
+    | '/_app/$orgSlug/$wsSlug/projects/$projectId/wiki/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -602,6 +615,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrgSlugWsSlugSettingsOrgMembersRouteImport
       parentRoute: typeof AppOrgSlugWsSlugRoute
     }
+    '/_app/$orgSlug/$wsSlug/projects/$projectId/wiki/': {
+      id: '/_app/$orgSlug/$wsSlug/projects/$projectId/wiki/'
+      path: '/wiki'
+      fullPath: '/$orgSlug/$wsSlug/projects/$projectId/wiki/'
+      preLoaderRoute: typeof AppOrgSlugWsSlugProjectsProjectIdWikiIndexRouteImport
+      parentRoute: typeof AppOrgSlugWsSlugProjectsProjectIdRoute
+    }
     '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/': {
       id: '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/'
       path: '/settings'
@@ -686,6 +706,7 @@ interface AppOrgSlugWsSlugProjectsProjectIdRouteChildren {
   AppOrgSlugWsSlugProjectsProjectIdGanttIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdGanttIndexRoute
   AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute
   AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute
+  AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute
 }
 
 const AppOrgSlugWsSlugProjectsProjectIdRouteChildren: AppOrgSlugWsSlugProjectsProjectIdRouteChildren =
@@ -710,6 +731,8 @@ const AppOrgSlugWsSlugProjectsProjectIdRouteChildren: AppOrgSlugWsSlugProjectsPr
       AppOrgSlugWsSlugProjectsProjectIdIssuesIndexRoute,
     AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute:
       AppOrgSlugWsSlugProjectsProjectIdSettingsIndexRoute,
+    AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute:
+      AppOrgSlugWsSlugProjectsProjectIdWikiIndexRoute,
   }
 
 const AppOrgSlugWsSlugProjectsProjectIdRouteWithChildren =
