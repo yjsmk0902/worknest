@@ -289,6 +289,12 @@ export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandList
 
     useImperativeHandle(ref, () => ({
       onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+        // Korean/Japanese/Chinese IME: first Enter commits composition —
+        // don't treat it as item selection, let it pass to the IME.
+        if (event.isComposing || event.keyCode === 229) {
+          return false;
+        }
+
         if (event.key === 'ArrowUp') {
           setSelectedIndex((prev) => (prev <= 0 ? items.length - 1 : prev - 1));
           return true;
