@@ -69,10 +69,12 @@ export function Editor({
             const level = (node.attrs as { level?: number })?.level ?? 1;
             return `제목 ${level}`;
           }
-          if (name === 'blockquote') return '인용';
           if (name === 'paragraph') {
             return pos === 0 ? placeholder : "'/'로 블록 추가";
           }
+          // blockquote/bulletList/orderedList/taskItem/details/callout:
+          // visual chrome (border/bullet/checkbox) is the cue — the inner
+          // paragraph renders its own placeholder.
           return '';
         },
         showOnlyCurrent: true,
