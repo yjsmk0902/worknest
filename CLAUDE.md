@@ -63,6 +63,19 @@ Step 4: Tech Lead — 통합 검증
 - 세션: Better Auth 기본 (DB 세션 + httpOnly cookie caching)
 - CRDT 동시 편집: v1.0 (MVP는 단일 사용자 편집)
 - 모듈(에픽): v1.0
+- **TipTap 버전 고정**: root `package.json`의 `pnpm.overrides`로 `@tiptap/pm` +
+  `@tiptap/suggestion`을 v2.27.2로 강제. v3 혼입 시 슬래시/멘션 플러그인이
+  ProseMirror 스키마 공유에 실패해 런타임 깨짐.
+
+## Wiki 모듈 현황 (2026-04-21 기준)
+
+- Phase 1 완료: 아이콘, 즐겨찾기, 최근 편집, 인라인 서브페이지, FTS 검색
+- Phase 2 완료: Callout / Toggle / Code / TaskList / Table / 통합 `@` 멘션 (멤버+위키+이슈)
+  / 북마크 카드(OG 스크래핑) / 마크다운 단축키 확장 / Typography
+- 추가 기능: 노션 스타일 블록 드래그앤드롭(포인터 기반), 페이지 Draft,
+  프로젝트 생성 시 자동 위키 + 양쪽 메뉴 접근, 페이지/스페이스 삭제 UI
+- 알려진 deferred: URL 붙여넣기 자동 임베드, 테이블 컨텍스트 메뉴, 에디터 내부 `/page`,
+  전용 삭제 확인 모달, 기존 프로젝트 위키 백필 스크립트, Phase 3 실시간 편집
 
 ## Project Structure
 

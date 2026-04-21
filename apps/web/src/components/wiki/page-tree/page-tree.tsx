@@ -260,6 +260,7 @@ export function PageTree({
       if (activeIndex === -1 || overIndex === -1) return;
 
       const overNode = flatNodes[overIndex];
+      if (!overNode) return;
 
       // Simple reorder: move active to the position of over
       moveMutation.mutate({

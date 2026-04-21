@@ -316,10 +316,11 @@ export function getSlashCommandItems(): SlashCommandItem[] {
                 return true;
               });
               if (bookmarkPos === null) return;
+              const pos = bookmarkPos;
               editor
                 .chain()
                 .command(({ tr }) => {
-                  tr.setNodeMarkup(bookmarkPos, undefined, {
+                  tr.setNodeMarkup(pos, undefined, {
                     url,
                     // Custom title wins over OG title
                     title: customTitle ?? preview.title ?? null,
@@ -387,7 +388,8 @@ export const SlashCommandList = forwardRef<SlashCommandListRef, SlashCommandList
       onKeyDown: ({ event }: { event: KeyboardEvent }) => {
         // Korean/Japanese/Chinese IME: first Enter commits composition —
         // don't treat it as item selection, let it pass to the IME.
-        if (event.isComposing || event.keyCode === 229) {
+        const ne = event as unknown as globalThis.KeyboardEvent;
+        if (ne.isComposing || ne.keyCode === 229) {
           return false;
         }
 

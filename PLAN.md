@@ -124,92 +124,87 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
 
 ### Phase 1 — 페이지 메타 & 탐색 ✅
 
-#### 1-1. 페이지 아이콘(이모지) + 커버 이미지 ✅
-- [x] `wiki_pages.icon` (text, emoji/shortcode), `wiki_pages.cover_url` (text nullable) 컬럼 추가
-- [x] 페이지 상단에 이모지 피커 + 커버 업로드/교체 UI
-- [x] 페이지 트리에 아이콘 표시 (브레드크럼은 후속)
-- [ ] 수정 파일
-  - `packages/db/src/schema/wiki.ts` — 컬럼 추가 + 마이그레이션
-  - `packages/shared/src/schemas/wiki.ts` — 스키마 갱신
-  - `apps/web/src/routes/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId.tsx` — 아이콘/커버 헤더
-  - `apps/web/src/components/wiki/page-tree/page-tree-item.tsx` — 아이콘 표시
-  - `apps/web/src/components/wiki/emoji-picker.tsx` — 새로 생성
-  - `apps/web/src/components/wiki/cover-image.tsx` — 새로 생성
+#### 1-1. 페이지 아이콘(이모지) ✅ / 커버 ❌ 제거됨
+- [x] `wiki_pages.icon`, `wiki_pages.cover_url` 컬럼 추가 (migration 0009)
+- [x] 페이지 상단에 이모지 피커 (6카테고리 curated)
+- [x] 페이지 트리에 아이콘 표시
+- [x] **커버 이미지는 사용자 요청으로 UI 제거** (컬럼은 유지, 추후 재도입 가능)
 
-#### 1-2. 페이지 즐겨찾기 ✅
-- [x] 기존 favorites 시스템에 `wiki_page` entity_type 활용 (이미 pageId/spaceId 스키마 존재)
-- [x] 페이지 상단 헤더에 별 아이콘 토글
-- [x] 스페이스 패널에도 스페이스 즐겨찾기 토글 추가
-- [ ] 수정 파일
-  - `packages/db/src/schema/favorites.ts` — entity_type 확장 확인
-  - `apps/server/src/services/favorite-service.ts` — wiki page 지원
-  - `apps/web/src/components/favorite-button.tsx` — 위키 페이지 타입 추가
-  - `apps/web/src/components/layout/sidebar-favorites.tsx` — 렌더링
+#### 1-2. 페이지/스페이스 즐겨찾기 ✅
+- [x] favorites 시스템의 pageId/spaceId 활용
+- [x] 페이지 브레드크럼 + 스페이스 패널 헤더에 별 아이콘 토글
 
 #### 1-3. 최근 편집 페이지 ✅
-- [x] 워크스페이스 접근 가능 스페이스의 최근 편집 페이지 N개 쿼리
-- [x] 위키 인덱스 페이지 상단에 "최근 편집" 섹션 (4열 카드)
-- [ ] 수정 파일
-  - `apps/server/src/routes/wiki.ts` — GET `/workspaces/:wsId/wiki-pages/recent`
-  - `apps/web/src/routes/_app/$orgSlug/$wsSlug/wiki/index.tsx` — 섹션 추가
+- [x] `/workspaces/:wsId/wiki-pages/recent` 엔드포인트 (드래프트는 본인 것만 노출)
+- [x] 위키 인덱스 상단 "최근 편집" 섹션 (4열 카드)
 
-#### 1-4. 인라인 서브페이지 생성 (부분 완료)
-- [ ] 에디터 슬래시 커맨드 `/page` → `page-link` 에디터 노드가 필요하므로 Phase 2로 이관
-- [x] 페이지 트리의 `+` hover 버튼으로 서브페이지 생성 (생성 시 부모 expand + 새 페이지 선택)
-- [ ] 수정 파일
-  - `packages/editor/src/extensions/slash-command.ts` — 명령 추가
-  - `packages/editor/src/extensions/page-link.ts` — 새로 생성 (page mention node)
-  - `apps/web/src/components/wiki/page-tree/page-tree-item.tsx` — hover `+` 버튼
+#### 1-4. 인라인 서브페이지 생성 ✅ (트리에서)
+- [x] 페이지 트리 hover 시 `+` 버튼으로 서브페이지 생성 (부모 자동 expand)
+- [ ] 에디터 내부 슬래시 `/page`는 후속 (page-link 노드 필요)
 
 #### 1-5. 전역 검색 (페이지 제목 + 본문) ✅
-- [x] 기존 `wiki_pages.search_vector` FTS 인덱스 활용 (제목 A, 본문 B weight)
-- [x] `searchPages`를 ILIKE → FTS + ILIKE fallback으로 업그레이드
-- [x] 검색 결과에 `spaceId`/`icon` 포함 → command palette가 실제 위키 라우트로 이동 가능
-- [ ] 수정 파일
-  - `packages/db/migrations/` — 마이그레이션: GIN 인덱스
-  - `apps/server/src/services/search-service.ts` — 새로 생성 (또는 확장)
-  - `apps/server/src/routes/search.ts` — 엔드포인트
-  - `apps/web/src/components/command-palette/` — 결과 섹션
+- [x] `wiki_pages.search_vector` FTS 활용 (제목 A, 본문 B weight) + ILIKE fallback
+- [x] 검색 결과 `spaceId`/`icon`/드래프트 필터 포함 → command palette에서 실제 라우트 이동
 
 ---
 
-### Phase 2 — 에디터 블록 확장 (부분 완료)
+### Phase 2 — 에디터 블록 확장 ✅ (대부분 완료, Embed만 deferred)
 
 #### 2-1. 노션 필수 블록 ✅
-- [x] Callout (이모지 + 배경 컬러 5종: default/info/warn/success/danger)
-- [x] Toggle (접히는 블록 — native `<details>` 기반)
-- [x] Divider (기존 slash `/구분선` 유지)
-- [x] Code block (이미 lowlight 연동 — 기존)
-- [x] To-do 체크박스 (이미 TaskList/TaskItem — 기존)
-- [ ] 수정 파일
-  - `packages/editor/src/extensions/callout.ts` — 새로 생성
-  - `packages/editor/src/extensions/toggle-block.ts` — 새로 생성
-  - `packages/editor/src/extensions/code-block.ts` — lowlight 연동
-  - `packages/editor/src/index.ts` — export
-  - `packages/editor/src/extensions/slash-command.ts` — 명령 등록
+- [x] Callout (이모지 + 배경 컬러 5종, ::before 의사요소 아이콘, 다중 문단 grid 레이아웃)
+- [x] Toggle (`<details>` NodeView 기반 커스텀 chevron, 빈 줄 Enter 시 블록 탈출)
+- [x] Code block (lowlight, ` ``` ` 마크다운 단축키)
+- [x] To-do 체크박스 (TaskList/TaskItem)
+- [x] Divider + `--- ` 마크다운 단축키
+- [x] **마크다운 단축키 재배치**: `| ` → 인용, `> ` → 토글
+- [x] 블록 타입별 placeholder (제목 N / 인용 / /로 블록 추가)
+- [x] @tiptap/extension-typography (em-dash, ellipsis, smart quotes)
 
-#### 2-2. @멘션 시스템 (부분 완료)
-- [x] `@user` (사용자) — 기존 `createMentionExtension`
-- [x] `#ISSUE-123` (이슈) — 기존 `IssueLink` 익스텐션
-- [ ] 페이지 멘션 — `createPageMentionExtension` 구현됐으나 `[[` multi-char
-      트리거가 `@tiptap/suggestion@v2`에서 미지원, `/` 입력까지 가로챔 →
-      일시 비활성화. 단일 문자 트리거(`@` 통합 / `+`) 재작업 필요
-- [ ] 수정 파일
-  - `packages/editor/src/extensions/mention.ts` — 새로 생성 (@tiptap/extension-mention 기반)
-  - `packages/editor/src/extensions/page-link.ts` — Phase 1-4와 공유
-  - `packages/editor/src/mention-suggestion.tsx` — 서제스천 렌더러
+#### 2-2. @멘션 시스템 ✅
+- [x] **통합 `@` 멘션** `createUniversalMentionExtension` — 멤버/위키/이슈 한 트리거에
+      섹션별 표시, 종류별 색상 구분 (멤버 amber, 페이지 blue, 이슈 emerald),
+      Tab 선택으로 IME 상황 회피
+- [x] `#ISSUE-NN` 패턴 기반 `IssueLink` (기존)
 
-#### 2-3. Table 블록 ✅ (기존)
-- [x] @tiptap/extension-table 기반 기본 표 (editor.tsx에 이미 구성)
-- [ ] 행/열 추가/삭제, 정렬, 병합 UI는 후속 개선
+#### 2-3. Table 블록 ✅
+- [x] @tiptap/extension-table 기반 기본 표
+- [ ] 행/열 추가/삭제, 병합 컨텍스트 메뉴는 후속
 
-#### 2-4. Embed (링크 auto-unfurl) — 후속 항목
-- [ ] 유튜브, vimeo, 이미지, 피그마 링크 자동 임베드
-- [ ] 서버 사이드 OG 메타 조회 (opengraph-scraper)
-> Phase 2에서 deferred: 서버 OG 스크래핑 + 임베드 노드 구현은 별도 공수.
-- [ ] 수정 파일
-  - `packages/editor/src/extensions/embed.ts` — 새로 생성
-  - `apps/server/src/routes/metadata.ts` — `/url-preview` 엔드포인트
+#### 2-4. 북마크 ✅ / Embed (auto-unfurl) — 후속
+- [x] **노션 스타일 북마크 카드** — `Bookmark` atom 노드 + 전용 모달(제목 수기 입력
+      + URL 검증) + 서버 `/api/v1/url-preview` (OG/Twitter 메타 + favicon, 6초/500KB 제한)
+- [ ] URL 붙여넣기 자동 임베드 변환 (paste rule) — 후속
+
+---
+
+### Phase 2 외 추가 구현 (사용자 요청으로 중간 투입된 기능)
+
+#### 드래그 앤 드롭 (블록 이동) ✅
+- [x] `DragHandle` 익스텐션 — 포인터 이벤트 기반(HTML5 drag API 브라우저 차이 우회),
+      `document.body`에 핸들/드롭 라인 마운트, 에디터 좌측 gutter에 고정 위치,
+      컨테이너 블록(토글/콜아웃/인용) 내부도 드롭 타겟, 콜아웃 첫 줄은 "전체 이동"으로 승격
+
+#### 페이지 초안(Draft) ✅
+- [x] `wiki_pages.status` ('draft' | 'published') 컬럼 (migration 0010)
+- [x] 작성자 본인에게만 노출 — list/getById/listRecent/search 전부 필터
+- [x] 페이지 상단 토글 버튼 + 트리에 이탤릭/배지 표시
+
+#### 프로젝트 ↔ 위키 연동 ✅
+- [x] `wiki_spaces.project_id` 컬럼 (migration 0011) + project 당 unique 부분 인덱스
+- [x] 프로젝트 생성 시 자동 위키 공간 + 에디터 멤버십 생성 (ProjectService.create 트랜잭션)
+- [x] `GET /projects/:projectId/wiki-space` + `/projects/$projectId/wiki` 리다이렉트 라우트
+- [x] 프로젝트 사이드바 "위키" 서브메뉴 + 위키 인덱스의 프로젝트 위키 아이콘/배지 구분
+
+#### 삭제 UI ✅
+- [x] 페이지 트리 hover 시 ⋯ 메뉴 → 페이지 soft-delete (하위 페이지는 한 단계 위로 이동)
+- [x] 스페이스 드롭다운에 "스페이스 삭제" (확인 후 전체 페이지 포함 제거)
+
+#### 그 외 세부 개선
+- [x] TipTap 버전 정렬 — `@tiptap/pm` / `@tiptap/suggestion` v3 → v2, pnpm overrides로 강제
+- [x] 슬래시 커맨드 IME 조합 Enter 무시, selectedIndex 리셋 버그 수정, 키보드 하이라이트 가시화
+- [x] 에디터/제목 `[contenteditable]` focus-visible 글로우 제거
+- [x] 빈 제목 저장 허용 + 항상 "제목 없음" placeholder 노출 (`<br>` 정리)
+- [x] 저장 상태 인디케이터를 에디터 내부 → 브레드크럼 우측으로 이동
 
 ---
 
@@ -286,7 +281,7 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
 ### 타입 오류 정리 (우선순위: 낮)
 - `apps/server`: Drizzle ORM `strict` 타입과 `request.user!.id` 패턴 충돌 → 수십 개 에러
 - `apps/web`: 라우트 타입(`Link to="..."`), 배열 인덱스 undefined 체크 → ~30개
-- `packages/editor`: TipTap `@tiptap/pm` v2/v3 버전 충돌 → 버전 통일 필요
+- `packages/editor`: TipTap `@tiptap/pm` v2/v3 버전 충돌 → ✅ **해결됨** (2026-04-21, pnpm overrides로 v2 고정)
 
 현재 CI에서 typecheck 제외하고 build(tsup + Vite)로 대체 검증.
 
@@ -304,11 +299,19 @@ Phase 6: 시간 추정/추적
 
 ### 위키 트랙 (섹션 7)
 ```
-Wiki Phase 1: 페이지 메타 & 탐색 (아이콘/커버/즐겨찾기/최근/서브페이지/검색)
-Wiki Phase 2: 에디터 블록 확장 (callout, toggle, code, @mention, table, embed)
-Wiki Phase 3: 협업/공유 (Yjs 실시간, 블록 코멘트, 공유 링크, 히스토리)
-Wiki Phase 4: 고급 (템플릿, 이슈 DB 임베드, AI)
+Wiki Phase 1 ✅: 페이지 메타 & 탐색 (아이콘/즐겨찾기/최근/서브페이지/검색, 커버는 제거)
+Wiki Phase 2 ✅: 에디터 블록 확장 (callout, toggle, code, @mention, table, 북마크)
+Wiki Phase 2+ ✅: 드래그앤드롭, Draft, 프로젝트-위키, 삭제 UI (사용자 요청으로 추가)
+Wiki Phase 3  : 협업/공유 (Yjs 실시간, 블록 코멘트, 공유 링크, 히스토리)
+Wiki Phase 4  : 고급 (템플릿, 이슈 DB 임베드, AI)
 ```
+
+**남은 Phase 2 후속 개선** (선택)
+- Embed auto-unfurl (URL 붙여넣기 → 북마크 카드 자동 변환)
+- 테이블 컨텍스트 메뉴 (행/열 추가·삭제·병합)
+- 에디터 내부 `/page` 슬래시 (page-link 노드)
+- `window.confirm` → 전용 삭제 확인 모달
+- 기존 프로젝트용 위키 백필 스크립트
 
 두 트랙은 DB/에디터 공유 지점(페이지 메타 ↔ 에디터 확장 ↔ 멘션 ↔ 이슈 임베드)이 있어
 이슈 트랙 진행과 병행 가능. 각 Wiki Phase 내 세부 항목은 독립적으로 배치해도 무방.
