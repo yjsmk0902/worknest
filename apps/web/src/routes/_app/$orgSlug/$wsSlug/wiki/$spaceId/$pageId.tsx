@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import type { JSONContent } from '@tiptap/core';
 import {
+  Bookmark,
   Callout,
   EditorWithAutosave,
   ImageUpload,
@@ -256,6 +257,7 @@ function WikiPageEditor() {
       ToggleSummary,
       ToggleContent,
       MarkdownShortcuts,
+      Bookmark,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
       }),

@@ -1,5 +1,6 @@
 import type { Editor, Range } from '@tiptap/core';
 import {
+  Bookmark as BookmarkIcon,
   ChevronRight,
   Code2,
   Heading1,
@@ -272,6 +273,77 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setHorizontalRule().run();
+      },
+    },
+    {
+      title: '북마크',
+      description: 'URL 미리보기 카드',
+      icon: <BookmarkIcon size={18} />,
+      keywords: ['bookmark', 'link', 'embed', 'url', 'preview'],
+      category: '고급',
+      command: ({ editor, range }: SlashCommandProps) => {
+        const raw = window.prompt('북마크할 URL을 입력하세요');
+        const url = raw?.trim();
+        if (!url) return;
+
+        let parsed: URL;
+        try {
+          parsed = new URL(url);
+        } catch {
+          window.alert('올바른 URL이 아닙니다');
+          return;
+        }
+
+        // Insert a placeholder bookmark immediately so the user sees
+        // something, then update its attrs once the preview lands.
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .insertContent({
+            type: 'bookmark',
+            attrs: { url: parsed.toString() },
+          })
+          .run();
+
+        fetch(`/api/v1/url-preview?url=${encodeURIComponent(parsed.toString())}`, {
+          credentials: 'include',
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((preview) => {
+            if (!preview || typeof preview !== 'object') return;
+            const { state } = editor;
+            let bookmarkPos: number | null = null;
+            state.doc.descendants((node, pos) => {
+              if (
+                node.type.name === 'bookmark' &&
+                node.attrs.url === parsed.toString() &&
+                !node.attrs.title &&
+                !node.attrs.description
+              ) {
+                bookmarkPos = pos;
+              }
+              return true;
+            });
+            if (bookmarkPos === null) return;
+            editor
+              .chain()
+              .command(({ tr }) => {
+                tr.setNodeMarkup(bookmarkPos, undefined, {
+                  url: parsed.toString(),
+                  title: preview.title ?? null,
+                  description: preview.description ?? null,
+                  image: preview.image ?? null,
+                  favicon: preview.favicon ?? null,
+                  siteName: preview.siteName ?? null,
+                });
+                return true;
+              })
+              .run();
+          })
+          .catch(() => {
+            // Silent — placeholder card stays with just the URL.
+          });
       },
     },
   ];

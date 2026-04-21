@@ -40,6 +40,9 @@ export { ToggleBlock, ToggleContent, ToggleSummary } from './extensions/toggle-b
 // Custom markdown-style input rules (| → quote, > → toggle)
 export { MarkdownShortcuts } from './extensions/markdown-shortcuts';
 
+// Bookmark (URL preview card) block
+export { Bookmark } from './extensions/bookmark';
+
 // Page mention extension (trigger: `[[`)
 export { createPageMentionExtension } from './extensions/page-mention';
 export type { PageMentionItem, PageMentionQueryFn } from './extensions/page-mention';

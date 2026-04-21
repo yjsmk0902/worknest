@@ -40,6 +40,7 @@ import { organizationRoutes } from './routes/organizations';
 import { profileRoutes } from './routes/profile';
 import { projectRoutes } from './routes/projects';
 import { searchRoutes } from './routes/search';
+import { urlPreviewRoutes } from './routes/url-preview';
 import { viewRoutes } from './routes/views';
 import { wikiPageRoutes } from './routes/wiki-pages';
 import { wikiSpaceRoutes } from './routes/wiki-spaces';
@@ -232,6 +233,7 @@ async function main() {
   await notificationRoutes(app, { auth, db });
   await myWorkRoutes(app, { auth, db });
   await favoriteRoutes(app, { auth, db });
+  await urlPreviewRoutes(app, { auth, db });
   await websocketHandler(app, { auth, db });
 
   // ── Graceful Shutdown ────────────────────────────────────────────
