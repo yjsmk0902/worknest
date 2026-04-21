@@ -113,25 +113,17 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
     return null;
   };
   const hit = scan(view.dom);
-  return hit ? promoteCalloutFirstChild(view, hit) : null;
+  if (!hit) return null;
+  // The callout's first (title) line is treated as decoration that isn't
+  // individually draggable. Bail out so the handle isn't rendered there.
+  if (isCalloutFirstChild(hit)) return null;
+  return hit;
 }
 
-/**
- * If the block we picked is the first inline-content child of a callout,
- * promote the drag target to the whole callout so a drag from the top of
- * the callout moves the entire block (and its icon) rather than just the
- * first paragraph.
- */
-function promoteCalloutFirstChild(view: EditorView, hit: BlockHit): BlockHit {
+function isCalloutFirstChild(hit: BlockHit): boolean {
   const parent = hit.dom.parentElement;
-  if (!parent || parent.getAttribute('data-type') !== 'callout') return hit;
-  if (parent.firstElementChild !== hit.dom) return hit;
-  try {
-    const pos = view.posAtDOM(parent, 0);
-    return { pos: Math.max(0, pos - 1), dom: parent };
-  } catch {
-    return hit;
-  }
+  if (!parent || parent.getAttribute('data-type') !== 'callout') return false;
+  return parent.firstElementChild === hit.dom;
 }
 
 function dragHandlePlugin() {
