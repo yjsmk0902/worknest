@@ -355,6 +355,8 @@
   align-items: center;
   justify-content: center;
   user-select: none;
+  -webkit-user-drag: element;
+  -webkit-user-select: none;
 }
 .editor-drag-handle:hover {
   color: var(--fg-2);

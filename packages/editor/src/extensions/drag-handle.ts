@@ -19,11 +19,12 @@ const HANDLE_GAP = 6;
 const LEFT_HIT_TOLERANCE = HANDLE_WIDTH + HANDLE_GAP + 6;
 
 function createHandle() {
-  const el = document.createElement('button');
-  el.type = 'button';
+  const el = document.createElement('div');
   el.className = 'editor-drag-handle';
   el.contentEditable = 'false';
   el.draggable = true;
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
   el.setAttribute('aria-label', '블록 이동');
   el.innerHTML = `
     <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor" aria-hidden="true">
@@ -149,37 +150,37 @@ function dragHandlePlugin() {
       };
 
       const onHandleDragStart = (e: DragEvent) => {
-        if (hoveredPos === null) return;
+        if (hoveredPos === null || !e.dataTransfer) return;
 
-        // Select the whole block so the slice we hand to PM's drop handler
-        // covers the entire node.
-        const tr = view.state.tr.setSelection(
-          NodeSelection.create(view.state.doc, hoveredPos),
-        );
-        view.dispatch(tr);
+        const startPos = hoveredPos;
+        const blockDom = currentBlockDom;
 
-        const slice = view.state.selection.content();
-        // Priming view.dragging is what PM checks inside its drop handler
-        // to decide whether to move content. Without this, a drag that
-        // originated outside view.dom produces no drop.
+        // Build the NodeSelection + slice from the CURRENT state so we can
+        // prime dataTransfer/dragImage synchronously during dragstart.
+        // (setDragImage MUST be called before dragstart returns, and any
+        // view.dispatch that follows can invalidate blockDom via re-render.)
+        const selection = NodeSelection.create(view.state.doc, startPos);
+        const slice = selection.content();
+
+        e.dataTransfer.effectAllowed = 'move';
+        const serializer = view.someProp('clipboardSerializer');
+        if (serializer) {
+          const dom = serializer.serializeFragment(slice.content);
+          const wrap = document.createElement('div');
+          wrap.appendChild(dom as Node);
+          e.dataTransfer.setData('text/html', wrap.innerHTML);
+          e.dataTransfer.setData('text/plain', wrap.innerText);
+        }
+        if (blockDom) {
+          e.dataTransfer.setDragImage(blockDom, 10, 10);
+        }
+
+        // Prime PM's drop handler AND create the selection. Done after the
+        // dataTransfer setup so the drag image/data is already captured.
         (view as unknown as {
           dragging: { slice: typeof slice; move: boolean } | null;
         }).dragging = { slice, move: true };
-
-        if (e.dataTransfer) {
-          e.dataTransfer.effectAllowed = 'move';
-          const serializer = view.someProp('clipboardSerializer');
-          if (serializer) {
-            const dom = serializer.serializeFragment(slice.content);
-            const wrap = document.createElement('div');
-            wrap.appendChild(dom as Node);
-            e.dataTransfer.setData('text/html', wrap.innerHTML);
-            e.dataTransfer.setData('text/plain', wrap.innerText);
-          }
-          if (currentBlockDom) {
-            e.dataTransfer.setDragImage(currentBlockDom, 0, 0);
-          }
-        }
+        view.dispatch(view.state.tr.setSelection(selection));
 
         hide();
       };
