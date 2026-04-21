@@ -95,9 +95,6 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
       if (rect.height === 0) continue;
       if (clientY < rect.top - 2 || clientY > rect.bottom + 2) continue;
 
-      // Descend into container blocks first (wrapping divs from NodeViews
-      // or content wrappers) so inner children get priority as drop
-      // targets over the container boundary.
       if (child.matches(CONTAINER_SELECTOR) || !child.hasAttribute('data-type')) {
         const inner = scan(child);
         if (inner) return inner;
@@ -106,7 +103,6 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
       try {
         const pos = view.posAtDOM(child, 0);
         const node = view.state.doc.nodeAt(Math.max(0, pos - 1));
-        // Only accept block-level nodes as drop targets.
         if (node && node.isBlock) {
           return { pos: Math.max(0, pos - 1), dom: child };
         }
@@ -116,7 +112,26 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
     }
     return null;
   };
-  return scan(view.dom);
+  const hit = scan(view.dom);
+  return hit ? promoteCalloutFirstChild(view, hit) : null;
+}
+
+/**
+ * If the block we picked is the first inline-content child of a callout,
+ * promote the drag target to the whole callout so a drag from the top of
+ * the callout moves the entire block (and its icon) rather than just the
+ * first paragraph.
+ */
+function promoteCalloutFirstChild(view: EditorView, hit: BlockHit): BlockHit {
+  const parent = hit.dom.parentElement;
+  if (!parent || parent.getAttribute('data-type') !== 'callout') return hit;
+  if (parent.firstElementChild !== hit.dom) return hit;
+  try {
+    const pos = view.posAtDOM(parent, 0);
+    return { pos: Math.max(0, pos - 1), dom: parent };
+  } catch {
+    return hit;
+  }
 }
 
 function dragHandlePlugin() {
