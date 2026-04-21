@@ -341,6 +341,31 @@
 }
 
 /* =========================================================================
+   Block drag handle — rendered by the DragHandle extension
+   ========================================================================= */
+.editor-drag-handle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: grab;
+  color: var(--fg-4);
+  padding: 2px 2px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.editor-drag-handle:hover {
+  color: var(--fg-2);
+  background: var(--bg-2);
+}
+.editor-drag-handle:active {
+  cursor: grabbing;
+  color: var(--fg-1);
+}
+
+/* =========================================================================
    Bookmark (link preview) card
    ========================================================================= */
 .ProseMirror a.bookmark-card {

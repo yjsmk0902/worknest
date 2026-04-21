@@ -43,6 +43,9 @@ export { MarkdownShortcuts } from './extensions/markdown-shortcuts';
 // Bookmark (URL preview card) block
 export { Bookmark } from './extensions/bookmark';
 
+// Notion-style block drag handle
+export { DragHandle } from './extensions/drag-handle';
+
 // Page mention extension (trigger: `[[`)
 export { createPageMentionExtension } from './extensions/page-mention';
 export type { PageMentionItem, PageMentionQueryFn } from './extensions/page-mention';

@@ -1,5 +1,6 @@
 import { FavoriteButton } from '@/components/favorite-button';
 import { FileAttachment } from '@/components/file-upload/file-attachment';
+import { BookmarkModal } from '@/components/wiki/bookmark-modal';
 import { AddCoverButton, CoverImage } from '@/components/wiki/cover-image';
 import { EmojiPicker } from '@/components/wiki/emoji-picker';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
@@ -11,6 +12,7 @@ import type { JSONContent } from '@tiptap/core';
 import {
   Bookmark,
   Callout,
+  DragHandle,
   EditorWithAutosave,
   ImageUpload,
   IssueLink,
@@ -258,6 +260,7 @@ function WikiPageEditor() {
       ToggleContent,
       MarkdownShortcuts,
       Bookmark,
+      DragHandle,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
       }),
@@ -429,6 +432,8 @@ function WikiPageEditor() {
         />
       </div>
       </div>
+
+      <BookmarkModal />
     </div>
   );
 }
