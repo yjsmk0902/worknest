@@ -247,20 +247,21 @@ export function getSlashCommandItems(): SlashCommandItem[] {
             ],
           })
           .run();
-        // Scan for the most recently inserted detailsSummary and drop the
-        // cursor inside it. Walking the doc is more reliable than guessing a
-        // pos offset, which depends on whether the surrounding paragraph got
-        // split or replaced.
-        let summaryPos: number | null = null;
-        editor.state.doc.descendants((node, pos) => {
-          if (node.type.name === 'detailsSummary') {
-            summaryPos = pos + 1;
+        // Defer selection change to next tick so Suggestion's menu-close
+        // transaction (and any Enter-followup) settle first. Walking the
+        // doc is more reliable than guessing a pos offset.
+        requestAnimationFrame(() => {
+          let summaryPos: number | null = null;
+          editor.state.doc.descendants((node, pos) => {
+            if (node.type.name === 'detailsSummary') {
+              summaryPos = pos + 1;
+            }
+            return true;
+          });
+          if (summaryPos !== null) {
+            editor.chain().setTextSelection(summaryPos).focus().run();
           }
-          return true;
         });
-        if (summaryPos !== null) {
-          editor.commands.setTextSelection(summaryPos);
-        }
       },
     },
     {
