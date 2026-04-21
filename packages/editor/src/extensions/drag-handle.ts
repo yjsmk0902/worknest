@@ -5,28 +5,24 @@ import type { EditorView } from '@tiptap/pm/view';
 /**
  * Notion-style block drag handle.
  *
- * The handle itself lives on `document.body` (fixed positioning), so React
- * re-renders of the editor wrapper don't affect it. Because the native
- * dragstart fires OUTSIDE view.dom, we don't rely on PM's built-in move
- * logic — instead we:
- *
- *  1. Remember the source block position at dragstart.
- *  2. On `dragover` inside view.dom, compute the insert point and draw a
- *     thin drop indicator line.
- *  3. On `drop`, build a single transaction that deletes the source node
- *     and inserts it at the target position, then dispatch it.
+ * Uses pointer events (mousedown / mousemove / mouseup) rather than HTML5
+ * drag-drop. HTML5 drag events interact with the browser's built-in drag
+ * system and with ProseMirror's own drag handlers in subtle ways that made
+ * some blocks (everything except atom nodes) undraggable. A pointer-based
+ * implementation gives us full control and works consistently for any
+ * block type.
  */
 
 const PLUGIN_KEY = new PluginKey('dragHandle');
 const HANDLE_WIDTH = 20;
 const HANDLE_GAP = 6;
 const LEFT_HIT_TOLERANCE = HANDLE_WIDTH + HANDLE_GAP + 6;
+const DRAG_THRESHOLD_PX = 4;
 
 function createHandle() {
   const el = document.createElement('div');
   el.className = 'editor-drag-handle';
   el.contentEditable = 'false';
-  el.draggable = true;
   el.setAttribute('role', 'button');
   el.setAttribute('tabindex', '0');
   el.setAttribute('aria-label', '블록 이동');
@@ -62,6 +58,20 @@ function createDropLine() {
   return el;
 }
 
+function createGhost(source: HTMLElement) {
+  const ghost = source.cloneNode(true) as HTMLElement;
+  ghost.style.position = 'fixed';
+  ghost.style.pointerEvents = 'none';
+  ghost.style.opacity = '0.7';
+  ghost.style.zIndex = '9997';
+  ghost.style.width = `${source.getBoundingClientRect().width}px`;
+  ghost.style.background = 'var(--bg-2)';
+  ghost.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+  ghost.style.borderRadius = '6px';
+  ghost.style.padding = '4px 8px';
+  return ghost;
+}
+
 interface BlockHit {
   pos: number;
   dom: HTMLElement;
@@ -85,17 +95,6 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
   return null;
 }
 
-/**
- * Determine where to insert the dragged block relative to a hovered block.
- * Top half of hovered block → insert BEFORE it. Bottom half → insert AFTER.
- */
-function computeInsertInfo(hit: BlockHit, clientY: number) {
-  const rect = hit.dom.getBoundingClientRect();
-  const midY = (rect.top + rect.bottom) / 2;
-  const insertBefore = clientY < midY;
-  return { insertBefore, rect };
-}
-
 function dragHandlePlugin() {
   return new Plugin({
     key: PLUGIN_KEY,
@@ -109,9 +108,16 @@ function dragHandlePlugin() {
       let currentBlockDom: HTMLElement | null = null;
       let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
-      // Drag state
-      let dragSourcePos: number | null = null;
-      let dragTargetPos: number | null = null;
+      // Pointer-drag state
+      let dragState: {
+        startX: number;
+        startY: number;
+        sourcePos: number;
+        sourceDom: HTMLElement;
+        ghost: HTMLElement | null;
+        started: boolean;
+        targetPos: number | null;
+      } | null = null;
 
       const showAtBlock = (pos: number, dom: HTMLElement) => {
         const rect = dom.getBoundingClientRect();
@@ -154,10 +160,11 @@ function dragHandlePlugin() {
         }
       };
 
-      const onMouseMove = (e: MouseEvent) => {
-        if (!view.editable) return;
-        if (dragSourcePos !== null) return; // don't reposition while dragging
+      const onDocumentMouseMove = (e: MouseEvent) => {
+        // While actively dragging a block, only update drop indicator.
+        if (dragState) return;
 
+        if (!view.editable) return;
         if (handle.contains(e.target as Node)) {
           cancelHide();
           return;
@@ -186,113 +193,157 @@ function dragHandlePlugin() {
         }
       };
 
-      const onHandleClick = (e: MouseEvent) => {
-        if (hoveredPos === null) return;
-        e.preventDefault();
-        const tr = view.state.tr.setSelection(
-          NodeSelection.create(view.state.doc, hoveredPos),
-        );
-        view.dispatch(tr);
-        view.focus();
-      };
-
-      const onHandleDragStart = (e: DragEvent) => {
-        if (hoveredPos === null || !e.dataTransfer) return;
-
-        dragSourcePos = hoveredPos;
-        const blockDom = currentBlockDom;
-
-        e.dataTransfer.effectAllowed = 'move';
-        // A minimal text payload so the browser accepts the drag.
-        e.dataTransfer.setData('application/x-worknest-block', String(dragSourcePos));
-        if (blockDom) {
-          e.dataTransfer.setDragImage(blockDom, 10, 10);
-        }
-
-        hide();
-      };
-
-      const onHandleDragEnd = () => {
-        dragSourcePos = null;
-        dragTargetPos = null;
-        hideDropLine();
-      };
-
-      const onEditorDragOver = (e: DragEvent) => {
-        if (dragSourcePos === null) return;
-        // Stop PM's built-in dragover from running — we handle placement.
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-
-        const hit = findBlockAtY(view, e.clientY);
+      const updateDropIndicator = (clientY: number) => {
+        if (!dragState) return;
+        const hit = findBlockAtY(view, clientY);
         if (!hit) {
           hideDropLine();
-          dragTargetPos = null;
+          dragState.targetPos = null;
           return;
         }
-        const { insertBefore, rect } = computeInsertInfo(hit, e.clientY);
+
+        const rect = hit.dom.getBoundingClientRect();
+        const midY = (rect.top + rect.bottom) / 2;
+        const insertBefore = clientY < midY;
         const node = view.state.doc.nodeAt(hit.pos);
         const nodeSize = node?.nodeSize ?? 0;
         const insertPos = insertBefore ? hit.pos : hit.pos + nodeSize;
 
-        const sourceSize = view.state.doc.nodeAt(dragSourcePos)?.nodeSize ?? 0;
-        if (insertPos === dragSourcePos || insertPos === dragSourcePos + sourceSize) {
+        const sourceSize =
+          view.state.doc.nodeAt(dragState.sourcePos)?.nodeSize ?? 0;
+        if (
+          insertPos === dragState.sourcePos ||
+          insertPos === dragState.sourcePos + sourceSize
+        ) {
           hideDropLine();
-          dragTargetPos = null;
+          dragState.targetPos = null;
           return;
         }
 
-        dragTargetPos = insertPos;
+        dragState.targetPos = insertPos;
         showDropLine(rect, insertBefore);
       };
 
-      const onEditorDrop = (e: DragEvent) => {
-        if (dragSourcePos === null) return;
+      const onDragMouseMove = (e: MouseEvent) => {
+        if (!dragState) return;
         e.preventDefault();
-        e.stopPropagation();
 
-        const sourcePos = dragSourcePos;
-        const targetPos = dragTargetPos;
-        dragSourcePos = null;
-        dragTargetPos = null;
+        const dx = e.clientX - dragState.startX;
+        const dy = e.clientY - dragState.startY;
+
+        // Start the drag only after the pointer moves past a small
+        // threshold to distinguish from plain clicks.
+        if (!dragState.started) {
+          if (Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD_PX) return;
+          dragState.started = true;
+          dragState.ghost = createGhost(dragState.sourceDom);
+          document.body.appendChild(dragState.ghost);
+          hide();
+          document.body.style.cursor = 'grabbing';
+        }
+
+        if (dragState.ghost) {
+          dragState.ghost.style.top = `${e.clientY + 8}px`;
+          dragState.ghost.style.left = `${e.clientX + 8}px`;
+        }
+
+        updateDropIndicator(e.clientY);
+      };
+
+      const finishDrag = () => {
+        if (!dragState) return;
+        const state = dragState;
+        dragState = null;
         hideDropLine();
+        if (state.ghost) state.ghost.remove();
+        document.body.style.cursor = '';
 
-        if (targetPos === null) return;
+        document.removeEventListener('mousemove', onDragMouseMove, true);
+        document.removeEventListener('mouseup', onDragMouseUp, true);
+        document.removeEventListener('keydown', onDragKeyDown, true);
 
-        const { state } = view;
-        const sourceNode = state.doc.nodeAt(sourcePos);
+        if (!state.started || state.targetPos === null) return;
+
+        const { state: editorState } = view;
+        const sourceNode = editorState.doc.nodeAt(state.sourcePos);
         if (!sourceNode) return;
 
         const sourceSize = sourceNode.nodeSize;
-        if (targetPos > sourcePos && targetPos < sourcePos + sourceSize) return;
+        if (
+          state.targetPos > state.sourcePos &&
+          state.targetPos < state.sourcePos + sourceSize
+        ) {
+          return;
+        }
 
-        const tr = state.tr;
-        tr.delete(sourcePos, sourcePos + sourceSize);
+        const tr = editorState.tr;
+        tr.delete(state.sourcePos, state.sourcePos + sourceSize);
         const adjustedTarget =
-          targetPos > sourcePos ? targetPos - sourceSize : targetPos;
+          state.targetPos > state.sourcePos
+            ? state.targetPos - sourceSize
+            : state.targetPos;
         tr.insert(adjustedTarget, sourceNode);
         view.dispatch(tr);
       };
 
-      handle.addEventListener('click', onHandleClick);
-      handle.addEventListener('dragstart', onHandleDragStart);
-      handle.addEventListener('dragend', onHandleDragEnd);
-      document.addEventListener('mousemove', onMouseMove);
-      // capture = true so we fire BEFORE PM's built-in dragover/drop and
-      // can call stopPropagation to block PM's handler entirely.
-      view.dom.addEventListener('dragover', onEditorDragOver, true);
-      view.dom.addEventListener('drop', onEditorDrop, true);
+      const onDragMouseUp = (e: MouseEvent) => {
+        e.preventDefault();
+        finishDrag();
+      };
+
+      const onDragKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && dragState) {
+          // Cancel drag
+          dragState.targetPos = null;
+          finishDrag();
+        }
+      };
+
+      const onHandleMouseDown = (e: MouseEvent) => {
+        if (e.button !== 0) return;
+        if (hoveredPos === null || !currentBlockDom) return;
+
+        e.preventDefault();
+        dragState = {
+          startX: e.clientX,
+          startY: e.clientY,
+          sourcePos: hoveredPos,
+          sourceDom: currentBlockDom,
+          ghost: null,
+          started: false,
+          targetPos: null,
+        };
+
+        // Select the block so subsequent click-only behavior still works.
+        try {
+          const selection = NodeSelection.create(view.state.doc, hoveredPos);
+          view.dispatch(view.state.tr.setSelection(selection));
+        } catch {
+          // Some atom boundaries can reject NodeSelection — ignore.
+        }
+
+        document.addEventListener('mousemove', onDragMouseMove, true);
+        document.addEventListener('mouseup', onDragMouseUp, true);
+        document.addEventListener('keydown', onDragKeyDown, true);
+      };
+
+      handle.addEventListener('mousedown', onHandleMouseDown);
+      document.addEventListener('mousemove', onDocumentMouseMove);
+      window.addEventListener('scroll', () => {
+        if (currentBlockDom && hoveredPos !== null) {
+          showAtBlock(hoveredPos, currentBlockDom);
+        }
+      }, true);
 
       return {
         destroy() {
           if (hideTimeout) clearTimeout(hideTimeout);
-          handle.removeEventListener('click', onHandleClick);
-          handle.removeEventListener('dragstart', onHandleDragStart);
-          handle.removeEventListener('dragend', onHandleDragEnd);
-          document.removeEventListener('mousemove', onMouseMove);
-          view.dom.removeEventListener('dragover', onEditorDragOver, true);
-          view.dom.removeEventListener('drop', onEditorDrop, true);
+          if (dragState?.ghost) dragState.ghost.remove();
+          handle.removeEventListener('mousedown', onHandleMouseDown);
+          document.removeEventListener('mousemove', onDocumentMouseMove);
+          document.removeEventListener('mousemove', onDragMouseMove, true);
+          document.removeEventListener('mouseup', onDragMouseUp, true);
+          document.removeEventListener('keydown', onDragKeyDown, true);
           handle.remove();
           dropLine.remove();
         },
