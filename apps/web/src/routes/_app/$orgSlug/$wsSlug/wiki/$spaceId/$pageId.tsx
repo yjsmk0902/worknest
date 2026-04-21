@@ -103,6 +103,9 @@ function WikiPageEditor() {
   );
 
   const handleTitleKeyDown = useCallback((e: React.KeyboardEvent<HTMLHeadingElement>) => {
+    // Skip while an IME composition is in progress (Korean/Japanese/Chinese)
+    // — Enter finishes the composition and should not jump focus yet.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       // Move focus to the editor
