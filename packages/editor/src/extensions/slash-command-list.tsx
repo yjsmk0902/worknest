@@ -234,7 +234,6 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       keywords: ['toggle', 'details', 'collapse', 'expand'],
       category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
-        const insertPos = range.from;
         editor
           .chain()
           .focus()
@@ -248,12 +247,20 @@ export function getSlashCommandItems(): SlashCommandItem[] {
             ],
           })
           .run();
-        // insertContent leaves the cursor after the inserted content (inside
-        // the paragraph of detailsContent). Move it back into detailsSummary
-        // so the user can immediately type the summary text.
-        // Positions: details opens at insertPos, detailsSummary at insertPos+1,
-        // inside detailsSummary (caret) at insertPos+2.
-        editor.commands.setTextSelection(insertPos + 2);
+        // Scan for the most recently inserted detailsSummary and drop the
+        // cursor inside it. Walking the doc is more reliable than guessing a
+        // pos offset, which depends on whether the surrounding paragraph got
+        // split or replaced.
+        let summaryPos: number | null = null;
+        editor.state.doc.descendants((node, pos) => {
+          if (node.type.name === 'detailsSummary') {
+            summaryPos = pos + 1;
+          }
+          return true;
+        });
+        if (summaryPos !== null) {
+          editor.commands.setTextSelection(summaryPos);
+        }
       },
     },
     {
