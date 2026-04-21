@@ -2,7 +2,7 @@ import type { JSONContent } from '@tiptap/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Editor, type EditorProps } from './editor';
 
-type SaveStatus = 'saved' | 'saving' | 'unsaved';
+export type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
 export interface EditorWithAutosaveProps {
   /** Initial TipTap JSON content */
@@ -27,6 +27,13 @@ export interface EditorWithAutosaveProps {
     saving?: string;
     unsaved?: string;
   };
+  /**
+   * Notified whenever the save status changes. Consumers can hook this up
+   * to render their own status indicator outside the editor body.
+   */
+  onStatusChange?: (status: SaveStatus) => void;
+  /** Hide the built-in floating status indicator (default false). */
+  hideStatus?: boolean;
 }
 
 const DEFAULT_LABELS: Record<SaveStatus, string> = {
@@ -51,8 +58,17 @@ export function EditorWithAutosave({
   autofocus,
   extensions,
   statusLabels,
+  onStatusChange,
+  hideStatus = false,
 }: EditorWithAutosaveProps) {
-  const [status, setStatus] = useState<SaveStatus>('saved');
+  const [status, setStatusState] = useState<SaveStatus>('saved');
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
+
+  const setStatus = useCallback((next: SaveStatus) => {
+    setStatusState(next);
+    onStatusChangeRef.current?.(next);
+  }, []);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<{ json: JSONContent; text: string } | null>(null);
   const onSaveRef = useRef(onSave);
@@ -134,8 +150,8 @@ export function EditorWithAutosave({
         extensions={extensions}
       />
 
-      {/* Save status indicator */}
-      {editable && (
+      {/* Save status indicator (hidden when consumer renders their own) */}
+      {editable && !hideStatus && (
         <div className="absolute top-2 right-2 pointer-events-none">
           <span
             className={[

@@ -17,6 +17,7 @@ import {
   ImageUpload,
   IssueLink,
   MarkdownShortcuts,
+  type SaveStatus,
   SlashCommand,
   ToggleBlock,
   ToggleContent,
@@ -25,7 +26,7 @@ import {
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
 import { AlertTriangle, ChevronRight, Loader2, Smile } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
   component: WikiPageEditor,
@@ -65,6 +66,7 @@ function WikiPageEditor() {
   // so typing preserves caret position.
 
   const titleInitializedForPageRef = useRef<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
 
   useEffect(() => {
     if (
@@ -390,6 +392,7 @@ function WikiPageEditor() {
             </span>
           )}
         </nav>
+        <SaveStatusBadge status={saveStatus} />
         <FavoriteButton entityType="page" entityId={pageId} />
       </div>
 
@@ -415,11 +418,8 @@ function WikiPageEditor() {
           placeholder="/ 를 입력하여 블록을 추가하세요..."
           autofocus
           extensions={editorExtensions}
-          statusLabels={{
-            saved: '저장됨',
-            saving: '저장 중...',
-            unsaved: '저장되지 않은 변경사항',
-          }}
+          hideStatus
+          onStatusChange={setSaveStatus}
         />
       </div>
 
@@ -435,5 +435,22 @@ function WikiPageEditor() {
 
       <BookmarkModal />
     </div>
+  );
+}
+
+function SaveStatusBadge({ status }: { status: SaveStatus }) {
+  const label =
+    status === 'saved' ? '저장됨' : status === 'saving' ? '저장 중' : '저장 대기';
+  const dotClass =
+    status === 'saved'
+      ? 'bg-emerald-500'
+      : status === 'saving'
+        ? 'bg-[color:var(--fg-3)] animate-pulse'
+        : 'bg-amber-500';
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1.5 text-[11.5px] text-[color:var(--fg-3)]">
+      <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} />
+      {label}
+    </span>
   );
 }

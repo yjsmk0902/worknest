@@ -6,7 +6,7 @@ export type { EditorProps } from './editor';
 
 // Editor with auto-save
 export { EditorWithAutosave } from './editor-with-autosave';
-export type { EditorWithAutosaveProps } from './editor-with-autosave';
+export type { EditorWithAutosaveProps, SaveStatus } from './editor-with-autosave';
 
 // Floating toolbar (BubbleMenu)
 export { Toolbar } from './toolbar';
