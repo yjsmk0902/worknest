@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import type { WikiSpaceOutput } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
-import { AlertTriangle, BookOpen, Clock, FileText, Folder, LibraryBig, Plus } from 'lucide-react';
+import { AlertTriangle, BookOpen, Clock, FileText, FolderKanban, LibraryBig, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 interface RecentWikiPage {
@@ -192,9 +192,13 @@ function WikiIndexPage() {
                     aria-label={`스페이스: ${space.name}`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[color:var(--bg-3)]">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                          isProjectWiki ? 'bg-blue-500/15' : 'bg-[color:var(--bg-3)]'
+                        }`}
+                      >
                         {isProjectWiki ? (
-                          <Folder className="h-5 w-5 text-[color:var(--fg-2)]" />
+                          <FolderKanban className="h-5 w-5 text-blue-300" />
                         ) : (
                           <LibraryBig className="h-5 w-5 text-[color:var(--fg-2)]" />
                         )}
