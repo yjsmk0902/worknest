@@ -114,16 +114,20 @@ function findBlockAtY(view: EditorView, clientY: number): BlockHit | null {
   };
   const hit = scan(view.dom);
   if (!hit) return null;
-  // The callout's first (title) line is treated as decoration that isn't
-  // individually draggable. Bail out so the handle isn't rendered there.
-  if (isCalloutFirstChild(hit)) return null;
+  // Callouts (and their direct children) don't show a drag handle — the
+  // callout title/icon is meant to be a static decoration and having the
+  // handle blink in there was confusing.
+  if (isCalloutRelated(hit)) return null;
   return hit;
 }
 
-function isCalloutFirstChild(hit: BlockHit): boolean {
+function isCalloutRelated(hit: BlockHit): boolean {
+  // The hit DOM itself is a callout
+  if (hit.dom.matches('[data-type="callout"]')) return true;
+  // The hit is a direct child of a callout (first-line paragraph, etc.)
   const parent = hit.dom.parentElement;
-  if (!parent || parent.getAttribute('data-type') !== 'callout') return false;
-  return parent.firstElementChild === hit.dom;
+  if (parent && parent.getAttribute('data-type') === 'callout') return true;
+  return false;
 }
 
 function dragHandlePlugin() {
