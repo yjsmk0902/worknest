@@ -56,32 +56,17 @@ export const Callout = Node.create({
   renderHTML({ node, HTMLAttributes }) {
     const color = (node.attrs.color as CalloutColor) ?? 'default';
     const icon = node.attrs.icon ?? '💡';
+    // Icon is rendered via a CSS ::before pseudo-element (see globals.css)
+    // so the node has a single content hole and DOM order is guaranteed.
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-type': 'callout',
+        'data-icon': icon,
+        'data-color': color,
         class: `my-3 rounded-md border px-3 py-2 ${COLOR_CLASS[color]}`,
-        style:
-          'display:flex;align-items:flex-start;gap:12px;',
       }),
-      [
-        'div',
-        {
-          contenteditable: 'false',
-          class: 'select-none',
-          style:
-            'flex:0 0 auto;font-size:18px;line-height:1.4;padding-top:2px;',
-        },
-        icon,
-      ],
-      [
-        'div',
-        {
-          class: '[&>*]:my-0',
-          style: 'flex:1 1 auto;min-width:0;',
-        },
-        0,
-      ],
+      0,
     ];
   },
 
