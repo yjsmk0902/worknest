@@ -45,6 +45,7 @@ function WikiPageEditor() {
   const { wsId } = useWorkspaceContext();
   const queryClient = useQueryClient();
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const editorRef = useRef<{ commands: { focus: () => void } } | null>(null);
 
   // ── Queries ─────────────────────────────────────────────────────────
 
@@ -127,9 +128,7 @@ function WikiPageEditor() {
     if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     if (e.key === 'Enter') {
       e.preventDefault();
-      // Move focus to the editor
-      const editorEl = document.querySelector('.ProseMirror') as HTMLElement | null;
-      editorEl?.focus();
+      editorRef.current?.commands.focus();
     }
   }, []);
 
@@ -484,6 +483,9 @@ function WikiPageEditor() {
           extensions={editorExtensions}
           hideStatus
           onStatusChange={setSaveStatus}
+          onEditor={(editor) => {
+            editorRef.current = editor;
+          }}
         />
       </div>
 

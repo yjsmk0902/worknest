@@ -55,8 +55,15 @@ export const wikiSpacesRelations = relations(wikiSpaces, ({ one, many }) => ({
 /**
  * Wiki space members table.
  *
- * Controls per-user access to a wiki space. Role determines edit vs read-only
- * access: 'editor' can create/update pages, 'viewer' has read-only access.
+ * Controls per-user access to a wiki space. Two-tier role model:
+ *   - 'editor' — can create/update/delete pages AND manage space membership
+ *                (add/remove members, change roles, delete the space itself).
+ *   - 'viewer' — read-only.
+ *
+ * There is intentionally no dedicated 'admin' tier; any editor can act as
+ * an admin. Destructive actions are guarded by "can't remove last editor" /
+ * "can't remove yourself" checks in wiki-space-service. Re-evaluate this
+ * model if/when we add org-wide wiki policies.
  */
 export const wikiSpaceMembers = pgTable(
   'wiki_space_members',
@@ -96,8 +103,9 @@ export const wikiSpaceMembersRelations = relations(wikiSpaceMembers, ({ one }) =
  * unique slugs among non-deleted pages only.
  *
  * `content` stores TipTap JSON; `content_text` stores extracted plain text
- * for full-text search. `content_format` supports future lazy migration
- * to Yjs binary (v1.0).
+ * for full-text search. `content_format` is reserved for future Yjs CRDT
+ * migration (v1.0+, see PLAN.md §7 Phase 3-1). Currently always `'json'`;
+ * the `'yjs'` path is NOT implemented — do not set it manually.
  *
  * `sort_order` uses text-based fractional indexing for drag-and-drop reordering.
  */
@@ -111,7 +119,7 @@ export const wikiPages = pgTable(
     title: text('title').notNull(),
     slug: text('slug').notNull(),
     content: jsonb('content'),
-    contentFormat: text('content_format').notNull().default('json'), // 'json' | 'yjs'
+    contentFormat: text('content_format').notNull().default('json'), // 'json' (current) | 'yjs' (reserved for v1.0)
     contentText: text('content_text'),
     icon: text('icon'), // Emoji (e.g. "📄") or shortcode
     coverUrl: text('cover_url'), // Uploaded image path or external URL

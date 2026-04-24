@@ -8,6 +8,7 @@ import { toast } from '@worknest/ui';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '../../lib/api-client';
+import { slugifyTitle } from '../../lib/slug';
 
 interface SpaceFormModalProps {
   workspaceId: string;
@@ -15,20 +16,6 @@ interface SpaceFormModalProps {
   onOpenChange: (open: boolean) => void;
   /** If provided, the modal is in edit mode */
   space?: WikiSpaceOutput;
-}
-
-/**
- * Generate a URL-friendly slug from a name.
- */
-function generateSlug(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 50);
 }
 
 /**
@@ -65,7 +52,7 @@ export function SpaceFormModal({ workspaceId, open, onOpenChange, space }: Space
   function handleNameChange(value: string) {
     setName(value);
     if (!slugManuallyEdited) {
-      setSlug(generateSlug(value));
+      setSlug(slugifyTitle(value));
     }
   }
 
