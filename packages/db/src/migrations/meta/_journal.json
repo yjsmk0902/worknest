@@ -85,6 +85,34 @@
       "when": 1779000000000,
       "tag": "0011_wiki_space_project",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780000000000,
+      "tag": "0012_wiki_page_shares",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780100000000,
+      "tag": "0013_wiki_page_revisions",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1780200000000,
+      "tag": "0014_comment_block_id",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1780300000000,
+      "tag": "0015_drop_comment_block_id",
+      "breakpoints": true
     }
   ]
 }

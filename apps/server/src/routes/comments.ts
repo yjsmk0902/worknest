@@ -49,7 +49,6 @@ function extractMentionedUserIds(content: unknown): string[] {
 // ── Param Schemas ──────────────────────────────────────────────────────
 
 const issueIdParam = z.object({ issueId: z.string().uuid() });
-const pageIdParam = z.object({ pageId: z.string().uuid() });
 const commentIdParam = z.object({ commentId: z.string().uuid() });
 const reactionEmojiParam = z.object({
   commentId: z.string().uuid(),
@@ -103,7 +102,7 @@ export async function commentRoutes(
     async (request, reply) => {
       const { issueId } = issueIdParam.parse(request.params);
       const body = createCommentInput.parse(request.body);
-      const comment = await service.create(request.user?.id, body, issueId, undefined);
+      const comment = await service.create(request.user?.id, body, issueId);
 
       // Broadcast via WebSocket
       broadcastCommentCreated(`issue:${issueId}`, comment);
@@ -148,47 +147,6 @@ export async function commentRoutes(
           }
         })
         .catch((err) => app.log.error(err, 'Failed to fetch issue data for comment notifications'));
-
-      return reply.status(201).send({ data: comment });
-    },
-  );
-
-  // ── GET /api/v1/wiki-pages/:pageId/comments ─────────────────────
-
-  app.get(
-    '/api/v1/wiki-pages/:pageId/comments',
-    {
-      preHandler: [requireAuth],
-      schema: {
-        tags: ['Comments'],
-        summary: 'List comments for a wiki page',
-      },
-    },
-    async (request, reply) => {
-      const { pageId } = pageIdParam.parse(request.params);
-      const result = await service.listByPage(pageId, request.user?.id);
-      return reply.status(200).send(result);
-    },
-  );
-
-  // ── POST /api/v1/wiki-pages/:pageId/comments ────────────────────
-
-  app.post(
-    '/api/v1/wiki-pages/:pageId/comments',
-    {
-      preHandler: [requireAuth],
-      schema: {
-        tags: ['Comments'],
-        summary: 'Create a comment on a wiki page',
-      },
-    },
-    async (request, reply) => {
-      const { pageId } = pageIdParam.parse(request.params);
-      const body = createCommentInput.parse(request.body);
-      const comment = await service.create(request.user?.id, body, undefined, pageId);
-
-      // Broadcast via WebSocket
-      broadcastCommentCreated(`page:${pageId}`, comment);
 
       return reply.status(201).send({ data: comment });
     },

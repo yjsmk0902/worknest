@@ -21,6 +21,8 @@ export interface EditorWithAutosaveProps {
   autofocus?: boolean;
   /** Additional TipTap extensions */
   extensions?: EditorProps['extensions'];
+  /** Forwarded to the inner Editor — called with the TipTap instance. */
+  onEditor?: EditorProps['onEditor'];
   /** Custom status labels (e.g., for i18n) */
   statusLabels?: {
     saved?: string;
@@ -60,6 +62,7 @@ export function EditorWithAutosave({
   statusLabels,
   onStatusChange,
   hideStatus = false,
+  onEditor,
 }: EditorWithAutosaveProps) {
   const [status, setStatusState] = useState<SaveStatus>('saved');
   const onStatusChangeRef = useRef(onStatusChange);
@@ -148,6 +151,7 @@ export function EditorWithAutosave({
         className={className}
         autofocus={autofocus}
         extensions={extensions}
+        onEditor={onEditor}
       />
 
       {/* Save status indicator (hidden when consumer renders their own) */}

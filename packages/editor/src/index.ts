@@ -11,6 +11,9 @@ export type { EditorWithAutosaveProps, SaveStatus } from './editor-with-autosave
 // Floating toolbar (BubbleMenu)
 export { Toolbar } from './toolbar';
 
+// Floating table toolbar (BubbleMenu — active only inside a table)
+export { TableToolbar } from './table-toolbar';
+
 // Fixed toolbar
 export { ToolbarFixed } from './toolbar-fixed';
 
@@ -34,17 +37,14 @@ export { ImageUpload } from './extensions/image-upload';
 export { Callout } from './extensions/callout';
 export type { CalloutColor } from './extensions/callout';
 
-// Toggle (details) block extension
-export { ToggleBlock, ToggleContent, ToggleSummary } from './extensions/toggle-block';
-
-// Custom markdown-style input rules (| → quote, > → toggle)
+// Custom markdown-style input rules (| → quote, --- → hr, ``` → code block)
 export { MarkdownShortcuts } from './extensions/markdown-shortcuts';
 
 // Bookmark (URL preview card) block
 export { Bookmark } from './extensions/bookmark';
 
-// Notion-style block drag handle
-export { DragHandle } from './extensions/drag-handle';
+// Page link block (Notion-style "link to page" card)
+export { PageLink } from './extensions/page-link';
 
 // Universal @-mention (users / wiki pages / issues in one suggester)
 export { createUniversalMentionExtension } from './extensions/universal-mention';

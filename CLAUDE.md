@@ -67,15 +67,43 @@ Step 4: Tech Lead — 통합 검증
   `@tiptap/suggestion`을 v2.27.2로 강제. v3 혼입 시 슬래시/멘션 플러그인이
   ProseMirror 스키마 공유에 실패해 런타임 깨짐.
 
-## Wiki 모듈 현황 (2026-04-21 기준)
+## Wiki 모듈 현황 (2026-04-24 기준 — 마무리)
 
+**방향 전환**: 노션 스타일 블록 기반 에디터에서 **마크다운 친화 에디터**로 범위 축소.
+
+### 최종 포함 기능
 - Phase 1 완료: 아이콘, 즐겨찾기, 최근 편집, 인라인 서브페이지, FTS 검색
-- Phase 2 완료: Callout / Toggle / Code / TaskList / Table / 통합 `@` 멘션 (멤버+위키+이슈)
-  / 북마크 카드(OG 스크래핑) / 마크다운 단축키 확장 / Typography
-- 추가 기능: 노션 스타일 블록 드래그앤드롭(포인터 기반), 페이지 Draft,
-  프로젝트 생성 시 자동 위키 + 양쪽 메뉴 접근, 페이지/스페이스 삭제 UI
-- 알려진 deferred: URL 붙여넣기 자동 임베드, 테이블 컨텍스트 메뉴, 에디터 내부 `/page`,
-  전용 삭제 확인 모달, 기존 프로젝트 위키 백필 스크립트, Phase 3 실시간 편집
+- Phase 2 완료 (블록 중심 기능은 제거):
+  Callout / Code / TaskList / Table + `TableToolbar` / 통합 `@` 멘션 /
+  북마크(OG 스크래핑 + URL paste 자동 임베드) / 마크다운 단축키
+  (`| ` → 인용, `--- ` → HR, ` ``` ` → code) / Typography /
+  `/페이지 링크` 슬래시 + `PageLink` 블록 / `ConfirmDialog`
+- Phase 3 — 협업/공유 (일부만):
+  - ✅ 공유 링크 — `wiki_page_shares` + `/wiki-share/$token` 공개 뷰어 + `ShareModal`
+  - ✅ 히스토리 — `wiki_page_revisions` + snapshot(5분 dedupe, 50개 prune) + `HistoryPanel`
+  - ❌ 블록 코멘트 (방향 전환 후 제거 — 2026-04-24)
+  - ⏸ Yjs 실시간 (v1.0 이후)
+- 페이지 Draft(작성자 전용), 프로젝트 생성 시 자동 위키 + 양쪽 메뉴 접근,
+  페이지/스페이스 삭제 UI (ConfirmDialog)
+
+### 2026-04-24 방향 전환에서 제거된 것
+- **BlockId 확장** (`data-block-id` 주입)
+- **DragHandle 확장** + 블록 hover UI
+- **ToggleBlock/Summary/Content** (Details NodeView)
+- **블록 코멘트 전체** — 프론트 패널 + 헤더 아이콘 + BubbleMenu 버튼 제거
+- **백엔드 wiki-page 코멘트 라우트/서비스 메소드/`comments.block_id` 컬럼** (migration 0015)
+- `/토글` 슬래시, `> ` 마크다운 단축키
+
+### 2026-04-24 추가 안정화
+- **Placeholder `tr/td/th` ::before 차단** — IME 조합 중 테이블 행 시프트 수정
+  (Placeholder 확장이 `tr`에 `is-empty` 클래스 + float-left pseudo 붙이던 문제)
+- **StripTableColwidth 플러그인** — 저장된 `colwidth` attr 자동 제거 → `<colgroup>` 인라인
+  width 방지 → 행 간 폭 불일치 해소
+- **Table extension: `resizable: false`** + `contain: layout` CSS
+- **Share 응답 정돈**: coverUrl/status 미포함, draft 재확인 로직 유지
+- **페이지 삭제 시 자녀 sortOrder 재분배** — 부모로 승격될 때 기존 sibling 뒤로 재배치
+- **스페이스 멤버 self-remove 방지** — 본인이 본인 빼는 lockout 방지
+- **페이지 slug 생성 개선** — `page-${Date.now()}` → `pageSlug(title)` (한글 title → `page-{random}`)
 
 ## Project Structure
 

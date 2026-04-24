@@ -1,5 +1,13 @@
 import { BubbleMenu, type Editor } from '@tiptap/react';
-import { Bold, Code, Highlighter, Italic, Link, Strikethrough, Underline } from 'lucide-react';
+import {
+  Bold,
+  Code,
+  Highlighter,
+  Italic,
+  Link,
+  Strikethrough,
+  Underline,
+} from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 interface ToolbarProps {
@@ -19,6 +27,7 @@ function ToolbarButton({ onClick, isActive, icon, title }: ToolbarButtonProps) {
     <button
       type="button"
       onClick={onClick}
+      onMouseDown={(e) => e.preventDefault()}
       title={title}
       className={[
         'flex items-center justify-center w-8 h-8 rounded-md transition-colors',

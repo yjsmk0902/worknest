@@ -2,6 +2,9 @@ import { FavoriteButton } from '@/components/favorite-button';
 import { FileAttachment } from '@/components/file-upload/file-attachment';
 import { BookmarkModal } from '@/components/wiki/bookmark-modal';
 import { EmojiPicker } from '@/components/wiki/emoji-picker';
+import { HistoryPanel } from '@/components/wiki/history-panel';
+import { PageLinkModal } from '@/components/wiki/page-link-modal';
+import { ShareModal } from '@/components/wiki/share-modal';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { useFileUpload } from '@/hooks/use-file-upload';
 import { apiClient } from '@/lib/api-client';
@@ -11,22 +14,26 @@ import type { JSONContent } from '@tiptap/core';
 import {
   Bookmark,
   Callout,
-  DragHandle,
   EditorWithAutosave,
   ImageUpload,
   IssueLink,
   MarkdownShortcuts,
+  PageLink,
   type SaveStatus,
   SlashCommand,
-  ToggleBlock,
-  ToggleContent,
-  ToggleSummary,
   type UniversalMentionItem,
   createUniversalMentionExtension,
 } from '@worknest/editor';
 import type { FileOutput, WikiPageOutput, WikiSpaceOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
-import { AlertTriangle, ChevronRight, Loader2, Smile } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronRight,
+  History,
+  Loader2,
+  Share2,
+  Smile,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/wiki/$spaceId/$pageId')({
@@ -68,6 +75,8 @@ function WikiPageEditor() {
 
   const titleInitializedForPageRef = useRef<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
+  const [shareOpen, setShareOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     if (
@@ -318,12 +327,9 @@ function WikiPageEditor() {
       SlashCommand,
       IssueLink,
       Callout,
-      ToggleBlock,
-      ToggleSummary,
-      ToggleContent,
       MarkdownShortcuts,
       Bookmark,
-      DragHandle,
+      PageLink,
       universalMention,
       ImageUpload.configure({
         uploadHandler: imageUploadHandler,
@@ -435,6 +441,22 @@ function WikiPageEditor() {
           status={page.status}
           onToggle={(next) => updateMetaMutation.mutate({ status: next })}
         />
+        <button
+          type="button"
+          onClick={() => setHistoryOpen(true)}
+          className="grid h-7 w-7 place-items-center rounded-sm text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
+          title="편집 히스토리"
+        >
+          <History className="h-[14px] w-[14px]" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setShareOpen(true)}
+          className="grid h-7 w-7 place-items-center rounded-sm text-[color:var(--fg-3)] transition-colors hover:bg-[color:var(--bg-3)] hover:text-[color:var(--fg-1)]"
+          title="페이지 공유"
+        >
+          <Share2 className="h-[14px] w-[14px]" />
+        </button>
         <FavoriteButton entityType="page" entityId={pageId} />
       </div>
 
@@ -476,6 +498,13 @@ function WikiPageEditor() {
       </div>
 
       <BookmarkModal />
+      <PageLinkModal />
+      <ShareModal open={shareOpen} onOpenChange={setShareOpen} pageId={pageId} />
+      <HistoryPanel
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        pageId={pageId}
+      />
     </div>
   );
 }

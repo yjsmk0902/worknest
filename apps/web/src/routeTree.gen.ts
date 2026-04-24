@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WikiShareTokenRouteImport } from './routes/wiki-share.$token'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthOnboardingRouteImport } from './routes/_auth/onboarding'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
@@ -55,6 +56,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WikiShareTokenRoute = WikiShareTokenRouteImport.update({
+  id: '/wiki-share/$token',
+  path: '/wiki-share/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/onboarding': typeof AuthOnboardingRoute
   '/register': typeof AuthRegisterRoute
+  '/wiki-share/$token': typeof WikiShareTokenRoute
   '/$orgSlug/$wsSlug': typeof AppOrgSlugWsSlugRouteWithChildren
   '/invite/$token': typeof AuthInviteTokenRoute
   '/$orgSlug/$wsSlug/': typeof AppOrgSlugWsSlugIndexRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/onboarding': typeof AuthOnboardingRoute
   '/register': typeof AuthRegisterRoute
+  '/wiki-share/$token': typeof WikiShareTokenRoute
   '/invite/$token': typeof AuthInviteTokenRoute
   '/$orgSlug/$wsSlug': typeof AppOrgSlugWsSlugIndexRoute
   '/$orgSlug/$wsSlug/my/favorites': typeof AppOrgSlugWsSlugMyFavoritesRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/onboarding': typeof AuthOnboardingRoute
   '/_auth/register': typeof AuthRegisterRoute
+  '/wiki-share/$token': typeof WikiShareTokenRoute
   '/_app/$orgSlug/$wsSlug': typeof AppOrgSlugWsSlugRouteWithChildren
   '/_auth/invite/$token': typeof AuthInviteTokenRoute
   '/_app/$orgSlug/$wsSlug/': typeof AppOrgSlugWsSlugIndexRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/register'
+    | '/wiki-share/$token'
     | '/$orgSlug/$wsSlug'
     | '/invite/$token'
     | '/$orgSlug/$wsSlug/'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/register'
+    | '/wiki-share/$token'
     | '/invite/$token'
     | '/$orgSlug/$wsSlug'
     | '/$orgSlug/$wsSlug/my/favorites'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/onboarding'
     | '/_auth/register'
+    | '/wiki-share/$token'
     | '/_app/$orgSlug/$wsSlug'
     | '/_auth/invite/$token'
     | '/_app/$orgSlug/$wsSlug/'
@@ -450,6 +462,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  WikiShareTokenRoute: typeof WikiShareTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wiki-share/$token': {
+      id: '/wiki-share/$token'
+      path: '/wiki-share/$token'
+      fullPath: '/wiki-share/$token'
+      preLoaderRoute: typeof WikiShareTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/register': {
@@ -825,6 +845,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  WikiShareTokenRoute: WikiShareTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

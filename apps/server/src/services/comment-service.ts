@@ -5,8 +5,6 @@ import {
   projectMembers,
   reactions,
   users,
-  wikiPages,
-  wikiSpaceMembers,
 } from '@worknest/db';
 import type { CreateCommentInput, ToggleReactionInput, UpdateCommentInput } from '@worknest/shared';
 import { ALLOWED_EMOJIS } from '@worknest/shared';
@@ -46,40 +44,6 @@ async function requireProjectMembershipForIssue(db: Database, issueId: string, u
   }
 
   return issue;
-}
-
-/**
- * Verify that the caller is a member of the wiki space owning the page.
- */
-async function requireSpaceMembershipForPage(db: Database, pageId: string, userId: string) {
-  const page = await db
-    .select({
-      id: wikiPages.id,
-      wikiSpaceId: wikiPages.wikiSpaceId,
-    })
-    .from(wikiPages)
-    .where(and(eq(wikiPages.id, pageId), isNull(wikiPages.deletedAt)))
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (!page) {
-    throw AppError.notFound('wiki_page');
-  }
-
-  const member = await db
-    .select({ id: wikiSpaceMembers.id })
-    .from(wikiSpaceMembers)
-    .where(
-      and(eq(wikiSpaceMembers.wikiSpaceId, page.wikiSpaceId), eq(wikiSpaceMembers.userId, userId)),
-    )
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (!member) {
-    throw AppError.forbidden('You are not a member of this wiki space');
-  }
-
-  return page;
 }
 
 // ── Serialisation ──────────────────────────────────────────────────────
@@ -158,58 +122,10 @@ export class CommentService {
     };
   }
 
-  // ── List Comments by Page ────────────────────────────────────────
-
-  async listByPage(pageId: string, callerUserId: string) {
-    await requireSpaceMembershipForPage(this.db, pageId, callerUserId);
-
-    const rows = await this.db
-      .select({
-        comment: comments,
-        author: {
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          avatarUrl: users.avatarUrl,
-        },
-      })
-      .from(comments)
-      .leftJoin(users, eq(comments.authorId, users.id))
-      .where(and(eq(comments.pageId, pageId), isNull(comments.deletedAt)))
-      .orderBy(asc(comments.createdAt));
-
-    // Fetch reactions for all comments in one query
-    const commentIds = rows.map((r) => r.comment.id);
-    const reactionsByComment = await this.getReactionsForComments(commentIds);
-
-    return {
-      data: rows.map((r) =>
-        toCommentOutput(
-          r.comment,
-          r.author?.id ? r.author : null,
-          reactionsByComment.get(r.comment.id) ?? [],
-        ),
-      ),
-    };
-  }
-
   // ── Create Comment ───────────────────────────────────────────────
 
-  async create(callerUserId: string, input: CreateCommentInput, issueId?: string, pageId?: string) {
-    // Validate exactly one parent target
-    if ((!issueId && !pageId) || (issueId && pageId)) {
-      throw AppError.badRequest(
-        ErrorCode.VALIDATION_ERROR,
-        'Comment must belong to exactly one of issue or page',
-      );
-    }
-
-    // Verify membership
-    if (issueId) {
-      await requireProjectMembershipForIssue(this.db, issueId, callerUserId);
-    } else if (pageId) {
-      await requireSpaceMembershipForPage(this.db, pageId, callerUserId);
-    }
+  async create(callerUserId: string, input: CreateCommentInput, issueId: string) {
+    await requireProjectMembershipForIssue(this.db, issueId, callerUserId);
 
     // Validate flat threading: parent comment must NOT have a parentId itself
     if (input.parentId) {
@@ -218,7 +134,6 @@ export class CommentService {
           id: comments.id,
           parentId: comments.parentId,
           issueId: comments.issueId,
-          pageId: comments.pageId,
         })
         .from(comments)
         .where(and(eq(comments.id, input.parentId), isNull(comments.deletedAt)))
@@ -228,22 +143,12 @@ export class CommentService {
       if (!parent) {
         throw AppError.notFound('comment');
       }
-
-      // Ensure parent belongs to the same target
-      if (issueId && parent.issueId !== issueId) {
+      if (parent.issueId !== issueId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
           'Parent comment does not belong to this issue',
         );
       }
-      if (pageId && parent.pageId !== pageId) {
-        throw AppError.badRequest(
-          ErrorCode.VALIDATION_ERROR,
-          'Parent comment does not belong to this page',
-        );
-      }
-
-      // Flat threading: reject nested replies (1 level only)
       if (parent.parentId) {
         throw AppError.badRequest(
           ErrorCode.VALIDATION_ERROR,
@@ -252,14 +157,13 @@ export class CommentService {
       }
     }
 
-    // Sanitize content
     const sanitized = sanitizeContent(input.content);
 
     const [created] = await this.db
       .insert(comments)
       .values({
-        issueId: issueId ?? null,
-        pageId: pageId ?? null,
+        issueId,
+        pageId: null,
         content: sanitized,
         parentId: input.parentId ?? null,
         authorId: callerUserId,
@@ -305,11 +209,8 @@ export class CommentService {
       throw AppError.notFound('comment');
     }
 
-    // Verify membership based on the comment's parent resource
     if (row.comment.issueId) {
       await requireProjectMembershipForIssue(this.db, row.comment.issueId, callerUserId);
-    } else if (row.comment.pageId) {
-      await requireSpaceMembershipForPage(this.db, row.comment.pageId, callerUserId);
     }
 
     const reactionsByComment = await this.getReactionsForComments([commentId]);
@@ -408,11 +309,8 @@ export class CommentService {
       throw AppError.notFound('comment');
     }
 
-    // Verify membership
     if (comment.issueId) {
       await requireProjectMembershipForIssue(this.db, comment.issueId, callerUserId);
-    } else if (comment.pageId) {
-      await requireSpaceMembershipForPage(this.db, comment.pageId, callerUserId);
     }
 
     // Check if reaction already exists
@@ -466,11 +364,8 @@ export class CommentService {
       throw AppError.notFound('comment');
     }
 
-    // Verify membership
     if (comment.issueId) {
       await requireProjectMembershipForIssue(this.db, comment.issueId, callerUserId);
-    } else if (comment.pageId) {
-      await requireSpaceMembershipForPage(this.db, comment.pageId, callerUserId);
     }
 
     const existing = await this.db

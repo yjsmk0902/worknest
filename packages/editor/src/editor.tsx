@@ -1,3 +1,4 @@
+import { Extension } from '@tiptap/core';
 import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Highlight from '@tiptap/extension-highlight';
@@ -12,10 +13,51 @@ import TableRow from '@tiptap/extension-table-row';
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import Underline from '@tiptap/extension-underline';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { EditorContent, type JSONContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { common, createLowlight } from 'lowlight';
 import { useCallback, useEffect, useRef } from 'react';
+import { TableToolbar } from './table-toolbar';
+import { Toolbar } from './toolbar';
+
+/**
+ * Strips any stored `colwidth` from table cells/headers on every doc
+ * change. Legacy content saved with resizable=true stored per-cell widths
+ * that prosemirror-tables translates into a `<colgroup>` with inline
+ * widths; that wrecks our fixed-layout table. Wiping the attribute at
+ * load time (and on every edit) keeps the rendered colgroup empty so CSS
+ * `table-layout: fixed` controls column distribution.
+ */
+const StripTableColwidth = Extension.create({
+  name: 'stripTableColwidth',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('stripTableColwidth'),
+        appendTransaction(_trs, _oldState, newState) {
+          let tr = newState.tr;
+          let modified = false;
+          newState.doc.descendants((node, pos) => {
+            if (
+              (node.type.name === 'tableCell' ||
+                node.type.name === 'tableHeader') &&
+              node.attrs.colwidth != null
+            ) {
+              tr = tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                colwidth: null,
+              });
+              modified = true;
+            }
+            return true;
+          });
+          return modified ? tr : null;
+        },
+      }),
+    ];
+  },
+});
 
 const lowlight = createLowlight(common);
 
@@ -34,6 +76,12 @@ export interface EditorProps {
   autofocus?: boolean;
   /** Additional TipTap extensions to include */
   extensions?: Parameters<typeof useEditor>[0] extends { extensions?: infer E } ? E : never;
+  /**
+   * Called once when the TipTap editor instance is ready, and again with
+   * `null` on unmount. Lets the consumer drive DOM-level decorations (e.g.
+   * block comment markers) that need ProseMirror's `view.nodeDOM(pos)`.
+   */
+  onEditor?: (editor: ReturnType<typeof useEditor> | null) => void;
 }
 
 /**
@@ -45,6 +93,7 @@ export interface EditorProps {
 export function Editor({
   content,
   onUpdate,
+  onEditor,
   editable = true,
   placeholder = 'Write something...',
   className,
@@ -75,14 +124,27 @@ export function Editor({
         // Placeholder only on the currently-focused empty node so the editor
         // doesn't get cluttered. Heading/quote show a short type-specific
         // hint so the user can confirm a slash/markdown transform worked.
-        placeholder: ({ node, pos }) => {
+        placeholder: ({ node, pos, editor: ed }) => {
           const name = node.type.name;
           if (name === 'heading') {
             const level = (node.attrs as { level?: number })?.level ?? 1;
             return `제목 ${level}`;
           }
-          if (name === 'detailsSummary') return '토글';
           if (name === 'paragraph') {
+            // Skip the "'/'로 블록 추가" hint inside table cells — the cell
+            // already has its own chrome and the hint gets in the way of
+            // normal typing.
+            try {
+              const $pos = ed.state.doc.resolve(pos);
+              for (let d = $pos.depth; d >= 0; d -= 1) {
+                const parentName = $pos.node(d).type.name;
+                if (parentName === 'tableCell' || parentName === 'tableHeader') {
+                  return '';
+                }
+              }
+            } catch {
+              // resolve() can fail transiently during transactions.
+            }
             return pos === 0 ? placeholder : "'/'로 블록 추가";
           }
           // blockquote/bulletList/orderedList/taskItem/details/callout:
@@ -124,22 +186,54 @@ export function Editor({
         },
       }),
       Table.configure({
-        resizable: true,
+        // Column resizing causes rows to get out-of-sync colwidths when the
+        // doc state is edited independently. Disabling plus stripping the
+        // `colwidth` attribute below (so old stored widths don't leak into
+        // the `<colgroup>`) keeps every row at the same column proportions
+        // via CSS `table-layout: fixed`.
+        resizable: false,
         HTMLAttributes: {
-          class: 'border-collapse table-auto w-full',
+          class: 'worknest-table border-collapse w-full',
         },
       }),
       TableRow,
-      TableCell.configure({
+      TableCell.extend({
+        // Drop the `colwidth` attr so prosemirror-tables never emits inline
+        // <col style="width: …"> that would override our fixed layout.
+        addAttributes() {
+          const parent = this.parent?.() ?? {};
+          return {
+            ...parent,
+            colwidth: {
+              default: null,
+              parseHTML: () => null,
+              renderHTML: () => ({}),
+            },
+          };
+        },
+      }).configure({
         HTMLAttributes: {
-          class: 'border border-border p-2 relative min-w-[80px]',
+          class: 'border border-border p-2 align-top',
         },
       }),
-      TableHeader.configure({
+      TableHeader.extend({
+        addAttributes() {
+          const parent = this.parent?.() ?? {};
+          return {
+            ...parent,
+            colwidth: {
+              default: null,
+              parseHTML: () => null,
+              renderHTML: () => ({}),
+            },
+          };
+        },
+      }).configure({
         HTMLAttributes: {
-          class: 'border border-border p-2 bg-muted font-semibold text-left min-w-[80px]',
+          class: 'border border-border p-2 bg-muted font-semibold text-left align-top',
         },
       }),
+      StripTableColwidth,
       Highlight.configure({
         multicolor: false,
         HTMLAttributes: {
@@ -176,6 +270,15 @@ export function Editor({
       editor.setEditable(editable);
     }
   }, [editor, editable]);
+
+  // Expose the editor instance once ready. Keep the callback stable in a
+  // ref so it doesn't retrigger setup just because the caller recreated it.
+  const onEditorRef = useRef(onEditor);
+  onEditorRef.current = onEditor;
+  useEffect(() => {
+    onEditorRef.current?.(editor ?? null);
+    return () => onEditorRef.current?.(null);
+  }, [editor]);
 
   // Sync external content changes (e.g., from server)
   const handleContentSync = useCallback(
@@ -221,6 +324,8 @@ export function Editor({
         .join(' ')}
     >
       <EditorContent editor={editor} />
+      {editor && editable && <Toolbar editor={editor} />}
+      {editor && editable && <TableToolbar editor={editor} />}
     </div>
   );
 }

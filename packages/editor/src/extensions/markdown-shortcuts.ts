@@ -1,11 +1,23 @@
-import { Extension, InputRule, wrappingInputRule } from '@tiptap/core';
+import { Extension, InputRule } from '@tiptap/core';
+import type { EditorState } from '@tiptap/pm/state';
+
+/** True if the position is anywhere inside a table cell. */
+function isInsideTableCell(state: EditorState, pos: number): boolean {
+  try {
+    const $pos = state.doc.resolve(pos);
+    for (let d = $pos.depth; d >= 0; d -= 1) {
+      const name = $pos.node(d).type.name;
+      if (name === 'tableCell' || name === 'tableHeader') return true;
+    }
+  } catch {
+    // resolve() can fail mid-transaction; treat as "not in cell" to be safe.
+  }
+  return false;
+}
 
 /**
  * Custom markdown-style input rules:
- *  - `| ` → blockquote (worknest convention; the default StarterKit
- *    blockquote rule `> ` is disabled elsewhere to free up `>`)
- *  - `> ` → details (toggle) block. Inserts an empty summary + a paragraph
- *    content, then the slash/keyboard normally lets the user type.
+ *  - `| ` → blockquote (worknest convention)
  *  - `--- ` → horizontal rule
  *  - ` ```` ` → code block
  */
@@ -17,44 +29,15 @@ export const MarkdownShortcuts = Extension.create({
     const schema = this.editor.schema;
 
     if (schema.nodes.blockquote) {
-      rules.push(
-        wrappingInputRule({
-          find: /^\s*\|\s$/,
-          type: schema.nodes.blockquote,
-        }),
-      );
-    }
-
-    if (schema.nodes.details) {
+      // Custom rule instead of wrappingInputRule so we can skip inside table
+      // cells (turning a cell's paragraph into a blockquote breaks the cell
+      // layout). `chain().wrapIn` is the wrappingInputRule equivalent.
       rules.push(
         new InputRule({
-          find: /^\s*>\s$/,
+          find: /^\s*\|\s$/,
           handler: ({ state, range, chain }) => {
-            const { tr } = state;
-            tr.delete(range.from, range.to);
-            chain()
-              .insertContentAt(range.from, {
-                type: 'details',
-                attrs: { open: true },
-                content: [
-                  { type: 'detailsSummary' },
-                  { type: 'detailsContent', content: [{ type: 'paragraph' }] },
-                ],
-              })
-              .run();
-
-            requestAnimationFrame(() => {
-              let summaryPos: number | null = null;
-              this.editor.state.doc.descendants((node, pos) => {
-                if (node.type.name === 'detailsSummary') {
-                  summaryPos = pos + 1;
-                }
-                return true;
-              });
-              if (summaryPos !== null) {
-                this.editor.chain().setTextSelection(summaryPos).focus().run();
-              }
-            });
+            if (isInsideTableCell(state, range.from)) return;
+            chain().deleteRange(range).wrapIn('blockquote').run();
           },
         }),
       );
@@ -65,7 +48,8 @@ export const MarkdownShortcuts = Extension.create({
       rules.push(
         new InputRule({
           find: /^---\s$/,
-          handler: ({ chain, range }) => {
+          handler: ({ state, chain, range }) => {
+            if (isInsideTableCell(state, range.from)) return;
             chain()
               .deleteRange(range)
               .setNode('paragraph')
@@ -81,7 +65,8 @@ export const MarkdownShortcuts = Extension.create({
       rules.push(
         new InputRule({
           find: /^```([a-z]*)\s$/,
-          handler: ({ chain, range, match }) => {
+          handler: ({ state, chain, range, match }) => {
+            if (isInsideTableCell(state, range.from)) return;
             const language = match[1]?.trim() || null;
             chain()
               .deleteRange(range)

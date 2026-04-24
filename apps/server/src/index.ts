@@ -43,6 +43,8 @@ import { searchRoutes } from './routes/search';
 import { urlPreviewRoutes } from './routes/url-preview';
 import { viewRoutes } from './routes/views';
 import { wikiPageRoutes } from './routes/wiki-pages';
+import { wikiRevisionRoutes } from './routes/wiki-revisions';
+import { wikiShareRoutes } from './routes/wiki-shares';
 import { wikiSpaceRoutes } from './routes/wiki-spaces';
 import { workspaceRoutes } from './routes/workspaces';
 
@@ -227,6 +229,8 @@ async function main() {
   await cycleRoutes(app, { auth, db });
   await wikiSpaceRoutes(app, { auth, db });
   await wikiPageRoutes(app, { auth, db });
+  await wikiShareRoutes(app, { auth, db });
+  await wikiRevisionRoutes(app, { auth, db });
   await fileRoutes(app, { auth, db });
   await searchRoutes(app, { auth, db });
   await commentRoutes(app, { auth, db });

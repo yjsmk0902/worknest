@@ -357,6 +357,16 @@ export class WikiSpaceService {
       throw AppError.notFound('member');
     }
 
+    // Prevent removing yourself — editors would lock themselves out of a
+    // space they can no longer re-join. Users who want to leave should ask
+    // another editor to remove them (or we can add a dedicated leave flow).
+    if (existing.userId === callerUserId) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        'You cannot remove yourself from the wiki space',
+      );
+    }
+
     // Prevent removing the last editor
     if (existing.role === 'editor') {
       const [editorCount] = await this.db

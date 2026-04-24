@@ -1,6 +1,8 @@
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FavoriteButton } from '@/components/favorite-button';
 import { PageTree } from '@/components/wiki/page-tree/page-tree';
 import { SpaceFormModal } from '@/components/wiki/space-form-modal';
+import { pageSlug } from '@/lib/slug';
 import { useWorkspaceContext } from '@/contexts/workspace-context';
 import { apiClient } from '@/lib/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +40,7 @@ function WikiSpaceLayout() {
   const params = useParams({ strict: false }) as { pageId?: string };
   const hasSelectedPage = !!params.pageId;
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const spaceQuery = useQuery<WikiSpaceOutput>({
     queryKey: ['wiki-spaces', spaceId],
@@ -54,7 +57,7 @@ function WikiSpaceLayout() {
     mutationFn: () =>
       apiClient.post<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`, {
         title: '새 페이지',
-        slug: `page-${Date.now()}`,
+        slug: pageSlug('새 페이지'),
       }),
     onSuccess: (newPage) => {
       queryClient.invalidateQueries({
@@ -83,17 +86,7 @@ function WikiSpaceLayout() {
     },
   });
 
-  const handleDeleteSpace = () => {
-    const name = spaceQuery.data?.name ?? '스페이스';
-    if (
-      !window.confirm(
-        `"${name}"을(를) 삭제할까요?\n스페이스 안의 모든 페이지가 함께 삭제됩니다.`,
-      )
-    ) {
-      return;
-    }
-    deleteSpaceMutation.mutate();
-  };
+  const handleDeleteSpace = () => setDeleteOpen(true);
 
   if (spaceQuery.isLoading) {
     return (
@@ -210,6 +203,29 @@ function WikiSpaceLayout() {
         open={editOpen}
         onOpenChange={setEditOpen}
         space={space}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="스페이스 삭제"
+        description={
+          <>
+            <span className="font-medium text-[color:var(--fg-1)]">
+              “{space.name}”
+            </span>
+            을(를) 삭제할까요? 이 작업은 되돌릴 수 없으며, 스페이스 안의{' '}
+            <span className="font-medium text-[color:var(--fg-1)]">
+              모든 페이지
+            </span>
+            가 함께 삭제됩니다.
+          </>
+        }
+        confirmText="스페이스 삭제"
+        variant="danger"
+        onConfirm={async () => {
+          await deleteSpaceMutation.mutateAsync();
+        }}
       />
     </div>
   );

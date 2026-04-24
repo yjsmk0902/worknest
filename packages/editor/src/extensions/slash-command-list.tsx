@@ -1,8 +1,8 @@
 import type { Editor, Range } from '@tiptap/core';
 import {
   Bookmark as BookmarkIcon,
-  ChevronRight,
   Code2,
+  FileText,
   Heading1,
   Heading2,
   Heading3,
@@ -229,43 +229,6 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       },
     },
     {
-      title: '토글',
-      description: '접히는 블록',
-      icon: <ChevronRight size={18} />,
-      keywords: ['toggle', 'details', 'collapse', 'expand'],
-      category: '고급',
-      command: ({ editor, range }: SlashCommandProps) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .insertContent({
-            type: 'details',
-            attrs: { open: true },
-            content: [
-              { type: 'detailsSummary' },
-              { type: 'detailsContent', content: [{ type: 'paragraph' }] },
-            ],
-          })
-          .run();
-        // Defer selection change to next tick so Suggestion's menu-close
-        // transaction (and any Enter-followup) settle first. Walking the
-        // doc is more reliable than guessing a pos offset.
-        requestAnimationFrame(() => {
-          let summaryPos: number | null = null;
-          editor.state.doc.descendants((node, pos) => {
-            if (node.type.name === 'detailsSummary') {
-              summaryPos = pos + 1;
-            }
-            return true;
-          });
-          if (summaryPos !== null) {
-            editor.chain().setTextSelection(summaryPos).focus().run();
-          }
-        });
-      },
-    },
-    {
       title: '구분선',
       description: '수평 구분선',
       icon: <Minus size={18} />,
@@ -273,6 +236,38 @@ export function getSlashCommandItems(): SlashCommandItem[] {
       category: '고급',
       command: ({ editor, range }: SlashCommandProps) => {
         editor.chain().focus().deleteRange(range).setHorizontalRule().run();
+      },
+    },
+    {
+      title: '페이지 링크',
+      description: '기존 위키 페이지를 블록으로 연결',
+      icon: <FileText size={18} />,
+      keywords: ['page', 'link', 'wiki', '페이지', '링크'],
+      category: '고급',
+      command: ({ editor, range }: SlashCommandProps) => {
+        editor.chain().focus().deleteRange(range).run();
+        window.dispatchEvent(
+          new CustomEvent('editor:page-link-request', {
+            detail: {
+              onSubmit: (attrs: {
+                pageId: string;
+                spaceId: string;
+                title: string;
+                icon: string | null;
+                href: string;
+              }) => {
+                editor
+                  .chain()
+                  .focus()
+                  .insertContent({
+                    type: 'pageLink',
+                    attrs,
+                  })
+                  .run();
+              },
+            },
+          }),
+        );
       },
     },
     {

@@ -28,10 +28,8 @@ import { type CommentData, CommentItem } from './comment-item';
 type FilterTab = 'all' | 'comments' | 'activities';
 
 interface CommentListProps {
-  /** Issue ID (mutually exclusive with pageId) */
+  /** Issue ID */
   issueId?: string;
-  /** Wiki page ID (mutually exclusive with issueId) */
-  pageId?: string;
   /** Project ID (needed for activity queries) */
   projectId?: string;
   /** Mention query function */
@@ -228,7 +226,7 @@ function EmptyActivities() {
 
 // ── Main CommentList ───────────────────────────────────────────────────
 
-export function CommentList({ issueId, pageId, projectId, mentionQueryFn }: CommentListProps) {
+export function CommentList({ issueId, projectId, mentionQueryFn }: CommentListProps) {
   const [filter, setFilter] = useState<FilterTab>('all');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -236,24 +234,16 @@ export function CommentList({ issueId, pageId, projectId, mentionQueryFn }: Comm
   const currentUserId = currentUser?.id ?? '';
 
   // Determine API paths and query keys
-  const commentsPath = issueId
-    ? `/issues/${issueId}/comments`
-    : pageId
-      ? `/wiki-pages/${pageId}/comments`
-      : null;
+  const commentsPath = issueId ? `/issues/${issueId}/comments` : null;
 
-  const commentsQueryKey = issueId
-    ? ['issues', issueId, 'comments']
-    : pageId
-      ? ['wiki-pages', pageId, 'comments']
-      : [];
+  const commentsQueryKey = issueId ? ['issues', issueId, 'comments'] : [];
 
   const activitiesQueryKey =
     projectId && issueId ? ['projects', projectId, 'issues', issueId, 'activities'] : [];
 
   // ── WebSocket subscription ─────────────────────────────────────────
 
-  const wsChannel = issueId ? `issue:${issueId}` : pageId ? `page:${pageId}` : '';
+  const wsChannel = issueId ? `issue:${issueId}` : '';
 
   const wsChannels = useMemo(() => (wsChannel ? [wsChannel] : []), [wsChannel]);
   useWebSocket(wsChannels);
@@ -315,7 +305,7 @@ export function CommentList({ issueId, pageId, projectId, mentionQueryFn }: Comm
           {
             id: `temp-${Date.now()}`,
             issueId: issueId ?? null,
-            pageId: pageId ?? null,
+            pageId: null,
             content: newComment.content,
             parentId: newComment.parentId ?? null,
             authorId: currentUserId,

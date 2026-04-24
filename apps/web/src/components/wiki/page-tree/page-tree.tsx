@@ -15,7 +15,9 @@ import type { WikiPageOutput } from '@worknest/shared';
 import { toast } from '@worknest/ui';
 import { Loader2, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
+import { ConfirmDialog } from '../../confirm-dialog';
 import { apiClient } from '../../../lib/api-client';
+import { pageSlug } from '../../../lib/slug';
 import { PageTreeItem } from './page-tree-item';
 
 interface PageTreeProps {
@@ -139,6 +141,9 @@ export function PageTree({
   const currentPageId = params.pageId;
 
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(
+    null,
+  );
 
   const toggleExpand = useCallback((pageId: string) => {
     setExpanded((prev) => {
@@ -190,24 +195,10 @@ export function PageTree({
   // Delete page (soft) mutation
   const deleteMutation = useMutation({
     mutationFn: (pageId: string) => apiClient.delete(`/wiki-pages/${pageId}`),
-    onSuccess: () => {
+    onSuccess: (_data, pageId) => {
       queryClient.invalidateQueries({
         queryKey: ['wiki-spaces', spaceId, 'pages'],
       });
-    },
-    onError: () => {
-      toast('페이지 삭제에 실패했습니다.');
-    },
-  });
-
-  const handleDelete = useCallback(
-    (pageId: string, title: string) => {
-      const name = title || '제목 없음';
-      if (!window.confirm(`"${name}" 페이지를 삭제할까요? 하위 페이지는 한 단계 위로 이동합니다.`)) {
-        return;
-      }
-      deleteMutation.mutate(pageId);
-      // If the current route pointed at this page, fall back to the space home
       if (currentPageId === pageId) {
         navigate({
           to: '/$orgSlug/$wsSlug/wiki/$spaceId',
@@ -215,7 +206,16 @@ export function PageTree({
         });
       }
     },
-    [deleteMutation, currentPageId, navigate, orgSlug, wsSlug, spaceId],
+    onError: () => {
+      toast('페이지 삭제에 실패했습니다.');
+    },
+  });
+
+  const handleDeleteRequest = useCallback(
+    (pageId: string, title: string) => {
+      setDeleteTarget({ id: pageId, title: title || '제목 없음' });
+    },
+    [],
   );
 
   // Create page mutation (root or child of given parent)
@@ -223,7 +223,7 @@ export function PageTree({
     mutationFn: (parentId?: string) =>
       apiClient.post<WikiPageOutput>(`/wiki-spaces/${spaceId}/pages`, {
         title: '새 페이지',
-        slug: `page-${Date.now()}`,
+        slug: pageSlug('새 페이지'),
         ...(parentId ? { parentId } : {}),
       }),
     onSuccess: (newPage, parentId) => {
@@ -313,7 +313,7 @@ export function PageTree({
                   onToggle={() => toggleExpand(node.page.id)}
                   onClick={() => onPageSelect(node.page.id)}
                   onAddChild={() => createMutation.mutate(node.page.id)}
-                  onDelete={() => handleDelete(node.page.id, node.page.title)}
+                  onDelete={() => handleDeleteRequest(node.page.id, node.page.title)}
                 />
               ))}
             </SortableContext>
@@ -337,6 +337,29 @@ export function PageTree({
           <span>새 페이지</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="페이지 삭제"
+        description={
+          deleteTarget ? (
+            <>
+              <span className="font-medium text-[color:var(--fg-1)]">
+                “{deleteTarget.title}”
+              </span>{' '}
+              페이지를 삭제할까요? 하위 페이지는 한 단계 위로 이동합니다.
+            </>
+          ) : null
+        }
+        confirmText="삭제"
+        variant="danger"
+        onConfirm={async () => {
+          if (deleteTarget) {
+            await deleteMutation.mutateAsync(deleteTarget.id);
+          }
+        }}
+      />
     </div>
   );
 }

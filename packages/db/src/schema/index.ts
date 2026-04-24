@@ -18,6 +18,8 @@ export { activities } from './activities';
 export { views } from './views';
 export { cycles, cycleIssues } from './cycles';
 export { wikiSpaces, wikiSpaceMembers, wikiPages } from './wiki';
+export { wikiPageShares } from './wiki-shares';
+export { wikiPageRevisions } from './wiki-revisions';
 export { files } from './files';
 export { issueMentions } from './mentions';
 export { comments, reactions } from './comments';
@@ -50,6 +52,8 @@ export {
   wikiSpaceMembersRelations,
   wikiPagesRelations,
 } from './wiki';
+export { wikiPageSharesRelations } from './wiki-shares';
+export { wikiPageRevisionsRelations } from './wiki-revisions';
 export { filesRelations } from './files';
 export { issueMentionsRelations } from './mentions';
 export { commentsRelations, reactionsRelations } from './comments';

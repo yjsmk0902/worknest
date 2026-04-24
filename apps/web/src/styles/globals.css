@@ -341,30 +341,51 @@
 }
 
 /* =========================================================================
-   Block drag handle — rendered by the DragHandle extension
+   Table — prosemirror-tables' own stylesheet isn't imported, so we set
+   `table-layout: fixed` + `width: 100%` ourselves. StripTableColwidth
+   keeps the <colgroup> empty so every column gets an equal track.
    ========================================================================= */
-.editor-drag-handle {
-  appearance: none;
-  background: transparent;
-  border: none;
-  cursor: grab;
-  color: var(--fg-4);
-  padding: 2px 2px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-  -webkit-user-drag: element;
-  -webkit-user-select: none;
+.ProseMirror table.worknest-table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 12px 0;
 }
-.editor-drag-handle:hover {
-  color: var(--fg-2);
+.ProseMirror table.worknest-table th,
+.ProseMirror table.worknest-table td {
+  border: 1px solid var(--border);
+  padding: 8px;
+  vertical-align: top;
+  word-break: break-word;
+  overflow: hidden;
+}
+.ProseMirror table.worknest-table th {
   background: var(--bg-2);
+  font-weight: 600;
+  text-align: left;
 }
-.editor-drag-handle:active {
-  cursor: grabbing;
-  color: var(--fg-1);
+/* Keep empty cells tall enough to click into. */
+.ProseMirror table.worknest-table th > p:only-child:empty,
+.ProseMirror table.worknest-table td > p:only-child:empty {
+  min-height: 1.5em;
+}
+/* CRITICAL: kill the Placeholder extension's ::before on table-structure
+   elements. Placeholder applies an `is-empty` class + `::before { float:
+   left; height: 0 }` to every "empty" node, and when it lands on a <tr>
+   or <td> the floated pseudo pushes the row's cells to the right during
+   the first IME input. Nested paragraphs inside cells still get their
+   own (cell-local) placeholder. */
+.ProseMirror tr::before,
+.ProseMirror thead::before,
+.ProseMirror tbody::before,
+.ProseMirror table::before,
+.ProseMirror td::before,
+.ProseMirror th::before {
+  content: none !important;
+  display: none !important;
+}
+.ProseMirror .column-resize-handle {
+  display: none !important;
 }
 
 /* =========================================================================
@@ -451,83 +472,40 @@
 }
 
 /* =========================================================================
-   Toggle (details) block — TipTap uses a NodeView so the outer element is
-   a <div data-type="details"> with a <button> toggle and children
-   <summary data-type="detailsSummary"> + <div data-type="detailsContent">.
+   Page link block — Notion-style inline "link to page" row.
    ========================================================================= */
-.ProseMirror [data-type="details"] {
-  margin: 8px 0;
-  padding: 0 0 0 22px;
-  position: relative;
-  background: transparent;
-  border: none;
-}
-.ProseMirror [data-type="details"] > button {
-  appearance: none;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 18px;
-  height: 22px;
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
+.ProseMirror a.page-link-card {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--fg-3);
-}
-.ProseMirror [data-type="details"] > button::before {
-  content: '';
-  width: 0;
-  height: 0;
-  border-left: 5px solid currentColor;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  transition: transform 150ms ease;
-  transform-origin: 2px 4px;
-}
-.ProseMirror [data-type="details"].is-open > button::before {
-  transform: rotate(90deg);
-}
-.ProseMirror [data-type="details"] > button:hover {
+  gap: 6px;
+  margin: 2px 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-decoration: none;
   color: var(--fg-1);
+  transition: background-color 150ms ease;
+  cursor: pointer;
 }
-.ProseMirror [data-type="details"] > div {
-  min-width: 0;
+.ProseMirror a.page-link-card:hover {
+  background: var(--bg-2);
 }
-.ProseMirror summary[data-type="detailsSummary"],
-.ProseMirror summary {
-  list-style: none;
-  display: block;
-  cursor: text;
-  user-select: text;
+.ProseMirror a.page-link-card .page-link-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.ProseMirror a.page-link-card .page-link-title {
+  font-size: inherit;
   font-weight: 500;
-  color: var(--fg-1);
-  outline: none;
-  padding: 0;
-  margin: 0;
-  min-height: 1.5em;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
 }
-.ProseMirror summary::-webkit-details-marker,
-.ProseMirror summary::marker {
-  display: none;
-  content: '';
-}
-.ProseMirror summary > p {
-  display: inline;
-  margin: 0;
-}
-.ProseMirror [data-type="detailsContent"] {
-  margin-top: 4px;
-}
-.ProseMirror [data-type="detailsContent"] > * {
-  margin: 4px 0;
-}
-/* Hide content when collapsed (is-open class is absent) */
-.ProseMirror [data-type="details"]:not(.is-open) > div > [data-type="detailsContent"] {
-  display: none;
+.ProseMirror a.page-link-card:hover .page-link-title {
+  text-decoration-color: var(--fg-3);
 }
 
 /* =========================================================================

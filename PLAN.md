@@ -210,34 +210,39 @@ Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
 
 ### Phase 3 — 협업/공유
 
-#### 3-1. 실시간 공동 편집 (Yjs + Hocuspocus)
+#### 3-1. 실시간 공동 편집 (Yjs + Hocuspocus) — 보류
 - [ ] `content_format = 'yjs'` lazy migration (첫 편집 시 TipTap JSON → Yjs binary 변환)
-- [ ] EditorWithAutosave → EditorWithCollab 모드 분기
+- [ ] `EditorWithAutosave` → `EditorWithCollab` 모드 분기
 - [ ] 현재 편집자 커서/아바타 표시 (awareness)
+- [ ] **주의**: `apps/hocuspocus/` 디렉토리가 현재 존재하지 않음 — 앱 신규 구축 필요
 - [ ] 수정 파일
-  - `apps/hocuspocus/src/` — 기존 서버 설정 연결 확인
+  - `apps/hocuspocus/src/` — 앱 신규 구축
   - `packages/editor/src/collab-editor.tsx` — 새로 생성
   - `packages/db/src/schema/wiki.ts` — content_format 활용 점검
 
-#### 3-2. 블록 단위 코멘트
-- [ ] 블록 ID (ProseMirror `data-block-id`) 기반 코멘트 앵커
-- [ ] 우측 사이드바에 코멘트 스레드 / 인라인 인디케이터
-- [ ] 수정 파일
-  - `packages/db/src/schema/comments.ts` — wiki_page + block_id 지원
-  - `apps/server/src/services/comment-service.ts` — 위키 코멘트 API
-  - `apps/web/src/components/wiki/page-comments.tsx` — 새로 생성
+#### 3-2. 블록 단위 코멘트 ❌ 제거됨 (2026-04-24)
+**방향 전환**: 노션 스타일 블록 에디터 → 마크다운 친화 에디터로 축소.
+- BlockId / DragHandle / ToggleBlock / BlockCommentsPanel 확장 전부 제거
+- BubbleMenu "코멘트" 버튼 / 헤더 상단 말풍선 / 블록 hover 코멘트 트리거 제거
+- 백엔드: wiki-page 코멘트 라우트 + `listByPage` 서비스 메소드 + `comments.block_id` 컬럼 제거 (migration 0015)
+- 이슈 코멘트는 그대로 유지 (comments 테이블 폴리모픽 구조만 보존)
 
-#### 3-3. 페이지 공유 링크 / 퍼블리시
-- [ ] 스페이스 멤버 외 공개 읽기 전용 링크 (토큰 기반)
-- [ ] `wiki_page_shares` 테이블 (id, page_id, token, expires_at, created_by)
-- [ ] `/wiki-share/:token` 공개 라우트 (auth bypass)
+#### 3-3. 페이지 공유 링크 / 퍼블리시 ✅ (2026-04-22)
+- [x] `wiki_page_shares` 테이블 (id, page_id, token, expires_at, created_by, revoked_at)
+      + 마이그레이션 0012
+- [x] `POST/GET/DELETE /api/v1/wiki-pages/:id/shares` (에디터 권한 필요) +
+      `GET /api/v1/wiki-share/:token` (auth bypass, revoked/expires 검증)
+- [x] 페이지 헤더에 공유 버튼 + `ShareModal` (링크 생성/복사/해제)
+- [x] `/wiki-share/$token` 공개 라우트 (로그인 없이 읽기 전용 TipTap 렌더)
 
-#### 3-4. 페이지 히스토리/버전
-- [ ] 자동 저장마다 snapshot 저장 (혹은 diff)
-- [ ] "히스토리 보기" 패널에서 버전 비교/복원
-- [ ] 수정 파일
-  - `packages/db/src/schema/wiki.ts` — `wiki_page_revisions` 테이블
-  - `apps/server/src/services/wiki-service.ts` — snapshot 기록
+#### 3-4. 페이지 히스토리/버전 ✅ (2026-04-22)
+- [x] `wiki_page_revisions` 테이블 (title/icon/content/content_text/author_id, migration 0013)
+- [x] `WikiRevisionService.snapshot()` — 같은 작성자 5분 내 수정 시 in-place overwrite
+      (autosave 버스트 대응) + 50개 초과 시 오래된 것부터 prune
+- [x] 페이지 업데이트 시 content/title이 실제로 변경된 경우에만 pre-update snapshot 기록
+- [x] `GET /revisions`, `GET /revisions/:id`, `POST /revisions/:id/restore` — 복원 직전
+      현재 상태를 자동 스냅샷해 "되돌리기" 안전 장치
+- [x] `HistoryPanel` 슬라이드오버 — 타임라인 + 읽기 전용 미리보기 + 복원 확인 다이얼로그
 
 ---
 
@@ -300,10 +305,23 @@ Phase 6: 시간 추정/추적
 ### 위키 트랙 (섹션 7)
 ```
 Wiki Phase 1 ✅: 페이지 메타 & 탐색 (아이콘/즐겨찾기/최근/서브페이지/검색, 커버는 제거)
-Wiki Phase 2 ✅: 에디터 블록 확장 (callout, toggle, code, @mention, table, 북마크)
-Wiki Phase 2+ ✅: 드래그앤드롭, Draft, 프로젝트-위키, 삭제 UI (사용자 요청으로 추가)
-Wiki Phase 3  : 협업/공유 (Yjs 실시간, 블록 코멘트, 공유 링크, 히스토리)
+Wiki Phase 2 ✅: 에디터 기능 (callout, code, @mention, table, 북마크, 마크다운 단축키)
+  — 방향 전환으로 Toggle/DragHandle/BlockId 제거됨 (2026-04-24)
+Wiki Phase 2+ ✅: Draft, 프로젝트-위키, 삭제 UI (ConfirmDialog)
+Wiki Phase 3  : 협업/공유 — 부분 완료
+  ✅ 공유 링크 + 공개 뷰어 / 히스토리 + 복원
+  ❌ 블록 코멘트 (방향 전환으로 제거됨)
+  ⏸ Yjs 실시간 편집 (v1.0)
 Wiki Phase 4  : 고급 (템플릿, 이슈 DB 임베드, AI)
+
+---
+
+**2026-04-24 마무리 작업**
+- [x] 백엔드 코멘트 데드코드 제거 — wiki-page 코멘트 라우트/서비스/컬럼/인덱스 모두 정리 (migration 0015)
+- [x] 페이지 slug 자동생성 개선 — `pageSlug(title)` 헬퍼로 ASCII 변환 + 랜덤 suffix
+- [x] 페이지 삭제 시 자녀 sortOrder 재분배 — timestamp 기반 z-prefix
+- [x] 공개 share 응답 정돈 — 사용 안 하는 `slug` select 제거
+- [x] 스페이스 멤버 self-remove 방지 — `callerUserId === memberId` 체크
 ```
 
 **남은 Phase 2 후속 개선** (선택)

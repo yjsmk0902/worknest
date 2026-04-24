@@ -4,6 +4,7 @@ import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { AppError, ErrorCode } from '../lib/errors';
 import { extractPlainText } from '../lib/extract-text';
 import { sanitizeContent } from '../lib/sanitize';
+import { WikiRevisionService } from './wiki-revision-service';
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -109,7 +110,10 @@ function toPageOutput(row: typeof wikiPages.$inferSelect) {
 // ── Service ────────────────────────────────────────────────────────────
 
 export class WikiPageService {
-  constructor(private db: Database) {}
+  private revisions: WikiRevisionService;
+  constructor(private db: Database) {
+    this.revisions = new WikiRevisionService(db);
+  }
 
   // ── List Pages ───────────────────────────────────────────────────
 
@@ -257,6 +261,26 @@ export class WikiPageService {
       updates.contentText = extractPlainText(sanitized);
     }
 
+    // Record a revision snapshot of the PRE-update state when the change is
+    // substantive (content or title). `snapshot()` dedupes if the same
+    // author saved within the last 5 minutes, so autosave bursts don't
+    // inflate history.
+    const contentChanged =
+      input.content !== undefined &&
+      JSON.stringify(input.content) !== JSON.stringify(page.content);
+    const titleChanged =
+      input.title !== undefined && input.title !== page.title;
+    if (contentChanged || titleChanged) {
+      await this.revisions.snapshot({
+        pageId,
+        title: page.title,
+        icon: page.icon ?? null,
+        content: page.content,
+        contentText: page.contentText ?? null,
+        authorId: callerUserId,
+      });
+    }
+
     const [updated] = await this.db
       .update(wikiPages)
       .set(updates)
@@ -330,13 +354,34 @@ export class WikiPageService {
     await requireEditorRole(this.db, page.wikiSpaceId, callerUserId);
 
     await this.db.transaction(async (tx) => {
-      // Re-parent direct children to the deleted page's parent (promote up one level)
-      await tx
-        .update(wikiPages)
-        .set({ parentId: page.parentId ?? null, updatedAt: new Date() })
-        .where(and(eq(wikiPages.parentId, pageId), isNull(wikiPages.deletedAt)));
+      // Pull direct children of the page being deleted so we can assign them
+      // fresh sortOrders under the new parent (keeping their relative order
+      // but placing them after existing siblings).
+      const children = await tx
+        .select({ id: wikiPages.id, sortOrder: wikiPages.sortOrder })
+        .from(wikiPages)
+        .where(and(eq(wikiPages.parentId, pageId), isNull(wikiPages.deletedAt)))
+        .orderBy(asc(wikiPages.sortOrder));
 
-      // Soft-delete the page
+      if (children.length > 0) {
+        // Use a timestamp-prefixed key so promoted children land after any
+        // existing siblings under page.parentId without having to scan and
+        // compare. Keeping their relative order is enough for the UX.
+        const base = `z${Date.now().toString(36)}`;
+        for (let i = 0; i < children.length; i += 1) {
+          const child = children[i]!;
+          await tx
+            .update(wikiPages)
+            .set({
+              parentId: page.parentId ?? null,
+              sortOrder: `${base}.${i.toString(36).padStart(4, '0')}`,
+              updatedAt: new Date(),
+            })
+            .where(eq(wikiPages.id, child.id));
+        }
+      }
+
+      // Soft-delete the page itself
       await tx.update(wikiPages).set({ deletedAt: new Date() }).where(eq(wikiPages.id, pageId));
     });
   }

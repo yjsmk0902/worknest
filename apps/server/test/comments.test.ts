@@ -9,7 +9,6 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   addProjectMember,
-  addWikiSpaceMember,
   buildTestApp,
   cleanup,
   createTestComment,
@@ -18,8 +17,6 @@ import {
   createTestProject,
   createTestReaction,
   createTestUser,
-  createTestWikiPage,
-  createTestWikiSpace,
   createTestWorkspace,
   loginAsUser,
   stores,
@@ -67,17 +64,6 @@ function setupProjectWithUser() {
   });
   const cookie = loginAsUser(user);
   return { user, org, ws, project, cookie };
-}
-
-function setupWikiWithUser() {
-  const user = createTestUser({ name: 'Wiki Admin' });
-  const org = createTestOrg(user.id);
-  const ws = createTestWorkspace(org.id, user.id);
-  const space = createTestWikiSpace(ws.id, { createdBy: user.id });
-  addWikiSpaceMember(space.id, user.id, 'admin');
-  const page = createTestWikiPage(space.id, { createdBy: user.id });
-  const cookie = loginAsUser(user);
-  return { user, org, ws, space, page, cookie };
 }
 
 const sampleContent = {
@@ -166,55 +152,6 @@ describe('POST /api/v1/issues/:issueId/comments', () => {
     });
 
     expect(res.statusCode).toBe(401);
-  });
-});
-
-// ── Tests: POST page comment ────────────────────────────────────────────
-
-describe('POST /api/v1/wiki-pages/:pageId/comments', () => {
-  let app: FastifyInstance;
-
-  beforeEach(async () => {
-    cleanup();
-    const result = await buildCommentApp();
-    app = result.app;
-  });
-
-  afterEach(async () => {
-    await app.close();
-    cleanup();
-  });
-
-  it('creates a comment on a wiki page and returns 201', async () => {
-    const { user, page, cookie } = setupWikiWithUser();
-
-    const res = await app.inject({
-      method: 'POST',
-      url: `/api/v1/wiki-pages/${page.id}/comments`,
-      headers: { cookie },
-      payload: { content: sampleContent },
-    });
-
-    expect(res.statusCode).toBe(201);
-    const body = JSON.parse(res.body);
-    expect(body.data.pageId).toBe(page.id);
-    expect(body.data.content).toEqual(sampleContent);
-    expect(body.data.authorId).toBe(user.id);
-  });
-
-  it('returns 403 when non-space-member tries to comment', async () => {
-    const { page } = setupWikiWithUser();
-    const outsider = createTestUser({ name: 'Outsider' });
-    const outsiderCookie = loginAsUser(outsider);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: `/api/v1/wiki-pages/${page.id}/comments`,
-      headers: { cookie: outsiderCookie },
-      payload: { content: sampleContent },
-    });
-
-    expect(res.statusCode).toBe(403);
   });
 });
 
@@ -379,57 +316,6 @@ describe('GET /api/v1/issues/:issueId/comments', () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data).toHaveLength(1);
-  });
-});
-
-// ── Tests: GET page comments ────────────────────────────────────────────
-
-describe('GET /api/v1/wiki-pages/:pageId/comments', () => {
-  let app: FastifyInstance;
-
-  beforeEach(async () => {
-    cleanup();
-    const result = await buildCommentApp();
-    app = result.app;
-  });
-
-  afterEach(async () => {
-    await app.close();
-    cleanup();
-  });
-
-  it('lists comments for a wiki page', async () => {
-    const { user, page, cookie } = setupWikiWithUser();
-    createTestComment({
-      pageId: page.id,
-      authorId: user.id,
-      content: sampleContent,
-    });
-
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/v1/wiki-pages/${page.id}/comments`,
-      headers: { cookie },
-    });
-
-    expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.body);
-    expect(body.data).toHaveLength(1);
-    expect(body.data[0].pageId).toBe(page.id);
-  });
-
-  it('returns 403 for non-space-members', async () => {
-    const { page } = setupWikiWithUser();
-    const outsider = createTestUser({ name: 'Outsider' });
-    const outsiderCookie = loginAsUser(outsider);
-
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/v1/wiki-pages/${page.id}/comments`,
-      headers: { cookie: outsiderCookie },
-    });
-
-    expect(res.statusCode).toBe(403);
   });
 });
 

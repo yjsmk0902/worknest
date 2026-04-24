@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -147,6 +148,10 @@ export const Bookmark = Node.create({
     ];
   },
 
+  addProseMirrorPlugins() {
+    return [createBookmarkPastePlugin()];
+  },
+
   addCommands() {
     return {
       insertBookmark:
@@ -168,3 +173,107 @@ export const Bookmark = Node.create({
     };
   },
 });
+
+const bookmarkPastePluginKey = new PluginKey('bookmarkPaste');
+
+/**
+ * Detect bare-URL pastes on an empty block and convert them to a bookmark
+ * card. Paste into non-empty text (e.g. mid-sentence) is left alone so the
+ * user still gets a plain link. Metadata is fetched asynchronously and the
+ * inserted card is upgraded via `setNodeMarkup` once it arrives.
+ */
+function createBookmarkPastePlugin(): Plugin {
+  return new Plugin({
+    key: bookmarkPastePluginKey,
+    props: {
+      handlePaste(view, event) {
+        const text = event.clipboardData?.getData('text/plain')?.trim();
+        if (!text) return false;
+
+        let url: URL;
+        try {
+          url = new URL(text);
+        } catch {
+          return false;
+        }
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+        if (/\s/.test(text)) return false;
+
+        const { state } = view;
+        const { $from, empty } = state.selection;
+        if (!empty) return false;
+
+        const parent = $from.parent;
+        if (parent.type.name !== 'paragraph') return false;
+        if (parent.content.size !== 0) return false;
+
+        // Skip when the caret is inside a table cell — turning the cell's
+        // paragraph into a block-level bookmark card breaks the cell layout.
+        for (let d = $from.depth; d >= 0; d -= 1) {
+          const name = $from.node(d).type.name;
+          if (name === 'tableCell' || name === 'tableHeader') return false;
+        }
+
+        const bookmarkType = state.schema.nodes.bookmark;
+        if (!bookmarkType) return false;
+
+        const urlString = url.toString();
+        const bookmarkNode = bookmarkType.create({
+          url: urlString,
+          title: null,
+          description: null,
+          image: null,
+          favicon: null,
+          siteName: null,
+        });
+
+        const tr = state.tr.replaceSelectionWith(bookmarkNode);
+        view.dispatch(tr);
+
+        event.preventDefault();
+
+        fetchBookmarkMetadata(view, urlString);
+        return true;
+      },
+    },
+  });
+}
+
+function fetchBookmarkMetadata(
+  view: Parameters<NonNullable<Plugin['props']['handlePaste']>>[0],
+  url: string,
+): void {
+  fetch(`/api/v1/url-preview?url=${encodeURIComponent(url)}`, {
+    credentials: 'include',
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((preview) => {
+      if (!preview || typeof preview !== 'object') return;
+      const { state } = view;
+      let targetPos: number | null = null;
+      state.doc.descendants((node, pos) => {
+        if (
+          node.type.name === 'bookmark' &&
+          node.attrs.url === url &&
+          !node.attrs.description &&
+          !node.attrs.siteName
+        ) {
+          targetPos = pos;
+        }
+        return true;
+      });
+      if (targetPos === null) return;
+      const tr = view.state.tr.setNodeMarkup(targetPos, undefined, {
+        url,
+        title: preview.title ?? null,
+        description: preview.description ?? null,
+        image: preview.image ?? null,
+        favicon: preview.favicon ?? null,
+        siteName: preview.siteName ?? null,
+      });
+      view.dispatch(tr);
+    })
+    .catch(() => {
+      // Silent — placeholder card keeps the URL as its own label.
+    });
+}
