@@ -12,6 +12,7 @@ export {
   issues,
   issueAssignees,
   issueLabels,
+  issueRelations,
 } from './issues';
 export { labels } from './labels';
 export { activities } from './activities';
@@ -42,6 +43,7 @@ export {
   issuesRelations,
   issueAssigneesRelations,
   issueLabelsRelations,
+  issueRelationsRelations,
 } from './issues';
 export { labelsRelations } from './labels';
 export { activitiesRelations } from './activities';

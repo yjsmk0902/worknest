@@ -4,6 +4,7 @@ import {
   cycles,
   issueAssignees,
   issueLabels,
+  issueRelations,
   issueStatuses,
   issueTypes,
   issues,
@@ -15,7 +16,9 @@ import {
 import type {
   BulkUpdateInput,
   CreateIssueInput,
+  CreateIssueRelationInput,
   IssueListQuery,
+  IssueRelationType,
   UpdateIssueInput,
 } from '@worknest/shared';
 import { isValidSortKey } from '@worknest/shared';
@@ -400,6 +403,48 @@ export class IssueService {
     broadcastIssueCreated(projectId, fullIssue);
 
     return fullIssue!;
+  }
+
+  // ── Duplicate Issue ───────────────────────────────────────────────────
+
+  async duplicate(issueId: string, callerUserId: string) {
+    const source = await this.db
+      .select()
+      .from(issues)
+      .where(and(eq(issues.id, issueId), isNull(issues.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!source) {
+      throw AppError.notFound('issue');
+    }
+
+    await this.verifyProjectMember(source.projectId, callerUserId);
+
+    const [assigneeRows, labelRows] = await Promise.all([
+      this.db
+        .select({ userId: issueAssignees.userId })
+        .from(issueAssignees)
+        .where(eq(issueAssignees.issueId, issueId)),
+      this.db
+        .select({ labelId: issueLabels.labelId })
+        .from(issueLabels)
+        .where(eq(issueLabels.issueId, issueId)),
+    ]);
+
+    return this.create(source.projectId, callerUserId, {
+      title: `${source.title} (복제본)`,
+      description: source.description ?? undefined,
+      descriptionText: source.descriptionText ?? undefined,
+      statusId: source.statusId ?? undefined,
+      typeId: source.typeId ?? undefined,
+      priority: source.priority,
+      parentId: source.parentId ?? undefined,
+      startDate: source.startDate ? source.startDate.toISOString() : undefined,
+      dueDate: source.dueDate ? source.dueDate.toISOString() : undefined,
+      assigneeIds: assigneeRows.map((r) => r.userId),
+      labelIds: labelRows.map((r) => r.labelId),
+    });
   }
 
   // ── Get Issue by ID ───────────────────────────────────────────────────
@@ -913,8 +958,30 @@ export class IssueService {
       });
     }
 
-    // Perform update
-    await this.db.update(issues).set(updates).where(eq(issues.id, issueId));
+    // Perform update + optional assignee/label replacement in a transaction
+    await this.db.transaction(async (tx) => {
+      await tx.update(issues).set(updates).where(eq(issues.id, issueId));
+
+      if (input.assigneeIds !== undefined) {
+        await tx.delete(issueAssignees).where(eq(issueAssignees.issueId, issueId));
+        if (input.assigneeIds.length > 0) {
+          await tx.insert(issueAssignees).values(
+            input.assigneeIds.map((userId) => ({ issueId, userId })),
+          );
+        }
+        changedFields.push({ field: 'assignees', oldValue: null, newValue: null });
+      }
+
+      if (input.labelIds !== undefined) {
+        await tx.delete(issueLabels).where(eq(issueLabels.issueId, issueId));
+        if (input.labelIds.length > 0) {
+          await tx.insert(issueLabels).values(
+            input.labelIds.map((labelId) => ({ issueId, labelId })),
+          );
+        }
+        changedFields.push({ field: 'labels', oldValue: null, newValue: null });
+      }
+    });
 
     // Record activities for each changed field
     for (const change of changedFields) {
@@ -1446,5 +1513,200 @@ export class IssueService {
     });
 
     return { updated: issueIds.length };
+  }
+
+  // ── Issue Relations (Dependencies) ─────────────────────────────────────
+
+  /**
+   * Returns relations visible from this issue's perspective:
+   * - Outgoing: rows where source = issueId
+   * - Incoming: rows where target = issueId
+   *
+   * Each row carries a direction + "label" so the UI can render
+   * "blocks X" vs "blocked by Y" without the caller deriving it.
+   */
+  async listRelations(issueId: string, callerUserId: string) {
+    const issue = await this.db
+      .select({ projectId: issues.projectId })
+      .from(issues)
+      .where(and(eq(issues.id, issueId), isNull(issues.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!issue) throw AppError.notFound('issue');
+    await this.verifyProjectMember(issue.projectId, callerUserId);
+
+    const rows = await this.db
+      .select({
+        relation: issueRelations,
+        srcIssue: {
+          id: sql<string>`src.id`.as('src_id'),
+          sequenceId: sql<number>`src.sequence_id`.as('src_seq'),
+          title: sql<string>`src.title`.as('src_title'),
+          statusId: sql<string | null>`src.status_id`.as('src_status_id'),
+        },
+        tgtIssue: {
+          id: sql<string>`tgt.id`.as('tgt_id'),
+          sequenceId: sql<number>`tgt.sequence_id`.as('tgt_seq'),
+          title: sql<string>`tgt.title`.as('tgt_title'),
+          statusId: sql<string | null>`tgt.status_id`.as('tgt_status_id'),
+        },
+      })
+      .from(issueRelations)
+      .innerJoin(
+        sql`${issues} as src`,
+        sql`src.id = ${issueRelations.sourceIssueId} AND src.deleted_at IS NULL`,
+      )
+      .innerJoin(
+        sql`${issues} as tgt`,
+        sql`tgt.id = ${issueRelations.targetIssueId} AND tgt.deleted_at IS NULL`,
+      )
+      .where(
+        sql`${issueRelations.sourceIssueId} = ${issueId} OR ${issueRelations.targetIssueId} = ${issueId}`,
+      );
+
+    // Fetch all statuses for this project to embed in output
+    const statusRows = await this.db
+      .select()
+      .from(issueStatuses)
+      .where(eq(issueStatuses.projectId, issue.projectId));
+    const statusById = new Map(statusRows.map((s) => [s.id, s]));
+
+    return rows.map((r) => {
+      const isOutgoing = r.relation.sourceIssueId === issueId;
+      const other = isOutgoing ? r.tgtIssue : r.srcIssue;
+      const status = other.statusId ? statusById.get(other.statusId) : null;
+      let label: 'blocks' | 'blocked_by' | 'relates_to';
+      if (r.relation.type === 'relates_to') label = 'relates_to';
+      else label = isOutgoing ? 'blocks' : 'blocked_by';
+
+      return {
+        id: r.relation.id,
+        sourceIssueId: r.relation.sourceIssueId,
+        targetIssueId: r.relation.targetIssueId,
+        direction: isOutgoing ? ('outgoing' as const) : ('incoming' as const),
+        label,
+        type: r.relation.type as IssueRelationType,
+        issue: {
+          id: other.id,
+          sequenceId: other.sequenceId,
+          title: other.title,
+          statusId: other.statusId,
+          status: status
+            ? {
+                id: status.id,
+                name: status.name,
+                color: status.color,
+                category: status.category,
+              }
+            : null,
+        },
+        createdAt: r.relation.createdAt.toISOString(),
+      };
+    });
+  }
+
+  async createRelation(
+    issueId: string,
+    callerUserId: string,
+    input: CreateIssueRelationInput,
+  ) {
+    if (issueId === input.targetIssueId) {
+      throw AppError.badRequest(ErrorCode.VALIDATION_ERROR, 'Cannot relate an issue to itself');
+    }
+
+    const source = await this.db
+      .select({ projectId: issues.projectId })
+      .from(issues)
+      .where(and(eq(issues.id, issueId), isNull(issues.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!source) throw AppError.notFound('issue');
+    await this.verifyProjectMember(source.projectId, callerUserId);
+
+    const target = await this.db
+      .select({ id: issues.id, projectId: issues.projectId })
+      .from(issues)
+      .where(and(eq(issues.id, input.targetIssueId), isNull(issues.deletedAt)))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!target) throw AppError.notFound('target_issue');
+    if (target.projectId !== source.projectId) {
+      throw AppError.badRequest(
+        ErrorCode.VALIDATION_ERROR,
+        'Cross-project relations are not supported',
+      );
+    }
+
+    // Circular-blocks check: only for 'blocks' edges. Ensure target does
+    // not already (transitively) block source.
+    if (input.type === 'blocks') {
+      const cycle = await this.db.execute(sql`
+        WITH RECURSIVE chain AS (
+          SELECT source_issue_id, target_issue_id
+            FROM issue_relations
+           WHERE source_issue_id = ${input.targetIssueId}
+             AND type = 'blocks'
+          UNION ALL
+          SELECT r.source_issue_id, r.target_issue_id
+            FROM issue_relations r
+            JOIN chain c ON c.target_issue_id = r.source_issue_id
+           WHERE r.type = 'blocks'
+        )
+        SELECT 1 FROM chain WHERE target_issue_id = ${issueId} LIMIT 1;
+      `);
+      const found = (cycle as unknown as { rows?: unknown[] }).rows ?? (cycle as unknown as unknown[]);
+      if (Array.isArray(found) && found.length > 0) {
+        throw AppError.badRequest(
+          ErrorCode.VALIDATION_ERROR,
+          'This relation would create a blocking cycle',
+        );
+      }
+    }
+
+    try {
+      const [created] = await this.db
+        .insert(issueRelations)
+        .values({
+          sourceIssueId: issueId,
+          targetIssueId: input.targetIssueId,
+          type: input.type,
+          createdBy: callerUserId,
+        })
+        .returning();
+      return created!;
+    } catch (err) {
+      // Unique-violation = duplicate relation of same type.
+      if (err && typeof err === 'object' && 'code' in err && err.code === '23505') {
+        throw AppError.conflict(
+          ErrorCode.ALREADY_A_MEMBER,
+          'This relation already exists',
+        );
+      }
+      throw err;
+    }
+  }
+
+  async removeRelation(issueId: string, callerUserId: string, relationId: string) {
+    const existing = await this.db
+      .select()
+      .from(issueRelations)
+      .where(eq(issueRelations.id, relationId))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!existing) throw AppError.notFound('relation');
+    if (existing.sourceIssueId !== issueId && existing.targetIssueId !== issueId) {
+      throw AppError.notFound('relation');
+    }
+
+    const issue = await this.db
+      .select({ projectId: issues.projectId })
+      .from(issues)
+      .where(eq(issues.id, issueId))
+      .limit(1)
+      .then((rows) => rows[0]);
+    if (!issue) throw AppError.notFound('issue');
+    await this.verifyProjectMember(issue.projectId, callerUserId);
+
+    await this.db.delete(issueRelations).where(eq(issueRelations.id, relationId));
   }
 }

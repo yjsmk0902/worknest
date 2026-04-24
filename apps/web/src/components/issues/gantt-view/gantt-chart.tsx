@@ -1,5 +1,6 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { IssueOutput, StatusCategory } from '@worknest/shared';
-import { Avatar, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@worknest/ui';
+import { Avatar, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
 import {
   addDays,
@@ -18,6 +19,7 @@ import {
 import { ko } from 'date-fns/locale';
 import { Calendar, CalendarRange } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { apiClient } from '../../../lib/api-client';
 import { PRIORITY_CONFIG, type Priority } from '../../../lib/issue-constants';
 import { CategoryGlyph, type GroupCategory } from '../../../lib/status-category-config';
 
@@ -32,8 +34,20 @@ interface GanttIssue extends IssueOutput {
 
 interface GanttChartProps {
   issues: IssueOutput[];
+  projectId: string;
   projectPrefix: string;
   onIssueClick?: (issueId: string) => void;
+}
+
+type DragMode = 'left' | 'right' | 'move';
+
+interface DragState {
+  issueId: string;
+  mode: DragMode;
+  startX: number;
+  initialStart: Date;
+  initialDue: Date;
+  deltaDays: number;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────
@@ -69,11 +83,27 @@ function parseDate(value: string | null | undefined): Date | null {
 
 // ── Component ──────────────────────────────────────────────────────────
 
-export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartProps) {
+export function GanttChart({ issues, projectId, projectPrefix, onIssueClick }: GanttChartProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState<ZoomLevel>('week');
   const [containerWidth, setContainerWidth] = useState(0);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const dragMovedRef = useRef(false);
+  const queryClient = useQueryClient();
+
+  const updateDatesMutation = useMutation({
+    mutationFn: (data: { issueId: string; startDate: string | null; dueDate: string | null }) =>
+      apiClient.patch(`/projects/${projectId}/issues/${data.issueId}`, {
+        startDate: data.startDate,
+        dueDate: data.dueDate,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'gantt-issues'] });
+    },
+    onError: () => toast('날짜 변경에 실패했습니다.'),
+  });
 
   // Track right-panel width
   useEffect(() => {
@@ -196,6 +226,89 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
     const today = startOfDay(new Date());
     return differenceInDays(today, timelineStart) * dayWidth;
   }, [timelineStart, dayWidth]);
+
+  // ── Drag handlers (for resizing/moving bars) ──────────────────────────
+  const handleBarPointerDown = useCallback(
+    (e: React.PointerEvent, issue: GanttIssue, mode: DragMode) => {
+      if (!issue._startDate || !issue._dueDate) return;
+      e.preventDefault();
+      e.stopPropagation();
+      dragMovedRef.current = false;
+      setDragState({
+        issueId: issue.id,
+        mode,
+        startX: e.clientX,
+        initialStart: issue._startDate,
+        initialDue: issue._dueDate,
+        deltaDays: 0,
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!dragState) return;
+
+    const onMove = (e: PointerEvent) => {
+      const delta = Math.round((e.clientX - dragState.startX) / dayWidth);
+      if (delta !== 0) dragMovedRef.current = true;
+      if (delta !== dragState.deltaDays) {
+        setDragState((prev) => (prev ? { ...prev, deltaDays: delta } : prev));
+      }
+    };
+
+    const onUp = () => {
+      if (!dragMovedRef.current || dragState.deltaDays === 0) {
+        setDragState(null);
+        return;
+      }
+      const { issueId, mode, initialStart, initialDue, deltaDays } = dragState;
+      let newStart = initialStart;
+      let newDue = initialDue;
+      if (mode === 'left') {
+        newStart = addDays(initialStart, deltaDays);
+        if (newStart > initialDue) newStart = initialDue;
+      } else if (mode === 'right') {
+        newDue = addDays(initialDue, deltaDays);
+        if (newDue < initialStart) newDue = initialStart;
+      } else {
+        newStart = addDays(initialStart, deltaDays);
+        newDue = addDays(initialDue, deltaDays);
+      }
+      updateDatesMutation.mutate({
+        issueId,
+        startDate: newStart.toISOString().slice(0, 10),
+        dueDate: newDue.toISOString().slice(0, 10),
+      });
+      setDragState(null);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [dragState, dayWidth, updateDatesMutation]);
+
+  // Given a bar's base style, apply drag preview offset
+  const applyDragPreview = useCallback(
+    (
+      issueId: string,
+      base: { left: number; width: number },
+    ): { left: number; width: number } => {
+      if (!dragState || dragState.issueId !== issueId || dragState.deltaDays === 0) return base;
+      const dx = dragState.deltaDays * dayWidth;
+      if (dragState.mode === 'left') {
+        return { left: base.left + dx, width: Math.max(dayWidth, base.width - dx) };
+      }
+      if (dragState.mode === 'right') {
+        return { left: base.left, width: Math.max(dayWidth, base.width + dx) };
+      }
+      return { left: base.left + dx, width: base.width };
+    },
+    [dragState, dayWidth],
+  );
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -415,23 +528,36 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                       </TooltipProvider>
                     ) : barStyle ? (
                       /* ── Full bar: both dates ── */
+                      (() => {
+                        const preview = applyDragPreview(issue.id, barStyle);
+                        const isDragging = dragState?.issueId === issue.id;
+                        return (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => onIssueClick?.(issue.id)}
-                              className="group absolute top-1/2 z-10 -translate-y-1/2 cursor-pointer overflow-hidden rounded-sm shadow-[var(--shadow-sm)] transition-[filter,transform] duration-150 hover:brightness-[1.08]"
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => {
+                                if (dragMovedRef.current) return;
+                                onIssueClick?.(issue.id);
+                              }}
+                              onPointerDown={(e) => handleBarPointerDown(e, issue, 'move')}
+                              className={cn(
+                                'group absolute top-1/2 z-10 -translate-y-1/2 overflow-hidden rounded-sm shadow-[var(--shadow-sm)] transition-[filter] duration-150 hover:brightness-[1.08]',
+                                isDragging ? 'cursor-grabbing' : 'cursor-grab',
+                              )}
                               style={{
-                                left: barStyle.left,
-                                width: barStyle.width,
+                                left: preview.left,
+                                width: preview.width,
                                 height: 20,
                                 backgroundColor: getStatusColor(issue.status),
-                                opacity: 0.88,
+                                opacity: isDragging ? 0.6 : 0.88,
+                                userSelect: 'none',
                               }}
                             >
-                              {barStyle.width > 60 && (
-                                <span className="absolute inset-0 flex items-center px-2 text-[11px] font-medium text-white drop-shadow-sm overflow-hidden">
+                              {preview.width > 60 && (
+                                <span className="absolute inset-0 flex items-center px-2 text-[11px] font-medium text-white drop-shadow-sm overflow-hidden pointer-events-none">
                                   <span className="truncate">
                                     <span className="opacity-70 mr-1">
                                       {projectPrefix}-{issue.sequenceId}
@@ -440,9 +566,15 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                                   </span>
                                 </span>
                               )}
-                              <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
-                              <span className="absolute right-0 top-0 bottom-0 w-1 rounded-r-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize" />
-                            </button>
+                              <span
+                                onPointerDown={(e) => handleBarPointerDown(e, issue, 'left')}
+                                className="absolute left-0 top-0 bottom-0 w-2 rounded-l-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize"
+                              />
+                              <span
+                                onPointerDown={(e) => handleBarPointerDown(e, issue, 'right')}
+                                className="absolute right-0 top-0 bottom-0 w-2 rounded-r-md bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity cursor-ew-resize"
+                              />
+                            </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-[280px]">
                             <div className="space-y-1">
@@ -473,6 +605,8 @@ export function GanttChart({ issues, projectPrefix, onIssueClick }: GanttChartPr
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                        );
+                      })()
                     ) : (
                       !hasDates && (
                         <div

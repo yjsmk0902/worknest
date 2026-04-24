@@ -184,6 +184,7 @@ function GanttPage() {
       <div className="flex-1 overflow-hidden">
         <GanttChart
           issues={issues}
+          projectId={projectId}
           projectPrefix={projectPrefix}
           onIssueClick={(issueId) => setSelectedIssueId(issueId)}
         />

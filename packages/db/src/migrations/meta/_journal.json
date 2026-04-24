@@ -113,6 +113,20 @@
       "when": 1780300000000,
       "tag": "0015_drop_comment_block_id",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1780400000000,
+      "tag": "0016_issue_relations",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1780500000000,
+      "tag": "0017_files_at_most_one_parent",
+      "breakpoints": true
     }
   ]
 }

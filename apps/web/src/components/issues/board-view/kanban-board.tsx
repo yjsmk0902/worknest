@@ -122,6 +122,19 @@ const kanbanCollisionDetection: CollisionDetection = (args) => {
   return rectIntersection(args);
 };
 
+export type BoardGroupBy = 'status' | 'priority' | 'assignee' | 'label';
+
+export interface BoardMember {
+  userId: string;
+  user: { id: string; name: string; email: string; avatarUrl: string | null };
+}
+
+export interface BoardLabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface KanbanBoardProps {
   statuses: IssueStatusOutput[];
   issues: IssueOutput[];
@@ -130,9 +143,23 @@ interface KanbanBoardProps {
   projectPrefix: string;
   sortField?: string;
   sortOrder?: string;
+  groupBy?: BoardGroupBy;
+  members?: BoardMember[];
+  labels?: BoardLabel[];
   onCardClick: (issueId: string) => void;
   onCreateClick: () => void;
 }
+
+const PRIORITY_COLUMNS: { id: string; value: 'urgent' | 'high' | 'medium' | 'low' | 'none'; name: string; color: string }[] = [
+  { id: 'priority-urgent', value: 'urgent', name: '긴급', color: '#e5484d' },
+  { id: 'priority-high', value: 'high', name: '높음', color: '#f76808' },
+  { id: 'priority-medium', value: 'medium', name: '보통', color: '#f5a524' },
+  { id: 'priority-low', value: 'low', name: '낮음', color: '#30a46c' },
+  { id: 'priority-none', value: 'none', name: '없음', color: '#8f8f8f' },
+];
+
+const UNASSIGNED_COLUMN_ID = '__unassigned';
+const NO_LABEL_COLUMN_ID = '__nolabel';
 
 export function KanbanBoard({
   statuses,
@@ -142,6 +169,9 @@ export function KanbanBoard({
   projectPrefix,
   sortField,
   sortOrder = 'asc',
+  groupBy = 'status',
+  members = [],
+  labels = [],
   onCardClick,
   onCreateClick,
 }: KanbanBoardProps) {
@@ -170,20 +200,101 @@ export function KanbanBoard({
     setLocalIssues(issues);
   }
 
-  // Group issues by statusId
+  // Build columns based on groupBy
+  const columns = useMemo((): IssueStatusOutput[] => {
+    if (groupBy === 'priority') {
+      return PRIORITY_COLUMNS.map(
+        (p) =>
+          ({
+            id: p.id,
+            projectId,
+            name: p.name,
+            color: p.color,
+            sortOrder: 0,
+            category: null as never,
+            isDefault: false,
+          }) as unknown as IssueStatusOutput,
+      );
+    }
+    if (groupBy === 'assignee') {
+      const memberCols = members.map(
+        (m) =>
+          ({
+            id: m.userId,
+            projectId,
+            name: m.user.name,
+            color: '#6366f1',
+            sortOrder: 0,
+            category: null as never,
+            isDefault: false,
+          }) as unknown as IssueStatusOutput,
+      );
+      return [
+        ...memberCols,
+        {
+          id: UNASSIGNED_COLUMN_ID,
+          projectId,
+          name: '미지정',
+          color: '#8f8f8f',
+          sortOrder: 0,
+          category: null as never,
+          isDefault: false,
+        } as unknown as IssueStatusOutput,
+      ];
+    }
+    if (groupBy === 'label') {
+      const labelCols = labels.map(
+        (l) =>
+          ({
+            id: l.id,
+            projectId,
+            name: l.name,
+            color: l.color,
+            sortOrder: 0,
+            category: null as never,
+            isDefault: false,
+          }) as unknown as IssueStatusOutput,
+      );
+      return [
+        ...labelCols,
+        {
+          id: NO_LABEL_COLUMN_ID,
+          projectId,
+          name: '라벨 없음',
+          color: '#8f8f8f',
+          sortOrder: 0,
+          category: null as never,
+          isDefault: false,
+        } as unknown as IssueStatusOutput,
+      ];
+    }
+    return statuses;
+  }, [groupBy, statuses, members, labels, projectId]);
+
+  // Resolve which column a given issue belongs to, based on groupBy
+  const getIssueColumnId = useCallback(
+    (issue: IssueOutput): string => {
+      if (groupBy === 'priority') return `priority-${issue.priority}`;
+      if (groupBy === 'assignee') return issue.assignees?.[0]?.userId ?? UNASSIGNED_COLUMN_ID;
+      if (groupBy === 'label') return issue.labels?.[0]?.labelId ?? NO_LABEL_COLUMN_ID;
+      return issue.statusId ?? (statuses[0]?.id ?? '');
+    },
+    [groupBy, statuses],
+  );
+
+  // Group issues by columnId
   const issuesByStatus = useMemo(() => {
     const grouped: Record<string, IssueOutput[]> = {};
-    for (const status of statuses) {
-      grouped[status.id] = [];
+    for (const col of columns) {
+      grouped[col.id] = [];
     }
-    const firstStatusId = statuses[0]?.id ?? '';
+    const firstColumnId = columns[0]?.id ?? '';
     for (const issue of localIssues) {
-      const sid = issue.statusId ?? '';
-      if (grouped[sid]) {
-        grouped[sid].push(issue);
-      } else if (firstStatusId && grouped[firstStatusId]) {
-        // Issues without a valid status go into the first column
-        grouped[firstStatusId].push(issue);
+      const cid = getIssueColumnId(issue);
+      if (grouped[cid]) {
+        grouped[cid].push(issue);
+      } else if (firstColumnId && grouped[firstColumnId]) {
+        grouped[firstColumnId].push(issue);
       }
     }
     // Sort each column
@@ -191,7 +302,7 @@ export function KanbanBoard({
       grouped[key].sort((a, b) => sortIssues(a, b, sortField, sortOrder));
     }
     return grouped;
-  }, [statuses, localIssues, sortField, sortOrder]);
+  }, [columns, localIssues, sortField, sortOrder, getIssueColumnId]);
 
   // Check if the board is completely empty
   const totalIssues = localIssues.length;
@@ -212,34 +323,67 @@ export function KanbanBoard({
     useSensor(KeyboardSensor),
   );
 
-  // Mutation for updating issue status/sortOrder
+  // Mutation for updating issue fields based on groupBy
   const updateMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       issueId: string;
-      statusId?: string;
+      targetColumnId: string;
       sortOrder?: string;
-    }) =>
-      apiClient.patch(`/projects/${projectId}/issues/${data.issueId}`, {
-        ...(data.statusId !== undefined ? { statusId: data.statusId } : {}),
-        ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
-      }),
+      issue: IssueOutput;
+    }) => {
+      const { issueId, targetColumnId, sortOrder: newSort, issue } = data;
+      const patchBody: Record<string, unknown> = {};
+      if (newSort !== undefined) patchBody.sortOrder = newSort;
+
+      if (groupBy === 'status') {
+        const currentCol = getIssueColumnId(issue);
+        if (currentCol !== targetColumnId) patchBody.statusId = targetColumnId;
+      } else if (groupBy === 'priority') {
+        const currentCol = getIssueColumnId(issue);
+        if (currentCol !== targetColumnId) {
+          const priority = targetColumnId.replace('priority-', '');
+          patchBody.priority = priority;
+        }
+      } else if (groupBy === 'assignee') {
+        const currentCol = getIssueColumnId(issue);
+        if (currentCol !== targetColumnId) {
+          const newAssigneeIds =
+            targetColumnId === UNASSIGNED_COLUMN_ID
+              ? []
+              : [
+                  targetColumnId,
+                  ...(issue.assignees ?? [])
+                    .map((a) => a.userId)
+                    .filter((id) => id !== targetColumnId && id !== currentCol),
+                ];
+          patchBody.assigneeIds = newAssigneeIds;
+        }
+      } else if (groupBy === 'label') {
+        const currentCol = getIssueColumnId(issue);
+        if (currentCol !== targetColumnId) {
+          const newLabelIds =
+            targetColumnId === NO_LABEL_COLUMN_ID
+              ? []
+              : [
+                  targetColumnId,
+                  ...(issue.labels ?? [])
+                    .map((l) => l.labelId)
+                    .filter((id) => id !== targetColumnId && id !== currentCol),
+                ];
+          patchBody.labelIds = newLabelIds;
+        }
+      }
+
+      return apiClient.patch(`/projects/${projectId}/issues/${issueId}`, patchBody);
+    },
     onError: () => {
-      // Rollback: restore from server
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'board-issues'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'board-issues'] });
       toast('이슈 이동에 실패했습니다. 다시 시도해주세요.');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'issues'],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['projects', projectId, 'board-issues'],
-      });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'board-issues'] });
     },
   });
 
@@ -267,9 +411,9 @@ export function KanbanBoard({
     (event: DragStartEvent) => {
       const id = event.active.id as string;
       setActiveId(id);
-      // Remember the original statusId before handleDragOver mutates localIssues
+      // Remember the original columnId before handleDragOver mutates localIssues
       const issue = localIssues.find((i) => i.id === id);
-      dragOriginalStatusRef.current = issue?.statusId ?? null;
+      dragOriginalStatusRef.current = issue ? getIssueColumnId(issue) : null;
       // Capture initial pointer Y so onDragMove can derive live pointer.
       const e = event.activatorEvent as PointerEvent | MouseEvent;
       dragStartPointerYRef.current = e.clientY;
@@ -284,7 +428,7 @@ export function KanbanBoard({
         cardCenterYRef.current = rect.top + rect.height / 2;
       }
     },
-    [localIssues],
+    [localIssues, getIssueColumnId],
   );
 
   const handleDragMove = useCallback(
@@ -397,29 +541,38 @@ export function KanbanBoard({
         newSortOrder = safeGenerateKeyBetween(above?.sortOrder ?? null, below?.sortOrder ?? null);
       }
 
-      // Optimistic update
+      // Optimistic update (best-effort — depends on groupBy)
       setLocalIssues((prev) =>
-        prev.map((issue) =>
-          issue.id === activeId
-            ? { ...issue, statusId: targetColumnId, sortOrder: newSortOrder }
-            : issue,
-        ),
+        prev.map((issue) => {
+          if (issue.id !== activeId) return issue;
+          const base = { ...issue, sortOrder: newSortOrder };
+          if (groupBy === 'status') return { ...base, statusId: targetColumnId };
+          if (groupBy === 'priority') {
+            return { ...base, priority: targetColumnId.replace('priority-', '') as IssueOutput['priority'] };
+          }
+          return base;
+        }),
       );
 
-      // API call
-      const payload: { issueId: string; statusId?: string; sortOrder?: string } = {
-        issueId: activeId,
-        sortOrder: newSortOrder,
-      };
-
-      if (dragOriginalStatusRef.current !== targetColumnId) {
-        payload.statusId = targetColumnId;
-      }
       dragOriginalStatusRef.current = null;
 
-      updateMutation.mutate(payload);
+      updateMutation.mutate({
+        issueId: activeId,
+        targetColumnId,
+        sortOrder: newSortOrder,
+        issue: activeIssue,
+      });
     },
-    [localIssues, issuesByStatus, findColumnId, updateMutation, sortField, sortOrder, isManualSort],
+    [
+      localIssues,
+      issuesByStatus,
+      findColumnId,
+      updateMutation,
+      sortField,
+      sortOrder,
+      isManualSort,
+      groupBy,
+    ],
   );
 
   const handleDragCancel = useCallback(() => {
@@ -460,19 +613,24 @@ export function KanbanBoard({
     >
       <ScrollArea orientation="horizontal" className="h-full" role="region" aria-label="칸반 보드">
         <div className="flex gap-4 px-4 pb-4 h-full">
-          {statuses.map((status) => (
+          {columns.map((col) => (
             <KanbanColumn
-              key={status.id}
-              status={status}
-              issues={issuesByStatus[status.id] ?? []}
-              count={stats[status.id] ?? issuesByStatus[status.id]?.length ?? 0}
+              key={col.id}
+              status={col}
+              issues={issuesByStatus[col.id] ?? []}
+              count={
+                groupBy === 'status'
+                  ? (stats[col.id] ?? issuesByStatus[col.id]?.length ?? 0)
+                  : (issuesByStatus[col.id]?.length ?? 0)
+              }
               projectId={projectId}
               projectPrefix={projectPrefix}
               onCardClick={onCardClick}
-              isOver={overColumnId === status.id}
+              isOver={overColumnId === col.id}
               activeId={activeId}
               overCardId={isManualSort ? overCardId : null}
               dropAbove={dropAbove}
+              disableQuickAdd={groupBy !== 'status'}
             />
           ))}
         </div>

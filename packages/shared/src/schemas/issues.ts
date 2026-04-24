@@ -48,6 +48,8 @@ export const updateIssueInput = z.object({
   sortOrder: z.string().optional(),
   startDate: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
+  assigneeIds: z.array(z.string().uuid()).optional(), // replace full set
+  labelIds: z.array(z.string().uuid()).optional(), // replace full set
 });
 
 export type UpdateIssueInput = z.infer<typeof updateIssueInput>;
@@ -200,6 +202,48 @@ export const bulkUpdateInput = z.object({
 });
 
 export type BulkUpdateInput = z.infer<typeof bulkUpdateInput>;
+
+// ── Issue Relations / Dependencies ──────────────────────────────────────
+
+export const issueRelationTypes = ['blocks', 'relates_to'] as const;
+export const issueRelationType = z.enum(issueRelationTypes);
+export type IssueRelationType = z.infer<typeof issueRelationType>;
+
+export const createIssueRelationInput = z.object({
+  targetIssueId: z.string().uuid(),
+  type: issueRelationType,
+});
+export type CreateIssueRelationInput = z.infer<typeof createIssueRelationInput>;
+
+const relatedIssueSummary = z.object({
+  id: z.string().uuid(),
+  sequenceId: z.number(),
+  title: z.string(),
+  statusId: z.string().uuid().nullable(),
+  status: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      color: z.string(),
+      category: statusCategory,
+    })
+    .nullable()
+    .optional(),
+});
+
+export const issueRelationOutput = z.object({
+  id: z.string().uuid(),
+  sourceIssueId: z.string().uuid(),
+  targetIssueId: z.string().uuid(),
+  /** Direction from the point of view of the requesting issue */
+  direction: z.enum(['outgoing', 'incoming']),
+  /** Effective label from the requester's perspective: 'blocks' | 'blocked_by' | 'relates_to' */
+  label: z.enum(['blocks', 'blocked_by', 'relates_to']),
+  type: issueRelationType,
+  issue: relatedIssueSummary,
+  createdAt: z.string(),
+});
+export type IssueRelationOutput = z.infer<typeof issueRelationOutput>;
 
 // ── Issue Status / Type ──────────────────────────────────────────────────
 // (statusCategory is hoisted to the top of this file so that issueOutput

@@ -225,3 +225,52 @@ export const issueLabelsRelations = relations(issueLabels, ({ one }) => ({
     references: [labels.id],
   }),
 }));
+
+/**
+ * Issue relations / dependencies.
+ *
+ * Directed edges between two issues expressing intent:
+ *   - 'blocks'      — source issue blocks target (target is blocked by source)
+ *   - 'relates_to'  — informational two-way relation
+ *
+ * "Blocked by" is modelled as the inverse of a 'blocks' edge and is not stored
+ * separately. Bidirectional 'relates_to' is represented as a single row; the
+ * UI shows it on both ends.
+ */
+export const issueRelations = pgTable(
+  'issue_relations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sourceIssueId: uuid('source_issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    targetIssueId: uuid('target_issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // 'blocks' | 'relates_to'
+    createdBy: text('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('issue_relations_unique').on(
+      table.sourceIssueId,
+      table.targetIssueId,
+      table.type,
+    ),
+    index('issue_relations_source_idx').on(table.sourceIssueId),
+    index('issue_relations_target_idx').on(table.targetIssueId),
+  ],
+);
+
+export const issueRelationsRelations = relations(issueRelations, ({ one }) => ({
+  source: one(issues, {
+    fields: [issueRelations.sourceIssueId],
+    references: [issues.id],
+    relationName: 'relationsFrom',
+  }),
+  target: one(issues, {
+    fields: [issueRelations.targetIssueId],
+    references: [issues.id],
+    relationName: 'relationsTo',
+  }),
+}));

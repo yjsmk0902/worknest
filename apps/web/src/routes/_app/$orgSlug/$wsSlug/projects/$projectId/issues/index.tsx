@@ -1,4 +1,5 @@
 import { BulkActionBar } from '@/components/issues/bulk-action-bar';
+import { CsvModal } from '@/components/issues/csv-modal';
 import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
 import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
@@ -16,7 +17,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import type { RowSelectionState } from '@tanstack/react-table';
 import type { IssueOutput } from '@worknest/shared';
 import { Button, Skeleton } from '@worknest/ui';
-import { AlertTriangle, Plus } from 'lucide-react';
+import { AlertTriangle, FileSpreadsheet, Plus } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { z } from 'zod';
 
@@ -67,6 +68,7 @@ function IssueListPage() {
   const navigate = useNavigate();
 
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -220,12 +222,25 @@ function IssueListPage() {
         title={`${projectPrefix} Issues`}
         breadcrumbs={[{ label: project?.name ?? '' }]}
         actions={
-          <Button size="sm" onClick={() => setShowQuickAdd(true)} aria-label="이슈 추가">
-            <Plus className="h-4 w-4" />
-            <span>이슈</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setCsvOpen(true)}
+              aria-label="CSV 가져오기/내보내기"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span className="hidden sm:inline">CSV</span>
+            </Button>
+            <Button size="sm" onClick={() => setShowQuickAdd(true)} aria-label="이슈 추가">
+              <Plus className="h-4 w-4" />
+              <span>이슈</span>
+            </Button>
+          </div>
         }
       />
+
+      <CsvModal projectId={projectId} open={csvOpen} onOpenChange={setCsvOpen} />
 
       {/* View toolbar */}
       <ViewToolbar

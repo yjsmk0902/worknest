@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import type { JSONContent, MentionQueryFn, MentionUser } from '@worknest/editor';
 import { EditorWithAutosave } from '@worknest/editor';
 import type { IssueOutput } from '@worknest/shared';
-import { Button, ScrollArea, Separator, Skeleton } from '@worknest/ui';
+import { Button, ScrollArea, Separator, Skeleton, toast } from '@worknest/ui';
 import { cn } from '@worknest/ui';
-import { AlertTriangle, ArrowLeft, Maximize2, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Copy, Maximize2, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { CommentList } from '../../comments/comment-list';
 import { SubIssues } from '../sub-issues';
+import { IssueDependencies } from './issue-dependencies';
 import { IssueProperties } from './issue-properties';
 
 // ── Member type for mention suggestions ────────────────────────────────
@@ -64,8 +65,25 @@ export function IssueDetailPanel({
   onClose,
 }: IssueDetailPanelProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const mentionQueryFn = useMemo(() => createProjectMentionQueryFn(projectId), [projectId]);
+
+  const duplicateMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post<IssueOutput>(`/projects/${projectId}/issues/${issueId}/duplicate`),
+    onSuccess: (newIssue) => {
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
+      toast('이슈를 복제했습니다.');
+      if (newIssue?.id) {
+        navigate({
+          to: '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId',
+          params: { orgSlug, wsSlug, projectId, issueId: newIssue.id },
+        });
+      }
+    },
+    onError: () => toast('이슈 복제에 실패했습니다.'),
+  });
 
   const issueQuery = useQuery<IssueOutput>({
     queryKey: ['projects', projectId, 'issues', issueId],
@@ -154,6 +172,16 @@ export function IssueDetailPanel({
               </Link>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => duplicateMutation.mutate()}
+                disabled={duplicateMutation.isPending}
+                aria-label="이슈 복제"
+                title="이슈 복제"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
               <Link
                 to="/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId"
                 params={{ orgSlug, wsSlug, projectId, issueId }}
@@ -209,6 +237,14 @@ export function IssueDetailPanel({
             </div>
 
             <div className="px-6 pb-6">
+              <IssueDependencies
+                projectId={projectId}
+                issueId={issue.id}
+                projectPrefix={projectPrefix}
+              />
+            </div>
+
+            <div className="px-6 pb-6">
               <CommentList
                 issueId={issue.id}
                 projectId={projectId}
@@ -235,6 +271,18 @@ export function IssueDetailPanel({
           <span>{projectPrefix} Issues</span>
         </Link>
         <span className="text-sm font-mono text-muted-foreground">{issueKey}</span>
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => duplicateMutation.mutate()}
+            disabled={duplicateMutation.isPending}
+            aria-label="이슈 복제"
+          >
+            <Copy className="mr-1 h-4 w-4" />
+            복제
+          </Button>
+        </div>
       </div>
 
       {/* Content: body + sidebar */}
@@ -268,6 +316,13 @@ export function IssueDetailPanel({
             />
 
             <Separator className="my-4" />
+
+            {/* Dependencies */}
+            <IssueDependencies
+              projectId={projectId}
+              issueId={issue.id}
+              projectPrefix={projectPrefix}
+            />
 
             {/* Comments & Activity */}
             <CommentList issueId={issue.id} projectId={projectId} mentionQueryFn={mentionQueryFn} />

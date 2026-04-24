@@ -18,6 +18,7 @@ interface KanbanColumnProps {
   activeId?: string | null;
   overCardId?: string | null;
   dropAbove?: boolean;
+  disableQuickAdd?: boolean;
 }
 
 export function KanbanColumn({
@@ -31,6 +32,7 @@ export function KanbanColumn({
   activeId,
   overCardId,
   dropAbove = true,
+  disableQuickAdd = false,
 }: KanbanColumnProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
@@ -108,25 +110,27 @@ export function KanbanColumn({
         )}
       </div>
 
-      {/* Quick Add at bottom */}
-      <div className="mt-auto border-t border-[color:var(--border-subtle)] p-2">
-        {showQuickAdd ? (
-          <QuickAdd
-            projectId={projectId}
-            defaultStatusId={status.id}
-            onClose={() => setShowQuickAdd(false)}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowQuickAdd(true)}
-            className="flex w-full items-center gap-[6px] rounded-md px-2 py-1.5 text-[12px] text-[color:var(--fg-faint)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
-            aria-label={`${status.name}에 이슈 추가`}
-          >
-            <Plus className="h-[11px] w-[11px]" /> 이슈 추가
-          </button>
-        )}
-      </div>
+      {/* Quick Add at bottom (status grouping only) */}
+      {!disableQuickAdd && (
+        <div className="mt-auto border-t border-[color:var(--border-subtle)] p-2">
+          {showQuickAdd ? (
+            <QuickAdd
+              projectId={projectId}
+              defaultStatusId={status.id}
+              onClose={() => setShowQuickAdd(false)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowQuickAdd(true)}
+              className="flex w-full items-center gap-[6px] rounded-md px-2 py-1.5 text-[12px] text-[color:var(--fg-faint)] transition-colors hover:bg-[color:var(--bg-hover)] hover:text-foreground"
+              aria-label={`${status.name}에 이슈 추가`}
+            >
+              <Plus className="h-[11px] w-[11px]" /> 이슈 추가
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

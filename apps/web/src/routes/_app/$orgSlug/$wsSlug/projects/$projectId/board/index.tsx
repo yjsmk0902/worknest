@@ -1,4 +1,9 @@
-import { KanbanBoard } from '@/components/issues/board-view/kanban-board';
+import {
+  type BoardGroupBy,
+  type BoardLabel,
+  type BoardMember,
+  KanbanBoard,
+} from '@/components/issues/board-view/kanban-board';
 import { FilterBar } from '@/components/issues/filter-builder/filter-bar';
 import { useIssueFilters } from '@/components/issues/filter-builder/use-issue-filters';
 import { IssueDetailPanel } from '@/components/issues/issue-detail/issue-detail-panel';
@@ -40,6 +45,10 @@ const boardSearchSchema = z.object({
   title: z.string().optional().catch(undefined),
   sort: z.string().optional().catch(undefined),
   order: z.string().optional().catch(undefined),
+  groupBy: z
+    .enum(['status', 'priority', 'assignee', 'label'])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute('/_app/$orgSlug/$wsSlug/projects/$projectId/board/')({
@@ -65,6 +74,9 @@ interface StatsResponse {
 
 function BoardPage() {
   const { orgSlug, wsSlug, projectId } = Route.useParams();
+  const navigate = Route.useNavigate();
+  const { groupBy: groupByParam } = Route.useSearch();
+  const groupBy: BoardGroupBy = groupByParam ?? 'status';
   const { wsId } = useWorkspaceContext();
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -121,6 +133,22 @@ function BoardPage() {
         ...apiParams,
         limit: '100',
       }),
+  });
+
+  // Fetch members (for assignee grouping)
+  const membersQuery = useQuery<ListResponse<BoardMember>>({
+    queryKey: ['projects', projectId, 'members'],
+    queryFn: () => apiClient.getList<BoardMember>(`/projects/${projectId}/members`),
+    enabled: groupBy === 'assignee',
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch labels (for label grouping)
+  const labelsQuery = useQuery<BoardLabel[]>({
+    queryKey: ['projects', projectId, 'labels'],
+    queryFn: () => apiClient.get<BoardLabel[]>(`/projects/${projectId}/labels`),
+    enabled: groupBy === 'label',
+    staleTime: 5 * 60 * 1000,
   });
 
   // Fetch stats for column counts (with active filters)
@@ -206,6 +234,40 @@ function BoardPage() {
         </div>
       )}
 
+      {/* Grouping selector */}
+      <div className="flex items-center gap-2 px-4 pt-2 text-[12px] text-[color:var(--fg-3)]">
+        <span>그룹:</span>
+        {(
+          [
+            { value: 'status', label: '상태' },
+            { value: 'priority', label: '우선순위' },
+            { value: 'assignee', label: '담당자' },
+            { value: 'label', label: '라벨' },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() =>
+              navigate({
+                search: (prev) => ({
+                  ...prev,
+                  groupBy: opt.value === 'status' ? undefined : opt.value,
+                }),
+                replace: true,
+              })
+            }
+            className={`rounded-md px-2 py-1 transition-colors ${
+              groupBy === opt.value
+                ? 'bg-[color:var(--bg-3)] text-[color:var(--fg-1)]'
+                : 'hover:bg-[color:var(--bg-hover)]'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {/* Board */}
       <div className="flex-1 overflow-hidden pt-2">
         <KanbanBoard
@@ -216,6 +278,9 @@ function BoardPage() {
           projectPrefix={projectPrefix}
           sortField={currentSort}
           sortOrder={currentOrder}
+          groupBy={groupBy}
+          members={membersQuery.data?.data ?? []}
+          labels={labelsQuery.data ?? []}
           onCardClick={(issueId) => setSelectedIssueId(issueId)}
           onCreateClick={() => setShowQuickAdd(true)}
         />

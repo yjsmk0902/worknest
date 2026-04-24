@@ -2,6 +2,7 @@ import type { Database } from '@worknest/db';
 import {
   bulkUpdateInput,
   createIssueInput,
+  createIssueRelationInput,
   cursorPaginationQuery,
   issueListQuery,
   updateIssueInput,
@@ -11,6 +12,7 @@ import { z } from 'zod';
 import type { Auth } from '../lib/auth';
 import { createRequireAuth } from '../middleware/auth';
 import { ActivityService } from '../services/activity-service';
+import { IssueCsvService } from '../services/issue-csv-service';
 import { IssueService } from '../services/issue-service';
 import { NotificationService } from '../services/notification-service';
 
@@ -32,6 +34,12 @@ const labelRemoveParams = z.object({
   labelId: z.string().uuid(),
 });
 
+const relationRemoveParams = z.object({
+  projectId: z.string().uuid(),
+  issueId: z.string().uuid(),
+  relationId: z.string().uuid(),
+});
+
 // ── Body Schemas ───────────────────────────────────────────────────────
 
 const addAssigneeBody = z.object({ userId: z.string().min(1) });
@@ -50,6 +58,7 @@ export async function issueRoutes(
   const requireAuth = createRequireAuth(auth);
   const notificationService = new NotificationService(db);
   const service = new IssueService(db, notificationService);
+  const csvService = new IssueCsvService(db, notificationService);
   const activityService = new ActivityService(db);
 
   // ── POST /api/v1/projects/:projectId/issues ───────────────────────
@@ -106,6 +115,59 @@ export async function issueRoutes(
       const query = issueListQuery.parse(request.query);
       const result = await service.stats(projectId, request.user?.id, query);
       return reply.status(200).send(result);
+    },
+  );
+
+  // ── GET /api/v1/projects/:projectId/issues/export.csv ─────────────
+
+  app.get(
+    '/api/v1/projects/:projectId/issues/export.csv',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Issues'], summary: 'Export issues as CSV' },
+    },
+    async (request, reply) => {
+      const { projectId } = projectParams.parse(request.params);
+      const csv = await csvService.exportCsv(projectId, request.user?.id);
+      reply
+        .type('text/csv; charset=utf-8')
+        .header('Content-Disposition', `attachment; filename="issues-${projectId}.csv"`);
+      return reply.send(csv);
+    },
+  );
+
+  // ── POST /api/v1/projects/:projectId/issues/import ─────────────────
+
+  const importBody = z.object({
+    rows: z
+      .array(
+        z.object({
+          title: z.string().min(1),
+          descriptionText: z.string().optional(),
+          priority: z.string().optional(),
+          statusName: z.string().optional(),
+          typeName: z.string().optional(),
+          assigneeEmails: z.array(z.string()).optional(),
+          labelNames: z.array(z.string()).optional(),
+          startDate: z.string().optional(),
+          dueDate: z.string().optional(),
+        }),
+      )
+      .min(1)
+      .max(500),
+  });
+
+  app.post(
+    '/api/v1/projects/:projectId/issues/import',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Issues'], summary: 'Import issues from parsed CSV rows' },
+    },
+    async (request, reply) => {
+      const { projectId } = projectParams.parse(request.params);
+      const { rows } = importBody.parse(request.body);
+      const result = await csvService.importRows(projectId, request.user?.id, rows);
+      return reply.status(200).send({ data: result });
     },
   );
 
@@ -183,6 +245,24 @@ export async function issueRoutes(
     },
   );
 
+  // ── POST /api/v1/projects/:projectId/issues/:issueId/duplicate ────
+
+  app.post(
+    '/api/v1/projects/:projectId/issues/:issueId/duplicate',
+    {
+      preHandler: [requireAuth],
+      schema: {
+        tags: ['Issues'],
+        summary: 'Duplicate an issue (fields only — links/attachments/comments not copied)',
+      },
+    },
+    async (request, reply) => {
+      const { issueId } = projectIssueParams.parse(request.params);
+      const issue = await service.duplicate(issueId, request.user?.id);
+      return reply.status(201).send({ data: issue });
+    },
+  );
+
   // ── GET /api/v1/projects/:projectId/issues/:issueId/sub-issues ────
 
   app.get(
@@ -198,6 +278,52 @@ export async function issueRoutes(
       const { issueId } = projectIssueParams.parse(request.params);
       const result = await service.listSubIssues(issueId, request.user?.id);
       return reply.status(200).send(result);
+    },
+  );
+
+  // ── GET /api/v1/projects/:projectId/issues/:issueId/relations ─────
+
+  app.get(
+    '/api/v1/projects/:projectId/issues/:issueId/relations',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Issues'], summary: 'List issue relations (dependencies)' },
+    },
+    async (request, reply) => {
+      const { issueId } = projectIssueParams.parse(request.params);
+      const data = await service.listRelations(issueId, request.user?.id);
+      return reply.status(200).send({ data });
+    },
+  );
+
+  // ── POST /api/v1/projects/:projectId/issues/:issueId/relations ────
+
+  app.post(
+    '/api/v1/projects/:projectId/issues/:issueId/relations',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Issues'], summary: 'Create an issue relation' },
+    },
+    async (request, reply) => {
+      const { issueId } = projectIssueParams.parse(request.params);
+      const body = createIssueRelationInput.parse(request.body);
+      const relation = await service.createRelation(issueId, request.user?.id, body);
+      return reply.status(201).send({ data: relation });
+    },
+  );
+
+  // ── DELETE /api/v1/projects/:projectId/issues/:issueId/relations/:relationId
+
+  app.delete(
+    '/api/v1/projects/:projectId/issues/:issueId/relations/:relationId',
+    {
+      preHandler: [requireAuth],
+      schema: { tags: ['Issues'], summary: 'Delete an issue relation' },
+    },
+    async (request, reply) => {
+      const { issueId, relationId } = relationRemoveParams.parse(request.params);
+      await service.removeRelation(issueId, request.user?.id, relationId);
+      return reply.status(204).send();
     },
   );
 
