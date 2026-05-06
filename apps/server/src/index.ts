@@ -30,6 +30,7 @@ import { fileRoutes } from './routes/files';
 // Routes
 import { healthRoutes } from './routes/health';
 import { issueStatusRoutes } from './routes/issue-statuses';
+import { issueTemplateRoutes } from './routes/issue-templates';
 import { issueTypeRoutes } from './routes/issue-types';
 import { issueRoutes } from './routes/issues';
 import { joinRequestRoutes } from './routes/join-requests';
@@ -223,6 +224,7 @@ async function main() {
   await projectRoutes(app, { auth, db });
   await issueStatusRoutes(app, { auth, db });
   await issueTypeRoutes(app, { auth, db });
+  await issueTemplateRoutes(app, { auth, db });
   await labelRoutes(app, { auth, db });
   await issueRoutes(app, { auth, db });
   await viewRoutes(app, { auth, db });

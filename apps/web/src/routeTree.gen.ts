@@ -40,6 +40,7 @@ import { Route as AppOrgSlugWsSlugProjectsProjectIdGanttIndexRouteImport } from 
 import { Route as AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/index'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdBoardIndexRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/board/index'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId'
+import { Route as AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels'
 import { Route as AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRouteImport } from './routes/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId'
@@ -217,6 +218,12 @@ const AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute =
     path: '/views/$viewId',
     getParentRoute: () => AppOrgSlugWsSlugProjectsProjectIdRoute,
   } as any)
+const AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute =
+  AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRouteImport.update({
+    id: '/settings/templates',
+    path: '/settings/templates',
+    getParentRoute: () => AppOrgSlugWsSlugProjectsProjectIdRoute,
+  } as any)
 const AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute =
   AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRouteImport.update({
     id: '/settings/members',
@@ -269,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings/labels': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings/members': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute
+  '/$orgSlug/$wsSlug/projects/$projectId/settings/templates': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute
   '/$orgSlug/$wsSlug/projects/$projectId/views/$viewId': typeof AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute
   '/$orgSlug/$wsSlug/projects/$projectId/board/': typeof AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/cycles/': typeof AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRoute
@@ -303,6 +311,7 @@ export interface FileRoutesByTo {
   '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings/labels': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute
   '/$orgSlug/$wsSlug/projects/$projectId/settings/members': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute
+  '/$orgSlug/$wsSlug/projects/$projectId/settings/templates': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute
   '/$orgSlug/$wsSlug/projects/$projectId/views/$viewId': typeof AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute
   '/$orgSlug/$wsSlug/projects/$projectId/board': typeof AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute
   '/$orgSlug/$wsSlug/projects/$projectId/cycles': typeof AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRoute
@@ -341,6 +350,7 @@ export interface FileRoutesById {
   '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId': typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute
+  '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/templates': typeof AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId': typeof AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/board/': typeof AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute
   '/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/': typeof AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRoute
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings/labels'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings/members'
+    | '/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
     | '/$orgSlug/$wsSlug/projects/$projectId/views/$viewId'
     | '/$orgSlug/$wsSlug/projects/$projectId/board/'
     | '/$orgSlug/$wsSlug/projects/$projectId/cycles/'
@@ -412,6 +423,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings/labels'
     | '/$orgSlug/$wsSlug/projects/$projectId/settings/members'
+    | '/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
     | '/$orgSlug/$wsSlug/projects/$projectId/views/$viewId'
     | '/$orgSlug/$wsSlug/projects/$projectId/board'
     | '/$orgSlug/$wsSlug/projects/$projectId/cycles'
@@ -449,6 +461,7 @@ export interface FileRouteTypes {
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/issues/$issueId'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/labels'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members'
+    | '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/views/$viewId'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/board/'
     | '/_app/$orgSlug/$wsSlug/projects/$projectId/cycles/'
@@ -684,6 +697,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRouteImport
       parentRoute: typeof AppOrgSlugWsSlugProjectsProjectIdRoute
     }
+    '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/templates': {
+      id: '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
+      path: '/settings/templates'
+      fullPath: '/$orgSlug/$wsSlug/projects/$projectId/settings/templates'
+      preLoaderRoute: typeof AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRouteImport
+      parentRoute: typeof AppOrgSlugWsSlugProjectsProjectIdRoute
+    }
     '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members': {
       id: '/_app/$orgSlug/$wsSlug/projects/$projectId/settings/members'
       path: '/settings/members'
@@ -720,6 +740,7 @@ interface AppOrgSlugWsSlugProjectsProjectIdRouteChildren {
   AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRoute: typeof AppOrgSlugWsSlugProjectsProjectIdIssuesIssueIdRoute
   AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute: typeof AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute
   AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute: typeof AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute
+  AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute: typeof AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute
   AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute: typeof AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute
   AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute
   AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRoute: typeof AppOrgSlugWsSlugProjectsProjectIdCyclesIndexRoute
@@ -739,6 +760,8 @@ const AppOrgSlugWsSlugProjectsProjectIdRouteChildren: AppOrgSlugWsSlugProjectsPr
       AppOrgSlugWsSlugProjectsProjectIdSettingsLabelsRoute,
     AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute:
       AppOrgSlugWsSlugProjectsProjectIdSettingsMembersRoute,
+    AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute:
+      AppOrgSlugWsSlugProjectsProjectIdSettingsTemplatesRoute,
     AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute:
       AppOrgSlugWsSlugProjectsProjectIdViewsViewIdRoute,
     AppOrgSlugWsSlugProjectsProjectIdBoardIndexRoute:

@@ -14,6 +14,7 @@ export {
   issueLabels,
   issueRelations,
 } from './issues';
+export { issueTemplates } from './issue-templates';
 export { labels } from './labels';
 export { activities } from './activities';
 export { views } from './views';
@@ -45,6 +46,7 @@ export {
   issueLabelsRelations,
   issueRelationsRelations,
 } from './issues';
+export { issueTemplatesRelations } from './issue-templates';
 export { labelsRelations } from './labels';
 export { activitiesRelations } from './activities';
 export { viewsRelations } from './views';

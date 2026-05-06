@@ -5,6 +5,7 @@ export * from './workspaces';
 export * from './projects';
 export * from './labels';
 export * from './issues';
+export * from './issue-templates';
 export * from './views';
 export * from './cycles';
 export * from './wiki';

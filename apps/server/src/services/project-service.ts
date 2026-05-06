@@ -1,6 +1,7 @@
 import {
   type Database,
   issueStatuses,
+  issueTemplates,
   issueTypes,
   projectMembers,
   projects,
@@ -70,6 +71,88 @@ const DEFAULT_TYPES = [
   { name: '버그', icon: 'bug', color: '#ef4444', sortOrder: 1, isDefault: false },
   { name: '스토리', icon: 'book-open', color: '#8b5cf6', sortOrder: 2, isDefault: false },
   { name: '에픽', icon: 'rocket', color: '#f59e0b', sortOrder: 3, isDefault: false },
+];
+
+// Default issue templates seeded at project creation. `typeName` is resolved
+// to an issue type id after types are inserted within the same transaction.
+const DEFAULT_TEMPLATES: Array<{
+  name: string;
+  description: string;
+  titleTemplate: string;
+  body: unknown;
+  priority: 'urgent' | 'high' | 'medium' | 'low' | 'none';
+  typeName: string | null;
+  sortOrder: number;
+}> = [
+  {
+    name: '버그 리포트',
+    description: '재현 절차/기대 결과/실제 결과를 담은 버그 보고용 템플릿',
+    titleTemplate: '[버그] ',
+    priority: 'high',
+    typeName: '버그',
+    sortOrder: 0,
+    body: {
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '재현 절차' }] },
+        {
+          type: 'orderedList',
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: '...' }] }],
+            },
+          ],
+        },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '기대 결과' }] },
+        { type: 'paragraph' },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '실제 결과' }] },
+        { type: 'paragraph' },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '환경' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'OS / 브라우저 / 버전' }] },
+      ],
+    },
+  },
+  {
+    name: '기능 요청',
+    description: '배경/제안/수용 기준을 담은 기능 요청용 템플릿',
+    titleTemplate: '[기능] ',
+    priority: 'medium',
+    typeName: '스토리',
+    sortOrder: 1,
+    body: {
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '배경' }] },
+        { type: 'paragraph' },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '제안' }] },
+        { type: 'paragraph' },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: '수용 기준' }] },
+        {
+          type: 'taskList',
+          content: [
+            {
+              type: 'taskItem',
+              attrs: { checked: false },
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: '...' }] }],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    name: '작업',
+    description: '간단한 작업/할 일용 빈 템플릿',
+    titleTemplate: '',
+    priority: 'none',
+    typeName: '작업',
+    sortOrder: 2,
+    body: {
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    },
+  },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -206,14 +289,35 @@ export class ProjectService {
       );
 
       // Seed default issue types
-      await tx.insert(issueTypes).values(
-        DEFAULT_TYPES.map((t) => ({
+      const seededTypes = await tx
+        .insert(issueTypes)
+        .values(
+          DEFAULT_TYPES.map((t) => ({
+            projectId: created?.id,
+            name: t.name,
+            icon: t.icon,
+            color: t.color,
+            sortOrder: t.sortOrder,
+            isDefault: t.isDefault,
+          })),
+        )
+        .returning({ id: issueTypes.id, name: issueTypes.name });
+
+      // Seed default issue templates referencing the just-created types
+      const typeIdByName = new Map(seededTypes.map((t) => [t.name, t.id] as const));
+      await tx.insert(issueTemplates).values(
+        DEFAULT_TEMPLATES.map((t) => ({
           projectId: created?.id,
           name: t.name,
-          icon: t.icon,
-          color: t.color,
+          description: t.description,
+          titleTemplate: t.titleTemplate,
+          body: t.body as object,
+          priority: t.priority,
+          typeId: t.typeName ? (typeIdByName.get(t.typeName) ?? null) : null,
+          labelIds: [] as string[],
           sortOrder: t.sortOrder,
-          isDefault: t.isDefault,
+          isDefault: true,
+          createdBy: callerUserId,
         })),
       );
 

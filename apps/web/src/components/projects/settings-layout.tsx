@@ -7,7 +7,7 @@ interface ProjectSettingsLayoutProps {
   wsSlug: string;
   projectId: string;
   projectName: string;
-  activeTab: 'general' | 'members' | 'labels';
+  activeTab: 'general' | 'members' | 'labels' | 'templates';
   children: React.ReactNode;
 }
 
@@ -15,6 +15,7 @@ const TABS = [
   { key: 'general' as const, label: '일반', subpath: '' },
   { key: 'members' as const, label: '멤버', subpath: '/members' },
   { key: 'labels' as const, label: '라벨', subpath: '/labels' },
+  { key: 'templates' as const, label: '이슈 템플릿', subpath: '/templates' },
 ];
 
 export function ProjectSettingsLayout({
