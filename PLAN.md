@@ -1,335 +1,327 @@
-# 이슈 관리 개선/추가 기능 구현 계획
+# Worknest 구현 계획
 
-## 1. 알림 시스템 연동
+> 마지막 업데이트: **2026-04-29**
+> 최신 커밋: `c0d78b8c chore(wiki): 마무리 리뷰 P1 항목 반영`
 
-### 현황
-- 알림 프레임워크(DB 스키마, REST API, NotificationService) 이미 구현 완료
-- 이벤트 훅이 연결되지 않아 실제 알림이 발생하지 않는 상태
-
-### 구현 범위
-- [x] 이슈 담당자 배정 시 알림 (`assigned`) ✅
-- [x] 댓글 작성 시 이슈 참여자에게 알림 (`commented`) ✅
-- [x] 댓글에서 @멘션 시 알림 (`mentioned`) ✅
-- [x] 이슈 상태 변경 시 담당자에게 알림 (`status_changed`) ✅
-- [x] 프론트엔드 알림 벨 UI + 읽음 처리 (기존 구현 확인) ✅
-
-### 수정 파일
-- `apps/server/src/routes/issues.ts` — 담당자 배정 시 assigned 알림 dispatch
-- `apps/server/src/routes/comments.ts` — 댓글 생성 시 commented/mentioned 알림 dispatch + 멘션 파서 추가
-- `apps/server/src/services/issue-service.ts` — 상태 변경 시 status_changed 알림 dispatch + getIssueSummary/getAssigneeIds 헬퍼 추가
+본 문서는 **Part A. 이미 구현된 기능**과 **Part B. 미구현 / 남은 작업**으로 분리되어 있습니다.
+배포 체크리스트와 변경 기록은 Part C에 모았습니다.
 
 ---
 
-## 2. CSV 가져오기/내보내기
+## 🎯 다음 작업 (우선순위 순)
 
-### 구현 범위
-- [ ] 이슈 목록 CSV 내보내기 (현재 필터 적용 상태 기준)
-- [ ] CSV 가져오기 (제목, 설명, 우선순위, 상태, 담당자, 라벨, 시작일, 마감일)
-- [ ] 가져오기 시 미리보기 + 필드 매핑 UI
-- [ ] Jira CSV 형식 호환
+### P0 — 바로 착수
+1. **CSV 가져오기/내보내기 검증** — 실제 마이그레이션 시나리오로 dry-run (Part B §1)
+2. **dev DB 마이그레이션 0012~0017 적용** (Part C §1 배포 체크리스트)
 
-### 수정/생성 파일
-- `apps/server/src/routes/issues.ts` — export 엔드포인트 추가
-- `apps/server/src/services/issue-import-service.ts` — 새로 생성
-- `apps/web/src/components/issues/import-export/` — UI 컴포넌트
+### P1 — 다음 사이클
+3. **이슈 템플릿** — 사용자 생산성 직결, 스코프 중간 (Part B §2)
+4. **시간 추정/추적** — DB 컬럼 추가 + UI, 스코프 중간 (Part B §3)
+
+### P2 — 큰 기능 (별도 사이클)
+5. **워크플로우 자동화** — 가장 복잡, 규칙 평가 엔진 필요 (Part B §4)
+6. **간트 차트 의존성 화살표** — 6-4 잔여 (Part B §5)
+
+### P3 — v1.0 이후
+7. **위키 Phase 3-1 Yjs 실시간 편집** — `apps/hocuspocus/` 앱 신규 구축 필요 (Part B §6)
+8. **위키 Phase 4** — 페이지 템플릿 / 이슈 DB 임베드 / AI 보조 (Part B §7)
+9. **위키 마무리 P2 항목** — 휴지통 / slug 리다이렉트 / 활동 로그 등 (Part B §8)
 
 ---
 
-## 3. 이슈 템플릿
+# Part A. 이미 구현된 기능 ✅
 
-### 구현 범위
-- [ ] 프로젝트별 이슈 템플릿 CRUD (이름, 설명, 기본 필드값)
-- [ ] 이슈 생성 시 템플릿 선택 UI
-- [ ] 기본 제공 템플릿: 버그 리포트, 기능 요청, 작업
+## A-1. 알림 시스템 연동
+- [x] 이슈 담당자 배정 시 알림 (`assigned`)
+- [x] 댓글 작성 시 이슈 참여자에게 알림 (`commented`)
+- [x] 댓글에서 @멘션 시 알림 (`mentioned`)
+- [x] 이슈 상태 변경 시 담당자에게 알림 (`status_changed`)
+- [x] 프론트엔드 알림 벨 UI + 읽음 처리
 
-### 수정/생성 파일
-- `packages/db/src/schema/issue-templates.ts` — 새 테이블
-- `packages/shared/src/schemas/issue-templates.ts` — Zod 스키마
+## A-2. CSV 가져오기/내보내기 (커밋 `489b9f0a`)
+- [x] 이슈 목록 CSV 내보내기 (현재 필터 적용 상태 기준)
+- [x] CSV 가져오기 (제목, 설명, 우선순위, 상태, 담당자, 라벨, 시작일, 마감일)
+- [x] 가져오기 시 미리보기 + 필드 매핑 UI (`csv-modal.tsx`)
+- [x] 미존재 라벨 자동 생성
+
+**파일**: `apps/server/src/services/issue-csv-service.ts`,
+`apps/server/src/routes/issues.ts`, `apps/web/src/components/issues/csv-modal.tsx`
+
+## A-3. 이슈 UX 개선 (커밋 `489b9f0a`)
+
+### A-3-1. 간트 차트 드래그로 날짜 변경
+- [x] 바 좌/우 엣지 드래그로 시작일/마감일 변경
+- [x] 바 중앙 드래그로 기간 이동
+
+### A-3-2. 보드 뷰 그룹 기준 변경
+- [x] 상태 / 우선순위 / 담당자 / 라벨별 컬럼 전환
+- [x] DnD 시 해당 필드 자동 업데이트 (단일 PATCH로 그룹 이동 처리)
+- [x] `updateIssueInput`에 `assigneeIds` / `labelIds` 추가
+
+### A-3-3. 이슈 복제
+- [x] 상세 패널 헤더에 복제 버튼 (필드만 복사, 링크/첨부/코멘트 제외)
+
+### A-3-4. 이슈 간 의존성
+- [x] 관계 유형: `blocks` / `relates_to`
+- [x] DB 테이블: `issue_relations` (migration 0016)
+- [x] 이슈 상세 패널 의존성 관리 UI (`issue-dependencies.tsx`)
+- [x] 순환 참조 체크 (재귀 CTE)
+
+> 간트 차트 화살표 표시는 미완 → Part B §5
+
+## A-4. 위키 모듈
+
+### A-4-1. Phase 1 — 페이지 메타 & 탐색
+- [x] 아이콘(이모지 피커) — 커버는 UI 제거 (컬럼은 유지)
+- [x] 페이지/스페이스 즐겨찾기
+- [x] 최근 편집 페이지 카드
+- [x] 인라인 서브페이지 생성 (트리에서)
+- [x] 전역 검색 (FTS + ILIKE fallback + 드래프트 필터)
+
+### A-4-2. Phase 2 — 에디터 기능 (마크다운 친화)
+- [x] Callout / Code (lowlight) / TaskList / HR / Table + TableToolbar
+- [x] 통합 `@` 멘션 (멤버 amber / 페이지 blue / 이슈 emerald)
+- [x] `#ISSUE-NN` 자동 링크
+- [x] 북마크 + URL paste 자동 임베드 (OG 스크래핑, 6초/500KB 제한)
+- [x] 마크다운 단축키 `| ` → 인용 / `--- ` → HR / ` ``` ` → code block
+- [x] Typography (스마트 따옴표 / em-dash / ellipsis)
+- [x] `/페이지 링크` 슬래시 + PageLink 블록 노드
+
+### A-4-3. Phase 2+ — 플랫폼 통합
+- [x] 페이지 Draft (작성자 본인 전용)
+- [x] 프로젝트 ↔ 위키 연동 (자동 생성 + 양쪽 메뉴)
+- [x] ConfirmDialog 기반 삭제 UI
+- [x] 프로젝트 위키 백필 스크립트 (`apps/server/scripts/backfill-project-wikis.ts`)
+
+### A-4-4. Phase 3 — 협업/공유 (부분 완료)
+
+#### 3-3. 공유 링크 / 퍼블리시
+- [x] `wiki_page_shares` + 토큰 라우트 (auth bypass) + `/wiki-share/$token` 공개 뷰어
+- [x] ShareModal (링크 생성/복사/해제, 만료 표시)
+- [x] Draft 페이지는 공개 뷰에서 404
+
+#### 3-4. 페이지 히스토리/버전
+- [x] `wiki_page_revisions` + snapshot (5분 dedupe, 50개 prune)
+- [x] content/title 실제 변경 시에만 pre-update snapshot
+- [x] HistoryPanel (타임라인 + 읽기 전용 미리보기 + 복원 확인 다이얼로그)
+- [x] 복원 직전 자동 스냅샷 (되돌리기 안전 장치)
+
+> 3-1 Yjs 실시간 / 3-2 블록 코멘트는 Part B §6 / 의도적 제거 (Part C §3)
+
+## A-5. 위키 마무리 리뷰 P1 (커밋 `c0d78b8c` + `489b9f0a`)
+- [x] **스페이스 권한 tier** — `editor | viewer` 2-tier 유지 결정, `wiki_space_members.role` 주석으로 admin 미도입 명시
+- [x] **`files` 테이블 XOR 제약** — migration 0017로 `CHECK (NOT (issue_id IS NOT NULL AND page_id IS NOT NULL))` 적용
+- [x] **`wiki_pages.content_format` 정책** — `'json'`만 사용, `'yjs'`는 v1.0 예약으로 스키마 주석 명시
+- [x] **`.ProseMirror` querySelector 하드코딩 제거** — 제목 Enter → `editorRef` 경유로 전환
+- [x] **Slug 자동생성 통일** — `space-form-modal`의 중복 `generateSlug` 제거 → 공용 `slugifyTitle()` 사용
+
+## A-6. 디자인 v2 통일 (2026-04-20)
+- [x] 이슈/사이클/보드/간트 전반 리디자인
+- [x] 브랜드 로고 / 인증 페이지 / 사이드바 재구성
+
+## A-7. 마이그레이션 (0000~0017)
+- [x] 0000~0011: 초기 스키마 + 이슈/뷰/사이클/위키/공통 + 인덱스 정리 + 조인 요청 + 위키 아이콘/상태/프로젝트 연결
+- [x] 0012 `wiki_page_shares`
+- [x] 0013 `wiki_page_revisions`
+- [x] 0014→0015 `comments.block_id` 추가 후 제거 (방향 전환)
+- [x] 0016 `issue_relations`
+- [x] 0017 `files_at_most_one_parent` CHECK
+
+> dev DB 적용은 미완 → Part C §1
+
+---
+
+# Part B. 미구현 / 남은 작업
+
+## B-1. CSV 보강 (선택)
+- [ ] Jira CSV 형식 호환 (별도 매핑 프리셋 — 요청 시)
+
+## B-2. 이슈 템플릿 (P1) ✅ 완료 (2026-05-06)
+- [x] 프로젝트별 이슈 템플릿 CRUD (이름, 설명, 제목 프리픽스, 본문, 우선순위, 타입, 라벨)
+- [x] 이슈 생성 시 템플릿 선택 UI (Quick Add 통합)
+- [x] 기본 제공 템플릿: 버그 리포트, 기능 요청, 작업 (프로젝트 생성 시 자동 시드)
+- [x] 기존 프로젝트 백필 스크립트 (`scripts/backfill-issue-templates.ts`)
+- [x] 프로젝트 설정 > 이슈 템플릿 탭 (CRUD UI)
+
+**구현 파일**
+- `packages/db/src/schema/issue-templates.ts` + `migrations/0018_issue_templates.sql`
+- `packages/shared/src/schemas/issue-templates.ts` — Zod 입출력 스키마
 - `apps/server/src/services/issue-template-service.ts` — CRUD 서비스
 - `apps/server/src/routes/issue-templates.ts` — API 라우트
-- `apps/web/src/components/issues/template-picker.tsx` — 선택 UI
+- `apps/server/src/services/project-service.ts` — 프로젝트 생성 트랜잭션 내 시드
+- `apps/server/scripts/backfill-issue-templates.ts` — 기존 프로젝트 백필
+- `apps/web/src/components/issues/template-picker.tsx` — 드롭다운 선택 UI
+- `apps/web/src/components/issues/quick-add.tsx` — 템플릿 적용 통합
+- `apps/web/src/routes/_app/.../settings/templates.tsx` — 설정 화면
+- `apps/web/src/components/projects/settings-layout.tsx` — `templates` 탭 추가
 
----
-
-## 4. 워크플로우 자동화
-
-### 구현 범위
-- [ ] 자동화 규칙 CRUD (트리거 → 조건 → 액션)
-- [ ] 트리거: 상태 변경, 담당자 변경, 라벨 추가, 이슈 생성
-- [ ] 액션: 상태 변경, 담당자 배정, 라벨 추가, 우선순위 설정
-- [ ] 상태 전이 규칙 (허용되는 상태 변경 경로 정의)
-- [ ] 프로젝트 설정 > 자동화 관리 UI
-
-### 수정/생성 파일
-- `packages/db/src/schema/automations.ts` — 자동화 규칙 테이블
-- `packages/shared/src/schemas/automations.ts` — Zod 스키마
-- `apps/server/src/services/automation-service.ts` — 규칙 평가 엔진
-- `apps/server/src/routes/automations.ts` — API 라우트
-- `apps/web/src/components/automations/` — 관리 UI
-
----
-
-## 5. 시간 추정/추적
-
-### 구현 범위
+## B-3. 시간 추정/추적 (P1)
 - [ ] 이슈에 추정 시간(estimate) 필드 추가
 - [ ] 시간 기록(time entry) 시스템: 시작/정지 또는 수동 입력
 - [ ] 이슈별 소요 시간 합산 표시
 - [ ] 사이클 번다운 차트 (추정 vs 실제)
 
-### 수정/생성 파일
+**예상 파일**
 - `packages/db/src/schema/issues.ts` — estimate 컬럼 추가
 - `packages/db/src/schema/time-entries.ts` — 새 테이블
 - `packages/shared/src/schemas/time-entries.ts` — Zod 스키마
 - `apps/server/src/services/time-entry-service.ts` — CRUD + 집계
 - `apps/web/src/components/issues/issue-detail/time-tracker.tsx` — UI
 
----
+## B-4. 워크플로우 자동화 (P2)
+- [ ] 자동화 규칙 CRUD (트리거 → 조건 → 액션)
+- [ ] 트리거: 상태 변경, 담당자 변경, 라벨 추가, 이슈 생성
+- [ ] 액션: 상태 변경, 담당자 배정, 라벨 추가, 우선순위 설정
+- [ ] 상태 전이 규칙 (허용되는 상태 변경 경로 정의)
+- [ ] 프로젝트 설정 > 자동화 관리 UI
 
-## 6. UX 개선사항
+**예상 파일**
+- `packages/db/src/schema/automations.ts` — 자동화 규칙 테이블
+- `packages/shared/src/schemas/automations.ts` — Zod 스키마
+- `apps/server/src/services/automation-service.ts` — 규칙 평가 엔진
+- `apps/server/src/routes/automations.ts` — API 라우트
+- `apps/web/src/components/automations/` — 관리 UI
 
-### 6-1. 간트 차트 드래그로 날짜 변경
-- [ ] 바 좌우 드래그로 시작일/마감일 변경
-- [ ] 바 전체 드래그로 기간 이동
-- [ ] 수정 파일: `apps/web/src/components/issues/gantt-view/gantt-chart.tsx`
+## B-5. 간트 차트 의존성 화살표 (6-4 잔여, P2)
+- [ ] 의존성 데이터를 간트 뷰에 화살표로 시각화 (선행 → 후행)
+- [ ] 화살표 스타일 (blocks=실선 / relates_to=점선)
+- [ ] 호버 시 관계 정보 툴팁
 
-### 6-2. 보드 뷰 그룹 기준 변경
-- [ ] 상태(현재) / 우선순위 / 담당자 / 라벨별 그룹 전환
-- [ ] 수정 파일: `apps/web/src/components/issues/board-view/kanban-board.tsx`
+**예상 파일**: `apps/web/src/components/issues/gantt-view/gantt-chart.tsx`
 
-### 6-3. 이슈 복제
-- [ ] 이슈 상세에서 "복제" 버튼 → 모든 필드 복사하여 새 이슈 생성
-- [ ] 수정 파일: `apps/server/src/services/issue-service.ts`, `issue-detail-panel.tsx`
+## B-6. 위키 Phase 3-1 Yjs 실시간 편집 (P3 — v1.0)
+- [ ] `content_format = 'yjs'` lazy migration
+- [ ] `EditorWithCollab` 모드 분기
+- [ ] 편집자 커서/아바타 awareness
+- [ ] **`apps/hocuspocus/` 앱 신규 구축 필요** (디렉토리 미존재)
 
-### 6-4. 이슈 간 의존성
-- [ ] 관계 유형: blocks / blocked by / relates to
-- [ ] DB 테이블: `issue_relations`
-- [ ] 이슈 상세 패널에 의존성 표시 + 추가/제거 UI
-- [ ] 간트 차트에서 의존성 화살표 표시
+## B-7. 위키 Phase 4 — 고급 (P3 — v1.0 이후)
 
----
-
-## 7. 위키 기능 확장 (노션 수준)
-
-### 현황
-- 스페이스/페이지 계층, TipTap 에디터, 슬래시 커맨드, 이슈 링크, 이미지 업로드, 파일 첨부, 자동 저장, 페이지 트리 DnD 구현 완료
-- Hocuspocus + Yjs 인프라는 이미 프로젝트에 포함 (v1.0 실시간 편집용)
-- 페이지 `content_format` 컬럼으로 TipTap JSON ↔ Yjs binary lazy migration 경로 설계됨
-
-### 목표
-노션 수준의 "페이지 메타 + 블록 에디터 + 협업 + 고급 기능"을 4단계로 점진 구현.
-Phase 1이 가장 가시적 효과가 크므로 먼저 진행.
-
----
-
-### Phase 1 — 페이지 메타 & 탐색 ✅
-
-#### 1-1. 페이지 아이콘(이모지) ✅ / 커버 ❌ 제거됨
-- [x] `wiki_pages.icon`, `wiki_pages.cover_url` 컬럼 추가 (migration 0009)
-- [x] 페이지 상단에 이모지 피커 (6카테고리 curated)
-- [x] 페이지 트리에 아이콘 표시
-- [x] **커버 이미지는 사용자 요청으로 UI 제거** (컬럼은 유지, 추후 재도입 가능)
-
-#### 1-2. 페이지/스페이스 즐겨찾기 ✅
-- [x] favorites 시스템의 pageId/spaceId 활용
-- [x] 페이지 브레드크럼 + 스페이스 패널 헤더에 별 아이콘 토글
-
-#### 1-3. 최근 편집 페이지 ✅
-- [x] `/workspaces/:wsId/wiki-pages/recent` 엔드포인트 (드래프트는 본인 것만 노출)
-- [x] 위키 인덱스 상단 "최근 편집" 섹션 (4열 카드)
-
-#### 1-4. 인라인 서브페이지 생성 ✅ (트리에서)
-- [x] 페이지 트리 hover 시 `+` 버튼으로 서브페이지 생성 (부모 자동 expand)
-- [ ] 에디터 내부 슬래시 `/page`는 후속 (page-link 노드 필요)
-
-#### 1-5. 전역 검색 (페이지 제목 + 본문) ✅
-- [x] `wiki_pages.search_vector` FTS 활용 (제목 A, 본문 B weight) + ILIKE fallback
-- [x] 검색 결과 `spaceId`/`icon`/드래프트 필터 포함 → command palette에서 실제 라우트 이동
-
----
-
-### Phase 2 — 에디터 블록 확장 ✅ (대부분 완료, Embed만 deferred)
-
-#### 2-1. 노션 필수 블록 ✅
-- [x] Callout (이모지 + 배경 컬러 5종, ::before 의사요소 아이콘, 다중 문단 grid 레이아웃)
-- [x] Toggle (`<details>` NodeView 기반 커스텀 chevron, 빈 줄 Enter 시 블록 탈출)
-- [x] Code block (lowlight, ` ``` ` 마크다운 단축키)
-- [x] To-do 체크박스 (TaskList/TaskItem)
-- [x] Divider + `--- ` 마크다운 단축키
-- [x] **마크다운 단축키 재배치**: `| ` → 인용, `> ` → 토글
-- [x] 블록 타입별 placeholder (제목 N / 인용 / /로 블록 추가)
-- [x] @tiptap/extension-typography (em-dash, ellipsis, smart quotes)
-
-#### 2-2. @멘션 시스템 ✅
-- [x] **통합 `@` 멘션** `createUniversalMentionExtension` — 멤버/위키/이슈 한 트리거에
-      섹션별 표시, 종류별 색상 구분 (멤버 amber, 페이지 blue, 이슈 emerald),
-      Tab 선택으로 IME 상황 회피
-- [x] `#ISSUE-NN` 패턴 기반 `IssueLink` (기존)
-
-#### 2-3. Table 블록 ✅
-- [x] @tiptap/extension-table 기반 기본 표
-- [ ] 행/열 추가/삭제, 병합 컨텍스트 메뉴는 후속
-
-#### 2-4. 북마크 ✅ / Embed (auto-unfurl) — 후속
-- [x] **노션 스타일 북마크 카드** — `Bookmark` atom 노드 + 전용 모달(제목 수기 입력
-      + URL 검증) + 서버 `/api/v1/url-preview` (OG/Twitter 메타 + favicon, 6초/500KB 제한)
-- [ ] URL 붙여넣기 자동 임베드 변환 (paste rule) — 후속
-
----
-
-### Phase 2 외 추가 구현 (사용자 요청으로 중간 투입된 기능)
-
-#### 드래그 앤 드롭 (블록 이동) ✅
-- [x] `DragHandle` 익스텐션 — 포인터 이벤트 기반(HTML5 drag API 브라우저 차이 우회),
-      `document.body`에 핸들/드롭 라인 마운트, 에디터 좌측 gutter에 고정 위치,
-      컨테이너 블록(토글/콜아웃/인용) 내부도 드롭 타겟, 콜아웃 첫 줄은 "전체 이동"으로 승격
-
-#### 페이지 초안(Draft) ✅
-- [x] `wiki_pages.status` ('draft' | 'published') 컬럼 (migration 0010)
-- [x] 작성자 본인에게만 노출 — list/getById/listRecent/search 전부 필터
-- [x] 페이지 상단 토글 버튼 + 트리에 이탤릭/배지 표시
-
-#### 프로젝트 ↔ 위키 연동 ✅
-- [x] `wiki_spaces.project_id` 컬럼 (migration 0011) + project 당 unique 부분 인덱스
-- [x] 프로젝트 생성 시 자동 위키 공간 + 에디터 멤버십 생성 (ProjectService.create 트랜잭션)
-- [x] `GET /projects/:projectId/wiki-space` + `/projects/$projectId/wiki` 리다이렉트 라우트
-- [x] 프로젝트 사이드바 "위키" 서브메뉴 + 위키 인덱스의 프로젝트 위키 아이콘/배지 구분
-
-#### 삭제 UI ✅
-- [x] 페이지 트리 hover 시 ⋯ 메뉴 → 페이지 soft-delete (하위 페이지는 한 단계 위로 이동)
-- [x] 스페이스 드롭다운에 "스페이스 삭제" (확인 후 전체 페이지 포함 제거)
-
-#### 그 외 세부 개선
-- [x] TipTap 버전 정렬 — `@tiptap/pm` / `@tiptap/suggestion` v3 → v2, pnpm overrides로 강제
-- [x] 슬래시 커맨드 IME 조합 Enter 무시, selectedIndex 리셋 버그 수정, 키보드 하이라이트 가시화
-- [x] 에디터/제목 `[contenteditable]` focus-visible 글로우 제거
-- [x] 빈 제목 저장 허용 + 항상 "제목 없음" placeholder 노출 (`<br>` 정리)
-- [x] 저장 상태 인디케이터를 에디터 내부 → 브레드크럼 우측으로 이동
-
----
-
-### Phase 3 — 협업/공유
-
-#### 3-1. 실시간 공동 편집 (Yjs + Hocuspocus) — 보류
-- [ ] `content_format = 'yjs'` lazy migration (첫 편집 시 TipTap JSON → Yjs binary 변환)
-- [ ] `EditorWithAutosave` → `EditorWithCollab` 모드 분기
-- [ ] 현재 편집자 커서/아바타 표시 (awareness)
-- [ ] **주의**: `apps/hocuspocus/` 디렉토리가 현재 존재하지 않음 — 앱 신규 구축 필요
-- [ ] 수정 파일
-  - `apps/hocuspocus/src/` — 앱 신규 구축
-  - `packages/editor/src/collab-editor.tsx` — 새로 생성
-  - `packages/db/src/schema/wiki.ts` — content_format 활용 점검
-
-#### 3-2. 블록 단위 코멘트 ❌ 제거됨 (2026-04-24)
-**방향 전환**: 노션 스타일 블록 에디터 → 마크다운 친화 에디터로 축소.
-- BlockId / DragHandle / ToggleBlock / BlockCommentsPanel 확장 전부 제거
-- BubbleMenu "코멘트" 버튼 / 헤더 상단 말풍선 / 블록 hover 코멘트 트리거 제거
-- 백엔드: wiki-page 코멘트 라우트 + `listByPage` 서비스 메소드 + `comments.block_id` 컬럼 제거 (migration 0015)
-- 이슈 코멘트는 그대로 유지 (comments 테이블 폴리모픽 구조만 보존)
-
-#### 3-3. 페이지 공유 링크 / 퍼블리시 ✅ (2026-04-22)
-- [x] `wiki_page_shares` 테이블 (id, page_id, token, expires_at, created_by, revoked_at)
-      + 마이그레이션 0012
-- [x] `POST/GET/DELETE /api/v1/wiki-pages/:id/shares` (에디터 권한 필요) +
-      `GET /api/v1/wiki-share/:token` (auth bypass, revoked/expires 검증)
-- [x] 페이지 헤더에 공유 버튼 + `ShareModal` (링크 생성/복사/해제)
-- [x] `/wiki-share/$token` 공개 라우트 (로그인 없이 읽기 전용 TipTap 렌더)
-
-#### 3-4. 페이지 히스토리/버전 ✅ (2026-04-22)
-- [x] `wiki_page_revisions` 테이블 (title/icon/content/content_text/author_id, migration 0013)
-- [x] `WikiRevisionService.snapshot()` — 같은 작성자 5분 내 수정 시 in-place overwrite
-      (autosave 버스트 대응) + 50개 초과 시 오래된 것부터 prune
-- [x] 페이지 업데이트 시 content/title이 실제로 변경된 경우에만 pre-update snapshot 기록
-- [x] `GET /revisions`, `GET /revisions/:id`, `POST /revisions/:id/restore` — 복원 직전
-      현재 상태를 자동 스냅샷해 "되돌리기" 안전 장치
-- [x] `HistoryPanel` 슬라이드오버 — 타임라인 + 읽기 전용 미리보기 + 복원 확인 다이얼로그
-
----
-
-### Phase 4 — 고급
-
-#### 4-1. 페이지 템플릿
+### B-7-1. 페이지 템플릿
 - [ ] 워크스페이스/스페이스별 템플릿 CRUD
 - [ ] 새 페이지 생성 시 템플릿 선택 모달
 - [ ] 기본 제공: 회의록, 주간 리포트, 프로젝트 킥오프, 1-on-1
-- [ ] 수정 파일
-  - `packages/db/src/schema/wiki.ts` — `wiki_page_templates` 테이블
-  - `apps/server/src/routes/wiki.ts` — 템플릿 API
-  - `apps/web/src/components/wiki/template-picker.tsx` — 새로 생성
 
-#### 4-2. 인라인 이슈 DB (이슈 뷰 임베드)
-- [ ] 페이지 안에 저장된 이슈 뷰를 블록으로 임베드 (list/board 미니 뷰)
-- [ ] 수정 파일
-  - `packages/editor/src/extensions/issue-view-embed.ts` — 새로 생성
-  - `apps/web/src/components/issues/embedded-view.tsx` — 재사용 가능한 뷰
+### B-7-2. 인라인 이슈 DB (이슈 뷰 임베드)
+- [ ] 페이지 안에 저장된 이슈 뷰를 블록으로 임베드 (list/board 미니)
+- [ ] 파일: `packages/editor/src/extensions/issue-view-embed.ts`,
+  `apps/web/src/components/issues/embedded-view.tsx`
 
-#### 4-3. AI 보조 (요약/작성/번역)
-- [ ] 블록 선택 → "요약/이어쓰기/번역/맞춤법" 커맨드
-- [ ] OpenAI/Anthropic API 연동 (기존 AI 설정 활용)
-- [ ] 수정 파일
-  - `packages/editor/src/ai/` — 새로 생성
-  - `apps/server/src/routes/ai.ts` — 프록시 엔드포인트 (기존 있다면 활용)
+### B-7-3. AI 보조 (요약/작성/번역)
+- [ ] 블록 선택 → 요약/이어쓰기/번역/맞춤법 커맨드
+- [ ] OpenAI/Anthropic API 연동
+- [ ] 파일: `packages/editor/src/ai/`, `apps/server/src/routes/ai.ts`
 
----
+## B-8. 위키 마무리 리뷰 P2 (여유 있을 때)
+- [ ] **페이지 휴지통** — `deleted_at` soft delete는 되어있지만 복원 UI/API 없음
+- [ ] **이전 slug 리다이렉트** — slug 변경 시 구 URL 404 (`wiki_page_slug_history` 테이블 필요)
+- [ ] **활동 로그** — 누가 언제 무엇을 변경했는지 추적 (audit 테이블)
+- [ ] **페이지 이동 시 unsaved 경고** — `beforeunload` / router guard
+- [ ] **이미지 업로드 에러 UX** — 실패 시 Toast 피드백 명확화
+- [ ] **모달 3개 통합** — Bookmark/PageLink/Share 모달이 동일 패턴. `useModalPrompt` 훅 추출 가능
+- [ ] **QueryKey 규약 통일** — `['wiki-pages', pageId]` vs `['wiki-spaces', spaceId, 'pages']` 혼재
+- [ ] **Drizzle 스키마에 `search_vector` 필드 선언** — DB에는 있고 raw SQL로 쿼리 가능하나 타입 안전성 개선 가능
+- [ ] **Embed auto-unfurl** — 북마크는 됐으나, 일반 URL 붙여넣기 → 인라인 카드 자동 변환은 제한적 (현재 빈 문단 한정)
+- [ ] **sanitize.ts / extract-text.ts 검증** — 최근 extension 제거(Toggle 등)에 맞춰 화이트리스트 동기화 확인
 
-## 기술 부채 (별도 정리 필요)
+## B-9. 기술 부채
 
-### 테스트 스위트 정비 (우선순위: 중)
-현재 `apps/server` vitest에서 62개 테스트가 실패 중. CI에서 non-blocking으로 처리.
+### B-9-1. 테스트 스위트 정비 (우선순위: 중)
+현재 `apps/server` vitest에서 66개 테스트가 실패 중. CI에서 non-blocking.
+- [ ] **Mock DB 격리 부족** (대부분): 이슈 필터/정렬/페이지네이션 테스트들이 전체 데이터(20/40/50개)를 반환하여 expected 1/2/3/5와 불일치
+- [ ] **Rate limiting 상태 유지**: auth 테스트가 429를 반환 (테스트 간 리셋 안 됨)
+- [ ] **Better Auth 모킹**: register/login 400·401 반환
 
-**실패 원인 카테고리:**
-- **Mock DB 격리 부족** (대부분): 이슈 필터/정렬/페이지네이션 테스트들이 전체 데이터(20/40/50개)를 반환하여 expected 1/2/3/5와 불일치
-- **Rate limiting 상태 유지**: auth 테스트가 429를 반환 (테스트 간 리셋 안 됨)
-- **Better Auth 모킹**: register/login 400·401 반환
-- **Error 코드 불일치**: 위키 순환 참조가 400 대신 403 반환
+### B-9-2. 타입 오류 정리 (우선순위: 낮)
+- [ ] `apps/server`: Drizzle ORM `strict` 타입과 `request.user!.id` 패턴 충돌 → 수십 개 에러 (`typecheck` 스크립트에서 skip 처리)
+- [ ] `apps/web`: TanStack Router `<Link to>` 타입 literal 제약 → ~30개
+- [x] `packages/editor`: TipTap `@tiptap/pm` v2/v3 버전 충돌 → 해결 (pnpm overrides)
 
-### 타입 오류 정리 (우선순위: 낮)
-- `apps/server`: Drizzle ORM `strict` 타입과 `request.user!.id` 패턴 충돌 → 수십 개 에러
-- `apps/web`: 라우트 타입(`Link to="..."`), 배열 인덱스 undefined 체크 → ~30개
-- `packages/editor`: TipTap `@tiptap/pm` v2/v3 버전 충돌 → ✅ **해결됨** (2026-04-21, pnpm overrides로 v2 고정)
-
-현재 CI에서 typecheck 제외하고 build(tsup + Vite)로 대체 검증.
-
-## 구현 순서
-
-### 이슈 트랙
-```
-Phase 1: 알림 시스템 연동 (기존 인프라 활용, 빠른 완성) — 진행 중
-Phase 2: UX 개선 (6-1 ~ 6-4, 기존 코드 보강)
-Phase 3: CSV 가져오기/내보내기
-Phase 4: 이슈 템플릿
-Phase 5: 워크플로우 자동화
-Phase 6: 시간 추정/추적
-```
-
-### 위키 트랙 (섹션 7)
-```
-Wiki Phase 1 ✅: 페이지 메타 & 탐색 (아이콘/즐겨찾기/최근/서브페이지/검색, 커버는 제거)
-Wiki Phase 2 ✅: 에디터 기능 (callout, code, @mention, table, 북마크, 마크다운 단축키)
-  — 방향 전환으로 Toggle/DragHandle/BlockId 제거됨 (2026-04-24)
-Wiki Phase 2+ ✅: Draft, 프로젝트-위키, 삭제 UI (ConfirmDialog)
-Wiki Phase 3  : 협업/공유 — 부분 완료
-  ✅ 공유 링크 + 공개 뷰어 / 히스토리 + 복원
-  ❌ 블록 코멘트 (방향 전환으로 제거됨)
-  ⏸ Yjs 실시간 편집 (v1.0)
-Wiki Phase 4  : 고급 (템플릿, 이슈 DB 임베드, AI)
+### B-9-3. 번들 크기 (우선순위: 낮)
+- [ ] `page-mention-list` 청크가 ~690KB (gzip 215KB). TipTap + prosemirror + lowlight 포함
+- [ ] 동적 import / manual chunks 로 split 가능 (현재 로딩 체감상 문제 없음)
 
 ---
 
-**2026-04-24 마무리 작업**
-- [x] 백엔드 코멘트 데드코드 제거 — wiki-page 코멘트 라우트/서비스/컬럼/인덱스 모두 정리 (migration 0015)
-- [x] 페이지 slug 자동생성 개선 — `pageSlug(title)` 헬퍼로 ASCII 변환 + 랜덤 suffix
-- [x] 페이지 삭제 시 자녀 sortOrder 재분배 — timestamp 기반 z-prefix
-- [x] 공개 share 응답 정돈 — 사용 안 하는 `slug` select 제거
-- [x] 스페이스 멤버 self-remove 방지 — `callerUserId === memberId` 체크
+# Part C. 운영
+
+## C-1. 배포 전 체크리스트
+
+- [ ] **dev DB 마이그레이션** 0012~0017 gcloud SSH로 적용
+  - 0012 `wiki_page_shares`
+  - 0013 `wiki_page_revisions`
+  - 0014/0015 `comments.block_id` 추가 후 제거 (no-op 묶음 가능)
+  - 0016 `issue_relations`
+  - 0017 `files_at_most_one_parent` CHECK
+- [ ] **LOCAL_TEST.md** 체크리스트 전부 green 확인
+- [ ] 공유 링크 시크릿 창에서 접근 테스트 (로그인 없이)
+- [ ] IME 한글 입력 테스트 (제목 / 에디터 / 테이블 셀)
+- [ ] CSV 가져오기 — Jira export 샘플로 dry-run
+- [ ] 보드 그룹 전환 시 DnD 라벨/담당자 업데이트 검증
+- [ ] 간트 바 드래그 → 시작일/마감일 변경 검증
+- [ ] 이슈 의존성 순환 참조 차단 검증 (A→B→A 시도)
+- [ ] 기존 프로젝트용 위키 백필 스크립트 dry-run 후 본 실행
+- [ ] server test 66 실패는 pre-existing (non-blocking)
+
+## C-2. 구현 순서 요약
+
+```
+이슈 트랙:
+  Phase 1 ✅ 알림 시스템 연동
+  Phase 2 ✅ 이슈 UX 개선 (복제 / 보드 그룹 / 간트 드래그 / 의존성)
+  Phase 3 ✅ CSV 가져오기/내보내기
+  → Phase 4 이슈 템플릿                    ← 다음 (P1)
+  → Phase 5 시간 추정/추적                 ← 다음 (P1)
+  → Phase 6 워크플로우 자동화              ← P2
+  → Phase 7 간트 의존성 화살표 (6-4 잔여)  ← P2
+
+위키 트랙:
+  Phase 1 ✅ 페이지 메타 & 탐색
+  Phase 2 ✅ 에디터 기능 (마크다운 친화)
+  Phase 2+ ✅ Draft / 프로젝트-위키 / 삭제 UI
+  Phase 3 ▲ 부분 완료 (공유/히스토리 ✅, 블록 코멘트 ❌, Yjs ⏸)
+  마무리 리뷰 P1 ✅ 전체 반영 완료
+  Phase 4 ⏸ 고급 (템플릿 / 이슈 DB 임베드 / AI)
+  마무리 리뷰 P2 ⏸ 여유 있을 때
+
+공통:
+  기술 부채 (B-9) ← 별도 사이클
 ```
 
-**남은 Phase 2 후속 개선** (선택)
-- Embed auto-unfurl (URL 붙여넣기 → 북마크 카드 자동 변환)
-- 테이블 컨텍스트 메뉴 (행/열 추가·삭제·병합)
-- 에디터 내부 `/page` 슬래시 (page-link 노드)
-- `window.confirm` → 전용 삭제 확인 모달
-- 기존 프로젝트용 위키 백필 스크립트
+## C-3. 의도적으로 제거된 기능 (참고)
 
-두 트랙은 DB/에디터 공유 지점(페이지 메타 ↔ 에디터 확장 ↔ 멘션 ↔ 이슈 임베드)이 있어
-이슈 트랙 진행과 병행 가능. 각 Wiki Phase 내 세부 항목은 독립적으로 배치해도 무방.
+- **블록 단위 코멘트** (Phase 3-2) — 2026-04-24 방향 전환에서 제거
+  - 프론트 UI / 백엔드 라우트 / `comments.block_id` 컬럼 전부 제거 (migration 0015)
+  - 이슈 코멘트는 유지
+- **BlockId / DragHandle / Toggle / BlockCommentsPanel** 확장 — 마크다운 친화 에디터로 범위 축소 시 제거
+
+## C-4. 변경 기록
+
+### 2026-04-29 — PLAN 구조 개편
+- Part A (구현 완료) / Part B (미구현) / Part C (운영) 3-파트로 재정렬
+- 의도적 제거 기능을 별도 섹션으로 분리
+
+### 2026-04-27 — PLAN 갱신
+- 섹션 6 이슈 UX 4건 + 섹션 2 CSV + 섹션 8 위키 P1 5건 모두 완료 반영
+- 다음 작업을 `이슈 템플릿` / `시간 추정` / `워크플로우 자동화`로 재정렬
+- 섹션 6-4의 간트 화살표만 후속으로 분리
+
+### 2026-04-24 — 이슈 P0 + CSV (commit `489b9f0a`, `c0d78b8c`)
+- 이슈: 복제 / 보드 그룹 전환 / 간트 드래그 / 의존성 (`issue_relations` migration 0016)
+- CSV: 내보내기(필터 반영) + 가져오기(미존재 라벨 자동 생성, 미리보기)
+- 위키 P1: 권한 tier 문서화, content_format 문서화, querySelector 제거, slug 통일
+- 마이그레이션 0016~0017 추가 (`issue_relations`, `files_at_most_one_parent`)
+
+### 2026-04-24 — 위키 모듈 마무리 + 방향 전환 (commit `e7b5c8ae`)
+- 마크다운 친화 에디터로 범위 축소 — BlockId/DragHandle/Toggle/BlockCommentsPanel 제거
+- Phase 2 후속 5건 + Phase 3 부분(공유/히스토리) 완료
+- 테이블 레이아웃 시프트 최종 수정 (Placeholder `tr` pseudo 차단)
+- 페이지 slug 생성 개선, 삭제 시 자녀 sortOrder 재분배, 스페이스 self-remove 방지
+- 마이그레이션 0012~0015 추가
+
+### 2026-04-21 — 위키 Phase 1 + 2 완료
+- 페이지 메타 & 탐색 + 에디터 블록 확장 + 드래그앤드롭 + Draft + 프로젝트 연동 + 삭제 UI
+
+### 2026-04-20 — 디자인 v2 통일
+- 이슈/사이클/보드/간트 전반 리디자인
+- 브랜드 로고 / 인증 페이지 / 사이드바 재구성
