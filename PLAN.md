@@ -39,10 +39,12 @@
 - [x] 프론트엔드 알림 벨 UI + 읽음 처리
 
 ## A-2. CSV 가져오기/내보내기 (커밋 `489b9f0a`)
-- [x] 이슈 목록 CSV 내보내기 (현재 필터 적용 상태 기준)
+- [x] 이슈 목록 CSV 내보내기 — 현재 프로젝트의 **모든 비삭제 이슈** (필터 미반영, 향후 개선 여지)
 - [x] CSV 가져오기 (제목, 설명, 우선순위, 상태, 담당자, 라벨, 시작일, 마감일)
 - [x] 가져오기 시 미리보기 + 필드 매핑 UI (`csv-modal.tsx`)
 - [x] 미존재 라벨 자동 생성
+- [x] UTF-8 BOM 부착 (Excel 한글 호환) + import 시 BOM 자동 제거
+- [x] import 1회 최대 500행 (서버 측 Zod 제한)
 
 **파일**: `apps/server/src/services/issue-csv-service.ts`,
 `apps/server/src/routes/issues.ts`, `apps/web/src/components/issues/csv-modal.tsx`
@@ -119,13 +121,14 @@
 - [x] 이슈/사이클/보드/간트 전반 리디자인
 - [x] 브랜드 로고 / 인증 페이지 / 사이드바 재구성
 
-## A-7. 마이그레이션 (0000~0017)
+## A-7. 마이그레이션 (0000~0018)
 - [x] 0000~0011: 초기 스키마 + 이슈/뷰/사이클/위키/공통 + 인덱스 정리 + 조인 요청 + 위키 아이콘/상태/프로젝트 연결
 - [x] 0012 `wiki_page_shares`
 - [x] 0013 `wiki_page_revisions`
 - [x] 0014→0015 `comments.block_id` 추가 후 제거 (방향 전환)
 - [x] 0016 `issue_relations`
 - [x] 0017 `files_at_most_one_parent` CHECK
+- [x] 0018 `issue_templates` (B-2 P1)
 
 > dev DB 적용은 미완 → Part C §1
 
@@ -247,12 +250,14 @@
 
 ## C-1. 배포 전 체크리스트
 
-- [ ] **dev DB 마이그레이션** 0012~0017 gcloud SSH로 적용
+- [ ] **dev DB 마이그레이션** 0012~0018 gcloud SSH로 적용
   - 0012 `wiki_page_shares`
   - 0013 `wiki_page_revisions`
   - 0014/0015 `comments.block_id` 추가 후 제거 (no-op 묶음 가능)
   - 0016 `issue_relations`
   - 0017 `files_at_most_one_parent` CHECK
+  - 0018 `issue_templates`
+- [ ] **이슈 템플릿 백필** — 0018 적용 후 `pnpm --filter @worknest/server tsx scripts/backfill-issue-templates.ts --dry-run` → 본 실행
 - [ ] **LOCAL_TEST.md** 체크리스트 전부 green 확인
 - [ ] 공유 링크 시크릿 창에서 접근 테스트 (로그인 없이)
 - [ ] IME 한글 입력 테스트 (제목 / 에디터 / 테이블 셀)

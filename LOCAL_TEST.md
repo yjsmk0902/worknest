@@ -1,7 +1,7 @@
-# 로컬 테스트 체크리스트 — 2026-04-29
+# 로컬 테스트 체크리스트 — 2026-05-07
 
-배포 전 검증용 체크리스트. 마이그레이션 0012~0017 + 이슈 P0 4건 + CSV + 위키 P1 5건이
-이번 사이클에서 추가된 변경입니다.
+배포 전 검증용 체크리스트. 마이그레이션 0012~0018 + 이슈 P0 4건 + CSV(BOM/Excel 호환 포함)
++ 위키 P1 5건 + 이슈 템플릿이 이번 사이클에서 추가된 변경입니다.
 
 우선순위는 **P0 회귀 위험 큼 → P2 부가 확인** 순.
 
@@ -12,7 +12,7 @@ docker compose up -d           # postgres + redis + mailpit
 pnpm dev                       # web + server 한 번에
 ```
 
-> 서버 부팅 시 `runMigrations()`가 0012~0017까지 자동 적용. 별도 명령 불필요.
+> 서버 부팅 시 `runMigrations()`가 0012~0018까지 자동 적용. 별도 명령 불필요.
 > 첫 부팅 로그에 `[migrate] All migrations applied successfully.` 가 있는지 확인.
 
 ---
@@ -58,17 +58,20 @@ pnpm dev                       # web + server 한 번에
 
 #### 내보내기
 - [ ] 이슈 리스트 헤더 "CSV 내보내기" → `issues-{projectId}.csv` 다운로드
-- [ ] **현재 적용된 필터/정렬 그대로** 반영되는지 (assignee/label/status/priority 필터 적용 후 export)
-- [ ] 컬럼: key, title, status, priority, assignees, labels, startDate, dueDate (정확한 헤더 확인)
-- [ ] UTF-8 BOM 또는 `; sep=,` 설정으로 Excel 한글 깨짐 없는지
+- [ ] 현재 동작: **모든 비삭제 이슈가 export 대상** (필터/정렬 미반영 — 의도된 한계, 추후 개선)
+- [ ] 헤더: `Key, Title, Description, Status, Type, Priority, Assignees, Labels, Start Date, Due Date, Created At`
+- [ ] **UTF-8 BOM 부착** — 다운로드한 CSV를 Excel(Mac/Windows)에서 더블클릭 → 한글 깨짐 없음
+- [ ] 다중 값(담당자/라벨)은 `; ` 구분자로 묶여 있는지
 
-#### 가져오기
+#### 가져오기 (`docs/samples/csv-import-sample.csv` 사용)
 - [ ] "CSV 가져오기" → 모달 열림
-- [ ] 파일 업로드 → **미리보기** 테이블 (처음 몇 행)
-- [ ] 미존재 라벨이 행에 있으면 **자동 생성** (가져오기 후 라벨 목록 확인)
-- [ ] 잘못된 헤더(예: `priority`만 누락)는 미리보기 단계에서 경고
-- [ ] 가져오기 후 새 이슈가 정확한 필드로 생성됨
-- [ ] 같은 파일 두 번 import 시 중복 생성 (의도적 — dedupe 안 함이 맞는지 확인)
+- [ ] `csv-import-sample.csv` 업로드 → **미리보기** 5행 표시
+- [ ] `csv-import-jira-style.csv` (Jira 헤더 별칭: `Summary`/`Issue Type`/`Assignee`) → 정상 매핑 확인
+- [ ] 미존재 라벨(`frontend`, `bug`, `jira`, `migration`, `sprint`, `infra`, `cron`, `ux`)이 자동 생성됨
+- [ ] BOM 포함 CSV(자체 export 결과물 재import) → 첫 헤더 `﻿` 없이 정상 매핑
+- [ ] 가져오기 후 새 이슈가 정확한 필드(우선순위/상태/타입/담당자/라벨/일정)로 생성됨
+- [ ] 같은 파일 두 번 import → 중복 생성 (의도적 — dedupe 미구현)
+- [ ] 500행 초과 파일 업로드 시도 → 클라이언트 토스트로 차단
 
 ---
 
