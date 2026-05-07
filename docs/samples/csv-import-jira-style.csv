@@ -1,0 +1,4 @@
+Summary,Description,Priority,Status,Issue Type,Assignee,Labels,Start Date,Due Date
+"Jira → Worknest 마이그레이션 PoC","Jira XML/CSV export 호환 검증용 샘플. summary/issue type 헤더 별칭 매핑 확인.",high,할 일,스토리,yang2lee1won@gmail.com,"jira; migration",2026-05-10,2026-05-30
+"Sprint 보드 grouping 회귀","Jira의 Sprint 컨셉을 보드 그룹 기능으로 시뮬레이션.",medium,할 일,작업,,"sprint",,
+"버그: 첨부 업로드 실패","파일 25MB 이상 업로드 시 504 발생. multipart 설정 확인.",urgent,진행 중,버그,,"bug; infra",2026-05-09,2026-05-11

@@ -170,7 +170,8 @@ export class IssueCsvService {
       );
     }
 
-    return `${lines.join('\n')}\n`;
+    // UTF-8 BOM keeps Excel from misreading Korean as Latin-1.
+    return `﻿${lines.join('\n')}\n`;
   }
 
   /**
@@ -236,9 +237,7 @@ export class IssueCsvService {
           if (userId) assigneeIds.push(userId);
         }
 
-        const priority = row.priority && VALID_PRIORITIES.has(row.priority)
-          ? row.priority
-          : 'none';
+        const priority = row.priority && VALID_PRIORITIES.has(row.priority) ? row.priority : 'none';
 
         const statusId = row.statusName
           ? statusByName.get(row.statusName.toLowerCase())?.id

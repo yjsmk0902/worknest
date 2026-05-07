@@ -17,7 +17,9 @@ import { apiClient } from '../../lib/api-client';
 /** Parse a CSV string into rows of strings. Handles quoted fields and
  *  doubled quotes within fields. Ignores CR.
  */
-function parseCsv(text: string): string[][] {
+function parseCsv(input: string): string[][] {
+  // Strip UTF-8 BOM if present (Excel exports include it).
+  const text = input.charCodeAt(0) === 0xfeff ? input.slice(1) : input;
   const rows: string[][] = [];
   let field = '';
   let row: string[] = [];
@@ -140,7 +142,10 @@ export function CsvModal({ projectId, open, onOpenChange }: CsvModalProps) {
         const raw = cols[idx]?.trim() ?? '';
         if (!raw) return;
         if (key === 'assigneeEmails' || key === 'labelNames') {
-          row[key] = raw.split(/[;,]/).map((s) => s.trim()).filter(Boolean);
+          row[key] = raw
+            .split(/[;,]/)
+            .map((s) => s.trim())
+            .filter(Boolean);
         } else {
           (row as Record<string, unknown>)[key] = raw;
         }
@@ -152,16 +157,21 @@ export function CsvModal({ projectId, open, onOpenChange }: CsvModalProps) {
       toast('제목(title) 열이 필요합니다.');
       return;
     }
+    if (valid.length > 500) {
+      toast('한 번에 가져올 수 있는 행은 500개까지입니다. 파일을 분할해주세요.');
+      return;
+    }
     setParsedRows(valid);
     setFileName(file.name);
   }, []);
 
   const importMutation = useMutation({
     mutationFn: (rows: ImportRow[]) =>
-      apiClient.post<{ imported: number; skipped: number; errors: { row: number; message: string }[] }>(
-        `/projects/${projectId}/issues/import`,
-        { rows },
-      ),
+      apiClient.post<{
+        imported: number;
+        skipped: number;
+        errors: { row: number; message: string }[];
+      }>(`/projects/${projectId}/issues/import`, { rows }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'issues'] });
       queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'board-issues'] });

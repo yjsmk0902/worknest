@@ -1,0 +1,6 @@
+Title,Description,Priority,Status,Type,Assignees,Labels,Start Date,Due Date
+"로그인 화면 한글 깨짐 수정","Mac Safari에서 로그인 폼 라벨이 깨져서 표시됨. UTF-8 인코딩 문제 의심.",high,진행 중,버그,yang2lee1won@gmail.com,"frontend; bug",2026-05-08,2026-05-12
+"OAuth 구글 로그인 추가","구글 OAuth 2.0 흐름을 추가해 외부 협력사 초대를 간편화.",medium,할 일,스토리,,"feature; auth",,2026-05-20
+"DB 백업 자동화 스크립트","매일 03:00 KST에 pg_dump → S3 업로드. 실패 시 슬랙 알림.",high,할 일,작업,,"infra; cron",2026-05-09,2026-05-15
+"회원가입 시 비밀번호 정책 안내","8자 이상 + 숫자/특수문자 포함 룰을 폼 하단 helper text로 표시.",low,할 일,스토리,,"frontend; ux",,
+"간단한 작업 — 라벨/일정 없음",,none,,,,,,
